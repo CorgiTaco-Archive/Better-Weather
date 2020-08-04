@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "corgitaco.betterweather.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "betterweather.refmap.json",
+  "mixins": [
+
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "minVersion": "0.8"
+}
