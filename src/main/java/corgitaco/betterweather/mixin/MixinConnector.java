@@ -8,8 +8,8 @@ public class MixinConnector implements IMixinConnector {
 
     @Override
     public void connect() {
-        BetterWeather.LOGGER.debug("Better Weather: Connecting Mixin...");
+        BetterWeather.LOGGER.debug("Better SandStorm: Connecting Mixin...");
         Mixins.addConfiguration("betterweather.mixins.json");
-        BetterWeather.LOGGER.info("Better Weather: Mixin Connected!");
+        BetterWeather.LOGGER.info("Better SandStorm: Mixin Connected!");
     }
 }
