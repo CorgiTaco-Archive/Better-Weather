@@ -37,12 +37,19 @@ public class BetterWeather {
 
         @SubscribeEvent
         public static void renderTickEvent(TickEvent.RenderTickEvent event) {
-
         }
 
         @SubscribeEvent
         public static void playerTickEvent(TickEvent.PlayerTickEvent event) {
 
         }
+    }
+
+    public enum WeatherType {
+        BLIZZARD,
+        HAIL,
+        HEATWAVE,
+        WINDSTORM,
+        SANDSTORM
     }
 }
