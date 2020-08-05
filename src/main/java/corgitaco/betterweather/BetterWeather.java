@@ -46,10 +46,6 @@ public class BetterWeather {
     public void clientSetup(FMLClientSetupEvent event) {
         Minecraft minecraft = event.getMinecraftSupplier().get();
         GameRenderer gameRenderer = minecraft.gameRenderer;
-
-
-
-
     }
 
     @Mod.EventBusSubscriber(modid = BetterWeather.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -63,8 +59,9 @@ public class BetterWeather {
                 int tickSpeed = world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
                 long worldTime = world.getWorldInfo().getGameTime();
 
-                if (worldTime % 100 == 0 && !event.world.isRaining()) {
-                    Random random = new Random();
+                //Rolls a random chance for acid rain once every 4000 ticks and will not run when raining to avoid disco colored rain.
+                if (worldTime % 4000 == 0 && !event.world.getWorldInfo().isRaining()) {
+                    Random random = world.rand;
                     int randomChance = random.nextInt(3);
                     isAcidRain = randomChance == 0;
                 }
@@ -102,7 +99,7 @@ public class BetterWeather {
             World world = entity.world;
             BlockPos entityPos = new BlockPos(entity.getPositionVec());
 
-            if (world.canSeeSky(entityPos) && isAcidRain && world.isRaining() && world.getGameTime() % 250 == 0) {
+            if (world.canSeeSky(entityPos) && isAcidRain && world.getWorldInfo().isRaining() && world.getGameTime() % 250 == 0) {
                 entity.attackEntityFrom(DamageSource.GENERIC, 0.5F);
             }
         }
@@ -113,7 +110,7 @@ public class BetterWeather {
         @SubscribeEvent
         public static void clientTickEvent(TickEvent.ClientTickEvent event) {
             Minecraft minecraft = Minecraft.getInstance();
-            if (minecraft.world != null && minecraft.world.isRaining()) {
+            if (minecraft.world != null && minecraft.world.getWorldInfo().isRaining()) {
                 AcidRain.addAcidRainParticles(minecraft.gameRenderer.getActiveRenderInfo(), minecraft, minecraft.worldRenderer);
                 if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE && isAcidRain)
                     WorldRenderer.RAIN_TEXTURES = ACID_RAIN_TEXTURE;

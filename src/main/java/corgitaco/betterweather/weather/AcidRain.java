@@ -3,7 +3,6 @@ package corgitaco.betterweather.weather;
 import corgitaco.betterweather.BetterWeather;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.CampfireBlock;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
@@ -14,7 +13,6 @@ import net.minecraft.particles.IParticleData;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Direction;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
@@ -39,7 +37,7 @@ public class AcidRain {
         IProfiler iprofiler = world.getProfiler();
         iprofiler.startSection("acidrain");
         BlockPos blockpos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
-        if (BetterWeather.isAcidRain && world.isRaining() && worldTime % 50 == 0) {
+        if (BetterWeather.isAcidRain && world.getWorldInfo().isRaining() && worldTime % 50 == 0) {
             if (world.getBlockState(blockpos.down()).getBlock() == Blocks.GRASS_BLOCK)
                 world.setBlockState(blockpos.down(), Blocks.COARSE_DIRT.getDefaultState());
             if (world.getBlockState(blockpos).getMaterial() == Material.PLANTS || world.getBlockState(blockpos).getMaterial() == Material.TALL_PLANTS)
@@ -78,7 +76,7 @@ public class AcidRain {
                     double d2 = voxelshape.max(Direction.Axis.Y, d0, d1);
                     double d3 = (double)fluidstate.getActualHeight(iworldreader, blockpos2);
                     double d4 = Math.max(d2, d3);
-                    IParticleData iparticledata = !fluidstate.isTagged(FluidTags.LAVA) && !blockstate.isIn(Blocks.MAGMA_BLOCK) && !CampfireBlock.func_226915_i_(blockstate) ? ParticleTypes.RAIN : ParticleTypes.SMOKE;
+                    IParticleData iparticledata = ParticleTypes.SMOKE;
                     mc.world.addParticle(iparticledata, (double)blockpos2.getX() + d0, (double)blockpos2.getY() + d4, (double)blockpos2.getZ() + d1, 0.0D, 0.0D, 0.0D);
                 }
             }
