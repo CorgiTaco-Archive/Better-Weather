@@ -110,7 +110,7 @@ public class BetterWeather {
         @SubscribeEvent
         public static void clientTickEvent(TickEvent.ClientTickEvent event) {
             Minecraft minecraft = Minecraft.getInstance();
-            if (minecraft.world != null && minecraft.world.getWorldInfo().isRaining()) {
+            if (minecraft.world != null && minecraft.world.getWorldInfo().isRaining() && isAcidRain) {
                 AcidRain.addAcidRainParticles(minecraft.gameRenderer.getActiveRenderInfo(), minecraft, minecraft.worldRenderer);
                 if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE && isAcidRain)
                     WorldRenderer.RAIN_TEXTURES = ACID_RAIN_TEXTURE;
