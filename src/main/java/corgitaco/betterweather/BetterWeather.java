@@ -32,7 +32,7 @@ import java.util.Random;
 public class BetterWeather {
     public static Logger LOGGER = LogManager.getLogger();
     public static final String MOD_ID = "betterweather";
-    public static boolean isAcidRain = true;
+    public static boolean isAcidRain = false;
 
     public BetterWeather() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
@@ -63,7 +63,7 @@ public class BetterWeather {
                 int tickSpeed = world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
                 long worldTime = world.getWorldInfo().getGameTime();
 
-                if (worldTime % 4000 == 0 && !event.world.isRaining()) {
+                if (worldTime % 100 == 0 && !event.world.isRaining()) {
                     Random random = new Random();
                     int randomChance = random.nextInt(3);
                     isAcidRain = randomChance == 0;
@@ -113,15 +113,13 @@ public class BetterWeather {
         @SubscribeEvent
         public static void clientTickEvent(TickEvent.ClientTickEvent event) {
             Minecraft minecraft = Minecraft.getInstance();
-            if (minecraft.world != null) {
+            if (minecraft.world != null && minecraft.world.isRaining()) {
                 AcidRain.addAcidRainParticles(minecraft.gameRenderer.getActiveRenderInfo(), minecraft, minecraft.worldRenderer);
+                if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE && isAcidRain)
+                    WorldRenderer.RAIN_TEXTURES = ACID_RAIN_TEXTURE;
+                else if (WorldRenderer.RAIN_TEXTURES != RAIN_TEXTURE && !isAcidRain)
+                    WorldRenderer.RAIN_TEXTURES = RAIN_TEXTURE;
             }
-
-            if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE && isAcidRain)
-                WorldRenderer.RAIN_TEXTURES = ACID_RAIN_TEXTURE;
-            else if (WorldRenderer.RAIN_TEXTURES != RAIN_TEXTURE && !isAcidRain)
-                WorldRenderer.RAIN_TEXTURES = RAIN_TEXTURE;
-
         }
     }
 
