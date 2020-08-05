@@ -31,8 +31,7 @@ import java.util.Random;
 public class BetterWeather {
     public static Logger LOGGER = LogManager.getLogger();
     public static final String MOD_ID = "betterweather";
-
-    public static boolean isAcidRain = true;
+    public static boolean isAcidRain = false;
 
     public BetterWeather() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
@@ -44,7 +43,6 @@ public class BetterWeather {
     }
 
     public void clientSetup(FMLClientSetupEvent event) {
-
     }
 
     @Mod.EventBusSubscriber(modid = BetterWeather.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -58,13 +56,10 @@ public class BetterWeather {
                 int tickSpeed = world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
                 long worldTime = world.getWorldInfo().getGameTime();
 
-
-                if (worldTime % 2000 == 0 && !event.world.isRaining()) {
+                if (worldTime % 4000 == 0 && !event.world.isRaining()) {
                     Random random = new Random();
                     int randomChance = random.nextInt(3);
-                    if (randomChance == 0) {
-                        isAcidRain = true;
-                    }
+                    isAcidRain = randomChance == 0;
                 }
 
                 List<ChunkHolder> list = Lists.newArrayList((serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
