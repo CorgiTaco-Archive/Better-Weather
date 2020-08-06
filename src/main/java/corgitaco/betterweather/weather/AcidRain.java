@@ -37,7 +37,7 @@ public class AcidRain {
         IProfiler iprofiler = world.getProfiler();
         iprofiler.startSection("acidrain");
         BlockPos blockpos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
-        if (BetterWeather.isAcidRain && world.getWorldInfo().isRaining() && worldTime % 50 == 0) {
+        if (BetterWeather.BetterWeatherEvents.weatherData.isAcidRain() && world.getWorldInfo().isRaining() && worldTime % 50 == 0) {
             if (world.getBlockState(blockpos.down()).getBlock() == Blocks.GRASS_BLOCK)
                 world.setBlockState(blockpos.down(), Blocks.COARSE_DIRT.getDefaultState());
             if (world.getBlockState(blockpos).getMaterial() == Material.PLANTS || world.getBlockState(blockpos).getMaterial() == Material.TALL_PLANTS)
