@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.datastorage.BetterWeatherData;
 import corgitaco.betterweather.weatherevents.AcidRain;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.WorldRenderer;
@@ -27,13 +28,12 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 @Mod("betterweather")
 public class BetterWeather {
@@ -50,18 +50,53 @@ public class BetterWeather {
     static boolean damageMonsters = false;
     static boolean damagePlayer = false;
 
+    public static boolean destroyGrass = false;
+    public static boolean destroyLeaves = false;
+    public static boolean destroyCrops = false;
+    public static boolean destroyPlants = false;
+
+    public static List<Block> blocksToNotDestroyList = new ArrayList<>();
+
     public void commonSetup(FMLCommonSetupEvent event) {
         BetterWeatherConfig.loadConfig(BetterWeatherConfig.COMMON_CONFIG, FMLPaths.CONFIGDIR.get().resolve(MOD_ID + "-common.toml"));
         String entityTypes = BetterWeatherConfig.entityTypesToDamage.get();
         String removeSpaces = entityTypes.trim().toLowerCase().replace(" ", "");
         List<String> entityList = Arrays.asList(removeSpaces.split(","));
+
         for (String s : entityList) {
             if (s.equalsIgnoreCase("animal") && !damageAnimals)
                 damageAnimals = true;
             if (s.equalsIgnoreCase("monster") && !damageMonsters)
                 damageMonsters = true;
             if (s.equalsIgnoreCase("player") && !damagePlayer)
-                damageMonsters = true;
+                damagePlayer = true;
+        }
+
+        String allowedBlockTypesToDestroy = BetterWeatherConfig.allowedBlocksToDestroy.get();
+        String removeBlockTypeSpaces = allowedBlockTypesToDestroy.trim().toLowerCase().replace(" ", "");
+        List<String> blockTypeToDestroyList = Arrays.asList(removeBlockTypeSpaces.split(","));
+
+        for (String s : blockTypeToDestroyList) {
+            if (s.equalsIgnoreCase("grass") && !destroyGrass)
+                destroyGrass = true;
+            if (s.equalsIgnoreCase("leaves") && !destroyLeaves)
+                destroyLeaves = true;
+            if (s.equalsIgnoreCase("crops") && !destroyCrops)
+                destroyCrops = true;
+            if (s.equalsIgnoreCase("plants") && !destroyCrops)
+                destroyPlants = true;
+        }
+        ForgeRegistry<Block> blockRegistry = ((ForgeRegistry<Block>) ForgeRegistries.BLOCKS);
+
+        String blocksToNotDestroy = BetterWeatherConfig.blocksToNotDestroy.get();
+        String removeBlocksToNotDestroySpaces = blocksToNotDestroy.trim().toLowerCase().replace(" ", "");
+        List<String> blocksToNotDestroyList = Arrays.asList(removeBlocksToNotDestroySpaces.split(","));
+        for (String s : blocksToNotDestroyList) {
+            Block block = blockRegistry.getValue(new ResourceLocation(s));
+            if (block != null)
+                BetterWeather.blocksToNotDestroyList.add(block);
+            else
+                LOGGER.error("A block registry name you added to the \"BlocksToNotDestroy\" list was incorrect, you put: " + s + "\n Please fix it or this block will be destroyed.");
         }
     }
 
@@ -84,7 +119,7 @@ public class BetterWeather {
                 long worldTime = world.getWorldInfo().getGameTime();
 
                 //Rolls a random chance for acid rain once every 2500 ticks and will not run when raining to avoid disco colored rain.
-                if (worldTime % 5000 == 0 && !event.world.getWorldInfo().isRaining()) {
+                if (worldTime == 100 || worldTime % 5000 == 0 && !event.world.getWorldInfo().isRaining()) {
                     Random random = world.rand;
                     weatherData.setAcidRain(random.nextFloat() < BetterWeatherConfig.acidRainChance.get());
                 }

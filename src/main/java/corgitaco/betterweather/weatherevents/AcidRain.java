@@ -2,6 +2,7 @@ package corgitaco.betterweather.weatherevents;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.config.BetterWeatherConfig;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
@@ -15,6 +16,7 @@ import net.minecraft.particles.ParticleTypes;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Direction;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
@@ -26,10 +28,15 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistry;
 
 import java.util.Random;
 
 public class AcidRain {
+    public static final ForgeRegistry<Block> blockRegistry = ((ForgeRegistry<Block>) ForgeRegistries.BLOCKS);
+    static Block block = blockRegistry.getRaw(new ResourceLocation(BetterWeatherConfig.blockToChangeFromGrass.get()));
+
     public static void acidRainEvent(Chunk chunk, ServerWorld world, int gameRuleTickSpeed, long worldTime) {
         ChunkPos chunkpos = chunk.getPos();
         int chunkXStart = chunkpos.getXStart();
@@ -39,14 +46,26 @@ public class AcidRain {
         BlockPos blockpos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
         if (world.isAreaLoaded(blockpos, 1)) {
             if (BetterWeather.BetterWeatherEvents.weatherData.isAcidRain() && world.getWorldInfo().isRaining() && worldTime % BetterWeatherConfig.tickBlockDestroySpeed.get() == 0 && BetterWeatherConfig.destroyBlocks.get() && world.getBiome(blockpos).getPrecipitation() == Biome.RainType.RAIN) {
-                if (world.getBlockState(blockpos.down()).getBlock() == Blocks.GRASS_BLOCK)
-                    world.setBlockState(blockpos.down(), Blocks.COARSE_DIRT.getDefaultState());
-                if (world.getBlockState(blockpos).getMaterial() == Material.PLANTS || world.getBlockState(blockpos).getMaterial() == Material.TALL_PLANTS)
-                    world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
-                if (world.getBlockState(blockpos.down()).getBlock().isIn(BlockTags.LEAVES))
-                    world.setBlockState(blockpos.down(), Blocks.AIR.getDefaultState());
-                if (world.getBlockState(blockpos.down()).getBlock().isIn(BlockTags.CROPS))
-                    world.setBlockState(blockpos.down(), Blocks.AIR.getDefaultState());
+                if (BetterWeather.destroyGrass) {
+                    if (block == null) {
+                        BetterWeather.LOGGER.error("The block replacing grass, registry location was incorrect. You put: " + BetterWeatherConfig.blockToChangeFromGrass.get() + "\n Reverting to coarse dirt!");
+                        block = Blocks.COARSE_DIRT;
+                    }
+                    if (world.getBlockState(blockpos.down()).getBlock() == Blocks.GRASS_BLOCK)
+                        world.setBlockState(blockpos.down(), block.getDefaultState());
+                }
+                if (BetterWeather.destroyPlants) {
+                    if (world.getBlockState(blockpos).getMaterial() == Material.PLANTS || world.getBlockState(blockpos).getMaterial() == Material.TALL_PLANTS && !BetterWeather.blocksToNotDestroyList.contains(world.getBlockState(blockpos).getBlock()))
+                        world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
+                }
+                if (BetterWeather.destroyLeaves) {
+                    if (world.getBlockState(blockpos.down()).getBlock().isIn(BlockTags.LEAVES) && !BetterWeather.blocksToNotDestroyList.contains(world.getBlockState(blockpos.down()).getBlock()))
+                        world.setBlockState(blockpos.down(), Blocks.AIR.getDefaultState());
+                }
+                if (BetterWeather.destroyCrops) {
+                    if (world.getBlockState(blockpos).getBlock().isIn(BlockTags.CROPS) && !BetterWeather.blocksToNotDestroyList.contains(world.getBlockState(blockpos).getBlock()))
+                        world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
+                }
             }
         }
         iprofiler.endSection();

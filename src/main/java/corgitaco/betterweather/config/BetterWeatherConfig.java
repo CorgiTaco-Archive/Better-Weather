@@ -19,10 +19,14 @@ public class BetterWeatherConfig {
     public static ForgeConfigSpec.DoubleValue acidRainChance;
     public static ForgeConfigSpec.IntValue tickBlockDestroySpeed;
     public static ForgeConfigSpec.BooleanValue destroyBlocks;
+    public static ForgeConfigSpec.ConfigValue<String> allowedBlocksToDestroy;
     public static ForgeConfigSpec.BooleanValue hurtEntities;
     public static ForgeConfigSpec.IntValue hurtEntityTickSpeed;
     public static ForgeConfigSpec.DoubleValue hurtEntityDamage;
     public static ForgeConfigSpec.ConfigValue<String> entityTypesToDamage;
+    public static ForgeConfigSpec.ConfigValue<String> blockToChangeFromGrass;
+    public static ForgeConfigSpec.ConfigValue<String> blocksToNotDestroy;
+
     public static ForgeConfigSpec.BooleanValue removeSmokeParticles;
 
     static {
@@ -30,6 +34,9 @@ public class BetterWeatherConfig {
         acidRainChance = COMMON_BUILDER.comment("The chance of acid rain that's checked every 5000 ticks.").defineInRange("Chance", 0.1, 0.0, 1.0);
         tickBlockDestroySpeed = COMMON_BUILDER.comment("How often blocks are destroyed during an acid rain event.").defineInRange("BlockDestroyTickSpeed", 500, 10, 100000);
         destroyBlocks = COMMON_BUILDER.comment("Destroy Blocks?").define("DestroyBlocks", true);
+        allowedBlocksToDestroy = COMMON_BUILDER.comment("Destroy what block materials? Allowed Values: GRASS,LEAVES,PLANTS,CROPS\nDefault Value: GRASS,LEAVES,PLANTS,CROPS").define("BlocksToDestroy", "GRASS,LEAVES,PLANTS,CROPS");
+        blocksToNotDestroy = COMMON_BUILDER.comment("A specific block in one of the materials you want to destroy? Blacklist them here w/ their registry names! \n I.E: \"minecraft:rose,minecraft:wither_rose\"").define("BlocksToNotDestroy", "");
+        blockToChangeFromGrass = COMMON_BUILDER.comment("The block to change grass to.\nDefault: \"minecraft:coarse_dirt\"").define("BlockToChangeGrass", "minecraft:coarse_dirt");
         COMMON_BUILDER.pop();
         COMMON_BUILDER.push("Entity_Settings");
         hurtEntities = COMMON_BUILDER.comment("Hurt Entities?").define("HurtEntities", true);
