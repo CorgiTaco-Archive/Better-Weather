@@ -1,6 +1,7 @@
-package corgitaco.betterweather.weather;
+package corgitaco.betterweather.weatherevents;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.config.BetterWeatherConfig;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
@@ -37,8 +38,8 @@ public class AcidRain {
         IProfiler iprofiler = world.getProfiler();
         iprofiler.startSection("acidrain");
         BlockPos blockpos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
-        if (world.isAreaLoaded(blockpos, 1)) { 
-            if (BetterWeather.BetterWeatherEvents.weatherData.isAcidRain() && world.getWorldInfo().isRaining() && worldTime % 50 == 0) {
+        if (world.isAreaLoaded(blockpos, 1)) {
+            if (BetterWeather.BetterWeatherEvents.weatherData.isAcidRain() && world.getWorldInfo().isRaining() && worldTime % BetterWeatherConfig.tickBlockDestroySpeed.get() == 0) {
                 if (world.getBlockState(blockpos.down()).getBlock() == Blocks.GRASS_BLOCK)
                     world.setBlockState(blockpos.down(), Blocks.COARSE_DIRT.getDefaultState());
                 if (world.getBlockState(blockpos).getMaterial() == Material.PLANTS || world.getBlockState(blockpos).getMaterial() == Material.TALL_PLANTS)

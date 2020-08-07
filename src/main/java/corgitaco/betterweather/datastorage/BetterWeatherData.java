@@ -1,5 +1,6 @@
-package corgitaco.betterweather;
+package corgitaco.betterweather.datastorage;
 
+import corgitaco.betterweather.BetterWeather;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
@@ -7,16 +8,16 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.DimensionSavedDataManager;
 import net.minecraft.world.storage.WorldSavedData;
 
-public class WorldWeatherData extends WorldSavedData {
+public class BetterWeatherData extends WorldSavedData {
     public static String DATA_NAME = BetterWeather.MOD_ID + ":weather_data";
 
     private boolean acidRain;
 
-    public WorldWeatherData() {
+    public BetterWeatherData() {
         super(DATA_NAME);
     }
 
-    public WorldWeatherData(String s) {
+    public BetterWeatherData(String s) {
         super(s);
     }
 
@@ -41,15 +42,15 @@ public class WorldWeatherData extends WorldSavedData {
     }
 
 
-    public static WorldWeatherData get(IWorld world) {
+    public static BetterWeatherData get(IWorld world) {
         if (!(world instanceof ServerWorld))
-            return new WorldWeatherData();
+            return new BetterWeatherData();
         ServerWorld overWorld = world.getWorld().getServer().getWorld(World.field_234918_g_);
         DimensionSavedDataManager data = overWorld.getSavedData();
-        WorldWeatherData weatherData = data.getOrCreate(WorldWeatherData::new, DATA_NAME);
+        BetterWeatherData weatherData = data.getOrCreate(BetterWeatherData::new, DATA_NAME);
 
         if (weatherData == null) {
-            weatherData = new WorldWeatherData();
+            weatherData = new BetterWeatherData();
             data.set(weatherData);
         }
 

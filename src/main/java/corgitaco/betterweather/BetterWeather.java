@@ -1,15 +1,18 @@
 package corgitaco.betterweather;
 
 import com.google.common.collect.Lists;
-import corgitaco.betterweather.weather.AcidRain;
+import corgitaco.betterweather.config.BetterWeatherConfig;
+import corgitaco.betterweather.datastorage.BetterWeatherData;
+import corgitaco.betterweather.weatherevents.AcidRain;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityClassification;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
@@ -23,9 +26,11 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -38,10 +43,26 @@ public class BetterWeather {
     public BetterWeather() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
+        BetterWeatherConfig.loadConfig(BetterWeatherConfig.COMMON_CONFIG, FMLPaths.CONFIGDIR.get().resolve(MOD_ID + "-common.toml"));
     }
 
-    public void commonSetup(FMLCommonSetupEvent event) {
+    static boolean damageAnimals = false;
+    static boolean damageMonsters = false;
+    static boolean damagePlayer = false;
 
+    public void commonSetup(FMLCommonSetupEvent event) {
+        BetterWeatherConfig.loadConfig(BetterWeatherConfig.COMMON_CONFIG, FMLPaths.CONFIGDIR.get().resolve(MOD_ID + "-common.toml"));
+        String entityTypes = BetterWeatherConfig.entityTypesToDamage.get();
+        String removeSpaces = entityTypes.trim().toLowerCase().replace(" ", "");
+        List<String> entityList = Arrays.asList(removeSpaces.split(","));
+        for (String s : entityList) {
+            if (s.equalsIgnoreCase("animal") && !damageAnimals)
+                damageAnimals = true;
+            if (s.equalsIgnoreCase("monster") && !damageMonsters)
+                damageMonsters = true;
+            if (s.equalsIgnoreCase("player") && !damagePlayer)
+                damageMonsters = true;
+        }
     }
 
     public void clientSetup(FMLClientSetupEvent event) {
@@ -51,7 +72,7 @@ public class BetterWeather {
 
     @Mod.EventBusSubscriber(modid = BetterWeather.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class BetterWeatherEvents {
-        public static WorldWeatherData weatherData = null;
+        public static BetterWeatherData weatherData = null;
 
         @SubscribeEvent
         public static void worldTick(TickEvent.WorldTickEvent event) {
@@ -63,10 +84,9 @@ public class BetterWeather {
                 long worldTime = world.getWorldInfo().getGameTime();
 
                 //Rolls a random chance for acid rain once every 4000 ticks and will not run when raining to avoid disco colored rain.
-                if (worldTime % 3000 == 0 && !event.world.getWorldInfo().isRaining()) {
+                if (worldTime % 1000 == 0 && !event.world.getWorldInfo().isRaining()) {
                     Random random = world.rand;
-                    int randomChance = random.nextInt(3);
-                    weatherData.setAcidRain(randomChance == 0);
+                    weatherData.setAcidRain(random.nextFloat() < BetterWeatherConfig.acidRainChance.get());
                 }
 
                 List<ChunkHolder> list = Lists.newArrayList((serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
@@ -95,19 +115,47 @@ public class BetterWeather {
         @SubscribeEvent
         public static void playerTickEvent(TickEvent.PlayerTickEvent event) {
             setWeatherData(event.player.world);
-            if (weatherData.isAcidRain())
-                event.player.sendStatusMessage(new StringTextComponent("reeeeeeeee"), true);
+//            if (weatherData.isAcidRain())
+//                event.player.sendStatusMessage(new StringTextComponent("reeeeeeeee"), true);
 
         }
 
         @SubscribeEvent
         public static void entityTickEvent(LivingEvent.LivingUpdateEvent event) {
-            Entity entity = event.getEntity();
-            World world = entity.world;
-            BlockPos entityPos = new BlockPos(entity.getPositionVec());
+            if (damageMonsters) {
+                if (event.getEntity().getClassification(true) == EntityClassification.MONSTER) {
+                    Entity entity = event.getEntity();
+                    World world = entity.world;
+                    BlockPos entityPos = new BlockPos(entity.getPositionVec());
 
-            if (world.canSeeSky(entityPos) && weatherData.isAcidRain() && world.getWorldInfo().isRaining() && world.getGameTime() % 5 == 0) {
-                entity.attackEntityFrom(DamageSource.GENERIC, 0.5F);
+                    if (world.canSeeSky(entityPos) && weatherData.isAcidRain() && world.getWorldInfo().isRaining() && world.getGameTime() % BetterWeatherConfig.hurtEntityTickSpeed.get() == 0) {
+                        entity.attackEntityFrom(DamageSource.GENERIC, 0.5F);
+                    }
+                }
+            }
+
+            if (damageAnimals) {
+                if (event.getEntity().getClassification(true) == EntityClassification.CREATURE || event.getEntity().getClassification(true) == EntityClassification.AMBIENT) {
+                    Entity entity = event.getEntity();
+                    World world = entity.world;
+                    BlockPos entityPos = new BlockPos(entity.getPositionVec());
+
+                    if (world.canSeeSky(entityPos) && weatherData.isAcidRain() && world.getWorldInfo().isRaining() && world.getGameTime() % BetterWeatherConfig.hurtEntityTickSpeed.get() == 0) {
+                        entity.attackEntityFrom(DamageSource.GENERIC, 0.5F);
+                    }
+                }
+            }
+
+            if (damagePlayer) {
+                if (event.getEntity() instanceof PlayerEntity) {
+                    Entity entity = event.getEntity();
+                    World world = entity.world;
+                    BlockPos entityPos = new BlockPos(entity.getPositionVec());
+
+                    if (world.canSeeSky(entityPos) && weatherData.isAcidRain() && world.getWorldInfo().isRaining() && world.getGameTime() % BetterWeatherConfig.hurtEntityTickSpeed.get() == 0) {
+                        entity.attackEntityFrom(DamageSource.GENERIC, 0.5F);
+                    }
+                }
             }
         }
 
@@ -131,7 +179,7 @@ public class BetterWeather {
 
         public static void setWeatherData(IWorld world) {
             if (weatherData == null)
-                weatherData = WorldWeatherData.get(world);
+                weatherData = BetterWeatherData.get(world);
         }
     }
 
