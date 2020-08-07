@@ -22,6 +22,7 @@ public class BetterWeatherConfig {
     public static ForgeConfigSpec.BooleanValue hurtEntities;
     public static ForgeConfigSpec.IntValue hurtEntityTickSpeed;
     public static ForgeConfigSpec.ConfigValue<String> entityTypesToDamage;
+    public static ForgeConfigSpec.BooleanValue removeSmokeParticles;
 
     static {
         COMMON_BUILDER.comment("Better Weather Settings").push("Acid_Rain_Settings").push("World_Settings");
@@ -33,6 +34,10 @@ public class BetterWeatherConfig {
         hurtEntities = COMMON_BUILDER.comment("Hurt Entities?").define("HurtEntities", true);
         hurtEntityTickSpeed = COMMON_BUILDER.comment("How often are entities(including players) hurt?").defineInRange("EntityDamageTickSpeed", 150, 0, 100000);
         entityTypesToDamage = COMMON_BUILDER.comment("Allowed Values: PLAYER, MONSTER, ANIMAL.\n Default: MONSTER,PLAYER").define("EntityTypes", "MONSTER,PLAYER");
+        entityTypesToDamage = COMMON_BUILDER.comment("Allowed Values: PLAYER, MONSTER, ANIMAL.\n Default: MONSTER,PLAYER").define("EntityTypes", "MONSTER,PLAYER");
+        COMMON_BUILDER.pop();
+        COMMON_BUILDER.push("Client_Settings");
+        removeSmokeParticles = COMMON_BUILDER.comment("Remove the smoke particles emitted by the acid rain.\n Default is false.").define("Particles", false);
         COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
         COMMON_CONFIG = COMMON_BUILDER.build();

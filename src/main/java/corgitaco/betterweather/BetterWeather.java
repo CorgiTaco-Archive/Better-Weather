@@ -84,7 +84,7 @@ public class BetterWeather {
                 long worldTime = world.getWorldInfo().getGameTime();
 
                 //Rolls a random chance for acid rain once every 5000 ticks and will not run when raining to avoid disco colored rain.
-                if (worldTime % 5000 == 0 && !event.world.getWorldInfo().isRaining()) {
+                if (worldTime % 50 == 0 && !event.world.getWorldInfo().isRaining()) {
                     Random random = world.rand;
                     weatherData.setAcidRain(random.nextFloat() < BetterWeatherConfig.acidRainChance.get());
                 }
@@ -167,7 +167,7 @@ public class BetterWeather {
             Minecraft minecraft = Minecraft.getInstance();
             if (minecraft.world != null) {
                 setWeatherData(minecraft.world);
-                if (minecraft.world.getWorldInfo().isRaining() && weatherData.isAcidRain()) {
+                if (minecraft.world.getWorldInfo().isRaining() && weatherData.isAcidRain() ) {
                     AcidRain.addAcidRainParticles(minecraft.gameRenderer.getActiveRenderInfo(), minecraft, minecraft.worldRenderer);
                     if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE && weatherData.isAcidRain())
                         WorldRenderer.RAIN_TEXTURES = ACID_RAIN_TEXTURE;
