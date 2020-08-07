@@ -12,12 +12,13 @@ public class WorldWeatherData extends WorldSavedData {
 
     @Override
     public void read(CompoundNBT nbt) {
-        acidRain = nbt.getBoolean("AcidRain");
+        setAcidRain(nbt.getBoolean("AcidRain"));
     }
 
     @Override
     public CompoundNBT write(CompoundNBT compound) {
         compound.putBoolean("AcidRain", acidRain);
+        markDirty();
         return compound;
     }
 
@@ -27,6 +28,5 @@ public class WorldWeatherData extends WorldSavedData {
 
     public void setAcidRain(boolean acidRain) {
         this.acidRain = acidRain;
-        markDirty();
     }
 }
