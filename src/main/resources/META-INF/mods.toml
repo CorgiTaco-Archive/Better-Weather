@@ -1,17 +1,17 @@
 modLoader="javafml"
 loaderVersion="[32,)"
 #license="LGPLv3"
-issueTrackerURL="https://github.com/CorgiTaco/BYG/issues"
+issueTrackerURL="https://github.com/CorgiTaco/Better-Weather/issues"
 [[mods]]
 modId="betterweather"
-version="1.0.14"
+version="0.1.0"
 displayName="Better Weather"
 displayURL="null"
 logoFile="logo_text.png"
 credits=""
 authors="Corgi Taco"
 description='''
-New weather ranging from blizzards to sandstorms!
+A mod that adds more weather events!
 '''
 [[dependencies.betterweather]]
     modId="forge"

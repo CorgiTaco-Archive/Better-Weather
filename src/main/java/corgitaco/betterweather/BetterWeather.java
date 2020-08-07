@@ -86,7 +86,7 @@ public class BetterWeather {
                 //Rolls a random chance for acid rain once every 2500 ticks and will not run when raining to avoid disco colored rain.
                 if (worldTime % 2500 == 0 && !event.world.getWorldInfo().isRaining()) {
                     Random random = world.rand;
-                    weatherData.setAcidRain(random.nextFloat() > BetterWeatherConfig.acidRainChance.get());
+                    weatherData.setAcidRain(random.nextFloat() < BetterWeatherConfig.acidRainChance.get());
                 }
 
                 List<ChunkHolder> list = Lists.newArrayList((serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
