@@ -13,7 +13,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
@@ -116,8 +115,8 @@ public class BetterWeather {
         @SubscribeEvent
         public static void playerTickEvent(TickEvent.PlayerTickEvent event) {
             setWeatherData(event.player.world);
-            if (weatherData.isAcidRain())
-                event.player.sendStatusMessage(new StringTextComponent("reeeeeeeee"), true);
+//            if (weatherData.isAcidRain())
+//                event.player.sendStatusMessage(new StringTextComponent("reeeeeeeee"), true);
 
         }
 
