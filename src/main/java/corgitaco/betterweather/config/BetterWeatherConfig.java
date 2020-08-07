@@ -28,17 +28,17 @@ public class BetterWeatherConfig {
     static {
         COMMON_BUILDER.comment("Better Weather Settings").push("Acid_Rain_Settings").push("World_Settings");
         acidRainChance = COMMON_BUILDER.comment("The chance of acid rain that's checked every 5000 ticks.").defineInRange("Chance", 0.1, 0.0, 1.0);
-        tickBlockDestroySpeed = COMMON_BUILDER.comment("How often blocks are destroyed during an acid rain event.").defineInRange("BlockDestroyTickSpeed", 500, 50, 100000);
+        tickBlockDestroySpeed = COMMON_BUILDER.comment("How often blocks are destroyed during an acid rain event.").defineInRange("BlockDestroyTickSpeed", 500, 10, 100000);
         destroyBlocks = COMMON_BUILDER.comment("Destroy Blocks?").define("DestroyBlocks", true);
         COMMON_BUILDER.pop();
         COMMON_BUILDER.push("Entity_Settings");
         hurtEntities = COMMON_BUILDER.comment("Hurt Entities?").define("HurtEntities", true);
-        hurtEntityTickSpeed = COMMON_BUILDER.comment("How often are entities(including players) hurt?").defineInRange("EntityDamageTickSpeed", 150, 0, 100000);
+        hurtEntityTickSpeed = COMMON_BUILDER.comment("How often are entities(including players) hurt?").defineInRange("EntityDamageTickSpeed", 150, 10, 100000);
         entityTypesToDamage = COMMON_BUILDER.comment("Allowed Values: PLAYER, MONSTER, ANIMAL.\n Default: MONSTER,PLAYER").define("EntityTypes", "MONSTER,PLAYER");
         hurtEntityDamage = COMMON_BUILDER.comment("The amount of damage taken.\n Default is 0.5").defineInRange("DamageStrength", 0.5, 0.0, 20.0);
         COMMON_BUILDER.pop();
         COMMON_BUILDER.push("Client_Settings");
-        removeSmokeParticles = COMMON_BUILDER.comment("Remove the smoke particles emitted by the acid rain.\n Default is false.").define("Particles", false);
+        removeSmokeParticles = COMMON_BUILDER.comment("Remove the smoke particles emitted by the acid rain.\n Default is false.").define("RemoveParticles", false);
         COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
         COMMON_CONFIG = COMMON_BUILDER.build();
