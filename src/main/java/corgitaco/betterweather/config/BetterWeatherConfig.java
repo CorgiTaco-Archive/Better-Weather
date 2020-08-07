@@ -25,14 +25,15 @@ public class BetterWeatherConfig {
 
     static {
         COMMON_BUILDER.comment("Better Weather Settings").push("Acid_Rain_Settings").push("World_Settings");
-        acidRainChance = COMMON_BUILDER.comment("The chance of acid rain that's checked every 1000 ticks.").defineInRange("Chance", 0.1, 0.0, 1.0);
+        acidRainChance = COMMON_BUILDER.comment("The chance of acid rain that's checked every 5000 ticks.").defineInRange("Chance", 0.1, 0.0, 1.0);
         tickBlockDestroySpeed = COMMON_BUILDER.comment("How often blocks are destroyed during an acid rain event.").defineInRange("BlockDestroyTickSpeed", 500, 50, 100000);
         destroyBlocks = COMMON_BUILDER.comment("Destroy Blocks?").define("DestroyBlocks", true);
         COMMON_BUILDER.pop();
-        COMMON_BUILDER.push("Entity Settings");
+        COMMON_BUILDER.push("Entity_Settings");
         hurtEntities = COMMON_BUILDER.comment("Hurt Entities?").define("HurtEntities", true);
         hurtEntityTickSpeed = COMMON_BUILDER.comment("How often are entities(including players) hurt?").defineInRange("EntityDamageTickSpeed", 150, 0, 100000);
         entityTypesToDamage = COMMON_BUILDER.comment("Allowed Values: PLAYER, MONSTER, ANIMAL.\n Default: MONSTER,PLAYER").define("EntityTypes", "MONSTER,PLAYER");
+        COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
         COMMON_CONFIG = COMMON_BUILDER.build();
     }

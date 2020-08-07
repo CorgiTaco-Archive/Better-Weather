@@ -83,8 +83,8 @@ public class BetterWeather {
                 int tickSpeed = world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
                 long worldTime = world.getWorldInfo().getGameTime();
 
-                //Rolls a random chance for acid rain once every 4000 ticks and will not run when raining to avoid disco colored rain.
-                if (worldTime % 1000 == 0 && !event.world.getWorldInfo().isRaining()) {
+                //Rolls a random chance for acid rain once every 1000 ticks and will not run when raining to avoid disco colored rain.
+                if (worldTime % 5000 == 0 && !event.world.getWorldInfo().isRaining()) {
                     Random random = world.rand;
                     weatherData.setAcidRain(random.nextFloat() < BetterWeatherConfig.acidRainChance.get());
                 }
