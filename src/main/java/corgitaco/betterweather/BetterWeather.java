@@ -11,6 +11,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.GameRules;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ChunkHolder;
@@ -50,11 +51,11 @@ public class BetterWeather {
 
     @Mod.EventBusSubscriber(modid = BetterWeather.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class BetterWeatherEvents {
-        public static final WorldWeatherData weatherData = new WorldWeatherData();
+        public static WorldWeatherData weatherData = null;
 
         @SubscribeEvent
         public static void worldTick(TickEvent.WorldTickEvent event) {
-            LOGGER.info(weatherData.isAcidRain());
+            setWeatherData(event.world);
             if (event.side.isServer() && event.phase == TickEvent.Phase.END) {
                 ServerWorld serverWorld = (ServerWorld) event.world;
                 World world = event.world;
@@ -93,6 +94,7 @@ public class BetterWeather {
 
         @SubscribeEvent
         public static void playerTickEvent(TickEvent.PlayerTickEvent event) {
+            setWeatherData(event.player.world);
             if (weatherData.isAcidRain())
                 event.player.sendStatusMessage(new StringTextComponent("reeeeeeeee"), true);
 
@@ -115,13 +117,21 @@ public class BetterWeather {
         @SubscribeEvent
         public static void clientTickEvent(TickEvent.ClientTickEvent event) {
             Minecraft minecraft = Minecraft.getInstance();
-            if (minecraft.world != null && minecraft.world.getWorldInfo().isRaining() && weatherData.isAcidRain()) {
-                AcidRain.addAcidRainParticles(minecraft.gameRenderer.getActiveRenderInfo(), minecraft, minecraft.worldRenderer);
-                if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE && weatherData.isAcidRain())
-                    WorldRenderer.RAIN_TEXTURES = ACID_RAIN_TEXTURE;
-                else if (WorldRenderer.RAIN_TEXTURES != RAIN_TEXTURE && !weatherData.isAcidRain())
-                    WorldRenderer.RAIN_TEXTURES = RAIN_TEXTURE;
+            if (minecraft.world != null) {
+                setWeatherData(minecraft.world);
+                if (minecraft.world.getWorldInfo().isRaining() && weatherData.isAcidRain()) {
+                    AcidRain.addAcidRainParticles(minecraft.gameRenderer.getActiveRenderInfo(), minecraft, minecraft.worldRenderer);
+                    if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE && weatherData.isAcidRain())
+                        WorldRenderer.RAIN_TEXTURES = ACID_RAIN_TEXTURE;
+                    else if (WorldRenderer.RAIN_TEXTURES != RAIN_TEXTURE && !weatherData.isAcidRain())
+                        WorldRenderer.RAIN_TEXTURES = RAIN_TEXTURE;
+                }
             }
+        }
+
+        public static void setWeatherData(IWorld world) {
+            if (weatherData == null)
+                weatherData = WorldWeatherData.get(world);
         }
     }
 
