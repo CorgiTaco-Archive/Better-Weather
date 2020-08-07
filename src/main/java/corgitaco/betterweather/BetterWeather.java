@@ -13,6 +13,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
@@ -115,8 +116,8 @@ public class BetterWeather {
         @SubscribeEvent
         public static void playerTickEvent(TickEvent.PlayerTickEvent event) {
             setWeatherData(event.player.world);
-//            if (weatherData.isAcidRain())
-//                event.player.sendStatusMessage(new StringTextComponent("reeeeeeeee"), true);
+            if (weatherData.isAcidRain())
+                event.player.sendStatusMessage(new StringTextComponent("reeeeeeeee"), true);
 
         }
 
@@ -141,7 +142,7 @@ public class BetterWeather {
                     BlockPos entityPos = new BlockPos(entity.getPositionVec());
 
                     if (world.canSeeSky(entityPos) && weatherData.isAcidRain() && world.getWorldInfo().isRaining() && world.getGameTime() % BetterWeatherConfig.hurtEntityTickSpeed.get() == 0) {
-                        entity.attackEntityFrom(DamageSource.GENERIC, 0.5F);
+                        entity.attackEntityFrom(DamageSource.GENERIC, BetterWeatherConfig.hurtEntityDamage.get().floatValue());
                     }
                 }
             }
@@ -167,7 +168,7 @@ public class BetterWeather {
             Minecraft minecraft = Minecraft.getInstance();
             if (minecraft.world != null) {
                 setWeatherData(minecraft.world);
-                if (minecraft.world.getWorldInfo().isRaining() && weatherData.isAcidRain() ) {
+                if (minecraft.world.getWorldInfo().isRaining() && weatherData.isAcidRain() && !BetterWeatherConfig.removeSmokeParticles.get()) {
                     AcidRain.addAcidRainParticles(minecraft.gameRenderer.getActiveRenderInfo(), minecraft, minecraft.worldRenderer);
                     if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE && weatherData.isAcidRain())
                         WorldRenderer.RAIN_TEXTURES = ACID_RAIN_TEXTURE;
