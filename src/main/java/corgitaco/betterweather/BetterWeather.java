@@ -20,6 +20,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -197,6 +198,9 @@ public class BetterWeather {
         public static final ResourceLocation RAIN_TEXTURE = new ResourceLocation("textures/environment/rain.png");
         public static final ResourceLocation ACID_RAIN_TEXTURE = new ResourceLocation(MOD_ID,"textures/environment/acid_rain.png");
 
+        static int idx = 0;
+        public static Integer cachedRenderDistance = null;
+
         @SubscribeEvent
         public static void clientTickEvent(TickEvent.ClientTickEvent event) {
             Minecraft minecraft = Minecraft.getInstance();
@@ -212,7 +216,40 @@ public class BetterWeather {
                     else if (WorldRenderer.RAIN_TEXTURES != RAIN_TEXTURE && !weatherData.isAcidRain())
                         WorldRenderer.RAIN_TEXTURES = RAIN_TEXTURE;
                 }
+
+                if (minecraft.world.getWorldInfo().isRaining() && isBlizzard) {
+                    cacheRenderDistance(minecraft.gameSettings.renderDistanceChunks);
+                    minecraft.gameSettings.renderDistanceChunks = 2;
+                    idx = 0;
+                }
+                if (minecraft.gameSettings.renderDistanceChunks == 2 && !isBlizzard && idx == 0) {
+                    minecraft.gameSettings.renderDistanceChunks = cachedRenderDistance;
+                    idx++;
+                }
+
             }
+        }
+        public static boolean isBlizzard = true;
+
+        static int idx2 = 0;
+        @SubscribeEvent
+        public static void renderFogEvent(EntityViewRenderEvent.FogDensity event) {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.world != null) {
+                if (isBlizzard && minecraft.world.getWorldInfo().isRaining()) {
+                    event.setDensity(0.1F);
+                    event.setCanceled(true);
+                    if (idx2 !=0)
+                        idx2 = 0;
+                }
+                else {
+                    if (idx2 == 0) {
+                        event.setCanceled(false);
+                        idx2++;
+                    }
+                }
+            }
+
         }
 
         public static void setWeatherData(IWorld world) {
@@ -220,6 +257,12 @@ public class BetterWeather {
                 weatherData = BetterWeatherData.get(world);
         }
     }
+
+    public static void cacheRenderDistance(int savedRenderDistance) {
+        if (BetterWeatherEvents.cachedRenderDistance == null)
+            BetterWeatherEvents.cachedRenderDistance = savedRenderDistance;
+    }
+
 
     public enum WeatherType {
         BLIZZARD,
