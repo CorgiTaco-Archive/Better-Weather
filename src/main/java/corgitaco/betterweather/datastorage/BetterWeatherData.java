@@ -12,6 +12,8 @@ public class BetterWeatherData extends WorldSavedData {
     public static String DATA_NAME = BetterWeather.MOD_ID + ":weather_data";
 
     private boolean acidRain;
+    private boolean blizzard;
+
 
     public BetterWeatherData() {
         super(DATA_NAME);
@@ -24,11 +26,13 @@ public class BetterWeatherData extends WorldSavedData {
     @Override
     public void read(CompoundNBT nbt) {
         setAcidRain(nbt.getBoolean("AcidRain"));
+        setBlizzard(nbt.getBoolean("Blizzard"));
     }
 
     @Override
     public CompoundNBT write(CompoundNBT compound) {
         compound.putBoolean("AcidRain", acidRain);
+        compound.putBoolean("Blizzard", blizzard);
         return compound;
     }
 
@@ -36,10 +40,21 @@ public class BetterWeatherData extends WorldSavedData {
         return this.acidRain;
     }
 
+    public boolean isBlizzard() {
+        return this.blizzard;
+    }
+
+
     public void setAcidRain(boolean acidRain) {
         this.acidRain = acidRain;
         markDirty();
     }
+
+    public void setBlizzard(boolean isBlizzard) {
+        this.blizzard = isBlizzard;
+        markDirty();
+    }
+
 
 
     public static BetterWeatherData get(IWorld world) {

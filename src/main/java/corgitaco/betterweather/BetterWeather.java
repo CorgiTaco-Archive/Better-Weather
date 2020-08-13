@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.datastorage.BetterWeatherData;
 import corgitaco.betterweather.weatherevents.AcidRain;
+import corgitaco.betterweather.weatherevents.Blizzard;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -123,6 +124,14 @@ public class BetterWeather {
                 if (worldTime == 100 || worldTime % 5000 == 0 && !event.world.getWorldInfo().isRaining()) {
                     Random random = world.rand;
                     weatherData.setAcidRain(random.nextFloat() < BetterWeatherConfig.acidRainChance.get());
+                    weatherData.setBlizzard(false);
+                }
+
+                //Rolls a random chance for acid rain once every 2500 ticks and will not run when raining to avoid disco colored rain.
+                if (worldTime == 100 || worldTime % 5000 == 0 && !event.world.getWorldInfo().isRaining()) {
+                    Random random = world.rand;
+                    weatherData.setAcidRain(false);
+                    weatherData.setBlizzard(random.nextFloat() < 1.0);
                 }
 
                 List<ChunkHolder> list = Lists.newArrayList((serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
@@ -135,7 +144,7 @@ public class BetterWeather {
                             Chunk chunk = optional1.get();
 //                            SandStorm.sandStormEvent(chunk, serverWorld, tickSpeed);
 //                            HailStorm.hailStormEvent(chunk, serverWorld, tickSpeed);
-//                            Blizzard.blizzardEvent(chunk, serverWorld, tickSpeed);
+                            Blizzard.blizzardEvent(chunk, serverWorld, tickSpeed, worldTime);
                             AcidRain.acidRainEvent(chunk, serverWorld, tickSpeed, worldTime);
                         }
                     }
@@ -199,36 +208,36 @@ public class BetterWeather {
         public static final ResourceLocation ACID_RAIN_TEXTURE = new ResourceLocation(MOD_ID,"textures/environment/acid_rain.png");
 
         static int idx = 0;
-        public static Integer cachedRenderDistance = null;
-
         @SubscribeEvent
         public static void clientTickEvent(TickEvent.ClientTickEvent event) {
             Minecraft minecraft = Minecraft.getInstance();
-            if (minecraft.world != null) {
-                setWeatherData(minecraft.world);
-                if (minecraft.world.getWorldInfo().isRaining() && weatherData.isAcidRain()) {
+            if (event.phase == TickEvent.Phase.START) {
+                if (minecraft.world != null) {
+                    setWeatherData(minecraft.world);
+                    if (minecraft.world.getWorldInfo().isRaining() && weatherData.isAcidRain()) {
 
-                    if (!BetterWeatherConfig.removeSmokeParticles.get())
-                        AcidRain.addAcidRainParticles(minecraft.gameRenderer.getActiveRenderInfo(), minecraft, minecraft.worldRenderer);
+                        if (!BetterWeatherConfig.removeSmokeParticles.get())
+                            AcidRain.addAcidRainParticles(minecraft.gameRenderer.getActiveRenderInfo(), minecraft, minecraft.worldRenderer);
 
-                    if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE && weatherData.isAcidRain())
-                        WorldRenderer.RAIN_TEXTURES = ACID_RAIN_TEXTURE;
-                    else if (WorldRenderer.RAIN_TEXTURES != RAIN_TEXTURE && !weatherData.isAcidRain())
-                        WorldRenderer.RAIN_TEXTURES = RAIN_TEXTURE;
+                        if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE && weatherData.isAcidRain())
+                            WorldRenderer.RAIN_TEXTURES = ACID_RAIN_TEXTURE;
+                        else if (WorldRenderer.RAIN_TEXTURES != RAIN_TEXTURE && !weatherData.isAcidRain())
+                            WorldRenderer.RAIN_TEXTURES = RAIN_TEXTURE;
+                    }
+
+                    if (minecraft.world.getWorldInfo().isRaining() && isBlizzard) {
+                        minecraft.worldRenderer.renderDistanceChunks = 2;
+                        idx = 0;
+                    }
+                    if (minecraft.worldRenderer.renderDistanceChunks != minecraft.gameSettings.renderDistanceChunks && !isBlizzard && idx == 0) {
+                        minecraft.worldRenderer.renderDistanceChunks = minecraft.gameSettings.renderDistanceChunks;
+                        idx++;
+                    }
+                    Blizzard.playWeatherSounds(minecraft, minecraft.gameRenderer.getActiveRenderInfo());
                 }
-
-                if (minecraft.world.getWorldInfo().isRaining() && isBlizzard) {
-                    cacheRenderDistance(minecraft.gameSettings.renderDistanceChunks);
-                    minecraft.gameSettings.renderDistanceChunks = 2;
-                    idx = 0;
-                }
-                if (minecraft.gameSettings.renderDistanceChunks == 2 && !isBlizzard && idx == 0) {
-                    minecraft.gameSettings.renderDistanceChunks = cachedRenderDistance;
-                    idx++;
-                }
-
             }
         }
+
         public static boolean isBlizzard = true;
 
         static int idx2 = 0;
@@ -258,10 +267,6 @@ public class BetterWeather {
         }
     }
 
-    public static void cacheRenderDistance(int savedRenderDistance) {
-        if (BetterWeatherEvents.cachedRenderDistance == null)
-            BetterWeatherEvents.cachedRenderDistance = savedRenderDistance;
-    }
 
 
     public enum WeatherType {

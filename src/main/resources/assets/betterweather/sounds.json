@@ -1,0 +1,13 @@
+{
+  "blizzard_loop":
+  {
+    "sounds":
+    [
+      {
+        "name": "betterweather:blizzard_loop1",
+        "volume": 0.7,
+        "pitch": 0.2
+      }
+    ]
+  }
+}
