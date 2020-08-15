@@ -40,7 +40,7 @@ public class Blizzard {
                 if (world.getBlockState(blockpos.down()).getBlock() == Blocks.WATER || world.getBlockState(blockpos.down()).getFluidState().getLevel() == 8) {
                     world.setBlockState(blockpos.down(), Blocks.ICE.getDefaultState());
                 }
-                if (world.getBlockState(blockpos.down()).getMaterial() != Material.WATER && world.getBlockState(blockpos.down()).getMaterial() != Material.LAVA && world.getBlockState(blockpos.down()).getMaterial() != Material.ICE && world.getBlockState(blockpos.down()).getMaterial() != Material.CACTUS) {
+                if (world.getBlockState(blockpos.down()).getMaterial() != Material.WATER && world.getBlockState(blockpos.down()).getMaterial() != Material.LAVA && world.getBlockState(blockpos.down()).getMaterial() != Material.ICE && world.getBlockState(blockpos.down()).getMaterial() != Material.CACTUS && doBlizzardsDestroyPlants(world.getBlockState(blockpos).getMaterial())) {
                     if (world.getBlockState(blockpos).getBlock() != Blocks.SNOW)
                         world.setBlockState(blockpos, Blocks.SNOW.getDefaultState());
 
@@ -130,5 +130,12 @@ public class Blizzard {
             return biome.getCategory() != Biome.Category.DESERT;
         else
             return true;
+    }
+
+    public static boolean doBlizzardsDestroyPlants(Material material) {
+        if (!BetterWeatherConfig.doBlizzardsDestroyPlants.get())
+            return false;
+        else
+           return material == Material.PLANTS || material == Material.TALL_PLANTS || material == Material.OCEAN_PLANT;
     }
 }
