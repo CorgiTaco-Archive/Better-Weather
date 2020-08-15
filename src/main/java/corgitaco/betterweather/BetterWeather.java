@@ -262,8 +262,9 @@ public class BetterWeather {
         public static void renderFogEvent(EntityViewRenderEvent.FogDensity event) {
             Minecraft minecraft = Minecraft.getInstance();
             if (BetterWeatherConfig.blizzardFog.get()) {
-                if (minecraft.world != null) {
-                    if (weatherData.isBlizzard() && minecraft.world.getWorldInfo().isRaining()) {
+                if (minecraft.world != null && minecraft.player != null) {
+                    BlockPos playerPos = new BlockPos(minecraft.player.getPositionVec());
+                    if (weatherData.isBlizzard() && minecraft.world.getWorldInfo().isRaining() && Blizzard.doBlizzardsAffectDeserts(minecraft.world.getBiome(playerPos))) {
                         event.setDensity(0.1F);
                         event.setCanceled(true);
                         if (idx2 != 0)
