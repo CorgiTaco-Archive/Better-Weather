@@ -1,6 +1,6 @@
 {
-  "commands.bw.setweather.success.acidrain": "BW: Tempo mudado para chuva ácida.",
-  "commands.bw.setweather.success.blizzard": "BW: Tempo mudado para nevasca.",
-  "commands.bw.setweather.success.clear": "BW: Tempo mudado para limpo.",
-  "commands.bw.setweather.failed": "BW: Não foi possível mudar o tempo para %s"
+  "commands.bw.setweather.success.acidrain": "BW: Tempo definido para chuva ácida.",
+  "commands.bw.setweather.success.blizzard": "BW: Tempo definido para nevasca.",
+  "commands.bw.setweather.success.clear": "BW: Tempo definido para limpo.",
+  "commands.bw.setweather.failed": "BW: Não foi possível definir o tempo para %s"
 }
