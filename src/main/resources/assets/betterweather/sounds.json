@@ -4,9 +4,9 @@
     "sounds":
     [
       {
-        "name": "betterweather:blizzard_loop1",
-        "volume": 0.7,
-        "pitch": 0.2
+        "name": "betterweather:blizzard_full_loop",
+        "volume": 1.0,
+        "pitch": 1.0
       }
     ]
   }

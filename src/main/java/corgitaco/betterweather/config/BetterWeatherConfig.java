@@ -44,6 +44,8 @@ public class BetterWeatherConfig {
         entityTypesToDamage = COMMON_BUILDER.comment("Allowed Values: PLAYER, MONSTER, ANIMAL.\nDefault: MONSTER,PLAYER").define("EntityTypes", "MONSTER,PLAYER");
         hurtEntityDamage = COMMON_BUILDER.comment("The amount of damage taken.\nDefault is 0.5").defineInRange("DamageStrength", 0.5, 0.0, 20.0);
         COMMON_BUILDER.pop();
+
+
         COMMON_BUILDER.push("Client_Settings");
         removeSmokeParticles = COMMON_BUILDER.comment("Remove the smoke particles emitted by the acid rain.\n Default is false.").define("RemoveParticles", false);
         COMMON_BUILDER.pop();

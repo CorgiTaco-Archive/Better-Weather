@@ -226,7 +226,7 @@ public class BetterWeather {
                     }
 
                     if (minecraft.world.getWorldInfo().isRaining() && isBlizzard) {
-                        minecraft.worldRenderer.renderDistanceChunks = 2;
+                        minecraft.worldRenderer.renderDistanceChunks = 4;
                         idx = 0;
                     }
                     if (minecraft.worldRenderer.renderDistanceChunks != minecraft.gameSettings.renderDistanceChunks && !isBlizzard && idx == 0) {

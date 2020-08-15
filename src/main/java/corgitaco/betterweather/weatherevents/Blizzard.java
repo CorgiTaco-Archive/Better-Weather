@@ -6,6 +6,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.state.properties.BlockStateProperties;
@@ -59,20 +60,23 @@ public class Blizzard {
     static int cycleBlizzardSounds = 0;
 
     public static void playWeatherSounds(Minecraft mc, ActiveRenderInfo activeRenderInfo) {
-        float volume = 1.0F;
-        float pitch = 1.0F;
-
+        float volume = 0.8F;
+        float pitch = 0.8F;
+        BlockPos pos = new BlockPos(activeRenderInfo.getProjectedView());
+        SimpleSound simplesound = new SimpleSound(SoundRegistry.BLIZZARD, SoundCategory.WEATHER, volume, pitch, pos.getX(), pos.getY(), pos.getZ());
         if (mc.world != null && mc.world.getWorldInfo().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard()) {
-            BlockPos pos = new BlockPos(activeRenderInfo.getProjectedView());
-            if (mc.world.getWorldInfo().getGameTime() % 75 == 0 || cycleBlizzardSounds == 0)
-                mc.world.playSound(pos, SoundRegistry.BLIZZARD, SoundCategory.WEATHER, volume, pitch, false);
-            if (cycleBlizzardSounds == 0)
+            if (cycleBlizzardSounds == 0 || mc.world.getWorldInfo().getGameTime() % 2400 == 0) {
+                mc.getSoundHandler().play(simplesound);
                 cycleBlizzardSounds++;
-        }
-        if (mc.world != null && !mc.world.getWorldInfo().isRaining() && !BetterWeather.BetterWeatherEvents.weatherData.isBlizzard()) {
-            if (cycleBlizzardSounds != 0) {
-                cycleBlizzardSounds = 0;
             }
+        }
+        if (mc.world != null && !mc.world.getWorldInfo().isRaining()) {
+            if (mc.getSoundHandler().isPlaying(simplesound)) {
+                mc.getSoundHandler().stop(simplesound.getSoundLocation(), SoundCategory.WEATHER);
+                BetterWeather.LOGGER.info(simplesound.getSoundLocation());
+            }
+            if (cycleBlizzardSounds != 0)
+                cycleBlizzardSounds = 0;
         }
     }
 }
