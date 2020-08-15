@@ -1,4 +1,4 @@
-package corgitaco.betterweather.mixin;
+package corgitaco.betterweather.mixin.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.BetterWeather;
@@ -149,7 +149,7 @@ public abstract class MixinWorldRenderer {
     @Inject(at = @At("HEAD"), method = "loadRenderers()V", cancellable = true)
     private void cancelGameSettingsUpdate(CallbackInfo ci) {
         if (mc.world != null) {
-            if (BetterWeather.BetterWeatherEvents.isBlizzard && mc.world.isRaining()) {
+            if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && mc.world.isRaining()) {
                 ci.cancel();
             }
         }
@@ -158,7 +158,7 @@ public abstract class MixinWorldRenderer {
     @Inject(at = @At("HEAD"), method = "addRainParticles(Lnet/minecraft/client/renderer/ActiveRenderInfo;)V", cancellable = true)
     private void stopRainParticles(ActiveRenderInfo activeRenderInfoIn, CallbackInfo ci) {
         if (mc.world != null) {
-            if (BetterWeather.BetterWeatherEvents.isBlizzard) {
+            if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard()) {
                 ci.cancel();
             }
         }

@@ -3,6 +3,7 @@ package corgitaco.betterweather;
 import com.google.common.collect.Lists;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.datastorage.BetterWeatherData;
+import corgitaco.betterweather.server.BetterWeatherCommand;
 import corgitaco.betterweather.weatherevents.AcidRain;
 import corgitaco.betterweather.weatherevents.Blizzard;
 import net.minecraft.block.Block;
@@ -28,6 +29,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -107,6 +109,8 @@ public class BetterWeather {
         GameRenderer gameRenderer = minecraft.gameRenderer;
     }
 
+    public static int dataCache = 0;
+
     @Mod.EventBusSubscriber(modid = BetterWeather.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class BetterWeatherEvents {
         public static BetterWeatherData weatherData = null;
@@ -132,6 +136,20 @@ public class BetterWeather {
                     weatherData.setAcidRain(false);
                 }
 
+                if (event.world.getWorldInfo().isRaining()) {
+                    if (dataCache == 0)
+                        dataCache++;
+                }
+                else {
+                    if (dataCache != 0) {
+                        if (weatherData.isBlizzard())
+                            weatherData.setBlizzard(false);
+                        if (weatherData.isAcidRain())
+                            weatherData.setAcidRain(false);
+                    }
+                }
+
+
                 List<ChunkHolder> list = Lists.newArrayList((serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
                 list.forEach(chunkHolder -> {
                     Optional<Chunk> optional = chunkHolder.getTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
@@ -143,6 +161,8 @@ public class BetterWeather {
 //                            SandStorm.sandStormEvent(chunk, serverWorld, tickSpeed);
 //                            HailStorm.hailStormEvent(chunk, serverWorld, tickSpeed);
                             Blizzard.blizzardEvent(chunk, serverWorld, tickSpeed, worldTime);
+                            if (BetterWeatherConfig.decaySnowAndIce.get())
+                                Blizzard.doesIceAndSnowDecay(chunk, serverWorld, worldTime);
                             AcidRain.acidRainEvent(chunk, serverWorld, tickSpeed, worldTime);
                         }
                     }
@@ -224,11 +244,11 @@ public class BetterWeather {
                             WorldRenderer.RAIN_TEXTURES = RAIN_TEXTURE;
                     }
 
-                    if (minecraft.world.getWorldInfo().isRaining() && isBlizzard) {
-                        minecraft.worldRenderer.renderDistanceChunks = 4;
+                    if (minecraft.world.getWorldInfo().isRaining() && weatherData.isBlizzard()) {
+                        minecraft.worldRenderer.renderDistanceChunks = BetterWeatherConfig.forcedRenderDistanceDuringBlizzards.get();
                         idx = 0;
                     }
-                    if (minecraft.worldRenderer.renderDistanceChunks != minecraft.gameSettings.renderDistanceChunks && !isBlizzard && idx == 0) {
+                    if (minecraft.worldRenderer.renderDistanceChunks != minecraft.gameSettings.renderDistanceChunks && !weatherData.isBlizzard() && idx == 0) {
                         minecraft.worldRenderer.renderDistanceChunks = minecraft.gameSettings.renderDistanceChunks;
                         idx++;
                     }
@@ -237,15 +257,13 @@ public class BetterWeather {
             }
         }
 
-        public static boolean isBlizzard = true;
-
         static int idx2 = 0;
         @SubscribeEvent
         public static void renderFogEvent(EntityViewRenderEvent.FogDensity event) {
             Minecraft minecraft = Minecraft.getInstance();
             if (BetterWeatherConfig.blizzardFog.get()) {
                 if (minecraft.world != null) {
-                    if (isBlizzard && minecraft.world.getWorldInfo().isRaining()) {
+                    if (weatherData.isBlizzard() && minecraft.world.getWorldInfo().isRaining()) {
                         event.setDensity(0.1F);
                         event.setCanceled(true);
                         if (idx2 != 0)
@@ -258,6 +276,13 @@ public class BetterWeather {
                     }
                 }
             }
+        }
+
+        @SubscribeEvent
+        public static void commandRegisterEvent(FMLServerStartingEvent event) {
+            BetterWeather.LOGGER.debug("BW: \"Server Starting\" Event Starting...");
+            BetterWeatherCommand.register(event.getServer().getCommandManager().getDispatcher());
+            BetterWeather.LOGGER.info("BW: \"Server Starting\" Event Complete!");
         }
 
         public static void setWeatherData(IWorld world) {

@@ -4,7 +4,8 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "betterweather.refmap.json",
   "mixins": [
-    "MixinWorldRenderer"
+    "client.MixinLeavesBlock",
+    "client.MixinWorldRenderer"
   ],
   "client": [
   ],

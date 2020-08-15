@@ -1,0 +1,4 @@
+{
+  "commands.bw.setweather.success": "BW: Set the weather to %s",
+  "commands.bw.setweather.failed": "BW: Could not Set the weather to %s"
+}

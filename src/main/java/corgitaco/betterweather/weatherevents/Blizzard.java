@@ -66,6 +66,34 @@ public class Blizzard {
         iprofiler.endSection();
     }
 
+    public static void doesIceAndSnowDecay(Chunk chunk, World world, long worldTime) {
+        ChunkPos chunkpos = chunk.getPos();
+        int chunkXStart = chunkpos.getXStart();
+        int chunkZStart = chunkpos.getZStart();
+        IProfiler iprofiler = world.getProfiler();
+        iprofiler.startSection("iceandsnowdecay");
+        BlockPos blockpos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
+        Biome biome = world.getBiome(blockpos);
+        Block blockDown = world.getBlockState(blockpos.down()).getBlock();
+        Block block = world.getBlockState(blockpos).getBlock();
+
+        if (world.isAreaLoaded(blockpos, 1)) {
+            if (biome.getTemperature(blockpos) >= BetterWeatherConfig.snowDecayTemperatureThreshold.get()) {
+                if (!world.getWorldInfo().isRaining() && worldTime % BetterWeatherConfig.tickSnowAndIceDecaySpeed.get() == 0 && biome.getCategory() != Biome.Category.NETHER && biome.getCategory() != Biome.Category.THEEND && biome.getCategory() != Biome.Category.NONE && doBlizzardsAffectDeserts(biome) && BetterWeatherConfig.spawnSnowAndIce.get()) {
+                    if (blockDown == Blocks.SNOW)
+                        world.setBlockState(blockpos.down(), Blocks.AIR.getDefaultState());
+                    if (block == Blocks.SNOW)
+                        world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
+                    if (blockDown == Blocks.ICE)
+                        world.setBlockState(blockpos.down(), Blocks.WATER.getDefaultState());
+
+                }
+            }
+        }
+        iprofiler.endSection();
+    }
+
+
     static int cycleBlizzardSounds = 0;
 
     @OnlyIn(Dist.CLIENT)
@@ -81,7 +109,7 @@ public class Blizzard {
             }
         }
         if (mc.world != null) {
-            if (!mc.world.getWorldInfo().isRaining() || !doBlizzardsAffectDeserts(mc.world.getBiome(pos))) {
+            if (!BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() || !doBlizzardsAffectDeserts(mc.world.getBiome(pos))) {
                 mc.getSoundHandler().stop(simplesound.getSoundLocation(), SoundCategory.WEATHER);
                 if (cycleBlizzardSounds != 0)
                     cycleBlizzardSounds = 0;

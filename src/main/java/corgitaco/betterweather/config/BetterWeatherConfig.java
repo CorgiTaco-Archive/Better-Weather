@@ -33,15 +33,19 @@ public class BetterWeatherConfig {
     //Blizzard Configs
     public static ForgeConfigSpec.BooleanValue doBlizzardsOccurInDeserts;
     public static ForgeConfigSpec.BooleanValue spawnSnowAndIce;
+    public static ForgeConfigSpec.BooleanValue decaySnowAndIce;
     public static ForgeConfigSpec.BooleanValue doBlizzardsSlowPlayers;
     public static ForgeConfigSpec.BooleanValue blizzardFog;
+    public static ForgeConfigSpec.BooleanValue doBlizzardsDestroyPlants;
     public static ForgeConfigSpec.IntValue tickSnowAndIcePlaceSpeed;
+    public static ForgeConfigSpec.IntValue tickSnowAndIceDecaySpeed;
     public static ForgeConfigSpec.IntValue forcedRenderDistanceDuringBlizzards;
     public static ForgeConfigSpec.IntValue blizzardSlownessAmplifier;
     public static ForgeConfigSpec.DoubleValue blizzardChance;
     public static ForgeConfigSpec.DoubleValue blizzardVolume;
     public static ForgeConfigSpec.DoubleValue blizzardPitch;
     public static ForgeConfigSpec.DoubleValue blizzardFogDensity;
+    public static ForgeConfigSpec.DoubleValue snowDecayTemperatureThreshold;
 
 
     static {
@@ -63,11 +67,18 @@ public class BetterWeatherConfig {
         removeSmokeParticles = COMMON_BUILDER.comment("Remove the smoke particles emitted by the acid rain.\nDefault is false.").define("RemoveParticles", false);
         COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
-        COMMON_BUILDER.push("Blizzard_Settings").push("World_Settings");
+        COMMON_BUILDER.push("Blizzard_Settings").push("World_Settings").push("Snow_Generation");
         blizzardChance = COMMON_BUILDER.comment("The chance of a blizzard that's checked every 5,000 ticks.\n Default: 0.1").defineInRange("BlizzardChance", 0.1, 0.0, 1.0);
-        doBlizzardsOccurInDeserts = COMMON_BUILDER.comment("Do blizzards appear in and generate snow in deserts?").define("BlizzardsInDeserts", false);
+        doBlizzardsOccurInDeserts = COMMON_BUILDER.comment("Do blizzards appear in and generate snow in deserts?\nDefault: false.").define("BlizzardsInDeserts", false);
         spawnSnowAndIce = COMMON_BUILDER.comment("Do blizzards generate snow and ice?\nDefault: true").define("SpawnSnowAndIce", true);
         tickSnowAndIcePlaceSpeed = COMMON_BUILDER.comment("How often is snow and ice placed during blizzards?\nDefault: 20").defineInRange("SnowAndIceBlockPlaceTickSpeed", 20, 0, 100000);
+        doBlizzardsDestroyPlants = COMMON_BUILDER.comment("Do blizzards destroy plants?\nDefault: false").define("BlizzardsDestroyPlants", false);
+        COMMON_BUILDER.pop();
+        COMMON_BUILDER.push("Snow_Decay");
+        decaySnowAndIce = COMMON_BUILDER.comment("Does snow and ice decay after blizzards in biomes within the specified temperature threshold?\nRecommend disabling this if you have a seasons mod installed!\nDefault: true").define("DecaySnowAndIce", true);
+        snowDecayTemperatureThreshold = COMMON_BUILDER.comment("Above what biome temperature is snow allowed to decay?\nI.E: Biome Temperature >= 0.15(Snow decays in biome temps warmer than 0.15).\nDefault: 0.15").defineInRange("SnowDecayTemperatureThreshold", 0.15, -2.0, 2.0);
+        tickSnowAndIceDecaySpeed = COMMON_BUILDER.comment("How often is snow and ice decayed after blizzards?\nDefault: 50").defineInRange("SnowAndIceBlockDecayTickSpeed", 50, 0, 100000);
+        COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
         COMMON_BUILDER.push("Entity_Settings");
         doBlizzardsSlowPlayers = COMMON_BUILDER.comment("Do blizzards slow entities?\nDefault: true.").define("DoBlizzardsSlowEntities", true);
@@ -75,8 +86,8 @@ public class BetterWeatherConfig {
         COMMON_BUILDER.pop();
         COMMON_BUILDER.push("Client_Settings");
         forcedRenderDistanceDuringBlizzards = COMMON_BUILDER.comment("The lowered render distance that's forced when blizzards are active.\nThis is used to save performance.\nDefault 3").defineInRange("ForcedBlizzardRenderDistance", 3, 1, 16);
-        blizzardVolume = COMMON_BUILDER.comment("How loud are blizzards?Default 0.5").defineInRange("BlizzardVolume", 0.0, 0.5, 10);
-        blizzardPitch = COMMON_BUILDER.comment("Blizzard Pitch\nDefault 0.5").defineInRange("BlizzardPitch", 0.0, 0.5, 10);
+        blizzardVolume = COMMON_BUILDER.comment("How loud are blizzards?\nDefault 0.5").defineInRange("BlizzardVolume", 0.4, 0.0, 10);
+        blizzardPitch = COMMON_BUILDER.comment("Blizzard Pitch\nDefault 0.5").defineInRange("BlizzardPitch", 0.4, 0.0, 10);
         blizzardFogDensity = COMMON_BUILDER.comment("Blizzard fog Density. Higher values = denser fog.\nDefault 0.1").defineInRange("BlizzardFogDensity", 0.1, 0.0, 10);
         blizzardFog = COMMON_BUILDER.comment("Is there Blizzard fog?\nDefault: true").define("BlizzardFog", true);
         COMMON_BUILDER.pop();
