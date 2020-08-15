@@ -120,18 +120,16 @@ public class BetterWeather {
                 int tickSpeed = world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
                 long worldTime = world.getWorldInfo().getGameTime();
 
-                //Rolls a random chance for acid rain once every 2500 ticks and will not run when raining to avoid disco colored rain.
+                //Rolls a random chance for acid rain once every 5000 ticks and will not run when raining to avoid disco colored rain.
                 if (worldTime == 100 || worldTime % 5000 == 0 && !event.world.getWorldInfo().isRaining()) {
                     Random random = world.rand;
                     weatherData.setAcidRain(random.nextFloat() < BetterWeatherConfig.acidRainChance.get());
                     weatherData.setBlizzard(false);
                 }
-
-                //Rolls a random chance for acid rain once every 2500 ticks and will not run when raining to avoid disco colored rain.
                 if (worldTime == 100 || worldTime % 5000 == 0 && !event.world.getWorldInfo().isRaining()) {
                     Random random = world.rand;
+                    weatherData.setBlizzard(random.nextFloat() + 0.05 < BetterWeatherConfig.blizzardChance.get());
                     weatherData.setAcidRain(false);
-                    weatherData.setBlizzard(random.nextFloat() < 1.0);
                 }
 
                 List<ChunkHolder> list = Lists.newArrayList((serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
