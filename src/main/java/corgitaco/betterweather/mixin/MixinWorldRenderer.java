@@ -2,7 +2,6 @@ package corgitaco.betterweather.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.weatherevents.Blizzard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -44,7 +43,7 @@ public abstract class MixinWorldRenderer {
 
     @Inject(at = @At("HEAD"), method = "renderRainSnow(Lnet/minecraft/client/renderer/LightTexture;FDDD)V", cancellable = true)
     private void renderRainSnow(LightTexture lightmapIn, float partialTicks, double xIn, double yIn, double zIn, CallbackInfo ci) {
-        if (BetterWeather.BetterWeatherEvents.isBlizzard) {
+        if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard()) {
             ci.cancel();
             float rainStrength = this.mc.world.getRainStrength(partialTicks);
             if (!(rainStrength <= 0.0F)) {
@@ -81,7 +80,6 @@ public abstract class MixinWorldRenderer {
                         double rainSizeZ = (double) this.rainSizeZ[rainSizeIdx] * 0.5D;
                         blockPos.setPos(graphicQualityX, 0, graphicQualityZ);
                         Biome biome = world.getBiome(blockPos);
-                        if (Blizzard.doBlizzardsAffectDeserts(biome)) {
                             int topPosY = world.getHeight(Heightmap.Type.MOTION_BLOCKING, blockPos).getY();
                             int floorYMinusGraphicsQuality = floorY - graphicsQuality;
                             int floorYPlusGraphicsQuality = floorY + graphicsQuality;
@@ -144,7 +142,6 @@ public abstract class MixinWorldRenderer {
                     RenderSystem.defaultAlphaFunc();
                     RenderSystem.disableAlphaTest();
                     lightmapIn.disableLightmap();
-                }
             }
         }
     }

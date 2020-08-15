@@ -74,16 +74,18 @@ public class Blizzard {
         double pitch = BetterWeatherConfig.blizzardPitch.get();
         BlockPos pos = new BlockPos(activeRenderInfo.getProjectedView());
         SimpleSound simplesound = new SimpleSound(SoundRegistry.BLIZZARD, SoundCategory.WEATHER, (float) volume, (float) pitch, pos.getX(), pos.getY(), pos.getZ());
-        if (mc.world != null && mc.world.getWorldInfo().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard()) {
+        if (mc.world != null && mc.world.getWorldInfo().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && doBlizzardsAffectDeserts(mc.world.getBiome(pos))) {
             if (cycleBlizzardSounds == 0 || mc.world.getWorldInfo().getGameTime() % 2400 == 0) {
                 mc.getSoundHandler().play(simplesound);
                 cycleBlizzardSounds++;
             }
         }
-        if (mc.world != null && !mc.world.getWorldInfo().isRaining()) {
-            mc.getSoundHandler().stop(simplesound.getSoundLocation(), SoundCategory.WEATHER);
-            if (cycleBlizzardSounds != 0)
-                cycleBlizzardSounds = 0;
+        if (mc.world != null) {
+            if (!mc.world.getWorldInfo().isRaining() || !doBlizzardsAffectDeserts(mc.world.getBiome(pos))) {
+                mc.getSoundHandler().stop(simplesound.getSoundLocation(), SoundCategory.WEATHER);
+                if (cycleBlizzardSounds != 0)
+                    cycleBlizzardSounds = 0;
+            }
         }
     }
 
