@@ -134,8 +134,8 @@ public class Blizzard {
 
     public static boolean doBlizzardsDestroyPlants(Material material) {
         if (!BetterWeatherConfig.doBlizzardsDestroyPlants.get())
-            return false;
+            return material != Material.PLANTS && material != Material.TALL_PLANTS && material != Material.OCEAN_PLANT;
         else
-           return material == Material.PLANTS || material == Material.TALL_PLANTS || material == Material.OCEAN_PLANT;
+            return true;
     }
 }
