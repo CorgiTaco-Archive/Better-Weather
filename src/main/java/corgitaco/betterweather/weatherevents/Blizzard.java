@@ -37,7 +37,7 @@ public class Blizzard {
         Biome biome = world.getBiome(blockpos);
         if (world.isAreaLoaded(blockpos, 1)) {
             if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && world.getWorldInfo().isRaining() && worldTime % BetterWeatherConfig.tickSnowAndIcePlaceSpeed.get() == 0 && biome.getCategory() != Biome.Category.NETHER && biome.getCategory() != Biome.Category.THEEND && biome.getCategory() != Biome.Category.NONE && doBlizzardsAffectDeserts(biome) && BetterWeatherConfig.spawnSnowAndIce.get()) {
-                if (world.getBlockState(blockpos.down()).getBlock() == Blocks.WATER || world.getBlockState(blockpos.down()).getFluidState().getLevel() == 8) {
+                if (world.getBlockState(blockpos.down()).getBlock() == Blocks.WATER && world.getBlockState(blockpos.down()).getFluidState().getLevel() == 8) {
                     world.setBlockState(blockpos.down(), Blocks.ICE.getDefaultState());
                 }
                 if (world.getBlockState(blockpos.down()).getMaterial() != Material.WATER && world.getBlockState(blockpos.down()).getMaterial() != Material.LAVA && world.getBlockState(blockpos.down()).getMaterial() != Material.ICE && world.getBlockState(blockpos.down()).getMaterial() != Material.CACTUS && doBlizzardsDestroyPlants(world.getBlockState(blockpos).getMaterial())) {
