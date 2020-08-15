@@ -202,6 +202,7 @@ public class BetterWeather {
                     }
                 }
             }
+                Blizzard.blizzardEntityHandler(event.getEntity());
         }
 
         public static final ResourceLocation RAIN_TEXTURE = new ResourceLocation("textures/environment/rain.png");
@@ -244,21 +245,21 @@ public class BetterWeather {
         @SubscribeEvent
         public static void renderFogEvent(EntityViewRenderEvent.FogDensity event) {
             Minecraft minecraft = Minecraft.getInstance();
-            if (minecraft.world != null) {
-                if (isBlizzard && minecraft.world.getWorldInfo().isRaining()) {
-                    event.setDensity(0.1F);
-                    event.setCanceled(true);
-                    if (idx2 !=0)
-                        idx2 = 0;
-                }
-                else {
-                    if (idx2 == 0) {
-                        event.setCanceled(false);
-                        idx2++;
+            if (BetterWeatherConfig.blizzardFog.get()) {
+                if (minecraft.world != null) {
+                    if (isBlizzard && minecraft.world.getWorldInfo().isRaining()) {
+                        event.setDensity(0.1F);
+                        event.setCanceled(true);
+                        if (idx2 != 0)
+                            idx2 = 0;
+                    } else {
+                        if (idx2 == 0) {
+                            event.setCanceled(false);
+                            idx2++;
+                        }
                     }
                 }
             }
-
         }
 
         public static void setWeatherData(IWorld world) {
