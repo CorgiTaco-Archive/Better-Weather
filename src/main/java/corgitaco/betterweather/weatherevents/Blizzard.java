@@ -16,6 +16,7 @@ import net.minecraft.potion.Effects;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
@@ -97,13 +98,24 @@ public class Blizzard {
     static int cycleBlizzardSounds = 0;
 
     @OnlyIn(Dist.CLIENT)
-    public static void playWeatherSounds(Minecraft mc, ActiveRenderInfo activeRenderInfo) {
+    public static void blizzardSoundHandler(Minecraft mc, ActiveRenderInfo activeRenderInfo) {
         double volume = BetterWeatherConfig.blizzardVolume.get();
         double pitch = BetterWeatherConfig.blizzardPitch.get();
         BlockPos pos = new BlockPos(activeRenderInfo.getProjectedView());
-        SimpleSound simplesound = new SimpleSound(SoundRegistry.BLIZZARD, SoundCategory.WEATHER, (float) volume, (float) pitch, pos.getX(), pos.getY(), pos.getZ());
+        if (mc.world != null) {
+            if (pos.getY() < 63 && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && mc.world.isRaining()) {
+                mc.getSoundHandler().setSoundLevel(SoundCategory.WEATHER, 0.4F);
+            }
+            else
+                mc.getSoundHandler().setSoundLevel(SoundCategory.WEATHER, mc.gameSettings.getSoundLevel(SoundCategory.WEATHER));
+        }
+
+
+        BlizzardLoopSoundTrack soundTrack = BetterWeatherConfig.blizzardLoopEnumValue.get();
+
+        SimpleSound simplesound = new SimpleSound(soundTrack.getSoundEvent(), SoundCategory.WEATHER, (float) volume, (float) pitch, pos.getX(), pos.getY(), pos.getZ());
         if (mc.world != null && mc.world.getWorldInfo().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && doBlizzardsAffectDeserts(mc.world.getBiome(pos))) {
-            if (cycleBlizzardSounds == 0 || mc.world.getWorldInfo().getGameTime() % 2400 == 0) {
+            if (cycleBlizzardSounds == 0 || mc.world.getWorldInfo().getGameTime() % soundTrack.getReplayRate() == 0) {
                 mc.getSoundHandler().play(simplesound);
                 cycleBlizzardSounds++;
             }
@@ -115,6 +127,41 @@ public class Blizzard {
                     cycleBlizzardSounds = 0;
             }
         }
+    }
+
+    public enum BlizzardLoopSoundTrack {
+        LOOP1(SoundRegistry.BLIZZARD_LOOP1, 2400),
+        LOOP2(SoundRegistry.BLIZZARD_LOOP2, 2400),
+        LOOP3(SoundRegistry.BLIZZARD_LOOP3, 2400),
+        LOOP4(SoundRegistry.BLIZZARD_LOOP4, 2400),
+        LOOP5(SoundRegistry.BLIZZARD_LOOP5, 2400),
+        LOOP6(SoundRegistry.BLIZZARD_LOOP6, 2400),
+        LOOP7(SoundRegistry.BLIZZARD_LOOP7, 1200);
+
+        private final SoundEvent soundEvent;
+        private final int replayRate;
+        BlizzardLoopSoundTrack(SoundEvent soundEvent, int tickReplayRate) {
+            this.soundEvent = soundEvent;
+            this.replayRate = tickReplayRate;
+        }
+
+        public SoundEvent getSoundEvent() {
+            return this.soundEvent;
+        }
+
+        public int getReplayRate() {
+           return this.replayRate;
+        }
+
+        public SoundEvent[] soundRegistries = {
+                SoundRegistry.BLIZZARD_LOOP1,
+                SoundRegistry.BLIZZARD_LOOP2,
+                SoundRegistry.BLIZZARD_LOOP3,
+                SoundRegistry.BLIZZARD_LOOP4,
+                SoundRegistry.BLIZZARD_LOOP5,
+                SoundRegistry.BLIZZARD_LOOP6,
+                SoundRegistry.BLIZZARD_LOOP7
+        };
     }
 
     public static void blizzardEntityHandler(Entity entity) {

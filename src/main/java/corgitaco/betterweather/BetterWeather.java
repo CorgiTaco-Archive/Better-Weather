@@ -22,6 +22,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -252,29 +253,7 @@ public class BetterWeather {
                         minecraft.worldRenderer.renderDistanceChunks = minecraft.gameSettings.renderDistanceChunks;
                         idx++;
                     }
-                    Blizzard.playWeatherSounds(minecraft, minecraft.gameRenderer.getActiveRenderInfo());
-                }
-            }
-        }
-
-        static int idx2 = 0;
-        @SubscribeEvent
-        public static void renderFogEvent(EntityViewRenderEvent.FogDensity event) {
-            Minecraft minecraft = Minecraft.getInstance();
-            if (BetterWeatherConfig.blizzardFog.get()) {
-                if (minecraft.world != null && minecraft.player != null) {
-                    BlockPos playerPos = new BlockPos(minecraft.player.getPositionVec());
-                    if (weatherData.isBlizzard() && minecraft.world.getWorldInfo().isRaining() && Blizzard.doBlizzardsAffectDeserts(minecraft.world.getBiome(playerPos))) {
-                        event.setDensity(0.1F);
-                        event.setCanceled(true);
-                        if (idx2 != 0)
-                            idx2 = 0;
-                    } else {
-                        if (idx2 == 0) {
-                            event.setCanceled(false);
-                            idx2++;
-                        }
-                    }
+                    Blizzard.blizzardSoundHandler(minecraft, minecraft.gameRenderer.getActiveRenderInfo());
                 }
             }
         }
@@ -289,6 +268,33 @@ public class BetterWeather {
         public static void setWeatherData(IWorld world) {
             if (weatherData == null)
                 weatherData = BetterWeatherData.get(world);
+        }
+    }
+
+
+    @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
+    public static class BetterWeatherClient {
+
+        static int idx2 = 0;
+        @SubscribeEvent
+        public static void renderFogEvent(EntityViewRenderEvent.FogDensity event) {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (BetterWeatherConfig.blizzardFog.get()) {
+                if (minecraft.world != null && minecraft.player != null) {
+                    BlockPos playerPos = new BlockPos(minecraft.player.getPositionVec());
+                    if (BetterWeatherEvents.weatherData.isBlizzard() && minecraft.world.getWorldInfo().isRaining() && Blizzard.doBlizzardsAffectDeserts(minecraft.world.getBiome(playerPos))) {
+                        event.setDensity(0.1F);
+                        event.setCanceled(true);
+                        if (idx2 != 0)
+                            idx2 = 0;
+                    } else {
+                        if (idx2 == 0) {
+                            event.setCanceled(false);
+                            idx2++;
+                        }
+                    }
+                }
+            }
         }
     }
 

@@ -1,10 +1,82 @@
 {
-  "blizzard_loop":
+  "blizzard_loop1":
   {
     "sounds":
     [
       {
-        "name": "betterweather:blizzard_full_loop",
+        "name": "betterweather:blizzard_full_loop1",
+        "volume": 1.0,
+        "pitch": 1.0
+      }
+    ]
+  },
+
+  "blizzard_loop2":
+  {
+    "sounds":
+    [
+      {
+        "name": "betterweather:blizzard_full_loop2",
+        "volume": 1.0,
+        "pitch": 1.0
+      }
+    ]
+  },
+
+  "blizzard_loop3":
+  {
+    "sounds":
+    [
+      {
+        "name": "betterweather:blizzard_full_loop3",
+        "volume": 1.0,
+        "pitch": 1.0
+      }
+    ]
+  },
+
+  "blizzard_loop4":
+  {
+    "sounds":
+    [
+      {
+        "name": "betterweather:blizzard_full_loop4",
+        "volume": 1.0,
+        "pitch": 1.0
+      }
+    ]
+  },
+
+  "blizzard_loop5":
+  {
+    "sounds":
+    [
+      {
+        "name": "betterweather:blizzard_full_loop5",
+        "volume": 1.0,
+        "pitch": 1.0
+      }
+    ]
+  },
+
+  "blizzard_loop6":
+  {
+    "sounds":
+    [
+      {
+        "name": "betterweather:blizzard_full_loop6",
+        "volume": 1.0,
+        "pitch": 1.0
+      }
+    ]
+  },
+
+  "blizzard_loop7":
+  {
+    "sounds":
+    [
+      {
+        "name": "betterweather:blizzard_full_loop7",
         "volume": 1.0,
         "pitch": 1.0
       }

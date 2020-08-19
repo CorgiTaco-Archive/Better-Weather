@@ -3,6 +3,7 @@ package corgitaco.betterweather.config;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.weatherevents.Blizzard;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -46,6 +47,7 @@ public class BetterWeatherConfig {
     public static ForgeConfigSpec.DoubleValue blizzardPitch;
     public static ForgeConfigSpec.DoubleValue blizzardFogDensity;
     public static ForgeConfigSpec.DoubleValue snowDecayTemperatureThreshold;
+    public static ForgeConfigSpec.EnumValue<Blizzard.BlizzardLoopSoundTrack> blizzardLoopEnumValue;
 
 
     static {
@@ -89,6 +91,7 @@ public class BetterWeatherConfig {
         blizzardVolume = COMMON_BUILDER.comment("How loud are blizzards?\nDefault 0.5").defineInRange("BlizzardVolume", 0.4, 0.0, 10);
         blizzardPitch = COMMON_BUILDER.comment("Blizzard Pitch\nDefault 0.5").defineInRange("BlizzardPitch", 0.4, 0.0, 10);
         blizzardFogDensity = COMMON_BUILDER.comment("Blizzard fog Density. Higher values = denser fog.\nDefault 0.1").defineInRange("BlizzardFogDensity", 0.1, 0.0, 10);
+        blizzardLoopEnumValue = COMMON_BUILDER.comment("Blizzard Sound?\nDefault: LOOP1.").defineEnum("BlizzardSoundTrack", Blizzard.BlizzardLoopSoundTrack.LOOP1);
         blizzardFog = COMMON_BUILDER.comment("Is there Blizzard fog?\nDefault: true").define("BlizzardFog", true);
         COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
