@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "betterweather.refmap.json",
   "mixins": [
+    "client.MixinSoundEngine"
   ],
   "client": [
     "client.MixinLeavesBlock",

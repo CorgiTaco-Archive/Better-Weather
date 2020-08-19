@@ -103,11 +103,11 @@ public class Blizzard {
         double pitch = BetterWeatherConfig.blizzardPitch.get();
         BlockPos pos = new BlockPos(activeRenderInfo.getProjectedView());
         if (mc.world != null) {
-            if (pos.getY() < 63 && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && mc.world.isRaining()) {
-                mc.getSoundHandler().setSoundLevel(SoundCategory.WEATHER, 0.4F);
+            if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && mc.world.isRaining()) {
+                mc.getSoundHandler().sndManager.setVolume(SoundCategory.WEATHER, 0.1F);
             }
-            else
-                mc.getSoundHandler().setSoundLevel(SoundCategory.WEATHER, mc.gameSettings.getSoundLevel(SoundCategory.WEATHER));
+//            else
+//                mc.getSoundHandler().sndManager.setVolume(SoundCategory.WEATHER, mc.gameSettings.getSoundLevel(SoundCategory.WEATHER));
         }
 
 
