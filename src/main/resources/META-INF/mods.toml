@@ -4,14 +4,14 @@ loaderVersion="[32,)"
 issueTrackerURL="https://github.com/CorgiTaco/Better-Weather/issues"
 [[mods]]
 modId="betterweather"
-version="1.0"
+version="1.0.1"
 displayName="Better Weather"
 displayURL="null"
 logoFile="logo_text.png"
 credits=""
 authors="Corgi Taco"
 description='''
-A mod that adds more weather events!
+A mod that adds more weather events! Some audio from: https://freesfx.co.uk/
 '''
 [[dependencies.betterweather]]
     modId="forge"
