@@ -2,6 +2,7 @@ package corgitaco.betterweather.mixin.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.weatherevents.Blizzard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
@@ -11,7 +12,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.Heightmap;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -75,7 +75,7 @@ public abstract class MixinWorldRenderer {
                         double rainSizeZ = (double) this.rainSizeZ[rainSizeIdx] * 0.5D;
                         blockPos.setPos(graphicQualityX, 0, graphicQualityZ);
                         Biome biome = world.getBiome(blockPos);
-                            int topPosY = world.getHeight(Heightmap.Type.MOTION_BLOCKING, blockPos).getY();
+                            int topPosY = BetterWeatherUtil.removeLeavesFromHeightMap(world, blockPos);
                             int floorYMinusGraphicsQuality = floorY - graphicsQuality;
                             int floorYPlusGraphicsQuality = floorY + graphicsQuality;
                             if (floorYMinusGraphicsQuality < topPosY) {
