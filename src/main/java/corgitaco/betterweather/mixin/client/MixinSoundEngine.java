@@ -1,13 +1,13 @@
 package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.BetterWeatherUtil;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundEngine;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.gen.Heightmap;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -28,7 +28,7 @@ public class MixinSoundEngine {
         if (minecraft.world != null) {
             if (category == SoundCategory.WEATHER && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && minecraft.world.getWorldInfo().isRaining()) {
                 BlockPos pos = minecraft.gameRenderer.getActiveRenderInfo().getBlockPos();
-                int motionBlockingY = minecraft.world.getHeight(Heightmap.Type.MOTION_BLOCKING, pos.getX(), pos.getZ());
+                int motionBlockingY = BetterWeatherUtil.removeLeavesFromHeightMap(minecraft.world, pos);
 
                 float finalVolume;
                 float playerHeightToMotionBlockingHeightDifference = (motionBlockingY - pos.getY()) * 0.02F;
