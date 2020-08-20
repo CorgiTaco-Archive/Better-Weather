@@ -3,7 +3,6 @@ package corgitaco.betterweather.config;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.weatherevents.Blizzard;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -28,26 +27,17 @@ public class BetterWeatherConfig {
     public static ForgeConfigSpec.ConfigValue<String> blockToChangeFromGrass;
     public static ForgeConfigSpec.ConfigValue<String> blocksToNotDestroy;
 
-    public static ForgeConfigSpec.BooleanValue removeSmokeParticles;
-
-
     //Blizzard Configs
     public static ForgeConfigSpec.BooleanValue doBlizzardsOccurInDeserts;
     public static ForgeConfigSpec.BooleanValue spawnSnowAndIce;
     public static ForgeConfigSpec.BooleanValue decaySnowAndIce;
     public static ForgeConfigSpec.BooleanValue doBlizzardsSlowPlayers;
-    public static ForgeConfigSpec.BooleanValue blizzardFog;
     public static ForgeConfigSpec.BooleanValue doBlizzardsDestroyPlants;
     public static ForgeConfigSpec.IntValue tickSnowAndIcePlaceSpeed;
     public static ForgeConfigSpec.IntValue tickSnowAndIceDecaySpeed;
-    public static ForgeConfigSpec.IntValue forcedRenderDistanceDuringBlizzards;
     public static ForgeConfigSpec.IntValue blizzardSlownessAmplifier;
     public static ForgeConfigSpec.DoubleValue blizzardChance;
-    public static ForgeConfigSpec.DoubleValue blizzardVolume;
-    public static ForgeConfigSpec.DoubleValue blizzardPitch;
-    public static ForgeConfigSpec.DoubleValue blizzardFogDensity;
     public static ForgeConfigSpec.DoubleValue snowDecayTemperatureThreshold;
-    public static ForgeConfigSpec.EnumValue<Blizzard.BlizzardLoopSoundTrack> blizzardLoopEnumValue;
 
 
     static {
@@ -64,9 +54,6 @@ public class BetterWeatherConfig {
         hurtEntityTickSpeed = COMMON_BUILDER.comment("How often are entities(including players) hurt?\nDefault: 150").defineInRange("EntityDamageTickSpeed", 150, 10, 100000);
         entityTypesToDamage = COMMON_BUILDER.comment("Allowed Values: PLAYER, MONSTER, ANIMAL.\nDefault: MONSTER,PLAYER").define("EntityTypes", "MONSTER,PLAYER");
         hurtEntityDamage = COMMON_BUILDER.comment("The amount of damage taken.\nDefault is 0.5").defineInRange("DamageStrength", 0.5, 0.0, 20.0);
-        COMMON_BUILDER.pop();
-        COMMON_BUILDER.push("Client_Settings");
-        removeSmokeParticles = COMMON_BUILDER.comment("Remove the smoke particles emitted by the acid rain.\nDefault is false.").define("RemoveParticles", false);
         COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
         COMMON_BUILDER.push("Blizzard_Settings").push("World_Settings").push("Snow_Generation");
@@ -85,14 +72,6 @@ public class BetterWeatherConfig {
         COMMON_BUILDER.push("Entity_Settings");
         doBlizzardsSlowPlayers = COMMON_BUILDER.comment("Do blizzards slow entities?\nDefault: true.").define("DoBlizzardsSlowEntities", true);
         blizzardSlownessAmplifier = COMMON_BUILDER.comment("How slow are entities during blizzards?\nDefault: 0").defineInRange("BlizzardSlownessAmplifier", 0, 0, 20);
-        COMMON_BUILDER.pop();
-        COMMON_BUILDER.push("Client_Settings");
-        forcedRenderDistanceDuringBlizzards = COMMON_BUILDER.comment("The lowered render distance that's forced when blizzards are active.\nThis is used to save performance.\nDefault 3").defineInRange("ForcedBlizzardRenderDistance", 3, 1, 16);
-        blizzardVolume = COMMON_BUILDER.comment("How loud are blizzards?\nDefault 0.5").defineInRange("BlizzardVolume", 0.4, 0.0, 10);
-        blizzardPitch = COMMON_BUILDER.comment("Blizzard Pitch\nDefault 0.5").defineInRange("BlizzardPitch", 0.4, 0.0, 10);
-        blizzardFogDensity = COMMON_BUILDER.comment("Blizzard fog Density. Higher values = denser fog.\nDefault 0.1").defineInRange("BlizzardFogDensity", 0.1, 0.0, 10);
-        blizzardLoopEnumValue = COMMON_BUILDER.comment("Blizzard Sound?\nDefault: LOOP1.").defineEnum("BlizzardSoundTrack", Blizzard.BlizzardLoopSoundTrack.LOOP1);
-        blizzardFog = COMMON_BUILDER.comment("Is there Blizzard fog?\nDefault: true").define("BlizzardFog", true);
         COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
         COMMON_CONFIG = COMMON_BUILDER.build();

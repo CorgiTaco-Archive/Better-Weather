@@ -3,6 +3,7 @@ package corgitaco.betterweather.weatherevents;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.SoundRegistry;
 import corgitaco.betterweather.config.BetterWeatherConfig;
+import corgitaco.betterweather.config.BetterWeatherConfigClient;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
@@ -99,8 +100,8 @@ public class Blizzard {
 
     @OnlyIn(Dist.CLIENT)
     public static void blizzardSoundHandler(Minecraft mc, ActiveRenderInfo activeRenderInfo) {
-        double volume = BetterWeatherConfig.blizzardVolume.get();
-        double pitch = BetterWeatherConfig.blizzardPitch.get();
+        double volume = BetterWeatherConfigClient.blizzardVolume.get();
+        double pitch = BetterWeatherConfigClient.blizzardPitch.get();
         BlockPos pos = new BlockPos(activeRenderInfo.getProjectedView());
         if (mc.world != null) {
             if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && mc.world.isRaining()) {
@@ -111,7 +112,7 @@ public class Blizzard {
         }
 
 
-        BlizzardLoopSoundTrack soundTrack = BetterWeatherConfig.blizzardLoopEnumValue.get();
+        BlizzardLoopSoundTrack soundTrack = BetterWeatherConfigClient.blizzardLoopEnumValue.get();
 
         SimpleSound simplesound = new SimpleSound(soundTrack.getSoundEvent(), SoundCategory.WEATHER, (float) volume, (float) pitch, pos.getX(), pos.getY(), pos.getZ());
         if (mc.world != null && mc.world.getWorldInfo().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && doBlizzardsAffectDeserts(mc.world.getBiome(pos))) {

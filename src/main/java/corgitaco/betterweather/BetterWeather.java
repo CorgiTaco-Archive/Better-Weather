@@ -2,6 +2,7 @@ package corgitaco.betterweather;
 
 import com.google.common.collect.Lists;
 import corgitaco.betterweather.config.BetterWeatherConfig;
+import corgitaco.betterweather.config.BetterWeatherConfigClient;
 import corgitaco.betterweather.datastorage.BetterWeatherData;
 import corgitaco.betterweather.server.BetterWeatherCommand;
 import corgitaco.betterweather.weatherevents.AcidRain;
@@ -49,6 +50,7 @@ public class BetterWeather {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
         BetterWeatherConfig.loadConfig(BetterWeatherConfig.COMMON_CONFIG, FMLPaths.CONFIGDIR.get().resolve(MOD_ID + "-common.toml"));
+        BetterWeatherConfigClient.loadConfig(BetterWeatherConfigClient.COMMON_CONFIG, FMLPaths.CONFIGDIR.get().resolve(MOD_ID + "-client.toml"));
     }
 
     static boolean damageAnimals = false;
@@ -66,7 +68,7 @@ public class BetterWeather {
         BetterWeatherConfig.loadConfig(BetterWeatherConfig.COMMON_CONFIG, FMLPaths.CONFIGDIR.get().resolve(MOD_ID + "-common.toml"));
         String entityTypes = BetterWeatherConfig.entityTypesToDamage.get();
         String removeSpaces = entityTypes.trim().toLowerCase().replace(" ", "");
-        List<String> entityList = Arrays.asList(removeSpaces.split(","));
+        String[] entityList = removeSpaces.split(",");
 
         for (String s : entityList) {
             if (s.equalsIgnoreCase("animal") && !damageAnimals)
@@ -79,7 +81,7 @@ public class BetterWeather {
 
         String allowedBlockTypesToDestroy = BetterWeatherConfig.allowedBlocksToDestroy.get();
         String removeBlockTypeSpaces = allowedBlockTypesToDestroy.trim().toLowerCase().replace(" ", "");
-        List<String> blockTypeToDestroyList = Arrays.asList(removeBlockTypeSpaces.split(","));
+        String[] blockTypeToDestroyList = removeBlockTypeSpaces.split(",");
 
         for (String s : blockTypeToDestroyList) {
             if (s.equalsIgnoreCase("grass") && !destroyGrass)
@@ -95,7 +97,7 @@ public class BetterWeather {
 
         String blocksToNotDestroy = BetterWeatherConfig.blocksToNotDestroy.get();
         String removeBlocksToNotDestroySpaces = blocksToNotDestroy.trim().toLowerCase().replace(" ", "");
-        List<String> blocksToNotDestroyList = Arrays.asList(removeBlocksToNotDestroySpaces.split(","));
+        String[] blocksToNotDestroyList = removeBlocksToNotDestroySpaces.split(",");
         for (String s : blocksToNotDestroyList) {
             Block block = blockRegistry.getValue(new ResourceLocation(s));
             if (block != null)
@@ -140,8 +142,7 @@ public class BetterWeather {
                 if (event.world.getWorldInfo().isRaining()) {
                     if (dataCache == 0)
                         dataCache++;
-                }
-                else {
+                } else {
                     if (dataCache != 0) {
                         if (weatherData.isBlizzard())
                             weatherData.setBlizzard(false);
@@ -221,13 +222,14 @@ public class BetterWeather {
                     }
                 }
             }
-                Blizzard.blizzardEntityHandler(event.getEntity());
+            Blizzard.blizzardEntityHandler(event.getEntity());
         }
 
         public static final ResourceLocation RAIN_TEXTURE = new ResourceLocation("textures/environment/rain.png");
-        public static final ResourceLocation ACID_RAIN_TEXTURE = new ResourceLocation(MOD_ID,"textures/environment/acid_rain.png");
+        public static final ResourceLocation ACID_RAIN_TEXTURE = new ResourceLocation(MOD_ID, "textures/environment/acid_rain.png");
 
         static int idx = 0;
+
         @SubscribeEvent
         public static void clientTickEvent(TickEvent.ClientTickEvent event) {
             Minecraft minecraft = Minecraft.getInstance();
@@ -236,7 +238,7 @@ public class BetterWeather {
                     setWeatherData(minecraft.world);
                     if (minecraft.world.getWorldInfo().isRaining() && weatherData.isAcidRain()) {
 
-                        if (!BetterWeatherConfig.removeSmokeParticles.get())
+                        if (!BetterWeatherConfigClient.removeSmokeParticles.get())
                             AcidRain.addAcidRainParticles(minecraft.gameRenderer.getActiveRenderInfo(), minecraft, minecraft.worldRenderer);
 
                         if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE && weatherData.isAcidRain())
@@ -246,7 +248,7 @@ public class BetterWeather {
                     }
 
                     if (minecraft.world.getWorldInfo().isRaining() && weatherData.isBlizzard()) {
-                        minecraft.worldRenderer.renderDistanceChunks = BetterWeatherConfig.forcedRenderDistanceDuringBlizzards.get();
+                        minecraft.worldRenderer.renderDistanceChunks = BetterWeatherConfigClient.forcedRenderDistanceDuringBlizzards.get();
                         idx = 0;
                     }
                     if (minecraft.worldRenderer.renderDistanceChunks != minecraft.gameSettings.renderDistanceChunks && !weatherData.isBlizzard() && idx == 0) {
@@ -276,17 +278,18 @@ public class BetterWeather {
     public static class BetterWeatherClient {
 
         static int idx2 = 0;
+
         @SubscribeEvent
         public static void renderFogEvent(EntityViewRenderEvent.FogDensity event) {
             Minecraft minecraft = Minecraft.getInstance();
-            if (BetterWeatherConfig.blizzardFog.get()) {
+            if (BetterWeatherConfigClient.blizzardFog.get()) {
                 if (minecraft.world != null && minecraft.player != null) {
                     BlockPos playerPos = new BlockPos(minecraft.player.getPositionVec());
-                    if (BetterWeatherEvents.weatherData.isBlizzard() && minecraft.world.getWorldInfo().isRaining() && Blizzard.doBlizzardsAffectDeserts(minecraft.world.getBiome(playerPos))) {
-                        event.setDensity(0.1F);
-                        event.setCanceled(true);
-                        if (idx2 != 0)
-                            idx2 = 0;
+                        if (BetterWeatherEvents.weatherData.isBlizzard() && minecraft.world.getWorldInfo().isRaining() && Blizzard.doBlizzardsAffectDeserts(minecraft.world.getBiome(playerPos))) {
+                            event.setDensity(0.1F);
+                            event.setCanceled(true);
+                            if (idx2 != 0)
+                                idx2 = 0;
                     } else {
                         if (idx2 == 0) {
                             event.setCanceled(false);
@@ -297,7 +300,6 @@ public class BetterWeather {
             }
         }
     }
-
 
 
     public enum WeatherType {
