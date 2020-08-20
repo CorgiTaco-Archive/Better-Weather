@@ -2,6 +2,7 @@ package corgitaco.betterweather.mixin.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.weatherevents.Blizzard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
@@ -11,7 +12,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.Heightmap;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -36,14 +36,8 @@ public abstract class MixinWorldRenderer {
 
     @Shadow @Final private float[] rainSizeZ;
 
-    /**
-     * @author
-     */
-
-
-
     @Inject(at = @At("HEAD"), method = "renderRainSnow(Lnet/minecraft/client/renderer/LightTexture;FDDD)V", cancellable = true)
-    private void renderRainSnow(LightTexture lightmapIn, float partialTicks, double xIn, double yIn, double zIn, CallbackInfo ci) {
+    private void renderBlizzardSnow(LightTexture lightmapIn, float partialTicks, double xIn, double yIn, double zIn, CallbackInfo ci) {
         if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard()) {
             ci.cancel();
             float rainStrength = this.mc.world.getRainStrength(partialTicks);
@@ -81,70 +75,70 @@ public abstract class MixinWorldRenderer {
                         double rainSizeZ = (double) this.rainSizeZ[rainSizeIdx] * 0.5D;
                         blockPos.setPos(graphicQualityX, 0, graphicQualityZ);
                         Biome biome = world.getBiome(blockPos);
-                            int topPosY = world.getHeight(Heightmap.Type.MOTION_BLOCKING, blockPos).getY();
-                            int floorYMinusGraphicsQuality = floorY - graphicsQuality;
-                            int floorYPlusGraphicsQuality = floorY + graphicsQuality;
-                            if (floorYMinusGraphicsQuality < topPosY) {
-                                floorYMinusGraphicsQuality = topPosY;
-                            }
+                        int topPosY = BetterWeatherUtil.removeLeavesFromHeightMap(world, blockPos);
+                        int floorYMinusGraphicsQuality = floorY - graphicsQuality;
+                        int floorYPlusGraphicsQuality = floorY + graphicsQuality;
+                        if (floorYMinusGraphicsQuality < topPosY) {
+                            floorYMinusGraphicsQuality = topPosY;
+                        }
 
-                            if (floorYPlusGraphicsQuality < topPosY) {
-                                floorYPlusGraphicsQuality = topPosY;
-                            }
+                        if (floorYPlusGraphicsQuality < topPosY) {
+                            floorYPlusGraphicsQuality = topPosY;
+                        }
 
-                            int posY2 = topPosY;
-                            if (topPosY < floorY) {
-                                posY2 = floorY;
-                            }
+                        int posY2 = topPosY;
+                        if (topPosY < floorY) {
+                            posY2 = floorY;
+                        }
 
-                            if (floorYMinusGraphicsQuality != floorYPlusGraphicsQuality) {
-                                Random random = new Random(graphicQualityX * graphicQualityX * 3121 + graphicQualityX * 45238971 ^ graphicQualityZ * graphicQualityZ * 418711 + graphicQualityZ * 13761);
-                                blockPos.setPos(graphicQualityX, floorYMinusGraphicsQuality, graphicQualityZ);
+                        if (floorYMinusGraphicsQuality != floorYPlusGraphicsQuality) {
+                            Random random = new Random(graphicQualityX * graphicQualityX * 3121 + graphicQualityX * 45238971 ^ graphicQualityZ * graphicQualityZ * 418711 + graphicQualityZ * 13761);
+                            blockPos.setPos(graphicQualityX, floorYMinusGraphicsQuality, graphicQualityZ);
 
-                                //This is rain rendering.
-                                if (i1 != 1) {
-                                    if (i1 >= 0) {
-                                        tessellator.draw();
-                                    }
-
-                                    i1 = 1;
-                                    ResourceLocation THICC_SNOW = new ResourceLocation(BetterWeather.MOD_ID, "textures/environment/thick_snow.png");
-
-                                    this.mc.getTextureManager().bindTexture(WorldRenderer.SNOW_TEXTURES);
-                                    bufferbuilder.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+                            //This is rain rendering.
+                            if (i1 != 1) {
+                                if (i1 >= 0) {
+                                    tessellator.draw();
                                 }
 
-                                float f7 = (float) (random.nextDouble() + (double) (ticksAndPartialTicks * (float) random.nextGaussian()) * 0.03D);
-                                float fallSpeed = (float) (random.nextDouble() + (double) (ticksAndPartialTicks * (float) random.nextGaussian()) * 0.03D);
-                                double d3 = (double) ((float) graphicQualityX + 0.5F) - xIn;
-                                double d5 = (double) ((float) graphicQualityZ + 0.5F) - zIn;
-                                float f9 = MathHelper.sqrt(d3 * d3 + d5 * d5) / (float) graphicsQuality;
-                                float ticksAndPartialTicks0 = ((1.0F - f9 * f9) * 0.3F + 0.5F) * rainStrength;
-                                blockPos.setPos(graphicQualityX, posY2, graphicQualityZ);
-                                int k3 = WorldRenderer.getCombinedLight(world, blockPos);
-                                int l3 = k3 >> 16 & '\uffff';
-                                int i4 = (k3 & '\uffff') * 3;
-                                int j4 = (l3 * 3 + 240) / 4;
-                                int k4 = (i4 * 3 + 240) / 4;
-                                if (Blizzard.doBlizzardsAffectDeserts(biome)) {
-                                    bufferbuilder.pos((double) graphicQualityX - xIn - rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYPlusGraphicsQuality - yIn, (double) graphicQualityZ - zIn - rainSizeZ + 0.5D + random.nextGaussian()).tex(0.0F + f7, (float) floorYMinusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).lightmap(k4, j4).endVertex();
-                                    bufferbuilder.pos((double) graphicQualityX - xIn + rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYPlusGraphicsQuality - yIn, (double) graphicQualityZ - zIn + rainSizeZ + 0.5D + random.nextGaussian()).tex(1.0F + f7, (float) floorYMinusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).lightmap(k4, j4).endVertex();
-                                    bufferbuilder.pos((double) graphicQualityX - xIn + rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYMinusGraphicsQuality - yIn, (double) graphicQualityZ - zIn + rainSizeZ + 0.5D + random.nextGaussian()).tex(1.0F + f7, (float) floorYPlusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).lightmap(k4, j4).endVertex();
-                                    bufferbuilder.pos((double) graphicQualityX - xIn - rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYMinusGraphicsQuality - yIn, (double) graphicQualityZ - zIn - rainSizeZ + 0.5D + random.nextGaussian()).tex(0.0F + f7, (float) floorYPlusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).lightmap(k4, j4).endVertex();
-                                }
+                                i1 = 1;
+                                ResourceLocation THICC_SNOW = new ResourceLocation(BetterWeather.MOD_ID, "textures/environment/thick_snow.png");
+
+                                this.mc.getTextureManager().bindTexture(WorldRenderer.SNOW_TEXTURES);
+                                bufferbuilder.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+                            }
+
+                            float f7 = (float) (random.nextDouble() + (double) (ticksAndPartialTicks * (float) random.nextGaussian()) * 0.03D);
+                            float fallSpeed = (float) (random.nextDouble() + (double) (ticksAndPartialTicks * (float) random.nextGaussian()) * 0.03D);
+                            double d3 = (double) ((float) graphicQualityX + 0.5F) - xIn;
+                            double d5 = (double) ((float) graphicQualityZ + 0.5F) - zIn;
+                            float f9 = MathHelper.sqrt(d3 * d3 + d5 * d5) / (float) graphicsQuality;
+                            float ticksAndPartialTicks0 = ((1.0F - f9 * f9) * 0.3F + 0.5F) * rainStrength;
+                            blockPos.setPos(graphicQualityX, posY2, graphicQualityZ);
+                            int k3 = WorldRenderer.getCombinedLight(world, blockPos);
+                            int l3 = k3 >> 16 & '\uffff';
+                            int i4 = (k3 & '\uffff') * 3;
+                            int j4 = (l3 * 3 + 240) / 4;
+                            int k4 = (i4 * 3 + 240) / 4;
+                            if (Blizzard.doBlizzardsAffectDeserts(biome)) {
+                                bufferbuilder.pos((double) graphicQualityX - xIn - rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYPlusGraphicsQuality - yIn, (double) graphicQualityZ - zIn - rainSizeZ + 0.5D + random.nextGaussian()).tex(0.0F + f7, (float) floorYMinusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).lightmap(k4, j4).endVertex();
+                                bufferbuilder.pos((double) graphicQualityX - xIn + rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYPlusGraphicsQuality - yIn, (double) graphicQualityZ - zIn + rainSizeZ + 0.5D + random.nextGaussian()).tex(1.0F + f7, (float) floorYMinusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).lightmap(k4, j4).endVertex();
+                                bufferbuilder.pos((double) graphicQualityX - xIn + rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYMinusGraphicsQuality - yIn, (double) graphicQualityZ - zIn + rainSizeZ + 0.5D + random.nextGaussian()).tex(1.0F + f7, (float) floorYPlusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).lightmap(k4, j4).endVertex();
+                                bufferbuilder.pos((double) graphicQualityX - xIn - rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYMinusGraphicsQuality - yIn, (double) graphicQualityZ - zIn - rainSizeZ + 0.5D + random.nextGaussian()).tex(0.0F + f7, (float) floorYPlusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).lightmap(k4, j4).endVertex();
                             }
                         }
                     }
+                }
 
-                    if (i1 >= 0) {
-                        tessellator.draw();
-                    }
+                if (i1 >= 0) {
+                    tessellator.draw();
+                }
 
-                    RenderSystem.enableCull();
-                    RenderSystem.disableBlend();
-                    RenderSystem.defaultAlphaFunc();
-                    RenderSystem.disableAlphaTest();
-                    lightmapIn.disableLightmap();
+                RenderSystem.enableCull();
+                RenderSystem.disableBlend();
+                RenderSystem.defaultAlphaFunc();
+                RenderSystem.disableAlphaTest();
+                lightmapIn.disableLightmap();
             }
         }
     }
