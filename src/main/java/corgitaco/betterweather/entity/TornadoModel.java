@@ -1,7 +1,6 @@
 package corgitaco.betterweather.entity;
 
 import com.google.common.collect.ImmutableList;
-import net.minecraft.client.renderer.entity.model.BlazeModel;
 import net.minecraft.client.renderer.entity.model.SegmentedModel;
 import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.entity.Entity;
@@ -22,8 +21,8 @@ public class TornadoModel<T extends Entity> extends SegmentedModel<T> {
         this.tornadoObjects = new ModelRenderer[256];
 
         for(int i = 0; i < this.tornadoObjects.length; ++i) {
-            this.tornadoObjects[i] = new ModelRenderer((BlazeModel)(Object)this, 0, 16);
-            this.tornadoObjects[i].addBox(0.0F, 0.0F, 0.0F, 2.0F, 8.0F, 1.0F, 9);
+            this.tornadoObjects[i] = new ModelRenderer(this, 0, 16);
+            this.tornadoObjects[i].addBox(0.0F, 0.0F, 0.0F, 2.0F, 8.0F, 2.0F, 5, 5F, 5F);
         }
 
         ImmutableList.Builder<ModelRenderer> builder = ImmutableList.builder();
@@ -40,9 +39,10 @@ public class TornadoModel<T extends Entity> extends SegmentedModel<T> {
 
     @Override
     public void setRotationAngles(T entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        float spinSpeed = ((float)Math.PI / 4F) + ageInTicks * (float)Math.PI * 0.12F;
+        float spinSpeed = ((float)Math.PI / 4F) + ageInTicks * (float)Math.PI * 0.06F;
 
         for (int multiplier = 1; multiplier <= 32; multiplier++) {
+
             int multipliedIDX = 8 * multiplier;
 
             float startHeight = -(955 - (multipliedIDX * 3.75F));
