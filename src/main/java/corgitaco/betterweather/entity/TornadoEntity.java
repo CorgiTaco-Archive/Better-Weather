@@ -1,21 +1,24 @@
 package corgitaco.betterweather.entity;
 
+import net.minecraft.entity.AgeableEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.monster.BlazeEntity;
 import net.minecraft.entity.monster.MonsterEntity;
+import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 
-public class TornadoEntity extends BlazeEntity {
-    public TornadoEntity(EntityType<? extends BlazeEntity> type, World world) {
-        super(type, world);
+import javax.annotation.Nullable;
+
+public class TornadoEntity extends AnimalEntity {
+
+    public TornadoEntity(EntityType<? extends AnimalEntity> type, World worldIn) {
+        super(type, worldIn);
     }
 
     @Override
@@ -35,13 +38,7 @@ public class TornadoEntity extends BlazeEntity {
 
     @Override
     public float getBrightness() {
-        BlockPos.Mutable blockpos$mutable = new BlockPos.Mutable(this.getPosX(), 0.0D, this.getPosZ());
-        if (this.world.isBlockLoaded(blockpos$mutable)) {
-            blockpos$mutable.setY(MathHelper.floor(this.getPosYEye()));
-            return this.world.getBrightness(blockpos$mutable);
-        } else {
-            return 0.0F;
-        }
+        return super.getBrightness();
     }
 
     @Override
@@ -57,6 +54,12 @@ public class TornadoEntity extends BlazeEntity {
     @Override
     public boolean isWaterSensitive() {
         return false;
+    }
+
+    @Nullable
+    @Override
+    public AgeableEntity func_241840_a(ServerWorld p_241840_1_, AgeableEntity p_241840_2_) {
+        return null;
     }
 
     @Override

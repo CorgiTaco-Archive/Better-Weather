@@ -18,7 +18,7 @@ public class TornadoModel<T extends Entity> extends SegmentedModel<T> {
     private final ImmutableList<ModelRenderer> modelRenderers;
 
     public TornadoModel() {
-        this.tornadoObjects = new ModelRenderer[256];
+        this.tornadoObjects = new ModelRenderer[7680];
 
         for(int i = 0; i < this.tornadoObjects.length; ++i) {
             this.tornadoObjects[i] = new ModelRenderer(this, 0, 16);
@@ -39,19 +39,17 @@ public class TornadoModel<T extends Entity> extends SegmentedModel<T> {
 
     @Override
     public void setRotationAngles(T entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        float spinSpeed = ((float)Math.PI / 4F) + ageInTicks * (float)Math.PI * 0.06F;
+        float spinSpeed = ((float) Math.PI / 4F) + ageInTicks * (float) Math.PI * 0.06F;
 
-        for (int multiplier = 1; multiplier <= 32; multiplier++) {
+        for (int multiplier = 1; multiplier <= 30; multiplier++) {
+            int multipliedIDX = 256 * multiplier;
+            float yHeight = -655 + (multiplier * 20);
+            float xzDistance = 260 - (multiplier * 7);
 
-            int multipliedIDX = 8 * multiplier;
-
-            float startHeight = -(955 - (multipliedIDX * 3.75F));
-            float subtractor = (multipliedIDX * 3.75F);
-
-            for(int idx = multipliedIDX - 8; idx < multipliedIDX; ++idx) {
-                this.tornadoObjects[idx].rotationPointY = startHeight + MathHelper.cos(((idx * 1.5F) + ageInTicks) * 0.25F);
-                this.tornadoObjects[idx].rotationPointX = MathHelper.cos(spinSpeed) * (260.0F - (subtractor / 4));
-                this.tornadoObjects[idx].rotationPointZ = MathHelper.sin(spinSpeed) * (260.0F - (subtractor / 4));
+            for (int idx = multipliedIDX - 256; idx < multipliedIDX; ++idx) {
+                this.tornadoObjects[idx].rotationPointY = yHeight + MathHelper.cos(((idx * 1.5F) + ageInTicks) * 0.25F);
+                this.tornadoObjects[idx].rotationPointX = MathHelper.cos(spinSpeed) * xzDistance;
+                this.tornadoObjects[idx].rotationPointZ = MathHelper.sin(spinSpeed) * xzDistance;
                 ++spinSpeed;
             }
         }

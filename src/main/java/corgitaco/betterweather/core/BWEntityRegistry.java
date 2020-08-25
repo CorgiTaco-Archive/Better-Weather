@@ -11,7 +11,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class BWEntityRegistry {
 
-    public static final EntityType<TornadoEntity> TORNADO = EntityType.Builder.<TornadoEntity>create(TornadoEntity::new, EntityClassification.MISC).size(0.1F, 0.1F).func_233606_a_(6).build(BetterWeather.MOD_ID + ":tornado");
+    public static final EntityType<TornadoEntity> TORNADO = EntityType.Builder.<TornadoEntity>create(TornadoEntity::new, EntityClassification.MISC).size(0.01F, 100F).func_233606_a_(6).build(BetterWeather.MOD_ID + ":tornado");
 
 
     @SubscribeEvent
