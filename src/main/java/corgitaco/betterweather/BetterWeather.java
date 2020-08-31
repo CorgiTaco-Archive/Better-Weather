@@ -1,7 +1,6 @@
 package corgitaco.betterweather;
 
 import com.google.common.collect.Lists;
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
 import corgitaco.betterweather.datastorage.BetterWeatherData;
@@ -10,6 +9,7 @@ import corgitaco.betterweather.weatherevents.AcidRain;
 import corgitaco.betterweather.weatherevents.Blizzard;
 import jdk.nashorn.internal.ir.Block;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.client.Minecraft;
@@ -17,7 +17,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -25,7 +27,6 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.swing.text.html.parser.Entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -103,10 +104,10 @@ public class BetterWeather implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        ServerEntityEvents.ENTITY_LOAD.register(event -> playerTickEvent(event));
+        ServerEntityEvents.ENTITY_LOAD.register((event, event2) -> entityTickEvent(event));
 
         ServerTickEvents.END_WORLD_TICK.register(event -> BetterWeatherEvents.worldTick(event.getLevel()));
-
+        ClientTickEvents.START_CLIENT_TICK.register(event -> clientTickEvent());
     }
 
     public static class BetterWeatherEvents {
@@ -143,8 +144,6 @@ public class BetterWeather implements ModInitializer {
             }
 
 
-
-
             List<ChunkHolder> list = Lists.newArrayList((serverWorld.getChunkSource()).chunkMap.getChunks());
             list.forEach(chunkHolder -> {
                 Optional<LevelChunk> optional = chunkHolder.getTickingChunkFuture().getNow(ChunkHolder.UNLOADED_LEVEL_CHUNK).left();
@@ -161,111 +160,102 @@ public class BetterWeather implements ModInitializer {
                 }
             });
         }
-    }
 
-    public static void playerTickEvent(TickEvent.PlayerTickEvent event) {
-        setWeatherData(event.player.world);
-    }
+//    public static void playerTickEvent(TickEvent.PlayerTickEvent event) {
+//        setWeatherData(event.player.world);
+//    }
 
-    public static void entityTickEvent(net.minecraft.world.entity.Entity entity) {
-        if (damageMonsters) {
-            if (entity.(true) == EntityClassification.MONSTER) {
-                Level world = entity.level;
-                BlockPos entityPos = new BlockPos(entity.getX(), entity.getY(), entity.getZ());
+        public static void entityTickEvent(net.minecraft.world.entity.Entity entity) {
+            if (damageMonsters) {
+                if (entity.getType().getCategory() == MobCategory.MONSTER) {
+                    Level world = entity.level;
+                    BlockPos entityPos = new BlockPos(entity.getX(), entity.getY(), entity.getZ());
 
-                if (world.canSeeSky(entityPos) && BetterWeatherEvents.weatherData.isAcidRain() && world.getLevelData().isRaining() && world.getGameTime() % BetterWeatherConfig.hurtEntityTickSpeed == 0) {
-                    entity.attackEntityFrom(DamageSource.GENERIC, 0.5F);
+                    if (world.canSeeSky(entityPos) && BetterWeatherEvents.weatherData.isAcidRain() && world.getLevelData().isRaining() && world.getGameTime() % BetterWeatherConfig.hurtEntityTickSpeed == 0) {
+                        entity.hurt(DamageSource.GENERIC, 0.5F);
+                    }
                 }
             }
-        }
 
-        if (damageAnimals) {
-            if (event.getEntity().getClassification(true) == EntityClassification.CREATURE || event.getEntity().getClassification(true) == EntityClassification.AMBIENT) {
-                Entity entity = event.getEntity();
-                Level world = entity.world;
-                BlockPos entityPos = new BlockPos(entity.getPositionVec());
+            if (damageAnimals) {
+                if (entity.getType().getCategory() == MobCategory.CREATURE || entity.getType().getCategory() == MobCategory.AMBIENT) {
+                    Level world = entity.level;
+                    BlockPos entityPos = new BlockPos(entity.getX(), entity.getY(), entity.getZ());
 
-                if (world.canSeeSky(entityPos) && BetterWeatherEvents.weatherData.isAcidRain() && world.getLevelData().isRaining() && world.getGameTime() % BetterWeatherConfig.hurtEntityTickSpeed == 0) {
-                    entity.attackEntityFrom(DamageSource.GENERIC, BetterWeatherConfig.hurtEntityDamage.floatValue());
+                    if (world.canSeeSky(entityPos) && BetterWeatherEvents.weatherData.isAcidRain() && world.getLevelData().isRaining() && world.getGameTime() % BetterWeatherConfig.hurtEntityTickSpeed == 0) {
+                        entity.hurt(DamageSource.GENERIC, (float) BetterWeatherConfig.hurtEntityDamage);
+                    }
                 }
             }
-        }
 
-        if (damagePlayer) {
-            if (event.getEntity() instanceof PlayerEntity) {
-                Entity entity = event.getEntity();
-                Level world = entity.world;
-                BlockPos entityPos = new BlockPos(entity.getPositionVec());
+            if (damagePlayer) {
+                if (entity instanceof ServerPlayer) {
+                    Level world = entity.level;
+                    BlockPos entityPos = new BlockPos(entity.getX(), entity.getY(), entity.getZ());
 
-                if (world.canSeeSky(entityPos) && weatherData.isAcidRain() && world.getLevelData().isRaining() && world.getGameTime() % BetterWeatherConfig.hurtEntityTickSpeed == 0) {
-                    entity.attackEntityFrom(DamageSource.GENERIC, 0.5F);
+                    if (world.canSeeSky(entityPos) && BetterWeatherEvents.weatherData.isAcidRain() && world.getLevelData().isRaining() && world.getGameTime() % BetterWeatherConfig.hurtEntityTickSpeed == 0) {
+                        entity.hurt(DamageSource.GENERIC, 0.5F);
+                    }
                 }
             }
+            Blizzard.blizzardEntityHandler(entity);
         }
-        Blizzard.blizzardEntityHandler(event.getEntity());
-    }
 
-    public static final ResourceLocation RAIN_TEXTURE = new ResourceLocation("textures/environment/rain.png");
-    public static final ResourceLocation ACID_RAIN_TEXTURE = new ResourceLocation(MOD_ID, "textures/environment/acid_rain.png");
+        public static final ResourceLocation RAIN_TEXTURE = new ResourceLocation("textures/environment/rain.png");
+        public static final ResourceLocation ACID_RAIN_TEXTURE = new ResourceLocation(MOD_ID, "textures/environment/acid_rain.png");
 
-    static int idx = 0;
+        static int idx = 0;
 
-    @SubscribeEvent
-    public static void clientTickEvent(TickEvent.ClientTickEvent event) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (event.phase == TickEvent.Phase.START) {
-            if (minecraft.world != null) {
-                setWeatherData(minecraft.world);
-                if (minecraft.world.getLevelData().isRaining() && weatherData.isAcidRain()) {
+        public static void clientTickEvent() {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.level != null) {
+                setWeatherData(minecraft.level);
+                if (minecraft.level.getLevelData().isRaining() && BetterWeatherEvents.weatherData.isAcidRain()) {
 
                     if (!BetterWeatherConfigClient.removeSmokeParticles)
-                        AcidRain.addAcidRainParticles(minecraft.gameRenderer.getActiveRenderInfo(), minecraft, minecraft.worldRenderer);
+                        AcidRain.addAcidRainParticles(minecraft.gameRenderer.getMainCamera(), minecraft, minecraft.levelRenderer);
 
-                    if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE && weatherData.isAcidRain())
+                    if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE && BetterWeatherEvents.weatherData.isAcidRain())
                         WorldRenderer.RAIN_TEXTURES = ACID_RAIN_TEXTURE;
-                    else if (WorldRenderer.RAIN_TEXTURES != RAIN_TEXTURE && !weatherData.isAcidRain())
+                    else if (WorldRenderer.RAIN_TEXTURES != RAIN_TEXTURE && !BetterWeatherEvents.weatherData.isAcidRain())
                         WorldRenderer.RAIN_TEXTURES = RAIN_TEXTURE;
                 }
 
-                if (minecraft.world.getLevelData().isRaining() && weatherData.isBlizzard()) {
-                    minecraft.worldRenderer.renderDistanceLevelChunks = BetterWeatherConfigClient.forcedRenderDistanceDuringBlizzards;
+                if (minecraft.level.getLevelData().isRaining() && BetterWeatherEvents.weatherData.isBlizzard()) {
+                    minecraft.levelRenderer.lastViewDistance = BetterWeatherConfigClient.forcedRenderDistanceDuringBlizzards;
                     idx = 0;
                 }
-                if (minecraft.worldRenderer.renderDistanceLevelChunks != minecraft.gameSettings.renderDistanceLevelChunks && !weatherData.isBlizzard() && idx == 0) {
-                    minecraft.worldRenderer.renderDistanceLevelChunks = minecraft.gameSettings.renderDistanceLevelChunks;
+                if (minecraft.levelRenderer.lastViewDistance != minecraft.options.renderDistance && !BetterWeatherEvents.weatherData.isBlizzard() && idx == 0) {
+                    minecraft.levelRenderer.lastViewDistance = minecraft.options.renderDistance;
                     idx++;
                 }
-                Blizzard.blizzardSoundHandler(minecraft, minecraft.gameRenderer.getActiveRenderInfo());
+                Blizzard.blizzardSoundHandler(minecraft, minecraft.gameRenderer.getMainCamera());
             }
+        }
+
+        public static void commandRegisterEvent(FMLServerStartingEvent event) {
+            BetterWeather.LOGGER.debug("BW: \"Server Starting\" Event Starting...");
+            BetterWeatherCommand.register(event.getServer().getCommandManager().getDispatcher());
+            BetterWeather.LOGGER.info("BW: \"Server Starting\" Event Complete!");
+        }
+
+        public static void setWeatherData(LevelAccessor world) {
+            if (BetterWeatherEvents.weatherData == null)
+                BetterWeatherEvents.weatherData = BetterWeatherData.get(world);
         }
     }
 
-    @SubscribeEvent
-    public static void commandRegisterEvent(FMLServerStartingEvent event) {
-        BetterWeather.LOGGER.debug("BW: \"Server Starting\" Event Starting...");
-        BetterWeatherCommand.register(event.getServer().getCommandManager().getDispatcher());
-        BetterWeather.LOGGER.info("BW: \"Server Starting\" Event Complete!");
-    }
 
-    public static void setWeatherData(LevelAccessor world) {
-        if (weatherData == null)
-            weatherData = BetterWeatherData.get(world);
-    }
-}
-
-
-@Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public static class BetterWeatherClient {
 
     static int idx2 = 0;
 
-    @SubscribeEvent
     public static void renderFogEvent(EntityViewRenderEvent.FogDensity event) {
         Minecraft minecraft = Minecraft.getInstance();
         if (BetterWeatherConfigClient.blizzardFog) {
             if (minecraft.world != null && minecraft.player != null) {
                 BlockPos playerPos = new BlockPos(minecraft.player.getPositionVec());
-                if (BetterWeatherEvents.weatherData.isBlizzard() && minecraft.world.getLevelData().isRaining() && Blizzard.doBlizzardsAffectDeserts(minecraft.world.getBiome(playerPos))) {
+                if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && minecraft.world.getLevelData().isRaining() && Blizzard.doBlizzardsAffectDeserts(minecraft.world.getBiome(playerPos))) {
                     event.setDensity(0.1F);
                     event.setCanceled(true);
                     if (idx2 != 0)
