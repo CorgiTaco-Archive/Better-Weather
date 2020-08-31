@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "betterweather",
+  "version": "${version}",
+
+  "name": "Better Weather",
+  "description": "A mod that adds more weather events! Some audio from: https://freesfx.co.uk/",
+  "authors": [
+    "Corgi Taco"
+  ],
+  "contact": {
+    "homepage": "null",
+    "sources": "https://github.com/CorgiTaco/Better-Weather"
+  },
+
+  "license": "LGPLv3",
+  "icon": "yes",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "corgitaco.betterweather.BetterWeather"
+    ]
+  },
+  "mixins": [
+    "betterweather.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": "*",
+    "minecraft": "1.16.2"
+  },
+  "suggests": {
+    "flamingo": "*"
+  },
+  "accessWidener" : "betterweather.aw"
+}

@@ -1,14 +1,9 @@
 package corgitaco.betterweather.datastorage;
 
 import corgitaco.betterweather.BetterWeather;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.DimensionSavedDataManager;
-import net.minecraft.world.storage.WorldSavedData;
 
-public class BetterWeatherData extends WorldSavedData {
+
+public class BetterWeatherData extends Persi {
     public static String DATA_NAME = BetterWeather.MOD_ID + ":weather_data";
 
     private boolean acidRain;
