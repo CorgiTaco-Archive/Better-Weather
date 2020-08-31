@@ -30,23 +30,23 @@ public class BetterWeatherCommand {
         BetterWeather.LOGGER.debug("Registered BW Commands!");
     }
 
-    public static int betterWeatherSetWeatherType(World world, CommandSource source, String weatherType) {
+    public static int betterWeatherSetWeatherType(Level world, CommandSource source, String weatherType) {
         if (weatherType.equals("acidrain")) {
             BetterWeather.BetterWeatherEvents.weatherData.setBlizzard(false);
             BetterWeather.BetterWeatherEvents.weatherData.setAcidRain(true);
-            world.getWorldInfo().setRaining(true);
+            world.getLevelData().setRaining(true);
             source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.acidrain"), true);
         }
         else if (weatherType.equals("blizzard")) {
             BetterWeather.BetterWeatherEvents.weatherData.setAcidRain(false);
             BetterWeather.BetterWeatherEvents.weatherData.setBlizzard(true);
-            world.getWorldInfo().setRaining(true);
+            world.getLevelData().setRaining(true);
             source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.blizzard"), true);
         }
         else if (weatherType.equals("clear")) {
             BetterWeather.BetterWeatherEvents.weatherData.setAcidRain(false);
             BetterWeather.BetterWeatherEvents.weatherData.setBlizzard(false);
-            world.getWorldInfo().setRaining(false);
+            world.getLevelData().setRaining(false);
             source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.clear"), true);
         }
         else {

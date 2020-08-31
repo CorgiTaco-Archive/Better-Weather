@@ -1,9 +1,15 @@
 package corgitaco.betterweather.datastorage;
 
 import corgitaco.betterweather.BetterWeather;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.storage.DimensionDataStorage;
 
 
-public class BetterWeatherData extends Persi {
+public class BetterWeatherData extends SavedData {
     public static String DATA_NAME = BetterWeather.MOD_ID + ":weather_data";
 
     private boolean acidRain;
@@ -18,14 +24,15 @@ public class BetterWeatherData extends Persi {
         super(s);
     }
 
+
     @Override
-    public void read(CompoundNBT nbt) {
+    public void load(CompoundTag nbt) {
         setAcidRain(nbt.getBoolean("AcidRain"));
         setBlizzard(nbt.getBoolean("Blizzard"));
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT compound) {
+    public CompoundTag save(CompoundTag compound) {
         compound.putBoolean("AcidRain", acidRain);
         compound.putBoolean("Blizzard", blizzard);
         return compound;
@@ -42,22 +49,22 @@ public class BetterWeatherData extends Persi {
 
     public void setAcidRain(boolean acidRain) {
         this.acidRain = acidRain;
-        markDirty();
+        setDirty();
     }
 
     public void setBlizzard(boolean isBlizzard) {
         this.blizzard = isBlizzard;
-        markDirty();
+        setDirty();
     }
 
 
 
-    public static BetterWeatherData get(IWorld world) {
-        if (!(world instanceof ServerWorld))
+    public static BetterWeatherData get(LevelAccessor world) {
+        if (!(world instanceof ServerLevel))
             return new BetterWeatherData();
-        ServerWorld overWorld = ((ServerWorld) world).getWorld().getServer().getWorld(World.THE_NETHER);
-        DimensionSavedDataManager data = overWorld.getSavedData();
-        BetterWeatherData weatherData = data.getOrCreate(BetterWeatherData::new, DATA_NAME);
+        ServerLevel overWorld = ((ServerLevel) world).getLevel().getServer().getLevel(Level.NETHER);
+        DimensionDataStorage data = overWorld.getDataStorage();
+        BetterWeatherData weatherData = data.get(BetterWeatherData::new, DATA_NAME);
 
         if (weatherData == null) {
             weatherData = new BetterWeatherData();

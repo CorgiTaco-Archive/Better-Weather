@@ -4,126 +4,127 @@ import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.SoundRegistry;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.material.Material;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.SimpleSound;
-import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.potion.Effects;
-import net.minecraft.profiler.IProfiler;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.material.Material;
+
 
 public class Blizzard {
 
-    public static void blizzardEvent(Chunk chunk, World world, int tickSpeed, long worldTime) {
+    public static void blizzardEvent(LevelChunk chunk, Level world, int tickSpeed, long worldTime) {
         ChunkPos chunkpos = chunk.getPos();
-        int chunkXStart = chunkpos.getXStart();
-        int chunkZStart = chunkpos.getZStart();
-        IProfiler iprofiler = world.getProfiler();
-        iprofiler.startSection("blizzard");
-        BlockPos blockpos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
+        int chunkXStart = chunkpos.getMinBlockX();
+        int chunkZStart = chunkpos.getMinBlockZ();
+        ProfilerFiller iprofiler = world.getProfiler();
+        iprofiler.incrementCounter("blizzard");
+        BlockPos blockpos = world.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
         Biome biome = world.getBiome(blockpos);
-        if (world.isAreaLoaded(blockpos, 1)) {
-            if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && world.getWorldInfo().isRaining() && worldTime % BetterWeatherConfig.tickSnowAndIcePlaceSpeed.get() == 0 && biome.getCategory() != Biome.Category.NETHER && biome.getCategory() != Biome.Category.THEEND && biome.getCategory() != Biome.Category.NONE && doBlizzardsAffectDeserts(biome) && BetterWeatherConfig.spawnSnowAndIce.get()) {
-                if (world.getBlockState(blockpos.down()).getBlock() == Blocks.WATER && world.getBlockState(blockpos.down()).getFluidState().getLevel() == 8) {
-                    world.setBlockState(blockpos.down(), Blocks.ICE.getDefaultState());
+        if (isAreaLoaded(blockpos, 1, world)) {
+            if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && world.getLevelData().isRaining() && worldTime % BetterWeatherConfig.tickSnowAndIcePlaceSpeed == 0 && biome.getBiomeCategory() != Biome.BiomeCategory.NETHER && biome.getBiomeCategory() != Biome.BiomeCategory.THEEND && biome.getBiomeCategory() != Biome.BiomeCategory.NONE && doBlizzardsAffectDeserts(biome) && BetterWeatherConfig.spawnSnowAndIce) {
+                if (world.getBlockState(blockpos.below()).getBlock() == Blocks.WATER && world.getBlockState(blockpos.below()).getFluidState().getAmount() == 8) {
+                    world.setBlockAndUpdate(blockpos.below(), Blocks.ICE.defaultBlockState());
                 }
-                if (world.getBlockState(blockpos.down()).getMaterial() != Material.WATER && world.getBlockState(blockpos.down()).getMaterial() != Material.LAVA && world.getBlockState(blockpos.down()).getMaterial() != Material.ICE && world.getBlockState(blockpos.down()).getMaterial() != Material.CACTUS && doBlizzardsDestroyPlants(world.getBlockState(blockpos).getMaterial())) {
+                if (world.getBlockState(blockpos.below()).getMaterial() != Material.WATER && world.getBlockState(blockpos.below()).getMaterial() != Material.LAVA && world.getBlockState(blockpos.below()).getMaterial() != Material.ICE && world.getBlockState(blockpos.below()).getMaterial() != Material.CACTUS && doBlizzardsDestroyPlants(world.getBlockState(blockpos).getMaterial())) {
                     if (world.getBlockState(blockpos).getBlock() != Blocks.SNOW)
-                        world.setBlockState(blockpos, Blocks.SNOW.getDefaultState());
+                        world.setBlockAndUpdate(blockpos, Blocks.SNOW.defaultBlockState());
 
                     Block block = world.getBlockState(blockpos).getBlock();
 
-                    if (block == Blocks.SNOW && world.getBlockState(blockpos).get(BlockStateProperties.LAYERS_1_8) == 1 && world.rand.nextInt(5) == 2)
-                        world.setBlockState(blockpos, block.getDefaultState().with(BlockStateProperties.LAYERS_1_8, 2));
-                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).get(BlockStateProperties.LAYERS_1_8) == 2 && world.rand.nextInt(5) == 3)
-                        world.setBlockState(blockpos, block.getDefaultState().with(BlockStateProperties.LAYERS_1_8, 3));
-                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).get(BlockStateProperties.LAYERS_1_8) == 3 && world.rand.nextInt(5) == 0)
-                        world.setBlockState(blockpos, block.getDefaultState().with(BlockStateProperties.LAYERS_1_8, 4));
-                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).get(BlockStateProperties.LAYERS_1_8) == 4 && world.rand.nextInt(5) == 4)
-                        world.setBlockState(blockpos, block.getDefaultState().with(BlockStateProperties.LAYERS_1_8, 5));
-                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).get(BlockStateProperties.LAYERS_1_8) == 5 && world.rand.nextInt(5) == 0)
-                        world.setBlockState(blockpos, block.getDefaultState().with(BlockStateProperties.LAYERS_1_8, 6));
-                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).get(BlockStateProperties.LAYERS_1_8) == 6 && world.rand.nextInt(5) == 1)
-                        world.setBlockState(blockpos, block.getDefaultState().with(BlockStateProperties.LAYERS_1_8, 7));
-                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).get(BlockStateProperties.LAYERS_1_8) == 7 && world.rand.nextInt(5) == 0)
-                        world.setBlockState(blockpos, Blocks.SNOW_BLOCK.getDefaultState());
+                    if (block == Blocks.SNOW && world.getBlockState(blockpos).getValue(BlockStateProperties.LAYERS) == 1 && world.random.nextInt(5) == 2)
+                        world.setBlockAndUpdate(blockpos, block.defaultBlockState().setValue(BlockStateProperties.LAYERS, 2));
+                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).getValue(BlockStateProperties.LAYERS) == 2 && world.random.nextInt(5) == 3)
+                        world.setBlockAndUpdate(blockpos, block.defaultBlockState().setValue(BlockStateProperties.LAYERS, 3));
+                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).getValue(BlockStateProperties.LAYERS) == 3 && world.random.nextInt(5) == 0)
+                        world.setBlockAndUpdate(blockpos, block.defaultBlockState().setValue(BlockStateProperties.LAYERS, 4));
+                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).getValue(BlockStateProperties.LAYERS) == 4 && world.random.nextInt(5) == 4)
+                        world.setBlockAndUpdate(blockpos, block.defaultBlockState().setValue(BlockStateProperties.LAYERS, 5));
+                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).getValue(BlockStateProperties.LAYERS) == 5 && world.random.nextInt(5) == 0)
+                        world.setBlockAndUpdate(blockpos, block.defaultBlockState().setValue(BlockStateProperties.LAYERS, 6));
+                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).getValue(BlockStateProperties.LAYERS) == 6 && world.random.nextInt(5) == 1)
+                        world.setBlockAndUpdate(blockpos, block.defaultBlockState().setValue(BlockStateProperties.LAYERS, 7));
+                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).getValue(BlockStateProperties.LAYERS) == 7 && world.random.nextInt(5) == 0)
+                        world.setBlockAndUpdate(blockpos, Blocks.SNOW_BLOCK.defaultBlockState());
                 }
             }
         }
-        iprofiler.endSection();
+        iprofiler.pop();
     }
 
-    public static void doesIceAndSnowDecay(Chunk chunk, World world, long worldTime) {
+    public static void doesIceAndSnowDecay(LevelChunk chunk, Level world, long worldTime) {
         ChunkPos chunkpos = chunk.getPos();
-        int chunkXStart = chunkpos.getXStart();
-        int chunkZStart = chunkpos.getZStart();
-        IProfiler iprofiler = world.getProfiler();
-        iprofiler.startSection("iceandsnowdecay");
-        BlockPos blockpos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
+        int chunkXStart = chunkpos.getMinBlockX();
+        int chunkZStart = chunkpos.getMinBlockZ();
+        ProfilerFiller iprofiler = world.getProfiler();
+        iprofiler.push("iceandsnowdecay");
+        BlockPos blockpos = world.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
         Biome biome = world.getBiome(blockpos);
-        Block blockDown = world.getBlockState(blockpos.down()).getBlock();
+        Block blockDown = world.getBlockState(blockpos.below()).getBlock();
         Block block = world.getBlockState(blockpos).getBlock();
 
-        if (world.isAreaLoaded(blockpos, 1)) {
-            if (biome.getTemperature(blockpos) >= BetterWeatherConfig.snowDecayTemperatureThreshold.get()) {
-                if (!world.getWorldInfo().isRaining() && worldTime % BetterWeatherConfig.tickSnowAndIceDecaySpeed.get() == 0 && biome.getCategory() != Biome.Category.NETHER && biome.getCategory() != Biome.Category.THEEND && biome.getCategory() != Biome.Category.NONE && doBlizzardsAffectDeserts(biome)) {
+        if (isAreaLoaded(blockpos, 1, world)) {
+            if (biome.getTemperature(blockpos) >= BetterWeatherConfig.snowDecayTemperatureThreshold) {
+                if (!world.getLevelData().isRaining() && worldTime % BetterWeatherConfig.tickSnowAndIceDecaySpeed == 0 && biome.getBiomeCategory() != Biome.BiomeCategory.NETHER && biome.getBiomeCategory() != Biome.BiomeCategory.THEEND && biome.getBiomeCategory() != Biome.BiomeCategory.NONE && doBlizzardsAffectDeserts(biome)) {
                     if (blockDown == Blocks.SNOW)
-                        world.setBlockState(blockpos.down(), Blocks.AIR.getDefaultState());
+                        world.setBlockAndUpdate(blockpos.below(), Blocks.AIR.defaultBlockState());
                     if (block == Blocks.SNOW)
-                        world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
+                        world.setBlockAndUpdate(blockpos, Blocks.AIR.defaultBlockState());
                     if (blockDown == Blocks.ICE)
-                        world.setBlockState(blockpos.down(), Blocks.WATER.getDefaultState());
+                        world.setBlockAndUpdate(blockpos.below(), Blocks.WATER.defaultBlockState());
 
                 }
             }
         }
-        iprofiler.endSection();
+        iprofiler.pop();
     }
 
 
     static int cycleBlizzardSounds = 0;
 
-    @OnlyIn(Dist.CLIENT)
-    public static void blizzardSoundHandler(Minecraft mc, ActiveRenderInfo activeRenderInfo) {
-        double volume = BetterWeatherConfigClient.blizzardVolume.get();
-        double pitch = BetterWeatherConfigClient.blizzardPitch.get();
-        BlockPos pos = new BlockPos(activeRenderInfo.getProjectedView());
-        if (mc.world != null) {
-            if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && mc.world.isRaining()) {
-                mc.getSoundHandler().sndManager.setVolume(SoundCategory.WEATHER, 0.1F);
+    @Environment(EnvType.CLIENT)
+    public static void blizzardSoundHandler(Minecraft minecraft, Camera activeRenderInfo) {
+        double volume = BetterWeatherConfigClient.blizzardVolume;
+        double pitch = BetterWeatherConfigClient.blizzardPitch;
+        BlockPos pos = new BlockPos(activeRenderInfo.getPosition());
+        if (minecraft.level != null) {
+            if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && minecraft.level.isRaining()) {
+                minecraft.getSoundManager().soundEngine.updateCategoryVolume(SoundSource.WEATHER, 0.1F);
             }
 //            else
-//                mc.getSoundHandler().sndManager.setVolume(SoundCategory.WEATHER, mc.gameSettings.getSoundLevel(SoundCategory.WEATHER));
+//                minecraft.getSoundHandler().sndManager.setVolume(SoundSource.WEATHER, minecraft.gameSettings.getSoundLevel(SoundSource.WEATHER));
         }
 
 
-        BlizzardLoopSoundTrack soundTrack = BetterWeatherConfigClient.blizzardLoopEnumValue.get();
+        BlizzardLoopSoundTrack soundTrack = BetterWeatherConfigClient.blizzardLoopEnumValue;
 
-        SimpleSound simplesound = new SimpleSound(soundTrack.getSoundEvent(), SoundCategory.WEATHER, (float) volume, (float) pitch, pos.getX(), pos.getY(), pos.getZ());
-        if (mc.world != null && mc.world.getWorldInfo().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && doBlizzardsAffectDeserts(mc.world.getBiome(pos))) {
-            if (cycleBlizzardSounds == 0 || mc.world.getWorldInfo().getGameTime() % soundTrack.getReplayRate() == 0) {
-                mc.getSoundHandler().play(simplesound);
+        SimpleSoundInstance simplesound = new SimpleSoundInstance(soundTrack.getSoundEvent(), SoundSource.WEATHER, (float) volume, (float) pitch, pos.getX(), pos.getY(), pos.getZ());
+        if (minecraft.level != null && minecraft.level.getLevelData().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && doBlizzardsAffectDeserts(minecraft.level.getBiome(pos))) {
+            if (cycleBlizzardSounds == 0 || minecraft.level.getLevelData().getGameTime() % soundTrack.getReplayRate() == 0) {
+                minecraft.getSoundManager().play(simplesound);
                 cycleBlizzardSounds++;
             }
         }
-        if (mc.world != null) {
-            if (!BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() || !doBlizzardsAffectDeserts(mc.world.getBiome(pos))) {
-                mc.getSoundHandler().stop(simplesound.getSoundLocation(), SoundCategory.WEATHER);
+        if (minecraft.level != null) {
+            if (!BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() || !doBlizzardsAffectDeserts(minecraft.level.getBiome(pos))) {
+                minecraft.getSoundManager().stop(simplesound.getLocation(), SoundSource.WEATHER);
                 if (cycleBlizzardSounds != 0)
                     cycleBlizzardSounds = 0;
             }
@@ -167,23 +168,27 @@ public class Blizzard {
 
     public static void blizzardEntityHandler(Entity entity) {
         if (entity instanceof LivingEntity) {
-            if (entity.world.getWorldInfo().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && BetterWeatherConfig.doBlizzardsSlowPlayers.get())
-                ((LivingEntity) entity).addPotionEffect(new EffectInstance(Effects.SLOWNESS, 5, BetterWeatherConfig.blizzardSlownessAmplifier.get(), true, false));
+            if (entity.level.getLevelData().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && BetterWeatherConfig.doBlizzardsSlowPlayers)
+                ((LivingEntity) entity).addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 5, BetterWeatherConfig.blizzardSlownessAmplifier, true, false));
         }
     }
 
 
     public static boolean doBlizzardsAffectDeserts(Biome biome) {
-        if (!BetterWeatherConfig.doBlizzardsOccurInDeserts.get())
-            return biome.getCategory() != Biome.Category.DESERT;
+        if (!BetterWeatherConfig.doBlizzardsOccurInDeserts)
+            return biome.getBiomeCategory() != Biome.BiomeCategory.DESERT;
         else
             return true;
     }
 
     public static boolean doBlizzardsDestroyPlants(Material material) {
-        if (!BetterWeatherConfig.doBlizzardsDestroyPlants.get())
-            return material != Material.PLANTS && material != Material.TALL_PLANTS && material != Material.OCEAN_PLANT;
+        if (!BetterWeatherConfig.doBlizzardsDestroyPlants)
+            return material != Material.PLANT && material != Material.REPLACEABLE_PLANT && material != Material.WATER_PLANT;
         else
             return true;
+    }
+
+    public static boolean isAreaLoaded(BlockPos center, int range, Level level) {
+        return level.hasChunksAt(center.offset(-range, -range, -range), center.offset(range, range, range));
     }
 }
