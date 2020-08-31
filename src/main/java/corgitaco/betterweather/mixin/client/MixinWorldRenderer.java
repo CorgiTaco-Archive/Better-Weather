@@ -146,6 +146,8 @@ public abstract class MixinWorldRenderer {
     @Inject(at = @At("HEAD"), method = "loadRenderers()V", cancellable = true)
     private void cancelGameSettingsUpdate(CallbackInfo ci) {
         if (mc.world != null) {
+            //We do this to insure that the our Weather Data is not null before using it.
+            BetterWeather.BetterWeatherEvents.setWeatherData(mc.world);
             if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && mc.world.isRaining()) {
                 ci.cancel();
             }

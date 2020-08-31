@@ -3,10 +3,7 @@ package corgitaco.betterweather;
 import com.google.common.collect.Lists;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
-import corgitaco.betterweather.core.BWEntityRegistry;
 import corgitaco.betterweather.datastorage.BetterWeatherData;
-import corgitaco.betterweather.entity.TornadoEntity;
-import corgitaco.betterweather.entity.TornadoRenderer;
 import corgitaco.betterweather.server.BetterWeatherCommand;
 import corgitaco.betterweather.weatherevents.AcidRain;
 import corgitaco.betterweather.weatherevents.Blizzard;
@@ -15,7 +12,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
-import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
@@ -31,7 +27,6 @@ import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -72,7 +67,7 @@ public class BetterWeather {
     public static List<Block> blocksToNotDestroyList = new ArrayList<>();
 
     public void commonSetup(FMLCommonSetupEvent event) {
-        GlobalEntityTypeAttributes.put(BWEntityRegistry.TORNADO, TornadoEntity.setCustomAttributes().create());
+//        GlobalEntityTypeAttributes.put(BWEntityRegistry.TORNADO, TornadoEntity.setCustomAttributes().create());
 
         BetterWeatherConfig.loadConfig(BetterWeatherConfig.COMMON_CONFIG, FMLPaths.CONFIGDIR.get().resolve(MOD_ID + "-common.toml"));
         String entityTypes = BetterWeatherConfig.entityTypesToDamage.get();
@@ -117,7 +112,7 @@ public class BetterWeather {
     }
 
     public void clientSetup(FMLClientSetupEvent event) {
-        RenderingRegistry.registerEntityRenderingHandler(BWEntityRegistry.TORNADO, TornadoRenderer::new);
+//        RenderingRegistry.registerEntityRenderingHandler(BWEntityRegistry.TORNADO, TornadoRenderer::new);
 
     }
 
