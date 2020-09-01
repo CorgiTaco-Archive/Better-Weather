@@ -13,6 +13,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkHolder;
@@ -24,6 +25,8 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraftforge.client.event.EntityViewRenderEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -250,7 +253,7 @@ public static class BetterWeatherClient {
 
     static int idx2 = 0;
 
-    public static void renderFogEvent(EntityViewRenderEvent.FogDensity event) {
+    public static void renderFogEvent( event) {
         Minecraft minecraft = Minecraft.getInstance();
         if (BetterWeatherConfigClient.blizzardFog) {
             if (minecraft.world != null && minecraft.player != null) {
