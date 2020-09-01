@@ -168,6 +168,7 @@ public class Blizzard {
     }
 
     public static void blizzardEntityHandler(Entity entity) {
+        BetterWeather.BetterWeatherEvents.setWeatherData(entity.level);
         if (entity instanceof LivingEntity) {
             if (entity.level.getLevelData().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && BetterWeatherConfig.doBlizzardsSlowPlayers)
                 ((LivingEntity) entity).addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 5, BetterWeatherConfig.blizzardSlownessAmplifier, true, false));

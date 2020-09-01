@@ -18,11 +18,14 @@ public class MixinFogRenderer {
 
     private static int idx2 = 0;
 
+    private static final Minecraft minecraft = Minecraft.getInstance();
+
+
     @Inject(at = @At("HEAD"), method = "setupFog(Lnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/FogRenderer$FogMode;FZ)V", cancellable = true)
     private static void blizzardFogDensity(Camera camera, FogRenderer.FogMode fogMode, float f, boolean bl, CallbackInfo ci) {
-        Minecraft minecraft = Minecraft.getInstance();
         if (BetterWeatherConfigClient.blizzardFog) {
             if (minecraft.level != null && minecraft.player != null) {
+                BetterWeather.BetterWeatherEvents.setWeatherData(minecraft.level);
                 BlockPos playerPos = new BlockPos(minecraft.player.position());
                 if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && minecraft.level.getLevelData().isRaining() && Blizzard.doBlizzardsAffectDeserts(minecraft.level.getBiome(playerPos))) {
                     RenderSystem.fogDensity((float) BetterWeatherConfigClient.blizzardFogDensity);

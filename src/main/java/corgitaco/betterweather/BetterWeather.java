@@ -50,8 +50,6 @@ public class BetterWeather implements ModInitializer {
 
     public void configReader() {
 //        GlobalEntityTypeAttributes.put(BWEntityRegistry.TORNADO, TornadoEntity.setCustomAttributes().create());
-
-//        BetterWeatherConfig.loadConfig(BetterWeatherConfig.COMMON_CONFIG, FMLPaths.CONFIGDIR.resolve(MOD_ID + "-common.toml"));
         String entityTypes = BetterWeatherConfig.entityTypesToDamage;
         String removeSpaces = entityTypes.trim().toLowerCase().replace(" ", "");
         String[] entityList = removeSpaces.split(",");

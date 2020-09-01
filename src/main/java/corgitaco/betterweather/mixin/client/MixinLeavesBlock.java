@@ -15,7 +15,6 @@ import java.util.Random;
 @Mixin(LeavesBlock.class)
 public class MixinLeavesBlock {
 
-
     @Inject(at = @At("HEAD"), method = "animateTick(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Ljava/util/Random;)V", cancellable = true)
     private void cancelRainDrippingEffect(BlockState blockState, Level level, BlockPos blockPos, Random random, CallbackInfo ci) {
         if (level.getLevelData().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard())
