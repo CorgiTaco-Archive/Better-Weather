@@ -25,7 +25,7 @@ public class MixinFogRenderer {
             if (minecraft.level != null && minecraft.player != null) {
                 BlockPos playerPos = new BlockPos(minecraft.player.position());
                 if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && minecraft.level.getLevelData().isRaining() && Blizzard.doBlizzardsAffectDeserts(minecraft.level.getBiome(playerPos))) {
-                    RenderSystem.fogDensity(0.1F);
+                    RenderSystem.fogDensity((float) BetterWeatherConfigClient.blizzardFogDensity);
                     if (idx2 != 0)
                         idx2 = 0;
                 } else {
@@ -34,6 +34,7 @@ public class MixinFogRenderer {
                     }
                 }
             }
+            ci.cancel();
         }
     }
 }

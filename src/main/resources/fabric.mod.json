@@ -20,6 +20,9 @@
   "entrypoints": {
     "main": [
       "corgitaco.betterweather.BetterWeather"
+    ],
+    "client": [
+      "corgitaco.betterweather.client.BWClient"
     ]
   },
   "mixins": [

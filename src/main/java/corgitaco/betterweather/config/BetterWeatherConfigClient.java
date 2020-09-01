@@ -11,11 +11,11 @@ public class BetterWeatherConfigClient {
     public static boolean removeSmokeParticles = false;
 
     public static boolean blizzardFog = true;
-    public static int forcedRenderDistanceDuringBlizzards = 3;
+    public static int forcedRenderDistanceDuringBlizzards = 1;
     public static double blizzardVolume = 0.4;
     public static double blizzardPitch = 0.4;
     public static double blizzardFogDensity = 0.1;
-    public static Blizzard.BlizzardLoopSoundTrack blizzardLoopEnumValue;
+    public static Blizzard.BlizzardLoopSoundTrack blizzardLoopEnumValue = Blizzard.BlizzardLoopSoundTrack.LOOP2;
 
 
 //    static {
