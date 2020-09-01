@@ -8,13 +8,13 @@ public class BetterWeatherConfigClient {
 //    private static final ForgeConfigSpec.Builder COMMON_BUILDER = new ForgeConfigSpec.Builder();
 //    public static COMMON_CONFIG;
 
-    public static boolean removeSmokeParticles;
+    public static boolean removeSmokeParticles = false;
 
-    public static boolean blizzardFog;
-    public static int forcedRenderDistanceDuringBlizzards;
-    public static double blizzardVolume;
-    public static double blizzardPitch;
-    public static double blizzardFogDensity;
+    public static boolean blizzardFog = true;
+    public static int forcedRenderDistanceDuringBlizzards = 3;
+    public static double blizzardVolume = 0.4;
+    public static double blizzardPitch = 0.4;
+    public static double blizzardFogDensity = 0.1;
     public static Blizzard.BlizzardLoopSoundTrack blizzardLoopEnumValue;
 
 

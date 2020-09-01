@@ -25,9 +25,9 @@ dependencies {
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 }
 
-//minecraft {
-//    accessWidener = file("src/main/resources/betterweather.aw")
-//}
+minecraft {
+    accessWidener = file("src/main/resources/betterweather.aw")
+}
 
 processResources {
     inputs.property "version", project.version

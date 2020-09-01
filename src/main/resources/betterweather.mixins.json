@@ -9,7 +9,8 @@
   "client": [
     "client.MixinLeavesBlock",
     "client.MixinSoundEngine",
-    "client.MixinWorldRenderer"
+    "client.MixinWorldRenderer",
+    "client.MixinFogRenderer"
   ],
   "injectors": {
     "defaultRequire": 1

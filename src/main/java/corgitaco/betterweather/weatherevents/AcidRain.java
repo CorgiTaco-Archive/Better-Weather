@@ -76,14 +76,14 @@ public class AcidRain {
             LevelReader iworldreader = minecraft.level;
             BlockPos blockpos = new BlockPos(activeRenderInfoIn.getPosition());
             BlockPos blockpos1 = null;
-            int i = (int)(100.0F * f * f) / (minecraft.options.particles == ParticleStatus.DECREASED ? 2 : 1);
+            int i = (int) (100.0F * f * f) / (minecraft.options.particles == ParticleStatus.DECREASED ? 2 : 1);
 
-            for(int j = 0; j < i; ++j) {
+            for (int j = 0; j < i; ++j) {
                 int k = random.nextInt(21) - 10;
                 int l = random.nextInt(21) - 10;
                 BlockPos blockpos2 = iworldreader.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, blockpos.offset(k, 0, l)).below();
                 Biome biome = iworldreader.getBiome(blockpos2);
-                if (blockpos2.getY() > 0 && blockpos2.getY() <= blockpos.getY() + 10 && blockpos2.getY() >= blockpos.getY() - 10 && biome.getPrecipitation() == Biome.RainType.RAIN && biome.getTemperature(blockpos2) >= 0.15F) {
+                if (blockpos2.getY() > 0 && blockpos2.getY() <= blockpos.getY() + 10 && blockpos2.getY() >= blockpos.getY() - 10 && biome.getPrecipitation() == Biome.Precipitation.RAIN && biome.getTemperature(blockpos2) >= 0.15F) {
                     blockpos1 = blockpos2;
                     if (minecraft.options.particles == ParticleStatus.MINIMAL) {
                         break;
@@ -95,16 +95,16 @@ public class AcidRain {
                     FluidState fluidstate = iworldreader.getFluidState(blockpos2);
                     VoxelShape voxelshape = blockstate.getCollisionShape(iworldreader, blockpos2);
                     double d2 = voxelshape.max(Direction.Axis.Y, d0, d1);
-                    double d3 = (double)fluidstate.getHeight(iworldreader, blockpos2);
+                    double d3 = fluidstate.getHeight(iworldreader, blockpos2);
                     double d4 = Math.max(d2, d3);
                     ParticleOptions iparticledata = ParticleTypes.SMOKE;
-                    minecraft.level.addParticle(iparticledata, (double)blockpos2.getX() + d0, (double)blockpos2.getY() + d4, (double)blockpos2.getZ() + d1, 0.0D, 0.0D, 0.0D);
+                    minecraft.level.addParticle(iparticledata, (double) blockpos2.getX() + d0, (double) blockpos2.getY() + d4, (double) blockpos2.getZ() + d1, 0.0D, 0.0D, 0.0D);
                 }
             }
 
             if (blockpos1 != null && random.nextInt(3) < worldRenderer.rainSoundTime++) {
                 worldRenderer.rainSoundTime = 0;
-                if (blockpos1.getY() > blockpos.getY() + 1 && iworldreader.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, blockpos).getY() > Mth.floor((float)blockpos.getY())) {
+                if (blockpos1.getY() > blockpos.getY() + 1 && iworldreader.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, blockpos).getY() > Mth.floor((float) blockpos.getY())) {
                     minecraft.level.playLocalSound(blockpos1, SoundEvents.WEATHER_RAIN_ABOVE, SoundSource.WEATHER, 0.1F, 0.5F, false);
                 } else {
                     minecraft.level.playLocalSound(blockpos1, SoundEvents.WEATHER_RAIN, SoundSource.WEATHER, 0.2F, 1.0F, false);

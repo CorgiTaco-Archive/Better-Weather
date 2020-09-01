@@ -58,7 +58,6 @@ public class BetterWeatherData extends SavedData {
     }
 
 
-
     public static BetterWeatherData get(LevelAccessor world) {
         if (!(world instanceof ServerLevel))
             return new BetterWeatherData();

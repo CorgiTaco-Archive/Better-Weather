@@ -142,6 +142,7 @@ public class Blizzard {
 
         private final SoundEvent soundEvent;
         private final int replayRate;
+
         BlizzardLoopSoundTrack(SoundEvent soundEvent, int tickReplayRate) {
             this.soundEvent = soundEvent;
             this.replayRate = tickReplayRate;
@@ -152,7 +153,7 @@ public class Blizzard {
         }
 
         public int getReplayRate() {
-           return this.replayRate;
+            return this.replayRate;
         }
 
         public SoundEvent[] soundRegistries = {
