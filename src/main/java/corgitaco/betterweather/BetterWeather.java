@@ -7,14 +7,13 @@ import corgitaco.betterweather.datastorage.BetterWeatherData;
 import corgitaco.betterweather.server.BetterWeatherCommand;
 import corgitaco.betterweather.weatherevents.AcidRain;
 import corgitaco.betterweather.weatherevents.Blizzard;
-import jdk.nashorn.internal.ir.Block;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ServerLevel;
@@ -24,6 +23,7 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,9 +37,6 @@ public class BetterWeather implements ModInitializer {
     public static Logger LOGGER = LogManager.getLogger();
     public static final String MOD_ID = "betterweather";
 
-    public BetterWeather() {
-    }
-
     static boolean damageAnimals = false;
     static boolean damageMonsters = false;
     static boolean damagePlayer = false;
@@ -51,51 +48,50 @@ public class BetterWeather implements ModInitializer {
 
     public static List<Block> blocksToNotDestroyList = new ArrayList<>();
 
-//    public void commonSetup(FMLCommonSetupEvent event) {
-////        GlobalEntityTypeAttributes.put(BWEntityRegistry.TORNADO, TornadoEntity.setCustomAttributes().create());
-//
+    public void configReader() {
+//        GlobalEntityTypeAttributes.put(BWEntityRegistry.TORNADO, TornadoEntity.setCustomAttributes().create());
+
 //        BetterWeatherConfig.loadConfig(BetterWeatherConfig.COMMON_CONFIG, FMLPaths.CONFIGDIR.resolve(MOD_ID + "-common.toml"));
-//        String entityTypes = BetterWeatherConfig.entityTypesToDamage;
-//        String removeSpaces = entityTypes.trim().toLowerCase().replace(" ", "");
-//        String[] entityList = removeSpaces.split(",");
-//
-//        for (String s : entityList) {
-//            if (s.equalsIgnoreCase("animal") && !damageAnimals)
-//                damageAnimals = true;
-//            if (s.equalsIgnoreCase("monster") && !damageMonsters)
-//                damageMonsters = true;
-//            if (s.equalsIgnoreCase("player") && !damagePlayer)
-//                damagePlayer = true;
-//        }
-//
-//        String allowedBlockTypesToDestroy = BetterWeatherConfig.allowedBlocksToDestroy;
-//        String removeBlockTypeSpaces = allowedBlockTypesToDestroy.trim().toLowerCase().replace(" ", "");
-//        String[] blockTypeToDestroyList = removeBlockTypeSpaces.split(",");
-//
-//        for (String s : blockTypeToDestroyList) {
-//            if (s.equalsIgnoreCase("grass") && !destroyGrass)
-//                destroyGrass = true;
-//            if (s.equalsIgnoreCase("leaves") && !destroyLeaves)
-//                destroyLeaves = true;
-//            if (s.equalsIgnoreCase("crops") && !destroyCrops)
-//                destroyCrops = true;
-//            if (s.equalsIgnoreCase("plants") && !destroyCrops)
-//                destroyPlants = true;
-//        }
-//        ForgeRegistry<Block> blockRegistry = ((ForgeRegistry<Block>) ForgeRegistries.BLOCKS);
-//
-//        String blocksToNotDestroy = BetterWeatherConfig.blocksToNotDestroy;
-//        String removeBlocksToNotDestroySpaces = blocksToNotDestroy.trim().toLowerCase().replace(" ", "");
-//        String[] blocksToNotDestroyList = removeBlocksToNotDestroySpaces.split(",");
-//        for (String s : blocksToNotDestroyList) {
-//            Block block = blockRegistry.getValue(new ResourceLocation(s));
-//            if (block != null)
-//                BetterWeather.blocksToNotDestroyList.add(block);
-//            else
-//                LOGGER.error("A block registry name you added to the \"BlocksToNotDestroy\" list was incorrect, you put: " + s + "\n Please fix it or this block will be destroyed.");
-//        }
-//    }
-//
+        String entityTypes = BetterWeatherConfig.entityTypesToDamage;
+        String removeSpaces = entityTypes.trim().toLowerCase().replace(" ", "");
+        String[] entityList = removeSpaces.split(",");
+
+        for (String s : entityList) {
+            if (s.equalsIgnoreCase("animal") && !damageAnimals)
+                damageAnimals = true;
+            if (s.equalsIgnoreCase("monster") && !damageMonsters)
+                damageMonsters = true;
+            if (s.equalsIgnoreCase("player") && !damagePlayer)
+                damagePlayer = true;
+        }
+
+        String allowedBlockTypesToDestroy = BetterWeatherConfig.allowedBlocksToDestroy;
+        String removeBlockTypeSpaces = allowedBlockTypesToDestroy.trim().toLowerCase().replace(" ", "");
+        String[] blockTypeToDestroyList = removeBlockTypeSpaces.split(",");
+
+        for (String s : blockTypeToDestroyList) {
+            if (s.equalsIgnoreCase("grass") && !destroyGrass)
+                destroyGrass = true;
+            if (s.equalsIgnoreCase("leaves") && !destroyLeaves)
+                destroyLeaves = true;
+            if (s.equalsIgnoreCase("crops") && !destroyCrops)
+                destroyCrops = true;
+            if (s.equalsIgnoreCase("plants") && !destroyCrops)
+                destroyPlants = true;
+        }
+
+        String blocksToNotDestroy = BetterWeatherConfig.blocksToNotDestroy;
+        String removeBlocksToNotDestroySpaces = blocksToNotDestroy.trim().toLowerCase().replace(" ", "");
+        String[] blocksToNotDestroyList = removeBlocksToNotDestroySpaces.split(",");
+        for (String s : blocksToNotDestroyList) {
+            net.minecraft.world.level.block.Block block = Registry.BLOCK.get(new ResourceLocation(s));
+            if (block != null)
+                BetterWeather.blocksToNotDestroyList.add(block);
+            else
+                LOGGER.error("A block registry name you added to the \"BlocksToNotDestroy\" list was incorrect, you put: " + s + "\n Please fix it or this block will be destroyed.");
+        }
+    }
+
 //    public void clientSetup(FMLClientSetupEvent event) {
 ////        RenderingRegistry.registerEntityRenderingHandler(BWEntityRegistry.TORNADO, TornadoRenderer::new);
 //
@@ -105,8 +101,8 @@ public class BetterWeather implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        configReader();
         ServerTickEvents.END_WORLD_TICK.register(event -> BetterWeatherEvents.worldTick(event.getLevel()));
-        ClientTickEvents.START_CLIENT_TICK.register(event -> BetterWeatherEvents.clientTickEvent());
         BetterWeatherEvents.commandRegisterEvent();
     }
 
