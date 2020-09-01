@@ -114,12 +114,12 @@ public class BetterWeather implements ModInitializer {
             long worldTime = world.getLevelData().getGameTime();
 
             //Rolls a random chance for acid rain once every 5000 ticks and will not run when raining to avoid disco colored rain.
-            if (worldTime == 100 || worldTime % 5000 == 0 && !world.getLevelData().isRaining()) {
+            if (worldTime == 100 || worldTime % 24000 == 0 && !world.getLevelData().isRaining()) {
                 Random random = world.random;
                 weatherData.setAcidRain(random.nextFloat() < BetterWeatherConfig.acidRainChance);
                 weatherData.setBlizzard(false);
             }
-            if (worldTime == 100 || worldTime % 5000 == 0 && !world.getLevelData().isRaining()) {
+            if (worldTime == 100 || worldTime % 24000 == 0 && !world.getLevelData().isRaining()) {
                 Random random = world.random;
                 weatherData.setBlizzard(random.nextFloat() + 0.05 < BetterWeatherConfig.blizzardChance);
                 weatherData.setAcidRain(false);
