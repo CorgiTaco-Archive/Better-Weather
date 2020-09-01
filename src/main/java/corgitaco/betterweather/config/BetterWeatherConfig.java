@@ -1,6 +1,7 @@
 package corgitaco.betterweather.config;
 
 public class BetterWeatherConfig {
+    //Acid Rain Config
     public static double acidRainChance = 0.2F;
     public static int tickBlockDestroySpeed = 500;
     public static boolean destroyBlocks = true;
@@ -9,10 +10,10 @@ public class BetterWeatherConfig {
     public static int hurtEntityTickSpeed = 150;
     public static double hurtEntityDamage = 0.5F;
     public static String entityTypesToDamage = "MONSTER,PLAYER";
-    public static String blockToChangeFromGrass = "minecraft:coarse_dirt";
+    public static String blockToChangeFromGrass = "minecraft:dirt";
     public static String blocksToNotDestroy = "";
 
-    //Blizzard Con
+    //Blizzard Config
     public static boolean doBlizzardsOccurInDeserts = false;
     public static boolean spawnSnowAndIce = true;
     public static boolean decaySnowAndIce = true;
