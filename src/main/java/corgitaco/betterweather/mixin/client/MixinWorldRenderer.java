@@ -3,7 +3,6 @@ package corgitaco.betterweather.mixin.client;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
@@ -175,15 +174,4 @@ public abstract class MixinWorldRenderer {
             }
         }
     }
-
-    @Inject(at = @At("HEAD"), method = "renderSky", cancellable = true)
-    private void changeSkyCOlor(PoseStack poseStack, float f, CallbackInfo ci) {
-        if (minecraft.level != null) {
-            if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard()) {
-                ci.cancel();
-            }
-        }
-    }
-
-
 }

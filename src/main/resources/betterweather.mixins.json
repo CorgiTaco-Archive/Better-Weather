@@ -4,14 +4,14 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "betterweather.refmap.json",
   "mixins": [
-    "client.MixinDimensionSpecialEffects",
     "common.entity.MixinLivingEntity"
   ],
   "client": [
     "client.MixinFogRenderer",
     "client.MixinLeavesBlock",
     "client.MixinSoundEngine",
-    "client.MixinWorldRenderer"
+    "client.MixinWorldRenderer",
+    "client.MixinDimensionSpecialEffects"
   ],
   "injectors": {
     "defaultRequire": 1
