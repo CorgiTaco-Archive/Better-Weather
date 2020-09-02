@@ -15,7 +15,7 @@ public class MixinDimensionSpecialEffects {
     Minecraft minecraft = Minecraft.getInstance();
 
     @Inject(at = @At("HEAD"), method = "getSunriseColor(FF)[F", cancellable = true)
-    private void yeet(float f, float g, CallbackInfoReturnable<@Nullable float[]> cir) {
+    private void removeFogColorForBlizzards(float f, float g, CallbackInfoReturnable<@Nullable float[]> cir) {
         if (minecraft.level != null) {
             BetterWeather.BetterWeatherEvents.setWeatherData(minecraft.level);
             if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && minecraft.level.getLevelData().isRaining() && minecraft.level.dimensionType() == DimensionType.DEFAULT_OVERWORLD)
