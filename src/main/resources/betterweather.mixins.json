@@ -4,15 +4,15 @@
   "package": "corgitaco.betterweather.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "common.entity.MixinLivingEntity",
-    "client.MixinWorldRenderer"
+    "common.entity.MixinLivingEntity"
   ],
   "client": [
     "client.MixinFogRenderer",
     "client.MixinLeavesBlock",
     "client.MixinSoundEngine",
     "client.MixinWorldRenderer",
-    "client.MixinDimensionSpecialEffects"
+    "client.MixinDimensionSpecialEffects",
+    "client.MixinWorldRenderer"
   ],
   "injectors": {
     "defaultRequire": 1

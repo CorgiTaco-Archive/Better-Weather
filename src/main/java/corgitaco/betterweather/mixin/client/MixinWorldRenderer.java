@@ -29,7 +29,7 @@ import java.util.Random;
 public abstract class MixinWorldRenderer {
 
     @Shadow
-    private int ticks;
+    public int ticks;
 
     @Shadow
     @Final

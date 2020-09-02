@@ -61,7 +61,7 @@ public class BetterWeatherData extends SavedData {
     public static BetterWeatherData get(LevelAccessor world) {
         if (!(world instanceof ServerLevel))
             return new BetterWeatherData();
-        ServerLevel overWorld = ((ServerLevel) world).getLevel().getServer().getLevel(Level.NETHER);
+        ServerLevel overWorld = ((ServerLevel) world).getLevel().getServer().getLevel(Level.OVERWORLD);
         DimensionDataStorage data = overWorld.getDataStorage();
         BetterWeatherData weatherData = data.get(BetterWeatherData::new, DATA_NAME);
 

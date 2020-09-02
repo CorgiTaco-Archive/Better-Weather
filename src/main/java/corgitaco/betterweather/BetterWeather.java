@@ -6,11 +6,14 @@ import corgitaco.betterweather.datastorage.BetterWeatherData;
 import corgitaco.betterweather.server.BetterWeatherCommand;
 import corgitaco.betterweather.weatherevents.AcidRain;
 import corgitaco.betterweather.weatherevents.Blizzard;
+import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ServerLevel;
@@ -33,6 +36,9 @@ import java.util.Random;
 public class BetterWeather implements ModInitializer {
     public static Logger LOGGER = LogManager.getLogger();
     public static final String MOD_ID = "betterweather";
+
+    public static final ResourceLocation BW_WEATHER_PACKET = new ResourceLocation(MOD_ID, "blizzard_update");
+    public static final ResourceLocation ACID_RAIN_PACKET = new ResourceLocation(MOD_ID, "acid_rain_update");
 
     static boolean damageAnimals = false;
     static boolean damageMonsters = false;
@@ -150,6 +156,22 @@ public class BetterWeather implements ModInitializer {
                     }
                 }
             });
+
+
+
+            FriendlyByteBuf passedData = new FriendlyByteBuf(Unpooled.buffer());
+            passedData.writeBoolean(weatherData.isBlizzard());
+            passedData.writeBoolean(weatherData.isAcidRain());
+
+
+            if (serverWorld.getLevelData().getGameTime() % 5 == 0) {
+                world.players().forEach(player -> {
+                    ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, BW_WEATHER_PACKET, passedData);
+                });
+            }
+
+
+
         }
 
 //    public static void playerTickEvent(TickEvent.PlayerTickEvent event) {

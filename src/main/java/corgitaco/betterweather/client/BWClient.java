@@ -6,16 +6,28 @@ import corgitaco.betterweather.weatherevents.AcidRain;
 import corgitaco.betterweather.weatherevents.Blizzard;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.resources.ResourceLocation;
-
-import static corgitaco.betterweather.BetterWeather.BetterWeatherEvents;
 
 public class BWClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientTickEvents.START_CLIENT_TICK.register(BWClient::clientTickEvent);
+
+        ClientSidePacketRegistry.INSTANCE.register(BetterWeather.BW_WEATHER_PACKET,
+                (packetContext, attachedData) -> {
+                    boolean readBlizzard = attachedData.readBoolean();
+                    boolean readAcidRain = attachedData.readBoolean();
+
+                    packetContext.getTaskQueue().execute(() -> {
+                        BetterWeather.BetterWeatherEvents.weatherData.setBlizzard(readBlizzard);
+                        BetterWeather.BetterWeatherEvents.weatherData.setAcidRain(readAcidRain);
+
+
+                    });
+                });
     }
 
     public static final ResourceLocation RAIN_TEXTURE = new ResourceLocation("textures/environment/rain.png");
@@ -25,23 +37,23 @@ public class BWClient implements ClientModInitializer {
 
     public static void clientTickEvent(Minecraft minecraft) {
         if (minecraft.level != null) {
-            BetterWeatherEvents.setWeatherData(minecraft.level);
-            if (minecraft.level.getLevelData().isRaining() && BetterWeatherEvents.weatherData.isAcidRain()) {
+            BetterWeather.BetterWeatherEvents.setWeatherData(minecraft.level);
+            if (minecraft.level.getLevelData().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isAcidRain()) {
 
                 if (!BetterWeatherConfigClient.removeSmokeParticles)
                     AcidRain.addAcidRainParticles(minecraft.gameRenderer.getMainCamera(), minecraft, minecraft.levelRenderer);
 
-                if (LevelRenderer.RAIN_LOCATION != ACID_RAIN_TEXTURE && BetterWeatherEvents.weatherData.isAcidRain())
+                if (LevelRenderer.RAIN_LOCATION != ACID_RAIN_TEXTURE && BetterWeather.BetterWeatherEvents.weatherData.isAcidRain())
                     LevelRenderer.RAIN_LOCATION = ACID_RAIN_TEXTURE;
-                else if (LevelRenderer.RAIN_LOCATION != RAIN_TEXTURE && !BetterWeatherEvents.weatherData.isAcidRain())
+                else if (LevelRenderer.RAIN_LOCATION != RAIN_TEXTURE && !BetterWeather.BetterWeatherEvents.weatherData.isAcidRain())
                     LevelRenderer.RAIN_LOCATION = RAIN_TEXTURE;
             }
 
-            if (minecraft.level.getLevelData().isRaining() && BetterWeatherEvents.weatherData.isBlizzard()) {
+            if (minecraft.level.getLevelData().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard()) {
                 minecraft.levelRenderer.lastViewDistance = BetterWeatherConfigClient.forcedRenderDistanceDuringBlizzards;
                 idx = 0;
             }
-            if (minecraft.levelRenderer.lastViewDistance != minecraft.options.renderDistance && !BetterWeatherEvents.weatherData.isBlizzard() && idx == 0) {
+            if (minecraft.levelRenderer.lastViewDistance != minecraft.options.renderDistance && !BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && idx == 0) {
                 minecraft.levelRenderer.lastViewDistance = minecraft.options.renderDistance;
                 idx++;
             }
