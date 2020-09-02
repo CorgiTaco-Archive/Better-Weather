@@ -107,9 +107,8 @@ public class Blizzard {
         if (minecraft.level != null) {
             if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && minecraft.level.isRaining()) {
                 minecraft.getSoundManager().soundEngine.updateCategoryVolume(SoundSource.WEATHER, 0.1F);
+                BetterWeather.LOGGER.info("SOUNDENGINE");
             }
-//            else
-//                minecraft.getSoundHandler().sndManager.setVolume(SoundSource.WEATHER, minecraft.gameSettings.getSoundLevel(SoundSource.WEATHER));
         }
 
 

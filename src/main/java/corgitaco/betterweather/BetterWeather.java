@@ -160,6 +160,10 @@ public class BetterWeather implements ModInitializer {
 //    }
 
         public static void entityTickEvent(net.minecraft.world.entity.Entity entity) {
+            if (entity.level != null)
+                setWeatherData(entity.level);
+
+
             if (damageMonsters) {
                 if (entity.getType().getCategory() == MobCategory.MONSTER) {
                     Level world = entity.level;
@@ -200,8 +204,7 @@ public class BetterWeather implements ModInitializer {
 
         static int idx = 0;
 
-        public static void clientTickEvent() {
-            Minecraft minecraft = Minecraft.getInstance();
+        public static void clientTickEvent(Minecraft minecraft) {
             if (minecraft.level != null) {
                 setWeatherData(minecraft.level);
                 if (minecraft.level.getLevelData().isRaining() && BetterWeatherEvents.weatherData.isAcidRain()) {

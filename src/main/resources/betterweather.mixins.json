@@ -1,10 +1,11 @@
 {
   "required": true,
+  "minVersion": "0.8",
   "package": "corgitaco.betterweather.mixin",
   "compatibilityLevel": "JAVA_8",
-  "refmap": "betterweather.refmap.json",
   "mixins": [
-    "common.entity.MixinLivingEntity"
+    "common.entity.MixinLivingEntity",
+    "client.MixinWorldRenderer"
   ],
   "client": [
     "client.MixinFogRenderer",
@@ -15,6 +16,5 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "minVersion": "0.8"
+  }
 }

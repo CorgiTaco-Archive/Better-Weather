@@ -12,6 +12,7 @@ public class MixinLivingEntity {
 
     @Inject(at = @At("HEAD"), method = "tick()V", cancellable = true)
     private void getTick(CallbackInfo ci) {
+
         BetterWeather.BetterWeatherEvents.entityTickEvent((LivingEntity) (Object) this);
     }
 
