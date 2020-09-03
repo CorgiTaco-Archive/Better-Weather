@@ -2,7 +2,6 @@ package corgitaco.betterweather.weatherevents;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.SoundRegistry;
-import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -39,7 +38,7 @@ public class Blizzard {
         BlockPos blockpos = world.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
         Biome biome = world.getBiome(blockpos);
         if (isAreaLoaded(blockpos, 1, world)) {
-            if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && world.getLevelData().isRaining() && worldTime % BetterWeatherConfig.tickSnowAndIcePlaceSpeed == 0 && biome.getBiomeCategory() != Biome.BiomeCategory.NETHER && biome.getBiomeCategory() != Biome.BiomeCategory.THEEND && biome.getBiomeCategory() != Biome.BiomeCategory.NONE && doBlizzardsAffectDeserts(biome) && BetterWeatherConfig.spawnSnowAndIce) {
+            if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && world.getLevelData().isRaining() && worldTime % BetterWeather.BW_CONFIG.blizzard.world.snow_generation.tickSnowAndIcePlaceSpeed == 0 && biome.getBiomeCategory() != Biome.BiomeCategory.NETHER && biome.getBiomeCategory() != Biome.BiomeCategory.THEEND && biome.getBiomeCategory() != Biome.BiomeCategory.NONE && doBlizzardsAffectDeserts(biome) && BetterWeather.BW_CONFIG.blizzard.world.snow_generation.spawnSnowAndIce) {
                 if (world.getBlockState(blockpos.below()).getBlock() == Blocks.WATER && world.getBlockState(blockpos.below()).getFluidState().getAmount() == 8) {
                     world.setBlockAndUpdate(blockpos.below(), Blocks.ICE.defaultBlockState());
                 }
@@ -81,8 +80,8 @@ public class Blizzard {
         Block block = world.getBlockState(blockpos).getBlock();
 
         if (isAreaLoaded(blockpos, 1, world)) {
-            if (biome.getTemperature(blockpos) >= BetterWeatherConfig.snowDecayTemperatureThreshold) {
-                if (!world.getLevelData().isRaining() && worldTime % BetterWeatherConfig.tickSnowAndIceDecaySpeed == 0 && biome.getBiomeCategory() != Biome.BiomeCategory.NETHER && biome.getBiomeCategory() != Biome.BiomeCategory.THEEND && biome.getBiomeCategory() != Biome.BiomeCategory.NONE && doBlizzardsAffectDeserts(biome)) {
+            if (biome.getTemperature(blockpos) >= BetterWeather.BW_CONFIG.blizzard.world.snow_decay.snowDecayTemperatureThreshold) {
+                if (!world.getLevelData().isRaining() && worldTime % BetterWeather.BW_CONFIG.blizzard.world.snow_decay.tickSnowAndIceDecaySpeed == 0 && biome.getBiomeCategory() != Biome.BiomeCategory.NETHER && biome.getBiomeCategory() != Biome.BiomeCategory.THEEND && biome.getBiomeCategory() != Biome.BiomeCategory.NONE && doBlizzardsAffectDeserts(biome)) {
                     if (blockDown == Blocks.SNOW)
                         world.setBlockAndUpdate(blockpos.below(), Blocks.AIR.defaultBlockState());
                     if (block == Blocks.SNOW)
@@ -169,21 +168,21 @@ public class Blizzard {
     public static void blizzardEntityHandler(Entity entity) {
         BetterWeather.BetterWeatherEvents.setWeatherData(entity.level);
         if (entity instanceof LivingEntity) {
-            if (entity.level.getLevelData().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && BetterWeatherConfig.doBlizzardsSlowPlayers)
-                ((LivingEntity) entity).addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 5, BetterWeatherConfig.blizzardSlownessAmplifier, true, false));
+            if (entity.level.getLevelData().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && BetterWeather.BW_CONFIG.blizzard.entity.doBlizzardsSlowEntities)
+                ((LivingEntity) entity).addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 5, BetterWeather.BW_CONFIG.blizzard.entity.blizzardSlownessAmplifier, true, false));
         }
     }
 
 
     public static boolean doBlizzardsAffectDeserts(Biome biome) {
-        if (!BetterWeatherConfig.doBlizzardsOccurInDeserts)
+        if (!BetterWeather.BW_CONFIG.blizzard.world.snow_generation.blizzardsInDeserts)
             return biome.getBiomeCategory() != Biome.BiomeCategory.DESERT;
         else
             return true;
     }
 
     public static boolean doBlizzardsDestroyPlants(Material material) {
-        if (!BetterWeatherConfig.doBlizzardsDestroyPlants)
+        if (!BetterWeather.BW_CONFIG.blizzard.world.snow_generation.destroyPlants)
             return material != Material.PLANT && material != Material.REPLACEABLE_PLANT && material != Material.WATER_PLANT;
         else
             return true;

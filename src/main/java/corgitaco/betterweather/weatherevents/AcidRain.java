@@ -1,7 +1,6 @@
 package corgitaco.betterweather.weatherevents;
 
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.config.BetterWeatherConfig;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.ParticleStatus;
@@ -33,7 +32,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import java.util.Random;
 
 public class AcidRain {
-    static Block block = Registry.BLOCK.get(new ResourceLocation(BetterWeatherConfig.blockToChangeFromGrass));
+    static Block block = Registry.BLOCK.get(new ResourceLocation(BetterWeather.BW_CONFIG.acid_rain.world.blockToChangeFromGrass));
 
     public static void acidRainEvent(LevelChunk chunk, ServerLevel world, int gameRuleTickSpeed, long worldTime) {
         ChunkPos chunkpos = chunk.getPos();
@@ -43,11 +42,11 @@ public class AcidRain {
         iprofiler.incrementCounter("acidrain");
         BlockPos blockpos = world.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
         if (Blizzard.isAreaLoaded(blockpos, 1, world)) {
-            if (BetterWeather.BetterWeatherEvents.weatherData.isAcidRain() && world.getLevelData().isRaining() && worldTime % BetterWeatherConfig.tickBlockDestroySpeed == 0 && BetterWeatherConfig.destroyBlocks && world.getBiome(blockpos).getPrecipitation() == Biome.Precipitation.RAIN) {
+            if (BetterWeather.BetterWeatherEvents.weatherData.isAcidRain() && world.getLevelData().isRaining() && worldTime % BetterWeather.BW_CONFIG.acid_rain.world.blockTickDestroySpeed == 0 && BetterWeather.BW_CONFIG.acid_rain.world.destroyBlocks && world.getBiome(blockpos).getPrecipitation() == Biome.Precipitation.RAIN) {
                 if (BetterWeather.destroyGrass) {
                     if (block == null) {
-                        BetterWeather.LOGGER.error("The block replacing grass, registry location was incorrect. You put: " + BetterWeatherConfig.blockToChangeFromGrass + "\n Reverting to coarse dirt!");
-                        block = Blocks.COARSE_DIRT;
+                        BetterWeather.LOGGER.error("The block replacing grass, registry location was incorrect. You put: " + BetterWeather.BW_CONFIG.acid_rain.world.blockToChangeFromGrass + "\n Reverting to dirt!");
+                        block = Blocks.DIRT;
                     }
                     if (world.getBlockState(blockpos.below()).getBlock() == Blocks.GRASS_BLOCK)
                         world.setBlockAndUpdate(blockpos.below(), block.defaultBlockState());

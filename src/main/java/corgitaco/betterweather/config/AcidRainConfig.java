@@ -28,7 +28,7 @@ public class AcidRainConfig implements ConfigData {
         @Comment(value = "\nHow often(in ticks) blocks are destroyed during an acid rain event.\n" +
                 "Default: 0.25")
         @ConfigEntry.BoundedDiscrete(min = 1, max = 100000)
-        public double blockTickDestroySpeed = 0.25;
+        public int blockTickDestroySpeed = 250;
 
         @ConfigEntry.Gui.PrefixText
         @Comment(value = "\nDestroy Blocks?\n" +
@@ -36,6 +36,7 @@ public class AcidRainConfig implements ConfigData {
         public boolean destroyBlocks = true;
 
         @ConfigEntry.Gui.PrefixText
+        @ConfigEntry.Gui.Tooltip
         @Comment(value = "\nDestroy what block materials? Allowed Values: GRASS,LEAVES,PLANTS,CROPS\n" +
                 "Default: GRASS,LEAVES,PLANTS,CROPS")
         public String allowedBlocksToDestroy = "GRASS,LEAVES,PLANTS,CROPS";
@@ -47,19 +48,19 @@ public class AcidRainConfig implements ConfigData {
 
         @ConfigEntry.Gui.PrefixText
         @Comment(value = "\nThe block to change grass to.\n" +
-                "Default: \"minecraft:coarse_dirt\"")
-        public String blockToChangeFromGrass = "";
+                "Default: \"minecraft:dirt\"")
+        public String blockToChangeFromGrass = "minecraft:dirt";
     }
 
     public static class AcidRainEntity {
 
         @ConfigEntry.Gui.PrefixText
-        @Comment(value = "\nHurt Entities?\n" +
+        @Comment(value = "\nDoes Acid Rain hurt entities(including players)?\n" +
                 "Default: true")
         public boolean hurtEntities = true;
 
         @ConfigEntry.Gui.PrefixText
-        @Comment(value = "\nHow often are entities(including players) hurt?\n" +
+        @Comment(value = "\nHow often(in ticks) are entities(including players) hurt?\n" +
                 "Default: 150")
         @ConfigEntry.BoundedDiscrete(min = 1, max = 100000)
         public int entityDamageTickSpeed = 150;

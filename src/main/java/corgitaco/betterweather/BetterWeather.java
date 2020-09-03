@@ -59,7 +59,7 @@ public class BetterWeather implements ModInitializer {
         AutoConfig.register(BetterWeatherConfig.class, JanksonConfigSerializer::new);
         BW_CONFIG = AutoConfig.getConfigHolder(BetterWeatherConfig.class).getConfig();
 
-        String entityTypes = BetterWeatherConfig.entityTypesToDamage;
+        String entityTypes = BW_CONFIG.acid_rain.entity.entityTypesToDamage;
         String removeSpaces = entityTypes.trim().toLowerCase().replace(" ", "");
         String[] entityList = removeSpaces.split(",");
 
@@ -72,7 +72,7 @@ public class BetterWeather implements ModInitializer {
                 damagePlayer = true;
         }
 
-        String allowedBlockTypesToDestroy = BetterWeatherConfig.allowedBlocksToDestroy;
+        String allowedBlockTypesToDestroy = BW_CONFIG.acid_rain.world.allowedBlocksToDestroy;
         String removeBlockTypeSpaces = allowedBlockTypesToDestroy.trim().toLowerCase().replace(" ", "");
         String[] blockTypeToDestroyList = removeBlockTypeSpaces.split(",");
 
@@ -87,7 +87,7 @@ public class BetterWeather implements ModInitializer {
                 destroyPlants = true;
         }
 
-        String blocksToNotDestroy = BetterWeatherConfig.blocksToNotDestroy;
+        String blocksToNotDestroy = BW_CONFIG.acid_rain.world.blocksToNotDestroy;
         String removeBlocksToNotDestroySpaces = blocksToNotDestroy.trim().toLowerCase().replace(" ", "");
         String[] blocksToNotDestroyList = removeBlocksToNotDestroySpaces.split(",");
         for (String s : blocksToNotDestroyList) {
@@ -125,12 +125,12 @@ public class BetterWeather implements ModInitializer {
             //Rolls a random chance for acid rain once every 5000 ticks and will not run when raining to avoid disco colored rain.
             if (worldTime == 100 || worldTime % 24000 == 0 && !world.getLevelData().isRaining()) {
                 Random random = world.random;
-                weatherData.setAcidRain(random.nextFloat() < BetterWeatherConfig.acidRainChance);
+                weatherData.setAcidRain(random.nextFloat() < BW_CONFIG.acid_rain.world.acidRainChance);
                 weatherData.setBlizzard(false);
             }
             if (worldTime == 100 || worldTime % 24000 == 0 && !world.getLevelData().isRaining()) {
                 Random random = world.random;
-                weatherData.setBlizzard(random.nextFloat() + 0.05 < BetterWeatherConfig.blizzardChance);
+                weatherData.setBlizzard(random.nextFloat() + 0.05 < BW_CONFIG.blizzard.world.snow_generation.blizzardChance);
                 weatherData.setAcidRain(false);
             }
 
@@ -156,7 +156,7 @@ public class BetterWeather implements ModInitializer {
                     if (optional1.isPresent()) {
                         LevelChunk chunk = optional1.get();
                         Blizzard.blizzardEvent(chunk, serverWorld, tickSpeed, worldTime);
-                        if (BetterWeatherConfig.decaySnowAndIce)
+                        if (BW_CONFIG.blizzard.world.snow_decay.decaySnowAndIce)
                             Blizzard.doesIceAndSnowDecay(chunk, serverWorld, worldTime);
                         AcidRain.acidRainEvent(chunk, serverWorld, tickSpeed, worldTime);
                     }
@@ -194,8 +194,8 @@ public class BetterWeather implements ModInitializer {
                     Level world = entity.level;
                     BlockPos entityPos = new BlockPos(entity.getX(), entity.getY(), entity.getZ());
 
-                    if (world.canSeeSky(entityPos) && BetterWeatherEvents.weatherData.isAcidRain() && world.getLevelData().isRaining() && world.getGameTime() % BetterWeatherConfig.hurtEntityTickSpeed == 0) {
-                        entity.hurt(DamageSource.GENERIC, 0.5F);
+                    if (world.canSeeSky(entityPos) && BetterWeatherEvents.weatherData.isAcidRain() && world.getLevelData().isRaining() && world.getGameTime() % BW_CONFIG.acid_rain.entity.entityDamageTickSpeed == 0) {
+                        entity.hurt(DamageSource.GENERIC, (float) BW_CONFIG.acid_rain.entity.damageStrength);
                     }
                 }
             }
@@ -205,8 +205,8 @@ public class BetterWeather implements ModInitializer {
                     Level world = entity.level;
                     BlockPos entityPos = new BlockPos(entity.getX(), entity.getY(), entity.getZ());
 
-                    if (world.canSeeSky(entityPos) && BetterWeatherEvents.weatherData.isAcidRain() && world.getLevelData().isRaining() && world.getGameTime() % BetterWeatherConfig.hurtEntityTickSpeed == 0) {
-                        entity.hurt(DamageSource.GENERIC, (float) BetterWeatherConfig.hurtEntityDamage);
+                    if (world.canSeeSky(entityPos) && BetterWeatherEvents.weatherData.isAcidRain() && world.getLevelData().isRaining() && world.getGameTime() % BW_CONFIG.acid_rain.entity.entityDamageTickSpeed == 0) {
+                        entity.hurt(DamageSource.GENERIC, (float) BW_CONFIG.acid_rain.entity.damageStrength);
                     }
                 }
             }
@@ -216,8 +216,8 @@ public class BetterWeather implements ModInitializer {
                     Level world = entity.level;
                     BlockPos entityPos = new BlockPos(entity.getX(), entity.getY(), entity.getZ());
 
-                    if (world.canSeeSky(entityPos) && BetterWeatherEvents.weatherData.isAcidRain() && world.getLevelData().isRaining() && world.getGameTime() % BetterWeatherConfig.hurtEntityTickSpeed == 0) {
-                        entity.hurt(DamageSource.GENERIC, 0.5F);
+                    if (world.canSeeSky(entityPos) && BetterWeatherEvents.weatherData.isAcidRain() && world.getLevelData().isRaining() && world.getGameTime() % BW_CONFIG.acid_rain.entity.entityDamageTickSpeed == 0) {
+                        entity.hurt(DamageSource.GENERIC, (float) BW_CONFIG.acid_rain.entity.damageStrength);
                     }
                 }
             }
