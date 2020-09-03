@@ -47,7 +47,7 @@ public class BetterWeatherConfig {
         destroyBlocks = COMMON_BUILDER.comment("Destroy Blocks?\nDefault: true").define("DestroyBlocks", true);
         allowedBlocksToDestroy = COMMON_BUILDER.comment("Destroy what block materials? Allowed Values: GRASS,LEAVES,PLANTS,CROPS\nDefault: GRASS,LEAVES,PLANTS,CROPS").define("BlocksToDestroy", "GRASS,LEAVES,PLANTS,CROPS");
         blocksToNotDestroy = COMMON_BUILDER.comment("A specific block in one of the materials you want to destroy? Blacklist them here w/ their registry names! \nI.E: \"minecraft:rose,minecraft:wither_rose\"").define("BlocksToNotDestroy", "");
-        blockToChangeFromGrass = COMMON_BUILDER.comment("The block to change grass to.\nDefault: \"minecraft:coarse_dirt\"").define("BlockToChangeFromGrass", "minecraft:dirt");
+        blockToChangeFromGrass = COMMON_BUILDER.comment("The block to change grass to.\nDefault: \"minecraft:dirt\"").define("BlockToChangeFromGrass", "minecraft:dirt");
         COMMON_BUILDER.pop();
         COMMON_BUILDER.push("Entity_Settings");
         hurtEntities = COMMON_BUILDER.comment("Hurt Entities?\nDefault: true").define("HurtEntities", true);
@@ -60,7 +60,7 @@ public class BetterWeatherConfig {
         blizzardChance = COMMON_BUILDER.comment("The chance of a blizzard that's checked every 5,000 ticks.\n Default: 0.1").defineInRange("BlizzardChance", 0.1, 0.0, 1.0);
         doBlizzardsOccurInDeserts = COMMON_BUILDER.comment("Do blizzards appear in and generate snow in deserts?\nDefault: false.").define("BlizzardsInDeserts", false);
         spawnSnowAndIce = COMMON_BUILDER.comment("Do blizzards generate snow and ice?\nDefault: true").define("SpawnSnowAndIce", true);
-        tickSnowAndIcePlaceSpeed = COMMON_BUILDER.comment("How often is snow and ice placed during blizzards?\nDefault: 20").defineInRange("SnowAndIceBlockPlaceTickSpeed", 20, 1, 100000);
+        tickSnowAndIcePlaceSpeed = COMMON_BUILDER.comment("How often is snow and ice placed during blizzards?\nDefault: 15").defineInRange("SnowAndIceBlockPlaceTickSpeed", 20, 1, 100000);
         doBlizzardsDestroyPlants = COMMON_BUILDER.comment("Do blizzards destroy plants?\nDefault: false").define("BlizzardsDestroyPlants", false);
         COMMON_BUILDER.pop();
         COMMON_BUILDER.push("Snow_Decay");
