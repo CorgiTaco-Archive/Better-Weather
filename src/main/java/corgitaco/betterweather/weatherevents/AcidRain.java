@@ -48,8 +48,8 @@ public class AcidRain {
             if (BetterWeather.BetterWeatherEvents.weatherData.isAcidRain() && world.getWorldInfo().isRaining() && worldTime % BetterWeatherConfig.tickBlockDestroySpeed.get() == 0 && BetterWeatherConfig.destroyBlocks.get() && world.getBiome(blockpos).getPrecipitation() == Biome.RainType.RAIN) {
                 if (BetterWeather.destroyGrass) {
                     if (block == null) {
-                        BetterWeather.LOGGER.error("The block replacing grass, registry location was incorrect. You put: " + BetterWeatherConfig.blockToChangeFromGrass.get() + "\n Reverting to coarse dirt!");
-                        block = Blocks.COARSE_DIRT;
+                        BetterWeather.LOGGER.error("The block replacing grass, registry location was incorrect. You put: " + BetterWeatherConfig.blockToChangeFromGrass.get() + "\n Reverting to dirt!");
+                        block = Blocks.DIRT;
                     }
                     if (world.getBlockState(blockpos.down()).getBlock() == Blocks.GRASS_BLOCK)
                         world.setBlockState(blockpos.down(), block.getDefaultState());
