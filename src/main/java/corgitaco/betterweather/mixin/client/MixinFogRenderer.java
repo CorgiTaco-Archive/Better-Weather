@@ -2,7 +2,6 @@ package corgitaco.betterweather.mixin.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.config.BetterWeatherConfigClient;
 import corgitaco.betterweather.weatherevents.Blizzard;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -23,12 +22,12 @@ public class MixinFogRenderer {
 
     @Inject(at = @At("HEAD"), method = "setupFog(Lnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/FogRenderer$FogMode;FZ)V", cancellable = true)
     private static void blizzardFogDensity(Camera camera, FogRenderer.FogMode fogMode, float f, boolean bl, CallbackInfo ci) {
-        if (BetterWeatherConfigClient.blizzardFog) {
+        if (BetterWeather.BW_CONFIG.blizzard.client.blizzardFog) {
             if (minecraft.level != null && minecraft.player != null) {
                 BetterWeather.BetterWeatherEvents.setWeatherData(minecraft.level);
                 BlockPos playerPos = new BlockPos(minecraft.player.position());
                 if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && minecraft.level.getLevelData().isRaining() && Blizzard.doBlizzardsAffectDeserts(minecraft.level.getBiome(playerPos))) {
-                    RenderSystem.fogDensity((float) BetterWeatherConfigClient.blizzardFogDensity);
+                    RenderSystem.fogDensity((float) BetterWeather.BW_CONFIG.blizzard.client.blizzardFogDensity);
                     ci.cancel();
                     if (idx2 != 0)
                         idx2 = 0;

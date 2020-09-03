@@ -1,7 +1,6 @@
 package corgitaco.betterweather.client;
 
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.config.BetterWeatherConfigClient;
 import corgitaco.betterweather.weatherevents.AcidRain;
 import corgitaco.betterweather.weatherevents.Blizzard;
 import net.fabricmc.api.ClientModInitializer;
@@ -40,7 +39,7 @@ public class BWClient implements ClientModInitializer {
             BetterWeather.BetterWeatherEvents.setWeatherData(minecraft.level);
             if (minecraft.level.getLevelData().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isAcidRain()) {
 
-                if (BetterWeatherConfigClient.removeSmokeParticles)
+                if (BetterWeather.BW_CONFIG.acid_rain.client.smokeParticles)
                     AcidRain.addAcidRainParticles(minecraft.gameRenderer.getMainCamera(), minecraft, minecraft.levelRenderer);
 
                 if (LevelRenderer.RAIN_LOCATION != ACID_RAIN_TEXTURE && BetterWeather.BetterWeatherEvents.weatherData.isAcidRain())
@@ -50,7 +49,7 @@ public class BWClient implements ClientModInitializer {
             }
 
             if (minecraft.level.getLevelData().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard()) {
-                minecraft.levelRenderer.lastViewDistance = BetterWeatherConfigClient.forcedRenderDistanceDuringBlizzards;
+                minecraft.levelRenderer.lastViewDistance = BetterWeather.BW_CONFIG.blizzard.client.forcedBlizzardRenderDistance;
                 idx = 0;
             }
             if (minecraft.levelRenderer.lastViewDistance != minecraft.options.renderDistance && !BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && idx == 0) {
