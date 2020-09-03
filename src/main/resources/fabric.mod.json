@@ -23,6 +23,9 @@
     ],
     "client": [
       "corgitaco.betterweather.client.BWClient"
+    ],
+    "modmenu": [
+      "corgitaco.betterweather.config.BWModMenuIntegration"
     ]
   },
   "mixins": [

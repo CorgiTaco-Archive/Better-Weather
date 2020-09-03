@@ -40,7 +40,7 @@ public class BWClient implements ClientModInitializer {
             BetterWeather.BetterWeatherEvents.setWeatherData(minecraft.level);
             if (minecraft.level.getLevelData().isRaining() && BetterWeather.BetterWeatherEvents.weatherData.isAcidRain()) {
 
-                if (!BetterWeatherConfigClient.removeSmokeParticles)
+                if (BetterWeatherConfigClient.removeSmokeParticles)
                     AcidRain.addAcidRainParticles(minecraft.gameRenderer.getMainCamera(), minecraft, minecraft.levelRenderer);
 
                 if (LevelRenderer.RAIN_LOCATION != ACID_RAIN_TEXTURE && BetterWeather.BetterWeatherEvents.weatherData.isAcidRain())

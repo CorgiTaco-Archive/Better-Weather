@@ -7,6 +7,8 @@ import corgitaco.betterweather.server.BetterWeatherCommand;
 import corgitaco.betterweather.weatherevents.AcidRain;
 import corgitaco.betterweather.weatherevents.Blizzard;
 import io.netty.buffer.Unpooled;
+import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
+import me.sargunvohra.mcmods.autoconfig1u.serializer.JanksonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -36,6 +38,8 @@ import java.util.Random;
 public class BetterWeather implements ModInitializer {
     public static Logger LOGGER = LogManager.getLogger();
     public static final String MOD_ID = "betterweather";
+    public static BetterWeatherConfig BW_CONFIG;
+
 
     public static final ResourceLocation BW_WEATHER_PACKET = new ResourceLocation(MOD_ID, "blizzard_update");
     public static final ResourceLocation ACID_RAIN_PACKET = new ResourceLocation(MOD_ID, "acid_rain_update");
@@ -52,7 +56,9 @@ public class BetterWeather implements ModInitializer {
     public static List<Block> blocksToNotDestroyList = new ArrayList<>();
 
     public void configReader() {
-//        GlobalEntityTypeAttributes.put(BWEntityRegistry.TORNADO, TornadoEntity.setCustomAttributes().create());
+        AutoConfig.register(BetterWeatherConfig.class, JanksonConfigSerializer::new);
+        BW_CONFIG = AutoConfig.getConfigHolder(BetterWeatherConfig.class).getConfig();
+
         String entityTypes = BetterWeatherConfig.entityTypesToDamage;
         String removeSpaces = entityTypes.trim().toLowerCase().replace(" ", "");
         String[] entityList = removeSpaces.split(",");
