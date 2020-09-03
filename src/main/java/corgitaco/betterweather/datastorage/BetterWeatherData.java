@@ -60,7 +60,7 @@ public class BetterWeatherData extends WorldSavedData {
     public static BetterWeatherData get(IWorld world) {
         if (!(world instanceof ServerWorld))
             return new BetterWeatherData();
-        ServerWorld overWorld = ((ServerWorld) world).getWorld().getServer().getWorld(World.THE_NETHER);
+        ServerWorld overWorld = ((ServerWorld) world).getWorld().getServer().getWorld(World.OVERWORLD);
         DimensionSavedDataManager data = overWorld.getSavedData();
         BetterWeatherData weatherData = data.getOrCreate(BetterWeatherData::new, DATA_NAME);
 
