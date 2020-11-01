@@ -1,0 +1,6 @@
+{
+  "commands.bw.setweather.success.acidrain": "BW: 날씨를 산성비로 설정합니다.",
+  "commands.bw.setweather.success.blizzard": "BW: 날씨를 눈보라로 설정합니다.",
+  "commands.bw.setweather.success.clear": "BW: 날씨를 맑음으로 설정합니다.",
+  "commands.bw.setweather.failed": "BW: 날씨를 %s(으)로 설정할 수 없습니다."
+}
