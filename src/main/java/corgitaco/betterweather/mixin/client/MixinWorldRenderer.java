@@ -24,10 +24,6 @@ import java.util.Random;
 @Mixin(WorldRenderer.class)
 public abstract class MixinWorldRenderer {
 
-    @Shadow public static ResourceLocation SNOW_TEXTURES;
-
-    @Shadow public static ResourceLocation RAIN_TEXTURES;
-
     @Shadow @Final private Minecraft mc;
 
     @Shadow public int ticks;
@@ -61,7 +57,7 @@ public abstract class MixinWorldRenderer {
                     graphicsQuality = 10;
                 }
 
-                RenderSystem.depthMask(Minecraft.func_238218_y_());
+                RenderSystem.depthMask(Minecraft.isFabulousGraphicsEnabled());
                 int i1 = -1;
                 float ticksAndPartialTicks = (float) this.ticks + partialTicks;
                 RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
