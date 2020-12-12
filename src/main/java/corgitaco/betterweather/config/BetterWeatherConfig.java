@@ -3,12 +3,19 @@ package corgitaco.betterweather.config;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import corgitaco.betterweather.BetterWeather;
+import net.minecraft.block.Block;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistry;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 @Mod.EventBusSubscriber(modid = BetterWeather.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class BetterWeatherConfig {
@@ -88,4 +95,58 @@ public class BetterWeatherConfig {
     public static void onLoad(final ModConfig.Loading configEvent) {
 
     }
+
+    public static boolean damageAnimals = false;
+    public static boolean damageMonsters = false;
+    public static boolean damagePlayer = false;
+    public static boolean destroyGrass = false;
+    public static boolean destroyLeaves = false;
+    public static boolean destroyCrops = false;
+    public static boolean destroyPlants = false;
+    public static List<Block> blocksToNotDestroyList = new ArrayList<>();
+
+    public static void handleCommonConfig() {
+        BetterWeatherConfig.loadConfig(BetterWeatherConfig.COMMON_CONFIG, FMLPaths.CONFIGDIR.get().resolve(BetterWeather.MOD_ID + "-common.toml"));
+        String entityTypes = BetterWeatherConfig.entityTypesToDamage.get();
+        String removeSpaces = entityTypes.trim().toLowerCase().replace(" ", "");
+        String[] entityList = removeSpaces.split(",");
+
+        for (String s : entityList) {
+            if (s.equalsIgnoreCase("animal") && !damageAnimals)
+                damageAnimals = true;
+            if (s.equalsIgnoreCase("monster") && !damageMonsters)
+                damageMonsters = true;
+            if (s.equalsIgnoreCase("player") && !damagePlayer)
+                damagePlayer = true;
+        }
+
+        String allowedBlockTypesToDestroy = BetterWeatherConfig.allowedBlocksToDestroy.get();
+        String removeBlockTypeSpaces = allowedBlockTypesToDestroy.trim().toLowerCase().replace(" ", "");
+        String[] blockTypeToDestroyList = removeBlockTypeSpaces.split(",");
+
+        for (String s : blockTypeToDestroyList) {
+            if (s.equalsIgnoreCase("grass") && !destroyGrass)
+                destroyGrass = true;
+            if (s.equalsIgnoreCase("leaves") && !destroyLeaves)
+                destroyLeaves = true;
+            if (s.equalsIgnoreCase("crops") && !destroyCrops)
+                destroyCrops = true;
+            if (s.equalsIgnoreCase("plants") && !destroyCrops)
+                destroyPlants = true;
+        }
+        ForgeRegistry<Block> blockRegistry = ((ForgeRegistry<Block>) ForgeRegistries.BLOCKS);
+
+        String blocksToNotDestroy = BetterWeatherConfig.blocksToNotDestroy.get();
+        String removeBlocksToNotDestroySpaces = blocksToNotDestroy.trim().toLowerCase().replace(" ", "");
+        String[] trimmedBlocksToNotDestroyList = removeBlocksToNotDestroySpaces.split(",");
+
+        for (String s : trimmedBlocksToNotDestroyList) {
+            Block block = blockRegistry.getValue(new ResourceLocation(s));
+            if (block != null)
+                blocksToNotDestroyList.add(block);
+            else
+                BetterWeather.LOGGER.error("A block registry name you added to the \"BlocksToNotDestroy\" list was incorrect, you put: " + s + "\n Please fix it or this block will be destroyed.");
+        }
+    }
+
 }

@@ -1,7 +1,7 @@
 package corgitaco.betterweather.weatherevents;
 
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.config.BetterWeatherConfig;
+import corgitaco.betterweather.config.BetterWeatherConfigClient;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -10,32 +10,39 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.settings.ParticleStatus;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityClassification;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.particles.IParticleData;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.IWorldReader;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
 
 import java.util.Random;
 
+import static corgitaco.betterweather.BetterWeather.weatherData;
+import static corgitaco.betterweather.config.BetterWeatherConfig.*;
+
 public class AcidRain {
     public static final ForgeRegistry<Block> blockRegistry = ((ForgeRegistry<Block>) ForgeRegistries.BLOCKS);
-    static Block block = blockRegistry.getRaw(new ResourceLocation(BetterWeatherConfig.blockToChangeFromGrass.get()));
+    static Block block = blockRegistry.getRaw(new ResourceLocation(blockToChangeFromGrass.get()));
+    public static final ResourceLocation RAIN_TEXTURE = new ResourceLocation("textures/environment/rain.png");
+    public static final ResourceLocation ACID_RAIN_TEXTURE = new ResourceLocation(BetterWeather.MOD_ID, "textures/environment/acid_rain.png");
 
     public static void acidRainEvent(Chunk chunk, ServerWorld world, int gameRuleTickSpeed, long worldTime) {
         ChunkPos chunkpos = chunk.getPos();
@@ -45,25 +52,25 @@ public class AcidRain {
         iprofiler.startSection("acidrain");
         BlockPos blockpos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
         if (world.isAreaLoaded(blockpos, 1)) {
-            if (BetterWeather.BetterWeatherEvents.weatherData.isAcidRain() && world.getWorldInfo().isRaining() && worldTime % BetterWeatherConfig.tickBlockDestroySpeed.get() == 0 && BetterWeatherConfig.destroyBlocks.get() && world.getBiome(blockpos).getPrecipitation() == Biome.RainType.RAIN) {
-                if (BetterWeather.destroyGrass) {
+            if (BetterWeather.weatherData.isAcidRain() && world.getWorldInfo().isRaining() && worldTime % tickBlockDestroySpeed.get() == 0 && destroyBlocks.get() && world.getBiome(blockpos).getPrecipitation() == Biome.RainType.RAIN) {
+                if (destroyGrass) {
                     if (block == null) {
-                        BetterWeather.LOGGER.error("The block replacing grass, registry location was incorrect. You put: " + BetterWeatherConfig.blockToChangeFromGrass.get() + "\n Reverting to dirt!");
+                        BetterWeather.LOGGER.error("The block replacing grass, registry location was incorrect. You put: " + blockToChangeFromGrass.get() + "\n Reverting to dirt!");
                         block = Blocks.DIRT;
                     }
                     if (world.getBlockState(blockpos.down()).getBlock() == Blocks.GRASS_BLOCK)
                         world.setBlockState(blockpos.down(), block.getDefaultState());
                 }
-                if (BetterWeather.destroyPlants) {
-                    if (world.getBlockState(blockpos).getMaterial() == Material.PLANTS || world.getBlockState(blockpos).getMaterial() == Material.TALL_PLANTS && !BetterWeather.blocksToNotDestroyList.contains(world.getBlockState(blockpos).getBlock()))
+                if (destroyPlants) {
+                    if (world.getBlockState(blockpos).getMaterial() == Material.PLANTS || world.getBlockState(blockpos).getMaterial() == Material.TALL_PLANTS && !blocksToNotDestroyList.contains(world.getBlockState(blockpos).getBlock()))
                         world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
                 }
-                if (BetterWeather.destroyLeaves) {
-                    if (world.getBlockState(blockpos.down()).getBlock().isIn(BlockTags.LEAVES) && !BetterWeather.blocksToNotDestroyList.contains(world.getBlockState(blockpos.down()).getBlock()))
+                if (destroyLeaves) {
+                    if (world.getBlockState(blockpos.down()).getBlock().isIn(BlockTags.LEAVES) && !blocksToNotDestroyList.contains(world.getBlockState(blockpos.down()).getBlock()))
                         world.setBlockState(blockpos.down(), Blocks.AIR.getDefaultState());
                 }
-                if (BetterWeather.destroyCrops) {
-                    if (world.getBlockState(blockpos).getBlock().isIn(BlockTags.CROPS) && !BetterWeather.blocksToNotDestroyList.contains(world.getBlockState(blockpos).getBlock()))
+                if (destroyCrops) {
+                    if (world.getBlockState(blockpos).getBlock().isIn(BlockTags.CROPS) && !blocksToNotDestroyList.contains(world.getBlockState(blockpos).getBlock()))
                         world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
                 }
             }
@@ -110,6 +117,63 @@ public class AcidRain {
                     mc.world.playSound(blockpos1, SoundEvents.WEATHER_RAIN_ABOVE, SoundCategory.WEATHER, 0.1F, 0.5F, false);
                 } else {
                     mc.world.playSound(blockpos1, SoundEvents.WEATHER_RAIN, SoundCategory.WEATHER, 0.2F, 1.0F, false);
+                }
+            }
+        }
+    }
+
+    public static void chance(TickEvent.WorldTickEvent event, World world, long worldTime) {
+        if (worldTime == 100 || worldTime % 5000 == 0 && !event.world.getWorldInfo().isRaining()) {
+            Random random = world.rand;
+            weatherData.setAcidRain(random.nextFloat() < acidRainChance.get());
+            weatherData.setBlizzard(false);
+        }
+    }
+
+    public static void handleRainTexture(Minecraft minecraft) {
+        if (minecraft.world != null) {
+            if (minecraft.world.getWorldInfo().isRaining() && weatherData.isAcidRain()) {
+                if (!BetterWeatherConfigClient.removeSmokeParticles.get())
+                    addAcidRainParticles(minecraft.gameRenderer.getActiveRenderInfo(), minecraft, minecraft.worldRenderer);
+
+                if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE && weatherData.isAcidRain())
+                    WorldRenderer.RAIN_TEXTURES = ACID_RAIN_TEXTURE;
+                else if (WorldRenderer.RAIN_TEXTURES != RAIN_TEXTURE && !weatherData.isAcidRain())
+                    WorldRenderer.RAIN_TEXTURES = RAIN_TEXTURE;
+            }
+        }
+    }
+
+    public static void entityHandler(Entity entity) {
+        if (damageMonsters) {
+            if (entity.getClassification(true) == EntityClassification.MONSTER) {
+                World world = entity.world;
+                BlockPos entityPos = new BlockPos(entity.getPositionVec());
+
+                if (world.canSeeSky(entityPos) && weatherData.isAcidRain() && world.getWorldInfo().isRaining() && world.getGameTime() % hurtEntityTickSpeed.get() == 0) {
+                    entity.attackEntityFrom(DamageSource.GENERIC, 0.5F);
+                }
+            }
+        }
+
+        if (damageAnimals) {
+            if (entity.getClassification(true) == EntityClassification.CREATURE || entity.getClassification(true) == EntityClassification.AMBIENT) {
+                World world = entity.world;
+                BlockPos entityPos = new BlockPos(entity.getPositionVec());
+
+                if (world.canSeeSky(entityPos) && weatherData.isAcidRain() && world.getWorldInfo().isRaining() && world.getGameTime() % hurtEntityTickSpeed.get() == 0) {
+                    entity.attackEntityFrom(DamageSource.GENERIC, hurtEntityDamage.get().floatValue());
+                }
+            }
+        }
+
+        if (damagePlayer) {
+            if (entity instanceof PlayerEntity) {
+                World world = entity.world;
+                BlockPos entityPos = new BlockPos(entity.getPositionVec());
+
+                if (world.canSeeSky(entityPos) && weatherData.isAcidRain() && world.getWorldInfo().isRaining() && world.getGameTime() % hurtEntityTickSpeed.get() == 0) {
+                    entity.attackEntityFrom(DamageSource.GENERIC, 0.5F);
                 }
             }
         }

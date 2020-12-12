@@ -26,7 +26,7 @@ public class MixinSoundEngine {
     private void weatherVolumeController(SoundCategory category, CallbackInfoReturnable<Float> cir) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.world != null) {
-            if (category == SoundCategory.WEATHER && BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && minecraft.world.getWorldInfo().isRaining()) {
+            if (category == SoundCategory.WEATHER && BetterWeather.weatherData.isBlizzard() && minecraft.world.getWorldInfo().isRaining()) {
                 BlockPos pos = minecraft.gameRenderer.getActiveRenderInfo().getBlockPos();
                 int motionBlockingY = BetterWeatherUtil.removeLeavesFromHeightMap(minecraft.world, pos);
 

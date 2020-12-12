@@ -34,7 +34,7 @@ public abstract class MixinWorldRenderer {
 
     @Inject(at = @At("HEAD"), method = "renderRainSnow(Lnet/minecraft/client/renderer/LightTexture;FDDD)V", cancellable = true)
     private void renderBlizzardSnow(LightTexture lightmapIn, float partialTicks, double xIn, double yIn, double zIn, CallbackInfo ci) {
-        if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard()) {
+        if (BetterWeather.weatherData.isBlizzard()) {
             ci.cancel();
             float rainStrength = this.mc.world.getRainStrength(partialTicks);
             if (!(rainStrength <= 0.0F)) {
@@ -142,9 +142,9 @@ public abstract class MixinWorldRenderer {
     @Inject(at = @At("HEAD"), method = "loadRenderers()V", cancellable = true)
     private void cancelGameSettingsUpdate(CallbackInfo ci) {
         if (mc.world != null) {
-            //We do this to insure that the our Weather Data is not null before using it.
+            //We do this to ensure that the our Weather Data is not null before using it.
             BetterWeather.BetterWeatherEvents.setWeatherData(mc.world);
-            if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard() && mc.world.isRaining()) {
+            if (BetterWeather.weatherData.isBlizzard() && mc.world.isRaining()) {
                 ci.cancel();
             }
         }
@@ -153,7 +153,7 @@ public abstract class MixinWorldRenderer {
     @Inject(at = @At("HEAD"), method = "addRainParticles(Lnet/minecraft/client/renderer/ActiveRenderInfo;)V", cancellable = true)
     private void stopRainParticles(ActiveRenderInfo activeRenderInfoIn, CallbackInfo ci) {
         if (mc.world != null) {
-            if (BetterWeather.BetterWeatherEvents.weatherData.isBlizzard()) {
+            if (BetterWeather.weatherData.isBlizzard()) {
                 ci.cancel();
             }
         }
