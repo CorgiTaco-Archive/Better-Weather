@@ -38,7 +38,7 @@ import java.util.Optional;
 public class BetterWeather {
     public static Logger LOGGER = LogManager.getLogger();
     public static final String MOD_ID = "betterweather";
-    public static final int SEASON_LENGTH = 60;
+    public static final int SEASON_LENGTH = 1000;
     public static final int SEASON_CYCLE_LENGTH = SEASON_LENGTH * 4;
 
     public BetterWeather() {

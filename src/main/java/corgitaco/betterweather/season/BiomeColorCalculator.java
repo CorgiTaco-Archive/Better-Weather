@@ -7,7 +7,7 @@ import java.awt.*;
 
 public class BiomeColorCalculator {
 
-    public static Color modifyBiomeColor(boolean isGrass, Color originalColorValue, BetterWeatherSeasonData.SubSeason subSeason) {
+    public static Color modifyBiomeColor(boolean isGrass, Color originalColorValue, BWSeasons.SubSeason subSeason) {
 
         int red = originalColorValue.getRed();
         int green = originalColorValue.getGreen();
