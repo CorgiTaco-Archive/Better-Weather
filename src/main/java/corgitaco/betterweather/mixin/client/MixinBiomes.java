@@ -1,6 +1,6 @@
 package corgitaco.betterweather.mixin.client;
 
-import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.season.BWSeasons;
 import corgitaco.betterweather.season.BiomeColorCalculator;
 import net.minecraft.world.biome.Biome;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,11 +16,11 @@ public class MixinBiomes {
 
     @Inject(method = "getGrassColor", at = @At("RETURN"), cancellable = true)
     private void modifyGrassColor(double posX, double posZ, CallbackInfoReturnable<Integer> cir) {
-        cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(true, new Color(cir.getReturnValue()), BetterWeather.seasonData.getSubSeason()).getRGB());
+        cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(true, new Color(cir.getReturnValue()), BWSeasons.cachedSubSeason).getRGB());
     }
 
     @Inject(method = "getFoliageColor", at = @At("RETURN"), cancellable = true)
     private void modifyFoliageColor(CallbackInfoReturnable<Integer> cir) {
-        cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(false, new Color(cir.getReturnValue()), BetterWeather.seasonData.getSubSeason()).getRGB());
+        cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(false, new Color(cir.getReturnValue()), BWSeasons.cachedSubSeason).getRGB());
     }
 }

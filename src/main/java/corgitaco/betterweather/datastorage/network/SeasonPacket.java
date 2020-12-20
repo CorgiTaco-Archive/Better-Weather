@@ -9,17 +9,20 @@ import java.util.function.Supplier;
 
 public class SeasonPacket {
     private final int seasonTime;
+    private final int seasonCycleLength;
 
-    public SeasonPacket(int seasonTime) {
+    public SeasonPacket(int seasonTime, int seasonCycleLength) {
         this.seasonTime = seasonTime;
+        this.seasonCycleLength = seasonCycleLength;
     }
 
     public static void writeToPacket(SeasonPacket packet, PacketBuffer buf) {
         buf.writeInt(packet.seasonTime);
+        buf.writeInt(packet.seasonCycleLength);
     }
 
     public static SeasonPacket readFromPacket(PacketBuffer buf) {
-        return new SeasonPacket(buf.readInt());
+        return new SeasonPacket(buf.readInt(), buf.readInt());
     }
 
     public static void handle(SeasonPacket message, Supplier<NetworkEvent.Context> ctx) {
@@ -30,6 +33,7 @@ public class SeasonPacket {
                 if (minecraft.world != null) {
                     BetterWeather.setSeasonData(minecraft.world);
                     BetterWeather.seasonData.setSeasonTime(message.seasonTime);
+                    BetterWeather.seasonData.setSeasonCycleLength(message.seasonCycleLength);
                 }
             });
         }

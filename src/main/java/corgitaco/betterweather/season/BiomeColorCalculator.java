@@ -34,17 +34,20 @@ public class BiomeColorCalculator {
     }
 
     private static int modifiedColorValue(int original, int target) {
-        double colorModifier = 0.5;
-        int value = original;
 
-        if (value < target) {
-            int difference = Math.abs(target - value);
-            value = (int) (value + (difference * colorModifier));
-
-        } else if (value > target) {
-            int difference = Math.abs(value - target);
-            value = (int) (value - (difference * colorModifier));
-        }
-        return value;
+        return (int) MathHelper.lerp(0.5, original , target);
     }
+//        double colorModifier = 0.5;
+//        int value = original;
+//
+//        if (value < target) {
+//            int difference = Math.abs(target - value);
+//            value = (int) (value + (difference * colorModifier));
+//
+//        } else if (value > target) {
+//            int difference = Math.abs(value - target);
+//            value = (int) (value - (difference * colorModifier));
+//        }
+//        return value;
+//    }
 }

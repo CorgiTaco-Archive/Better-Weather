@@ -38,7 +38,7 @@ import java.util.Optional;
 public class BetterWeather {
     public static Logger LOGGER = LogManager.getLogger();
     public static final String MOD_ID = "betterweather";
-    public static final int SEASON_LENGTH = 250;
+    public static final int SEASON_LENGTH = 60;
     public static final int SEASON_CYCLE_LENGTH = SEASON_LENGTH * 4;
 
     public BetterWeather() {
@@ -78,6 +78,8 @@ public class BetterWeather {
                     World world = event.world;
                     int tickSpeed = world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
                     long worldTime = world.getWorldInfo().getGameTime();
+
+                    BWSeasons.seasonTime();
                     serverWorld.getPlayers().forEach(player -> BWSeasons.updateSeasonPacket(player, world));
 
                     //Rolls a random chance for acid rain once every 5000 ticks and will not run when raining to avoid disco colored rain.
