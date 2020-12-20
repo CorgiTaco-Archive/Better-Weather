@@ -5,8 +5,9 @@ import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
 import corgitaco.betterweather.datastorage.BetterWeatherData;
 import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
+import corgitaco.betterweather.datastorage.network.NetworkHandler;
 import corgitaco.betterweather.season.BWSeasons;
-import corgitaco.betterweather.server.BetterWeatherCommand;
+import corgitaco.betterweather.server.SetWeatherCommand;
 import corgitaco.betterweather.weatherevents.AcidRain;
 import corgitaco.betterweather.weatherevents.Blizzard;
 import net.minecraft.client.Minecraft;
@@ -37,7 +38,7 @@ import java.util.Optional;
 public class BetterWeather {
     public static Logger LOGGER = LogManager.getLogger();
     public static final String MOD_ID = "betterweather";
-    public static final int SEASON_LENGTH = 100;
+    public static final int SEASON_LENGTH = 250;
     public static final int SEASON_CYCLE_LENGTH = SEASON_LENGTH * 4;
 
     public BetterWeather() {
@@ -54,6 +55,7 @@ public class BetterWeather {
     public void commonSetup(FMLCommonSetupEvent event) {
 //        GlobalEntityTypeAttributes.put(BWEntityRegistry.TORNADO, TornadoEntity.setCustomAttributes().create());
         BetterWeatherConfig.handleCommonConfig();
+        NetworkHandler.init();
     }
 
 
@@ -76,6 +78,7 @@ public class BetterWeather {
                     World world = event.world;
                     int tickSpeed = world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
                     long worldTime = world.getWorldInfo().getGameTime();
+                    serverWorld.getPlayers().forEach(player -> BWSeasons.updateSeasonPacket(player, world));
 
                     //Rolls a random chance for acid rain once every 5000 ticks and will not run when raining to avoid disco colored rain.
                     AcidRain.chance(event, world, worldTime);
@@ -131,7 +134,8 @@ public class BetterWeather {
                 if (minecraft.world != null) {
                     setWeatherData(minecraft.world);
                     setSeasonData(minecraft.world);
-                    BWSeasons.updateSeasonData(minecraft.world);
+                    if (minecraft.world.getWorldInfo().getGameTime() % 10 == 0)
+                        BWSeasons.clientSeason();
 
                     AcidRain.handleRainTexture(minecraft);
 
@@ -144,7 +148,7 @@ public class BetterWeather {
         @SubscribeEvent
         public static void commandRegisterEvent(FMLServerStartingEvent event) {
             BetterWeather.LOGGER.debug("BW: \"Server Starting\" Event Starting...");
-            BetterWeatherCommand.register(event.getServer().getCommandManager().getDispatcher());
+            SetWeatherCommand.register(event.getServer().getCommandManager().getDispatcher());
             BetterWeather.LOGGER.info("BW: \"Server Starting\" Event Complete!");
         }
 

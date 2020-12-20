@@ -28,16 +28,12 @@ public class BetterWeatherSeasonData extends WorldSavedData {
 
     @Override
     public void read(CompoundNBT nbt) {
-        setColorModifier(nbt.getInt("colormod"));
         setSeasonTime(nbt.getInt("seasontime"));
-        setSeason(nbt.getString("season"));
     }
 
     @Override
     public CompoundNBT write(CompoundNBT compound) {
-        compound.putInt("colormod", colorModifier);
         compound.putInt("seasontime", seasonTime);
-        compound.putString("season", season);
         return compound;
     }
 
@@ -71,6 +67,7 @@ public class BetterWeatherSeasonData extends WorldSavedData {
 
     public void setSubSeason() {
         this.subseason = getSeason().getSubSeasonFromTime(seasonTime).toString();
+        BetterWeather.LOGGER.info("SEASON: " + this.subseason);
     }
 
     public SubSeason getSubSeason() {
@@ -132,8 +129,6 @@ public class BetterWeatherSeasonData extends WorldSavedData {
             }
         }
     }
-
-
 
     public enum SubSeason {
         WINTER_START(-0.5, 0.3, 0.4, new Color(165, 42, 42), new Color(165, 42, 42)),

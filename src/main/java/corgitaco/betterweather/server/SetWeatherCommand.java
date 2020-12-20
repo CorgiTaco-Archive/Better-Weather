@@ -13,7 +13,7 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BetterWeatherCommand {
+public class SetWeatherCommand {
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         BetterWeather.LOGGER.debug("Registering BW commands...");
