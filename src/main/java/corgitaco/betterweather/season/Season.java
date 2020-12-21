@@ -204,7 +204,7 @@ public class Season {
             }
 
             public int getTargetSkyColor() {
-                if (targetGrassHexColor.isEmpty())
+                if (targetSkyHexColor.isEmpty())
                     return -1;
                 else {
                     if (stopSpamIDXSky <= 50) {
