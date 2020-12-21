@@ -35,6 +35,15 @@ public class BiomeColorCalculator {
                 target = new Color(targetFoliageColor);
                 blendStrength = subSeason.getClient().getFoliageColorBlendStrength();
                 break;
+            case FOG:
+                int targetFogColor = subSeason.getClient().getTargetFogColor();
+
+                if (targetFogColor == -1)
+                    return originalColorValue;
+
+                target = new Color(targetFogColor);
+                blendStrength = subSeason.getClient().getFogColorBlendStrength();
+                break;
             default:
                 int targetSkyColor = subSeason.getClient().getTargetSkyColor();
 
@@ -67,6 +76,7 @@ public class BiomeColorCalculator {
     public enum ColorType {
         FOLIAGE,
         GRASS,
-        SKY
+        SKY,
+        FOG
     }
 }

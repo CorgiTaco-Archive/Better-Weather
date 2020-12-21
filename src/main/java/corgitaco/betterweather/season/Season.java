@@ -75,21 +75,21 @@ public class Season {
 
     public static class SubSeason {
 
-        public static final SubSeason SPRING_START = new SubSeason(0, 0.5, 1.5, 2.0, new WeatherEventController(0.1, 0.3), new SeasonClient(Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0));
-        public static final SubSeason SPRING_MID = new SubSeason(0, 0.5, 2.0, 2.0, new WeatherEventController(0.05, 0.45), new SeasonClient(Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0));
-        public static final SubSeason SPRING_END = new SubSeason(0, 0.5, 1.5, 2.0, new WeatherEventController(0, 0.15), new SeasonClient(Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0));
+        public static final SubSeason SPRING_START = new SubSeason(0, 0.5, 1.5, 2.0, new WeatherEventController(0.1, 0.3), new SeasonClient(Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.0));
+        public static final SubSeason SPRING_MID = new SubSeason(0, 0.5, 2.0, 2.0, new WeatherEventController(0.05, 0.45), new SeasonClient(Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.0));
+        public static final SubSeason SPRING_END = new SubSeason(0, 0.5, 1.5, 2.0, new WeatherEventController(0, 0.15), new SeasonClient(Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.0));
 
-        public static final SubSeason SUMMER_START = new SubSeason(0.5, 0, 0.75, 1, new WeatherEventController(0, 0.05), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0));
-        public static final SubSeason SUMMER_MID = new SubSeason(0.5, 0, 0.5, 1, new WeatherEventController(0, 0), new SeasonClient(Integer.toHexString(new Color(165, 255, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0));
-        public static final SubSeason SUMMER_END = new SubSeason(0.5, 0, 0.75, 0.8, new WeatherEventController(0, 0), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0));
+        public static final SubSeason SUMMER_START = new SubSeason(0.5, 0, 0.75, 1, new WeatherEventController(0, 0.05), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.0));
+        public static final SubSeason SUMMER_MID = new SubSeason(0.5, 0, 0.5, 1, new WeatherEventController(0, 0), new SeasonClient(Integer.toHexString(new Color(165, 255, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.0));
+        public static final SubSeason SUMMER_END = new SubSeason(0.5, 0, 0.75, 0.8, new WeatherEventController(0, 0), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.0));
 
-        public static final SubSeason AUTUMN_START = new SubSeason(-0.1, 0.2, 0.7, 0.7, new WeatherEventController(0, 0), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0));
-        public static final SubSeason AUTUMN_MID = new SubSeason(-0.1, 0.2, 0.7, 0.65, new WeatherEventController(0.05, 0.05), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0));
-        public static final SubSeason AUTUMN_END = new SubSeason(-0.1, 0.2, 0.75, 0.6, new WeatherEventController(0.1, 0.05), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0));
+        public static final SubSeason AUTUMN_START = new SubSeason(-0.1, 0.2, 0.7, 0.7, new WeatherEventController(0, 0), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.0));
+        public static final SubSeason AUTUMN_MID = new SubSeason(-0.1, 0.2, 0.7, 0.65, new WeatherEventController(0.05, 0.05), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.0));
+        public static final SubSeason AUTUMN_END = new SubSeason(-0.1, 0.2, 0.75, 0.6, new WeatherEventController(0.1, 0.05), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.0));
 
-        public static final SubSeason WINTER_START = new SubSeason(-0.5, 0.3, 1.0, 0.5, new WeatherEventController(0.3, 0), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0));
-        public static final SubSeason WINTER_MID = new SubSeason(-0.5, 0.3, 1.0, 0.4, new WeatherEventController(0.45, 0), new SeasonClient(Integer.toHexString(new Color(165, 42, 255).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0));
-        public static final SubSeason WINTER_END = new SubSeason(-0.5, 0.3, 1.25, 0.4, new WeatherEventController(0.3, 0.05), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0));
+        public static final SubSeason WINTER_START = new SubSeason(-0.5, 0.3, 1.0, 0.5, new WeatherEventController(0.3, 0), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.0));
+        public static final SubSeason WINTER_MID = new SubSeason(-0.5, 0.3, 1.0, 0.4, new WeatherEventController(0.45, 0), new SeasonClient(Integer.toHexString(new Color(165, 42, 255).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.0));
+        public static final SubSeason WINTER_END = new SubSeason(-0.5, 0.3, 1.25, 0.4, new WeatherEventController(0.3, 0.05), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 32, 32).getRGB()), 0, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.0));
 
 
         private final double tempModifier;
@@ -149,19 +149,25 @@ public class Season {
             private final double grassColorBlendStrength;
             private final String targetSkyHexColor;
             private final double skyColorBlendStrength;
+            private final String targetFogHexColor;
+            private final double fogColorBlendStrength;
 
-            public SeasonClient(String targetFoliageHexColor, double foliageColorBlendStrength, String targetGrassColor, double grassColorBlendStrength, String targetSkyHexColor, double skyColorBlendStrength) {
+            public SeasonClient(String targetFoliageHexColor, double foliageColorBlendStrength, String targetGrassColor, double grassColorBlendStrength, String targetSkyHexColor, double skyColorBlendStrength, String targetFogHexColor, double fogColorBlendStrength) {
                 this.targetFoliageHexColor = targetFoliageHexColor.replace("#", "").replace("0x", "");
                 this.foliageColorBlendStrength = foliageColorBlendStrength;
                 this.targetGrassHexColor = targetGrassColor.replace("#", "").replace("0x", "");
                 this.grassColorBlendStrength = grassColorBlendStrength;
-                this.targetSkyHexColor = targetSkyHexColor.replace("#", "").replace("0x", "");;
+                this.targetSkyHexColor = targetSkyHexColor.replace("#", "").replace("0x", "");
+                this.targetFogHexColor = targetFogHexColor;
+                this.fogColorBlendStrength = fogColorBlendStrength;
+                ;
                 this.skyColorBlendStrength = skyColorBlendStrength;
             }
 
             static int stopSpamIDXFoliage;
             static int stopSpamIDXGrass;
             static int stopSpamIDXSky;
+            static int stopSpamIDXFog;
 
             public int getTargetFoliageColor() {
                 if (targetFoliageHexColor.isEmpty())
@@ -221,6 +227,26 @@ public class Season {
 
             public double getSkyColorBlendStrength() {
                 return skyColorBlendStrength;
+            }
+
+            public int getTargetFogColor() {
+                if (targetFogHexColor.isEmpty())
+                    return -1;
+                else {
+                    if (stopSpamIDXFog <= 50) {
+                        try {
+                            return (int) Long.parseLong(targetGrassHexColor, 16);
+                        } catch (Exception e) {
+                            BetterWeather.LOGGER.warn("targetFogHexColor was not a hex color value, you put: \"" + targetFogHexColor + "\" | Using Defaults...");
+                            stopSpamIDXFog++;
+                        }
+                    }
+                    return -1;
+                }
+            }
+
+            public double getFogColorBlendStrength() {
+                return fogColorBlendStrength;
             }
         }
     }

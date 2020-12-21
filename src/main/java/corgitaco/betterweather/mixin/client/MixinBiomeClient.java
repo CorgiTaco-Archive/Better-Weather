@@ -32,6 +32,12 @@ public abstract class MixinBiomeClient {
     @Inject(method = "getSkyColor", at = @At("RETURN"), cancellable = true)
     private void modifySkyColor(CallbackInfoReturnable<Integer> cir) {
         if (this.getCategory() != Biome.Category.NETHER || this.getCategory() != Biome.Category.THEEND || this.getCategory() != Biome.Category.NONE)
-            cir.setReturnValue(!Season.getSeasonFromEnum(BWSeasons.SeasonVal.SUMMER).containsSubSeason(BWSeasons.cachedSubSeason) ? BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.SKY, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason)).getRGB() : cir.getReturnValue());
+            cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.SKY, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason)).getRGB());
+    }
+
+    @Inject(method = "getFogColor", at = @At("RETURN"), cancellable = true)
+    private void modifyFogColor(CallbackInfoReturnable<Integer> cir) {
+        if (this.getCategory() != Biome.Category.NETHER || this.getCategory() != Biome.Category.THEEND || this.getCategory() != Biome.Category.NONE)
+            cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.FOG, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason)).getRGB());
     }
 }
