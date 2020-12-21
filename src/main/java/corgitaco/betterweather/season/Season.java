@@ -1,5 +1,6 @@
 package corgitaco.betterweather.season;
 
+import corgitaco.betterweather.BetterWeather;
 import net.minecraft.util.Util;
 
 import java.awt.*;
@@ -158,8 +159,24 @@ public class Season {
                 this.skyColorBlendStrength = skyColorBlendStrength;
             }
 
+            static int stopSpamIDXFoliage;
+            static int stopSpamIDXGrass;
+            static int stopSpamIDXSky;
+
             public int getTargetFoliageColor() {
-                return (int) Long.parseLong(targetFoliageHexColor, 16);
+                if (targetFoliageHexColor.isEmpty())
+                    return -1;
+                else {
+                    if (stopSpamIDXFoliage <= 50) {
+                        try {
+                            return (int) Long.parseLong(targetFoliageHexColor, 16);
+                        } catch (Exception e) {
+                            BetterWeather.LOGGER.warn("targetFoliageHexColor was not a hex color value, you put: " + targetFoliageHexColor + " | Using Defaults...");
+                            stopSpamIDXFoliage++;
+                        }
+                    }
+                    return -1;
+                }
             }
 
             public double getFoliageColorBlendStrength() {
@@ -167,7 +184,19 @@ public class Season {
             }
 
             public int getTargetGrassColor() {
-                return (int) Long.parseLong(targetGrassHexColor, 16);
+                if (targetGrassHexColor.isEmpty())
+                    return -1;
+                else {
+                    if (stopSpamIDXGrass <= 50) {
+                        try {
+                            return (int) Long.parseLong(targetGrassHexColor, 16);
+                        } catch (Exception e) {
+                            BetterWeather.LOGGER.warn("targetGrassHexColor was not a hex color value, you put: " + targetGrassHexColor + " | Using Defaults...");
+                            stopSpamIDXGrass++;
+                        }
+                    }
+                    return -1;
+                }
             }
 
             public double getGrassColorBlendStrength() {
@@ -175,7 +204,19 @@ public class Season {
             }
 
             public int getTargetSkyColor() {
-                return (int) Long.parseLong(targetSkyHexColor, 16);
+                if (targetGrassHexColor.isEmpty())
+                    return -1;
+                else {
+                    if (stopSpamIDXSky <= 50) {
+                        try {
+                            return (int) Long.parseLong(targetSkyHexColor, 16);
+                        } catch (Exception e) {
+                            BetterWeather.LOGGER.warn("targetSkyHexColor was not a hex color value, you put: " + targetSkyHexColor + " | Using Defaults...");
+                            stopSpamIDXSky++;
+                        }
+                    }
+                    return -1;
+                }
             }
 
             public double getSkyColorBlendStrength() {
