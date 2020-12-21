@@ -14,7 +14,6 @@ import java.awt.*;
 @Mixin(Biome.class)
 public class MixinBiome {
 
-
     @Inject(method = "getGrassColor", at = @At("RETURN"), cancellable = true)
     private void modifyGrassColor(double posX, double posZ, CallbackInfoReturnable<Integer> cir) {
         cir.setReturnValue(!Season.getSeasonFromEnum(BWSeasons.SeasonVal.SUMMER).containsSubSeason(BWSeasons.cachedSubSeason) ? BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.GRASS, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason)).getRGB() : cir.getReturnValue());
@@ -28,5 +27,15 @@ public class MixinBiome {
     @Inject(method = "getSkyColor", at = @At("RETURN"), cancellable = true)
     private void modifySkyColor(CallbackInfoReturnable<Integer> cir) {
         cir.setReturnValue(!Season.getSeasonFromEnum(BWSeasons.SeasonVal.SUMMER).containsSubSeason(BWSeasons.cachedSubSeason) ? BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.SKY, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason)).getRGB() : cir.getReturnValue());
+    }
+
+    @Inject(method = "getDownfall", at = @At("RETURN"), cancellable = true)
+    private void modifyDownfall(CallbackInfoReturnable<Float> cir) {
+        cir.setReturnValue((float) (cir.getReturnValue() + Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getRainModifier()));
+    }
+
+    @Inject(method = "getTemperature()F", at = @At("RETURN"), cancellable = true)
+    private void modifyTemperature(CallbackInfoReturnable<Float> cir) {
+        cir.setReturnValue((float) (cir.getReturnValue() + Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getTempModifier()));
     }
 }

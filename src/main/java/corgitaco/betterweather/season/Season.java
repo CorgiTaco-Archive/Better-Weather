@@ -94,13 +94,13 @@ public class Season {
 
 
         private final double tempModifier;
-        private final double downfallModifier;
+        private final double rainModifier;
         private final double cropGrowthChanceModifier;
         private final SeasonClient client;
 
-        public SubSeason(double tempModifier, double downfallModifier, double cropGrowthChanceModifier, SeasonClient client) {
+        public SubSeason(double tempModifier, double rainModifier, double cropGrowthChanceModifier, SeasonClient client) {
             this.tempModifier = tempModifier;
-            this.downfallModifier = downfallModifier;
+            this.rainModifier = rainModifier;
             this.cropGrowthChanceModifier = cropGrowthChanceModifier;
             this.client = client;
         }
@@ -119,8 +119,8 @@ public class Season {
             return tempModifier;
         }
 
-        public double getDownfallModifier() {
-            return downfallModifier;
+        public double getRainModifier() {
+            return rainModifier;
         }
 
         public double getCropGrowthChanceModifier() {
