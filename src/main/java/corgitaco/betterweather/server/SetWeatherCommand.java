@@ -31,26 +31,25 @@ public class SetWeatherCommand {
     }
 
     public static int betterWeatherSetWeatherType(World world, CommandSource source, String weatherType) {
-        if (weatherType.equals("acidrain")) {
-            BetterWeather.weatherData.setBlizzard(false);
-            BetterWeather.weatherData.setAcidRain(true);
-            world.getWorldInfo().setRaining(true);
-            source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.acidrain"), true);
-        }
-        else if (weatherType.equals("blizzard")) {
-            BetterWeather.weatherData.setAcidRain(false);
-            BetterWeather.weatherData.setBlizzard(true);
-            world.getWorldInfo().setRaining(true);
-            source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.blizzard"), true);
-        }
-        else if (weatherType.equals("clear")) {
-            BetterWeather.weatherData.setAcidRain(false);
-            BetterWeather.weatherData.setBlizzard(false);
-            world.getWorldInfo().setRaining(false);
-            source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.clear"), true);
-        }
-        else {
-            source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.failed", weatherType), true);
+        switch (weatherType) {
+            case "acidrain":
+                BetterWeather.weatherData.setEvent(BetterWeather.WeatherEvent.ACID_RAIN);
+                world.getWorldInfo().setRaining(true);
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.acidrain"), true);
+                break;
+            case "blizzard":
+                BetterWeather.weatherData.setEvent(BetterWeather.WeatherEvent.BLIZZARD);
+                world.getWorldInfo().setRaining(true);
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.blizzard"), true);
+                break;
+            case "clear":
+                BetterWeather.weatherData.setEvent(BetterWeather.WeatherEvent.NONE);
+                world.getWorldInfo().setRaining(false);
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.clear"), true);
+                break;
+            default:
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.failed", weatherType), true);
+                break;
         }
         return 1;
     }

@@ -26,9 +26,6 @@ import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
-import net.minecraftforge.event.TickEvent;
-
-import java.util.Random;
 
 import static corgitaco.betterweather.BetterWeather.weatherData;
 
@@ -190,14 +187,6 @@ public class Blizzard {
             return material != Material.PLANTS && material != Material.TALL_PLANTS && material != Material.OCEAN_PLANT;
         else
             return true;
-    }
-
-    public static void chance(TickEvent.WorldTickEvent event, World world, long worldTime) {
-        if (worldTime == 100 || worldTime % 5000 == 0 && !event.world.getWorldInfo().isRaining()) {
-            Random random = world.rand;
-            weatherData.setBlizzard(random.nextFloat() + 0.05 < BetterWeatherConfig.blizzardChance.get());
-            weatherData.setAcidRain(false);
-        }
     }
 
     static int idx = 0;

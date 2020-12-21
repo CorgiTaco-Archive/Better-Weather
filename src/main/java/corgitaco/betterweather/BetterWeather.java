@@ -77,7 +77,17 @@ public class BetterWeather {
 
     }
 
-    public static int dataCache = 0;
+
+    public enum WeatherEvent {
+        NONE,
+        ACID_RAIN,
+        BLIZZARD,
+//        HAIL,
+//        HEATWAVE,
+//        WINDSTORM,
+//        SANDSTORM,
+    }
+
 
     @Mod.EventBusSubscriber(modid = BetterWeather.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class BetterWeatherEvents {
@@ -94,11 +104,6 @@ public class BetterWeather {
 
                     BWSeasons.seasonTime();
                     serverWorld.getPlayers().forEach(player -> BWSeasons.updateSeasonPacket(player, world));
-
-                    //Rolls a random chance for acid rain once every 5000 ticks and will not run when raining to avoid disco colored rain.
-                    AcidRain.chance(event, world, worldTime);
-                    Blizzard.chance(event, world, worldTime);
-                    resetWeatherChance(event);
 
                     List<ChunkHolder> list = Lists.newArrayList((serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
                     modifyLiveWorld(serverWorld, tickSpeed, worldTime, list);
@@ -166,25 +171,6 @@ public class BetterWeather {
             SetWeatherCommand.register(event.getServer().getCommandManager().getDispatcher());
             BetterWeather.LOGGER.info("BW: \"Server Starting\" Event Complete!");
         }
-
-        public static void setWeatherData(IWorld world) {
-            if (weatherData == null)
-                weatherData = BetterWeatherData.get(world);
-        }
-    }
-
-    private static void resetWeatherChance(TickEvent.WorldTickEvent event) {
-        if (event.world.getWorldInfo().isRaining()) {
-            if (dataCache == 0)
-                dataCache++;
-        } else {
-            if (dataCache != 0) {
-                if (weatherData.isBlizzard())
-                    weatherData.setBlizzard(false);
-                if (weatherData.isAcidRain())
-                    weatherData.setAcidRain(false);
-            }
-        }
     }
 
     public static void setSeasonData(IWorld world) {
@@ -192,10 +178,14 @@ public class BetterWeather {
             seasonData = BetterWeatherSeasonData.get(world);
     }
 
+    public static void setWeatherData(IWorld world) {
+        if (weatherData == null)
+            weatherData = BetterWeatherData.get(world);
+    }
+
 
     @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class BetterWeatherClient {
-
 
         @SubscribeEvent
         public static void renderFogEvent(EntityViewRenderEvent.FogDensity event) {
@@ -209,15 +199,5 @@ public class BetterWeather {
                 event.getLeft().add("Season: " + WordUtils.capitalize(BWSeasons.cachedSeason.toString().toLowerCase()) + " | " + WordUtils.capitalize(BWSeasons.cachedSubSeason.toString().replace("_", " ").replace(BWSeasons.cachedSeason.toString(), "").toLowerCase()));
             }
         }
-    }
-
-
-    public enum WeatherType {
-        BLIZZARD,
-        HAIL,
-        HEATWAVE,
-        WINDSTORM,
-        SANDSTORM,
-        ACIDRAIN
     }
 }

@@ -29,7 +29,6 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
 
@@ -119,14 +118,6 @@ public class AcidRain {
                     mc.world.playSound(blockpos1, SoundEvents.WEATHER_RAIN, SoundCategory.WEATHER, 0.2F, 1.0F, false);
                 }
             }
-        }
-    }
-
-    public static void chance(TickEvent.WorldTickEvent event, World world, long worldTime) {
-        if (worldTime == 100 || worldTime % 5000 == 0 && !event.world.getWorldInfo().isRaining()) {
-            Random random = world.rand;
-            weatherData.setAcidRain(random.nextFloat() < acidRainChance.get());
-            weatherData.setBlizzard(false);
         }
     }
 

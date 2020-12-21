@@ -143,7 +143,6 @@ public abstract class MixinWorldRenderer {
     private void cancelGameSettingsUpdate(CallbackInfo ci) {
         if (mc.world != null) {
             //We do this to ensure that the our Weather Data is not null before using it.
-            BetterWeather.BetterWeatherEvents.setWeatherData(mc.world);
             if (BetterWeather.weatherData.isBlizzard() && mc.world.isRaining()) {
                 ci.cancel();
             }

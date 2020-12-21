@@ -9,11 +9,9 @@ import net.minecraft.world.storage.DimensionSavedDataManager;
 import net.minecraft.world.storage.WorldSavedData;
 
 public class BetterWeatherData extends WorldSavedData {
-    public static String DATA_NAME = BetterWeather.MOD_ID + ":weather_data";
+    public static String DATA_NAME = BetterWeather.MOD_ID + ":weather_event_data";
 
-    private boolean acidRain;
-    private boolean blizzard;
-
+    private String event;
 
     public BetterWeatherData() {
         super(DATA_NAME);
@@ -25,37 +23,38 @@ public class BetterWeatherData extends WorldSavedData {
 
     @Override
     public void read(CompoundNBT nbt) {
-        setAcidRain(nbt.getBoolean("AcidRain"));
-        setBlizzard(nbt.getBoolean("Blizzard"));
+        setEvent(nbt.getString("Event"));
     }
 
     @Override
     public CompoundNBT write(CompoundNBT compound) {
-        compound.putBoolean("AcidRain", acidRain);
-        compound.putBoolean("Blizzard", blizzard);
+        compound.putString("Event", event);
         return compound;
     }
 
+    @Deprecated
     public boolean isAcidRain() {
-        return this.acidRain;
+        return BetterWeather.WeatherEvent.valueOf(this.event) == BetterWeather.WeatherEvent.ACID_RAIN;
     }
 
+    @Deprecated
     public boolean isBlizzard() {
-        return this.blizzard;
+        return BetterWeather.WeatherEvent.valueOf(this.event) == BetterWeather.WeatherEvent.BLIZZARD;
     }
 
+    public String getEvent() {
+        return event;
+    }
 
-    public void setAcidRain(boolean acidRain) {
-        this.acidRain = acidRain;
+    public void setEvent(String event) {
+        this.event = event;
         markDirty();
     }
 
-    public void setBlizzard(boolean isBlizzard) {
-        this.blizzard = isBlizzard;
+    public void setEvent(BetterWeather.WeatherEvent event) {
+        this.event = event.toString();
         markDirty();
     }
-
-
 
     public static BetterWeatherData get(IWorld world) {
         if (!(world instanceof ServerWorld))

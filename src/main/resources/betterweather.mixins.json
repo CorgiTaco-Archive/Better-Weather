@@ -6,6 +6,7 @@
   "mixins": [
     "block.MixinCropBlock",
     "client.MixinBiome",
+    "server.MixinServerWorld",
     "server.MixinServerWorldInfo"
   ],
   "client": [

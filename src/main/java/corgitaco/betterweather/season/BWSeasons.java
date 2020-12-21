@@ -2,7 +2,7 @@ package corgitaco.betterweather.season;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
-import corgitaco.betterweather.datastorage.network.SeasonPacket;
+import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
