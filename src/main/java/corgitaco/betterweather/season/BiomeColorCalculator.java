@@ -18,14 +18,14 @@ public class BiomeColorCalculator {
         double blendStrength;
         if (colorType == ColorType.GRASS) {
             target = new Color(subSeason.getClient().getTargetGrassColor());
-            blendStrength = subSeason.getClient().getSeasonGrassColorBlendStrength();
+            blendStrength = subSeason.getClient().getGrassColorBlendStrength();
         }
         else if (colorType == ColorType.FOLIAGE) {
             target = new Color(subSeason.getClient().getTargetFoliageColor());
-            blendStrength = subSeason.getClient().getSeasonFoliageColorBlendStrength();
+            blendStrength = subSeason.getClient().getFoliageColorBlendStrength();
         } else {
             target = new Color(subSeason.getClient().getTargetSkyColor());
-            blendStrength = subSeason.getClient().getSeasonSkyColorBlendStrength();
+            blendStrength = subSeason.getClient().getSkyColorBlendStrength();
         }
 
 

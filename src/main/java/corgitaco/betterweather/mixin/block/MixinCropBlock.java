@@ -16,10 +16,10 @@ public abstract class MixinCropBlock {
 
     @Redirect(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/CropsBlock;getGrowthChance(Lnet/minecraft/block/Block;Lnet/minecraft/world/IBlockReader;Lnet/minecraft/util/math/BlockPos;)F"))
     private float modifyCropGrowthChance(Block blockIn, IBlockReader worldIn, BlockPos pos) {
-        return (float) (getGrowthChance(blockIn, worldIn, pos) * Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getCropGrowthChanceModifier());
+        return (float) (getGrowthChanceBW(blockIn, worldIn, pos) * Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getCropGrowthChanceMultiplier());
     }
 
-    private static float getGrowthChance(Block blockIn, IBlockReader worldIn, BlockPos pos) {
+    private static float getGrowthChanceBW(Block blockIn, IBlockReader worldIn, BlockPos pos) {
         float f = 1.0F;
         BlockPos blockpos = pos.down();
 

@@ -31,7 +31,7 @@ public class MixinBiome {
 
     @Inject(method = "getDownfall", at = @At("RETURN"), cancellable = true)
     private void modifyDownfall(CallbackInfoReturnable<Float> cir) {
-        cir.setReturnValue((float) (cir.getReturnValue() + Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getRainModifier()));
+        cir.setReturnValue((float) (cir.getReturnValue() + Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getHumidityModifier()));
     }
 
     @Inject(method = "getTemperature()F", at = @At("RETURN"), cancellable = true)
