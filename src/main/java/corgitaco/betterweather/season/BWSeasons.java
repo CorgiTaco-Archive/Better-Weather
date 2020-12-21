@@ -33,8 +33,8 @@ public class BWSeasons {
             BetterWeather.seasonData.setSubseason(subSeason.toString());
         }
 
-
-        NetworkHandler.sendTo((ServerPlayerEntity) player, new SeasonPacket(BetterWeather.seasonData.getSeasonTime(), BetterWeather.SEASON_CYCLE_LENGTH));
+        if (BetterWeather.seasonData.getSeasonTime() % 25 == 0)
+            NetworkHandler.sendTo((ServerPlayerEntity) player, new SeasonPacket(BetterWeather.seasonData.getSeasonTime(), BetterWeather.SEASON_CYCLE_LENGTH));
     }
 
     @OnlyIn(Dist.CLIENT)

@@ -21,13 +21,13 @@ public abstract class MixinServerWorldInfo implements IsWeatherForced {
 
     @Inject(method = "getRainTime", at = @At("RETURN"), cancellable = true)
     private void modifyCurrentRainTime(CallbackInfoReturnable<Integer> cir) {
-        if (!this.isRaining() && !weatherIsForced) //Sets the time between rain and the length of the current rain when rolled.
+        if (!this.isRaining() || !weatherIsForced) //Sets the time between rain and the length of the current rain when rolled.
             cir.setReturnValue((int) (cir.getReturnValue() * (1 / Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getWeatherEventChanceMultiplier())));
     }
 
     @Inject(method = "getThunderTime", at = @At("RETURN"), cancellable = true)
     private void modifyCurrentThunderTime(CallbackInfoReturnable<Integer> cir) {
-        if (!this.isThundering() && !weatherIsForced) //Sets the time between thunderstorms and the length of the current thunderstorm when rolled.
+        if (!this.isThundering() || !weatherIsForced) //Sets the time between thunderstorms and the length of the current thunderstorm when rolled.
             cir.setReturnValue((int) (cir.getReturnValue() * (1 / Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getWeatherEventChanceMultiplier())));
     }
 
