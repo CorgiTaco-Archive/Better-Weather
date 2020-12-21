@@ -76,13 +76,13 @@ public class SeasonConfig {
         }
     }
 
-    public static void createSeasonJson(Path path, Map<String, Season> biomeRiverMap) {
+    public static void createSeasonJson(Path path, Map<String, Season> seasonStringMap) {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setPrettyPrinting();
         gsonBuilder.disableHtmlEscaping();
         Gson gson = gsonBuilder.create();
 
-        String jsonString = gson.toJson(biomeRiverMap);
+        String jsonString = gson.toJson(seasonStringMap);
 
         try {
             Files.write(path, jsonString.getBytes());

@@ -1,9 +1,12 @@
 package corgitaco.betterweather.season;
 
 import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.awt.*;
 
+@OnlyIn(Dist.CLIENT)
 public class BiomeColorCalculator {
 
     public static Color modifyBiomeColor(boolean isGrass, Color originalColorValue, Season.SubSeason subSeason) {
@@ -14,15 +17,15 @@ public class BiomeColorCalculator {
         Color target;
 
         if (isGrass)
-            target = new Color(subSeason.getTargetGrassColor());
+            target = new Color(subSeason.getClient().getTargetGrassColor());
         else
-            target = new Color(subSeason.getFoliageTarget());
+            target = new Color(subSeason.getClient().getTargetFoliageColor());
 
-        red = modifiedColorValue(red, target.getRed(), subSeason.getSeasonBlendStrength());
+        red = modifiedColorValue(red, target.getRed(), subSeason.getClient().getSeasonFoliageColorBlendStrength());
 
-        green = modifiedColorValue(green, target.getGreen(), subSeason.getSeasonBlendStrength());
+        green = modifiedColorValue(green, target.getGreen(), subSeason.getClient().getSeasonFoliageColorBlendStrength());
 
-        blue = modifiedColorValue(blue, target.getBlue(), subSeason.getSeasonBlendStrength());
+        blue = modifiedColorValue(blue, target.getBlue(), subSeason.getClient().getSeasonFoliageColorBlendStrength());
 
         int clampedRed = MathHelper.clamp(red, 0, 255);
         int clampedGreen = MathHelper.clamp(green, 0, 255);
