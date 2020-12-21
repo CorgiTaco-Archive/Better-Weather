@@ -17,11 +17,16 @@ public class MixinBiome {
 
     @Inject(method = "getGrassColor", at = @At("RETURN"), cancellable = true)
     private void modifyGrassColor(double posX, double posZ, CallbackInfoReturnable<Integer> cir) {
-        cir.setReturnValue(!Season.getSeasonFromEnum(BWSeasons.SeasonVal.SUMMER).containsSubSeason(BWSeasons.cachedSubSeason) ? BiomeColorCalculator.modifyBiomeColor(true, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason)).getRGB() : cir.getReturnValue());
+        cir.setReturnValue(!Season.getSeasonFromEnum(BWSeasons.SeasonVal.SUMMER).containsSubSeason(BWSeasons.cachedSubSeason) ? BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.GRASS, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason)).getRGB() : cir.getReturnValue());
     }
 
     @Inject(method = "getFoliageColor", at = @At("RETURN"), cancellable = true)
     private void modifyFoliageColor(CallbackInfoReturnable<Integer> cir) {
-        cir.setReturnValue(!Season.getSeasonFromEnum(BWSeasons.SeasonVal.SUMMER).containsSubSeason(BWSeasons.cachedSubSeason) ? BiomeColorCalculator.modifyBiomeColor(false, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason)).getRGB() : cir.getReturnValue());
+        cir.setReturnValue(!Season.getSeasonFromEnum(BWSeasons.SeasonVal.SUMMER).containsSubSeason(BWSeasons.cachedSubSeason) ? BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.FOLIAGE, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason)).getRGB() : cir.getReturnValue());
+    }
+
+    @Inject(method = "getSkyColor", at = @At("RETURN"), cancellable = true)
+    private void modifySkyColor(CallbackInfoReturnable<Integer> cir) {
+        cir.setReturnValue(!Season.getSeasonFromEnum(BWSeasons.SeasonVal.SUMMER).containsSubSeason(BWSeasons.cachedSubSeason) ? BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.SKY, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason)).getRGB() : cir.getReturnValue());
     }
 }
