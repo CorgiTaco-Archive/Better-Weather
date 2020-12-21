@@ -95,6 +95,9 @@ public class BetterWeather {
         public static void worldTick(TickEvent.WorldTickEvent event) {
             setWeatherData(event.world);
             setSeasonData(event.world);
+            if (weatherData.getEvent() == null)
+                weatherData.setEvent(WeatherEvent.NONE);
+
             if (event.phase == TickEvent.Phase.END) {
                 if (event.side.isServer()) {
                     ServerWorld serverWorld = (ServerWorld) event.world;

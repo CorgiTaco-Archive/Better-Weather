@@ -1,5 +1,6 @@
 package corgitaco.betterweather.weatherevents;
 
+import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.SoundRegistry;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
@@ -32,6 +33,7 @@ import static corgitaco.betterweather.BetterWeather.weatherData;
 public class Blizzard {
 
     public static void addSnowAndIce(Chunk chunk, World world, int tickSpeed, long worldTime) {
+        BetterWeather.setWeatherData(world);
         ChunkPos chunkpos = chunk.getPos();
         int chunkXStart = chunkpos.getXStart();
         int chunkZStart = chunkpos.getZStart();

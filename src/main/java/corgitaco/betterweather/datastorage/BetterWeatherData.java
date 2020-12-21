@@ -12,6 +12,7 @@ public class BetterWeatherData extends WorldSavedData {
     public static String DATA_NAME = BetterWeather.MOD_ID + ":weather_event_data";
 
     private String event;
+    private boolean isWeatherForced;
 
     public BetterWeatherData() {
         super(DATA_NAME);
@@ -24,11 +25,13 @@ public class BetterWeatherData extends WorldSavedData {
     @Override
     public void read(CompoundNBT nbt) {
         setEvent(nbt.getString("Event"));
+        setWeatherForced(nbt.getBoolean("Forced"));
     }
 
     @Override
     public CompoundNBT write(CompoundNBT compound) {
         compound.putString("Event", event);
+        compound.putBoolean("Forced", isWeatherForced);
         return compound;
     }
 
@@ -56,6 +59,16 @@ public class BetterWeatherData extends WorldSavedData {
         markDirty();
     }
 
+
+    public boolean isWeatherForced() {
+        return isWeatherForced;
+    }
+
+    public void setWeatherForced(boolean weatherForced) {
+        isWeatherForced = weatherForced;
+        markDirty();
+    }
+
     public static BetterWeatherData get(IWorld world) {
         if (!(world instanceof ServerWorld))
             return new BetterWeatherData();
@@ -70,6 +83,4 @@ public class BetterWeatherData extends WorldSavedData {
 
         return weatherData;
     }
-
-
 }

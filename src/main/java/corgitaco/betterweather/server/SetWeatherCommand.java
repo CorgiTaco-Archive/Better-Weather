@@ -8,7 +8,7 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.ISuggestionProvider;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,21 +30,21 @@ public class SetWeatherCommand {
         BetterWeather.LOGGER.debug("Registered BW Commands!");
     }
 
-    public static int betterWeatherSetWeatherType(World world, CommandSource source, String weatherType) {
+    public static int betterWeatherSetWeatherType(ServerWorld world, CommandSource source, String weatherType) {
         switch (weatherType) {
             case "acidrain":
                 BetterWeather.weatherData.setEvent(BetterWeather.WeatherEvent.ACID_RAIN);
-                world.getWorldInfo().setRaining(true);
+                world.func_241113_a_(0, 6000, true, false);
                 source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.acidrain"), true);
                 break;
             case "blizzard":
                 BetterWeather.weatherData.setEvent(BetterWeather.WeatherEvent.BLIZZARD);
-                world.getWorldInfo().setRaining(true);
+                world.func_241113_a_(0, 6000, true, false);
                 source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.blizzard"), true);
                 break;
             case "clear":
                 BetterWeather.weatherData.setEvent(BetterWeather.WeatherEvent.NONE);
-                world.getWorldInfo().setRaining(false);
+                world.func_241113_a_(0, 6000, false, false);
                 source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.clear"), true);
                 break;
             default:
