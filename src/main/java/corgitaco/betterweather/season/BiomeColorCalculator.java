@@ -1,14 +1,12 @@
 package corgitaco.betterweather.season;
 
-import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
 import net.minecraft.util.math.MathHelper;
 
 import java.awt.*;
 
 public class BiomeColorCalculator {
 
-    public static Color modifyBiomeColor(boolean isGrass, Color originalColorValue, BWSeasons.SubSeason subSeason) {
-
+    public static Color modifyBiomeColor(boolean isGrass, Color originalColorValue, Season.SubSeason subSeason) {
         int red = originalColorValue.getRed();
         int green = originalColorValue.getGreen();
         int blue = originalColorValue.getBlue();
@@ -16,15 +14,15 @@ public class BiomeColorCalculator {
         Color target;
 
         if (isGrass)
-            target = subSeason.getGrassTarget();
+            target = new Color(subSeason.getTargetGrassColor());
         else
-            target = subSeason.getFoliageTarget();
+            target = new Color(subSeason.getFoliageTarget());
 
-        red = modifiedColorValue(red, target.getRed());
+        red = modifiedColorValue(red, target.getRed(), subSeason.getSeasonBlendStrength());
 
-        green = modifiedColorValue(green, target.getGreen());
+        green = modifiedColorValue(green, target.getGreen(), subSeason.getSeasonBlendStrength());
 
-        blue = modifiedColorValue(blue, target.getBlue());
+        blue = modifiedColorValue(blue, target.getBlue(), subSeason.getSeasonBlendStrength());
 
         int clampedRed = MathHelper.clamp(red, 0, 255);
         int clampedGreen = MathHelper.clamp(green, 0, 255);
@@ -33,21 +31,7 @@ public class BiomeColorCalculator {
         return new Color(clampedRed, clampedGreen, clampedBlue);
     }
 
-    private static int modifiedColorValue(int original, int target) {
-
-        return (int) MathHelper.lerp(0.5, original , target);
+    private static int modifiedColorValue(int original, int target, double blendStrength) {
+        return (int) MathHelper.lerp(blendStrength, original , target);
     }
-//        double colorModifier = 0.5;
-//        int value = original;
-//
-//        if (value < target) {
-//            int difference = Math.abs(target - value);
-//            value = (int) (value + (difference * colorModifier));
-//
-//        } else if (value > target) {
-//            int difference = Math.abs(value - target);
-//            value = (int) (value - (difference * colorModifier));
-//        }
-//        return value;
-//    }
 }

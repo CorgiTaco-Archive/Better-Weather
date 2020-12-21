@@ -3,6 +3,7 @@ package corgitaco.betterweather;
 import com.google.common.collect.Lists;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
+import corgitaco.betterweather.config.json.SeasonConfig;
 import corgitaco.betterweather.datastorage.BetterWeatherData;
 import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
@@ -19,6 +20,7 @@ import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -28,9 +30,12 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
+import org.apache.commons.lang3.text.WordUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,7 +46,14 @@ public class BetterWeather {
     public static final int SEASON_LENGTH = 1000;
     public static final int SEASON_CYCLE_LENGTH = SEASON_LENGTH * 4;
 
+    public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
+
+
     public BetterWeather() {
+        File dir = new File(CONFIG_PATH.toString());
+        if (!dir.exists())
+            dir.mkdir();
+
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
         BetterWeatherConfig.loadConfig(BetterWeatherConfig.COMMON_CONFIG, FMLPaths.CONFIGDIR.get().resolve(MOD_ID + "-common.toml"));
@@ -56,6 +68,7 @@ public class BetterWeather {
 //        GlobalEntityTypeAttributes.put(BWEntityRegistry.TORNADO, TornadoEntity.setCustomAttributes().create());
         BetterWeatherConfig.handleCommonConfig();
         NetworkHandler.init();
+        SeasonConfig.handleBWSeasonsConfig(CONFIG_PATH.resolve(MOD_ID + "-seasons.json"));
     }
 
 
@@ -188,6 +201,13 @@ public class BetterWeather {
         public static void renderFogEvent(EntityViewRenderEvent.FogDensity event) {
             Minecraft minecraft = Minecraft.getInstance();
             Blizzard.handleFog(event, minecraft);
+        }
+
+        @SubscribeEvent
+        public static void renderGameOverlayEventText(RenderGameOverlayEvent.Text event) {
+            if (Minecraft.getInstance().gameSettings.showDebugInfo) {
+                event.getLeft().add("Season: " + WordUtils.capitalize(BWSeasons.cachedSeason.toString().toLowerCase()) + " | " + WordUtils.capitalize(BWSeasons.cachedSubSeason.toString().replace("_", " ").replace(BWSeasons.cachedSeason.toString(), "").toLowerCase()));
+            }
         }
     }
 

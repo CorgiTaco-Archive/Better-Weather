@@ -14,7 +14,7 @@ public class BetterWeatherSeasonData extends WorldSavedData {
 
     private int seasonTime;
     private int seasonCycleLength;
-    private String season = BWSeasons.Season.SPRING.toString();
+    private String season = BWSeasons.SeasonVal.SPRING.toString();
     private String subseason;
 
     public BetterWeatherSeasonData() {
@@ -47,8 +47,8 @@ public class BetterWeatherSeasonData extends WorldSavedData {
         markDirty();
     }
 
-    public BWSeasons.Season getSeason() {
-        return BWSeasons.Season.valueOf(season);
+    public BWSeasons.SeasonVal getSeason() {
+        return BWSeasons.SeasonVal.valueOf(season);
     }
 
     public void setSeason(String season) {

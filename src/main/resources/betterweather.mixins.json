@@ -5,7 +5,7 @@
   "refmap": "betterweather.refmap.json",
   "mixins": [
     "block.MixinCropBlock",
-    "client.MixinBiomes"
+    "client.MixinBiome"
   ],
   "client": [
     "client.MixinLeavesBlock",
