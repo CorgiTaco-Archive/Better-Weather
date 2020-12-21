@@ -171,7 +171,7 @@ public class Season {
                         try {
                             return (int) Long.parseLong(targetFoliageHexColor, 16);
                         } catch (Exception e) {
-                            BetterWeather.LOGGER.warn("targetFoliageHexColor was not a hex color value, you put: " + targetFoliageHexColor + " | Using Defaults...");
+                            BetterWeather.LOGGER.warn("targetFoliageHexColor was not a hex color value, you put: \"" + targetFoliageHexColor + "\" | Using Defaults...");
                             stopSpamIDXFoliage++;
                         }
                     }
@@ -191,7 +191,7 @@ public class Season {
                         try {
                             return (int) Long.parseLong(targetGrassHexColor, 16);
                         } catch (Exception e) {
-                            BetterWeather.LOGGER.warn("targetGrassHexColor was not a hex color value, you put: " + targetGrassHexColor + " | Using Defaults...");
+                            BetterWeather.LOGGER.warn("targetGrassHexColor was not a hex color value, you put: \"" + targetGrassHexColor + "\" | Using Defaults...");
                             stopSpamIDXGrass++;
                         }
                     }
@@ -211,7 +211,7 @@ public class Season {
                         try {
                             return (int) Long.parseLong(targetSkyHexColor, 16);
                         } catch (Exception e) {
-                            BetterWeather.LOGGER.warn("targetSkyHexColor was not a hex color value, you put: " + targetSkyHexColor + " | Using Defaults...");
+                            BetterWeather.LOGGER.warn("targetSkyHexColor was not a hex color value, you put: \"" + targetSkyHexColor + "\" | Using Defaults...");
                             stopSpamIDXSky++;
                         }
                     }

@@ -16,16 +16,34 @@ public class BiomeColorCalculator {
 
         Color target;
         double blendStrength;
-        if (colorType == ColorType.GRASS) {
-            target = new Color(subSeason.getClient().getTargetGrassColor());
-            blendStrength = subSeason.getClient().getGrassColorBlendStrength();
-        }
-        else if (colorType == ColorType.FOLIAGE) {
-            target = new Color(subSeason.getClient().getTargetFoliageColor());
-            blendStrength = subSeason.getClient().getFoliageColorBlendStrength();
-        } else {
-            target = new Color(subSeason.getClient().getTargetSkyColor());
-            blendStrength = subSeason.getClient().getSkyColorBlendStrength();
+        switch (colorType) {
+            case GRASS:
+                int targetGrassColor = subSeason.getClient().getTargetGrassColor();
+
+                if (targetGrassColor == -1)
+                    return originalColorValue;
+
+                target = new Color(targetGrassColor);
+                blendStrength = subSeason.getClient().getGrassColorBlendStrength();
+                break;
+            case FOLIAGE:
+                int targetFoliageColor = subSeason.getClient().getTargetFoliageColor();
+
+                if (targetFoliageColor == -1)
+                    return originalColorValue;
+
+                target = new Color(targetFoliageColor);
+                blendStrength = subSeason.getClient().getFoliageColorBlendStrength();
+                break;
+            default:
+                int targetSkyColor = subSeason.getClient().getTargetSkyColor();
+
+                if (targetSkyColor == -1)
+                    return originalColorValue;
+
+                target = new Color(targetSkyColor);
+                blendStrength = subSeason.getClient().getSkyColorBlendStrength();
+                break;
         }
 
 
@@ -43,7 +61,7 @@ public class BiomeColorCalculator {
     }
 
     private static int modifiedColorValue(int original, int target, double blendStrength) {
-        return (int) MathHelper.lerp(blendStrength, original , target);
+        return (int) MathHelper.lerp(blendStrength, original, target);
     }
 
     public enum ColorType {
