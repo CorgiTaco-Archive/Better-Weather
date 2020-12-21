@@ -23,7 +23,6 @@ public class BetterWeatherConfig {
     private static final ForgeConfigSpec.Builder COMMON_BUILDER = new ForgeConfigSpec.Builder();
     public static ForgeConfigSpec COMMON_CONFIG;
 
-    public static ForgeConfigSpec.DoubleValue acidRainChance;
     public static ForgeConfigSpec.IntValue tickBlockDestroySpeed;
     public static ForgeConfigSpec.BooleanValue destroyBlocks;
     public static ForgeConfigSpec.ConfigValue<String> allowedBlocksToDestroy;
@@ -43,13 +42,11 @@ public class BetterWeatherConfig {
     public static ForgeConfigSpec.IntValue tickSnowAndIcePlaceSpeed;
     public static ForgeConfigSpec.IntValue tickSnowAndIceDecaySpeed;
     public static ForgeConfigSpec.IntValue blizzardSlownessAmplifier;
-    public static ForgeConfigSpec.DoubleValue blizzardChance;
     public static ForgeConfigSpec.DoubleValue snowDecayTemperatureThreshold;
 
 
     static {
         COMMON_BUILDER.comment("Better Weather Settings").push("Acid_Rain_Settings").push("World_Settings");
-        acidRainChance = COMMON_BUILDER.comment("The chance of acid rain that's checked every 5,000 ticks.\n Default: 0.25").defineInRange("AcidRainChance", 0.25, 0.0, 1.0);
         tickBlockDestroySpeed = COMMON_BUILDER.comment("How often blocks are destroyed during an acid rain event.\nDefault: 500").defineInRange("BlockDestroyTickSpeed", 250, 1, 100000);
         destroyBlocks = COMMON_BUILDER.comment("Destroy Blocks?\nDefault: true").define("DestroyBlocks", true);
         allowedBlocksToDestroy = COMMON_BUILDER.comment("Destroy what block materials? Allowed Values: GRASS,LEAVES,PLANTS,CROPS\nDefault: GRASS,LEAVES,PLANTS,CROPS").define("BlocksToDestroy", "GRASS,LEAVES,PLANTS,CROPS");
@@ -64,7 +61,6 @@ public class BetterWeatherConfig {
         COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
         COMMON_BUILDER.push("Blizzard_Settings").push("World_Settings").push("Snow_Generation");
-        blizzardChance = COMMON_BUILDER.comment("The chance of a blizzard that's checked every 5,000 ticks.\n Default: 0.1").defineInRange("BlizzardChance", 0.1, 0.0, 1.0);
         doBlizzardsOccurInDeserts = COMMON_BUILDER.comment("Do blizzards appear in and generate snow in deserts?\nDefault: false.").define("BlizzardsInDeserts", false);
         spawnSnowAndIce = COMMON_BUILDER.comment("Do blizzards generate snow and ice?\nDefault: true").define("SpawnSnowAndIce", true);
         tickSnowAndIcePlaceSpeed = COMMON_BUILDER.comment("How often is snow and ice placed during blizzards?\nDefault: 15").defineInRange("SnowAndIceBlockPlaceTickSpeed", 20, 1, 100000);

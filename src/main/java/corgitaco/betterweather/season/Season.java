@@ -1,8 +1,6 @@
 package corgitaco.betterweather.season;
 
 import net.minecraft.util.Util;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.awt.*;
 import java.util.Map;
@@ -139,13 +137,10 @@ public class Season {
             return weatherEventController;
         }
 
-        @OnlyIn(Dist.CLIENT)
         public SeasonClient getClient() {
             return client;
         }
 
-
-        @OnlyIn(Dist.CLIENT)
         public static class SeasonClient {
             private final String targetFoliageHexColor;
             private final double foliageColorBlendStrength;

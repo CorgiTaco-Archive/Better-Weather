@@ -4,13 +4,14 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "betterweather.refmap.json",
   "mixins": [
+    "biome.MixinBiome",
     "block.MixinCropBlock",
-    "client.MixinBiome",
     "server.MixinServerWorld",
     "server.MixinServerWorldInfo"
   ],
   "client": [
     "client.MixinLeavesBlock",
+    "client.MixinBiomeClient",
     "client.MixinSoundEngine",
     "client.MixinWorldRenderer"
   ],

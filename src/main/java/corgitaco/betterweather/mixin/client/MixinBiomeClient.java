@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.awt.*;
 
 @Mixin(Biome.class)
-public abstract class MixinBiome {
+public abstract class MixinBiomeClient {
 
     @Shadow public abstract Biome.Category getCategory();
 
@@ -33,17 +33,5 @@ public abstract class MixinBiome {
     private void modifySkyColor(CallbackInfoReturnable<Integer> cir) {
         if (this.getCategory() != Biome.Category.NETHER || this.getCategory() != Biome.Category.THEEND || this.getCategory() != Biome.Category.NONE)
             cir.setReturnValue(!Season.getSeasonFromEnum(BWSeasons.SeasonVal.SUMMER).containsSubSeason(BWSeasons.cachedSubSeason) ? BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.SKY, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason)).getRGB() : cir.getReturnValue());
-    }
-
-    @Inject(method = "getDownfall", at = @At("RETURN"), cancellable = true)
-    private void modifyDownfall(CallbackInfoReturnable<Float> cir) {
-        if (this.getCategory() != Biome.Category.NETHER || this.getCategory() != Biome.Category.THEEND || this.getCategory() != Biome.Category.NONE)
-            cir.setReturnValue((float) (cir.getReturnValue() + Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getHumidityModifier()));
-    }
-
-    @Inject(method = "getTemperature()F", at = @At("RETURN"), cancellable = true)
-    private void modifyTemperature(CallbackInfoReturnable<Float> cir) {
-        if (this.getCategory() != Biome.Category.NETHER || this.getCategory() != Biome.Category.THEEND || this.getCategory() != Biome.Category.NONE)
-            cir.setReturnValue((float) (cir.getReturnValue() + Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getTempModifier()));
     }
 }
