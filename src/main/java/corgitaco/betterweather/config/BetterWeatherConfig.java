@@ -44,10 +44,19 @@ public class BetterWeatherConfig {
     public static ForgeConfigSpec.IntValue blizzardSlownessAmplifier;
     public static ForgeConfigSpec.DoubleValue snowDecayTemperatureThreshold;
 
-
     public static ForgeConfigSpec.IntValue seasonLength;
 
-    static {
+    public static void loadConfig(Path path) {
+        BetterWeather.LOGGER.info("Loading config: " + path);
+        refreshConfig();
+        CommentedFileConfig file = CommentedFileConfig.builder(path).sync().autosave().writingMode(WritingMode.REPLACE).build();
+        file.load();
+        COMMON_CONFIG.setConfig(file);
+        BetterWeather.SEASON_LENGTH = seasonLength.get();
+        BetterWeather.SEASON_CYCLE_LENGTH = seasonLength.get() * 4;
+    }
+
+    private static void refreshConfig() {
         COMMON_BUILDER.comment("Better Weather Settings");
         COMMON_BUILDER.push("Season_Settings");
         seasonLength = COMMON_BUILDER.comment("See betterweather-seasons.json for season specific configs!").comment("The length of each season in ticks. 24000 is a single minecraft day!\nDefault: 240000(10 Minecraft days)").defineInRange("SeasonLength", 240000, 24000, Integer.MAX_VALUE);
@@ -84,14 +93,6 @@ public class BetterWeatherConfig {
         COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
         COMMON_CONFIG = COMMON_BUILDER.build();
-        BetterWeather.SEASON_LENGTH = seasonLength.get();
-    }
-
-    public static void loadConfig(ForgeConfigSpec config, Path path) {
-        BetterWeather.LOGGER.info("Loading config: " + path);
-        CommentedFileConfig file = CommentedFileConfig.builder(path).sync().autosave().writingMode(WritingMode.REPLACE).build();
-        file.load();
-        config.setConfig(file);
     }
 
     @SubscribeEvent
@@ -109,7 +110,7 @@ public class BetterWeatherConfig {
     public static List<Block> blocksToNotDestroyList = new ArrayList<>();
 
     public static void handleCommonConfig() {
-        BetterWeatherConfig.loadConfig(BetterWeatherConfig.COMMON_CONFIG, FMLPaths.CONFIGDIR.get().resolve(BetterWeather.MOD_ID + "-common.toml"));
+        BetterWeatherConfig.loadConfig(FMLPaths.CONFIGDIR.get().resolve(BetterWeather.MOD_ID + "-common.toml"));
         String entityTypes = BetterWeatherConfig.entityTypesToDamage.get();
         String removeSpaces = entityTypes.trim().toLowerCase().replace(" ", "");
         String[] entityList = removeSpaces.split(",");

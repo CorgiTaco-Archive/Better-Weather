@@ -21,6 +21,10 @@ public class BWSeasonSystem {
             BetterWeather.seasonData.setSeasonTime(0);
         else
             BetterWeather.seasonData.setSeasonTime(currentSeasonTime + 1);
+
+        if (BetterWeather.seasonData.getSeasonCycleLength() != BetterWeather.SEASON_CYCLE_LENGTH)
+            BetterWeather.seasonData.setSeasonCycleLength(BetterWeather.SEASON_CYCLE_LENGTH);
+
     }
 
     public static void updateSeasonPacket(PlayerEntity player, World world) {

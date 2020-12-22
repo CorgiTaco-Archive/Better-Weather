@@ -37,6 +37,7 @@ public class SeasonConfig {
         if (!CONFIG_FILE.exists()) {
             createSeasonJson(path, defaultMap);
         }
+
         try (Reader reader = new FileReader(path.toString())) {
             Map biomeDataListHolder = gson.fromJson(reader, Map.class);
             if (biomeDataListHolder != null) {
