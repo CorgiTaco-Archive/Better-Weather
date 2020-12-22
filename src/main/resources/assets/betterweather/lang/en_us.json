@@ -1,6 +1,18 @@
 {
+  "commands.bw.setseason.success.autumn_end": "BW: Set the season to Autumn | End.",
+  "commands.bw.setseason.success.autumn_mid": "BW: Set the season to Autumn | Mid.",
+  "commands.bw.setseason.success.autumn_start": "BW: Set the season to Autumn | Start.",
+  "commands.bw.setseason.success.spring_end": "BW: Set the season to Spring | End.",
+  "commands.bw.setseason.success.spring_mid": "BW: Set the season to Spring | Mid.",
+  "commands.bw.setseason.success.spring_start": "BW: Set the season to Spring | Start.",
+  "commands.bw.setseason.success.summer_end": "BW: Set the season to Summer | End.",
+  "commands.bw.setseason.success.summer_mid": "BW: Set the season to Summer | Mid.",
+  "commands.bw.setseason.success.summer_start": "BW: Set the season to Summer | Start.",
+  "commands.bw.setseason.success.winter_end": "BW: Set the season to Winter | End.",
+  "commands.bw.setseason.success.winter_mid": "BW: Set the season to Winter | Mid.",
+  "commands.bw.setseason.success.winter_start": "BW: Set the season to Winter | Start.",
+  "commands.bw.setweather.failed": "BW: Could not Set the weather to %s",
   "commands.bw.setweather.success.acidrain": "BW: Set the weather to acid rain.",
   "commands.bw.setweather.success.blizzard": "BW: Set the weather to blizzard.",
-  "commands.bw.setweather.success.clear": "BW: Set the weather to clear.",
-  "commands.bw.setweather.failed": "BW: Could not Set the weather to %s"
+  "commands.bw.setweather.success.clear": "BW: Set the weather to clear."
 }

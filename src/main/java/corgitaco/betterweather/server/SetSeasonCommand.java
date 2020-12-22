@@ -64,7 +64,7 @@ public class SetSeasonCommand {
                 source.sendFeedback(new TranslationTextComponent("commands.bw.setseason.success.winter_end"), true);
                 break;
             default:
-                source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.failed", subSeason.toString()), true);
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setseason.failed", subSeason.toString()), true);
                 failedFlag = true;
                 break;
         }
