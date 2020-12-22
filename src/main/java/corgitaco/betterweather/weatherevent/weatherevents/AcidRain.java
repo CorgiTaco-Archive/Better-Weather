@@ -40,8 +40,6 @@ import static corgitaco.betterweather.config.BetterWeatherConfig.*;
 public class AcidRain {
     public static final ForgeRegistry<Block> blockRegistry = ((ForgeRegistry<Block>) ForgeRegistries.BLOCKS);
     static Block block = blockRegistry.getRaw(new ResourceLocation(blockToChangeFromGrass.get()));
-    public static final ResourceLocation RAIN_TEXTURE = new ResourceLocation("textures/environment/rain.png");
-    public static final ResourceLocation ACID_RAIN_TEXTURE = new ResourceLocation(BetterWeather.MOD_ID, "textures/environment/acid_rain.png");
 
     public static void acidRainEvent(Chunk chunk, ServerWorld world, int gameRuleTickSpeed, long worldTime) {
         ChunkPos chunkpos = chunk.getPos();
@@ -84,9 +82,9 @@ public class AcidRain {
             IWorldReader iworldreader = mc.world;
             BlockPos blockpos = new BlockPos(activeRenderInfoIn.getProjectedView());
             BlockPos blockpos1 = null;
-            int i = (int)(100.0F * f * f) / (mc.gameSettings.particles == ParticleStatus.DECREASED ? 2 : 1);
+            int i = (int) (100.0F * f * f) / (mc.gameSettings.particles == ParticleStatus.DECREASED ? 2 : 1);
 
-            for(int j = 0; j < i; ++j) {
+            for (int j = 0; j < i; ++j) {
                 int k = random.nextInt(21) - 10;
                 int l = random.nextInt(21) - 10;
                 BlockPos blockpos2 = iworldreader.getHeight(Heightmap.Type.MOTION_BLOCKING, blockpos.add(k, 0, l)).down();
@@ -103,16 +101,16 @@ public class AcidRain {
                     FluidState fluidstate = iworldreader.getFluidState(blockpos2);
                     VoxelShape voxelshape = blockstate.getCollisionShape(iworldreader, blockpos2);
                     double d2 = voxelshape.max(Direction.Axis.Y, d0, d1);
-                    double d3 = (double)fluidstate.getActualHeight(iworldreader, blockpos2);
+                    double d3 = (double) fluidstate.getActualHeight(iworldreader, blockpos2);
                     double d4 = Math.max(d2, d3);
                     IParticleData iparticledata = ParticleTypes.SMOKE;
-                    mc.world.addParticle(iparticledata, (double)blockpos2.getX() + d0, (double)blockpos2.getY() + d4, (double)blockpos2.getZ() + d1, 0.0D, 0.0D, 0.0D);
+                    mc.world.addParticle(iparticledata, (double) blockpos2.getX() + d0, (double) blockpos2.getY() + d4, (double) blockpos2.getZ() + d1, 0.0D, 0.0D, 0.0D);
                 }
             }
 
             if (blockpos1 != null && random.nextInt(3) < worldRenderer.rainSoundTime++) {
                 worldRenderer.rainSoundTime = 0;
-                if (blockpos1.getY() > blockpos.getY() + 1 && iworldreader.getHeight(Heightmap.Type.MOTION_BLOCKING, blockpos).getY() > MathHelper.floor((float)blockpos.getY())) {
+                if (blockpos1.getY() > blockpos.getY() + 1 && iworldreader.getHeight(Heightmap.Type.MOTION_BLOCKING, blockpos).getY() > MathHelper.floor((float) blockpos.getY())) {
                     mc.world.playSound(blockpos1, SoundEvents.WEATHER_RAIN_ABOVE, SoundCategory.WEATHER, 0.1F, 0.5F, false);
                 } else {
                     mc.world.playSound(blockpos1, SoundEvents.WEATHER_RAIN, SoundCategory.WEATHER, 0.2F, 1.0F, false);
@@ -121,17 +119,19 @@ public class AcidRain {
         }
     }
 
+    public static final ResourceLocation RAIN_TEXTURE = new ResourceLocation("textures/environment/rain.png");
+    public static final ResourceLocation ACID_RAIN_TEXTURE = new ResourceLocation(BetterWeather.MOD_ID, "textures/environment/acid_rain.png");
+
     public static void handleRainTexture(Minecraft minecraft) {
         if (minecraft.world != null) {
             if (minecraft.world.getWorldInfo().isRaining() && weatherData.isAcidRain()) {
                 if (!BetterWeatherConfigClient.removeSmokeParticles.get())
                     addAcidRainParticles(minecraft.gameRenderer.getActiveRenderInfo(), minecraft, minecraft.worldRenderer);
 
-                if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE && weatherData.isAcidRain())
+                if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE)
                     WorldRenderer.RAIN_TEXTURES = ACID_RAIN_TEXTURE;
-                else if (WorldRenderer.RAIN_TEXTURES != RAIN_TEXTURE && !weatherData.isAcidRain())
-                    WorldRenderer.RAIN_TEXTURES = RAIN_TEXTURE;
-            }
+            } else if (WorldRenderer.RAIN_TEXTURES != RAIN_TEXTURE)
+                WorldRenderer.RAIN_TEXTURES = RAIN_TEXTURE;
         }
     }
 
