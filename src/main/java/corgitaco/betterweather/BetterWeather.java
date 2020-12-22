@@ -220,7 +220,7 @@ public class BetterWeather {
         @SubscribeEvent
         public static void renderGameOverlayEventText(RenderGameOverlayEvent.Text event) {
             if (Minecraft.getInstance().gameSettings.showDebugInfo) {
-                event.getLeft().add("Season: " + WordUtils.capitalize(BWSeasonSystem.cachedSeason.toString().toLowerCase()) + " | " + WordUtils.capitalize(BWSeasonSystem.cachedSubSeason.toString().replace("_", " ").replace(BWSeasonSystem.cachedSeason.toString(), "").toLowerCase()));
+                event.getLeft().add("Season: " + WordUtils.capitalize(BWSeasonSystem.cachedSeason.toString().toLowerCase()) + " | " + WordUtils.capitalize(BWSeasonSystem.cachedSubSeason.toString().replace("_", "").replace(BWSeasonSystem.cachedSeason.toString(), "").toLowerCase()));
             }
         }
     }
