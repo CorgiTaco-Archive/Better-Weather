@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(DerivedWorldInfo.class)
 public abstract class MixinDerivedWorldInfo implements IsWeatherForced {
     @Shadow @Final private IServerWorldInfo delegate;
-    private boolean weatherIsForced;
 
     @Override
     public void setWeatherForced(boolean flag) {
