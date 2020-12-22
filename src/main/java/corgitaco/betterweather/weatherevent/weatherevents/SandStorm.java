@@ -1,4 +1,4 @@
-package corgitaco.betterweather.weatherevents;
+package corgitaco.betterweather.weatherevent.weatherevents;
 
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;

@@ -3,7 +3,7 @@ package corgitaco.betterweather.config;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.weatherevents.Blizzard;
+import corgitaco.betterweather.weatherevent.weatherevents.Blizzard;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;

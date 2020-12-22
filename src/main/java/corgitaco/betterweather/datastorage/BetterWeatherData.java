@@ -11,7 +11,7 @@ import net.minecraft.world.storage.WorldSavedData;
 public class BetterWeatherData extends WorldSavedData {
     public static String DATA_NAME = BetterWeather.MOD_ID + ":weather_event_data";
 
-    private String event;
+    private String event = BetterWeather.WeatherEvent.NONE.toString();
     private boolean isWeatherForced;
     private boolean modified;
 

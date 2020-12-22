@@ -1,5 +1,6 @@
-package corgitaco.betterweather.season;
+package corgitaco.betterweather.season.client;
 
+import corgitaco.betterweather.season.Season;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;

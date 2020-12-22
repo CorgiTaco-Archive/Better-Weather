@@ -1,6 +1,6 @@
 package corgitaco.betterweather.mixin.block;
 
-import corgitaco.betterweather.season.BWSeasons;
+import corgitaco.betterweather.season.BWSeasonSystem;
 import corgitaco.betterweather.season.Season;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -16,7 +16,7 @@ public abstract class MixinCropBlock {
 
     @Redirect(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/CropsBlock;getGrowthChance(Lnet/minecraft/block/Block;Lnet/minecraft/world/IBlockReader;Lnet/minecraft/util/math/BlockPos;)F"))
     private float modifyCropGrowthChance(Block blockIn, IBlockReader worldIn, BlockPos pos) {
-        return (float) (getGrowthChanceBW(blockIn, worldIn, pos) * Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getCropGrowthChanceMultiplier());
+        return (float) (getGrowthChanceBW(blockIn, worldIn, pos) * Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason).getCropGrowthChanceMultiplier());
     }
 
     private static float getGrowthChanceBW(Block blockIn, IBlockReader worldIn, BlockPos pos) {

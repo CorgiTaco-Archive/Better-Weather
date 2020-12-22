@@ -3,7 +3,7 @@ package corgitaco.betterweather.mixin.client;
 import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
-import corgitaco.betterweather.weatherevents.Blizzard;
+import corgitaco.betterweather.weatherevent.weatherevents.Blizzard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -34,6 +34,9 @@ public abstract class MixinWorldRenderer {
 
     @Inject(at = @At("HEAD"), method = "renderRainSnow(Lnet/minecraft/client/renderer/LightTexture;FDDD)V", cancellable = true)
     private void renderBlizzardSnow(LightTexture lightmapIn, float partialTicks, double xIn, double yIn, double zIn, CallbackInfo ci) {
+        BetterWeather.setWeatherData(mc.world);
+        BetterWeather.setSeasonData(mc.world);
+
         if (BetterWeather.weatherData.isBlizzard()) {
             ci.cancel();
             float rainStrength = this.mc.world.getRainStrength(partialTicks);

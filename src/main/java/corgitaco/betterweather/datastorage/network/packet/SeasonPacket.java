@@ -30,7 +30,7 @@ public class SeasonPacket {
             ctx.get().enqueueWork(() -> {
                 Minecraft minecraft = Minecraft.getInstance();
 
-                if (minecraft.world != null) {
+                if (minecraft.world != null && minecraft.player != null) {
                     BetterWeather.setSeasonData(minecraft.world);
                     BetterWeather.seasonData.setSeasonTime(message.seasonTime);
                     BetterWeather.seasonData.setSeasonCycleLength(message.seasonCycleLength);

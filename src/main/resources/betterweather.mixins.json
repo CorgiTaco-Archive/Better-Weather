@@ -10,8 +10,9 @@
     "server.MixinServerWorldInfo"
   ],
   "client": [
-    "client.MixinLeavesBlock",
+    "client.MixinClientWorld",
     "client.MixinBiomeClient",
+    "client.MixinLeavesBlock",
     "client.MixinSoundEngine",
     "client.MixinWorldRenderer"
   ],

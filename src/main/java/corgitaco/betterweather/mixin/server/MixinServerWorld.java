@@ -4,7 +4,7 @@ import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.access.IsWeatherForced;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
 import corgitaco.betterweather.datastorage.network.packet.WeatherEventPacket;
-import corgitaco.betterweather.season.BWSeasons;
+import corgitaco.betterweather.season.BWSeasonSystem;
 import corgitaco.betterweather.season.Season;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.profiler.IProfiler;
@@ -32,30 +32,31 @@ public abstract class MixinServerWorld {
 
     private static int tickCounter = 0;
 
-    private BWSeasons.SubSeasonVal privateSubSeasonVal;
+    private BWSeasonSystem.SubSeasonVal privateSubSeasonVal;
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void setWeatherData(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
         BetterWeather.setWeatherData(((ServerWorld) (Object) this));
+        BetterWeather.setSeasonData(((ServerWorld) (Object) this));
     }
 
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/storage/IServerWorldInfo;setRaining(Z)V"), locals = LocalCapture.CAPTURE_FAILHARD)
     private void rollWeatherEventChance(BooleanSupplier hasTimeLeft, CallbackInfo ci, IProfiler iprofiler, boolean flag, int i, int j, int k, boolean flag1, boolean flag2) {
         double randomDouble = ((ServerWorld) (Object) this).getRandom().nextDouble();
-        double acidRainChance = Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getWeatherEventController().getAcidRainChance();
-        double blizzardChance = Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getWeatherEventController().getBlizzardChance();
+        double acidRainChance = Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason).getWeatherEventController().getAcidRainChance();
+        double blizzardChance = Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason).getWeatherEventController().getBlizzardChance();
         boolean isRainActive = this.field_241103_E_.isRaining() || this.field_241103_E_.isThundering();
 
         if (privateSubSeasonVal == null) {
-            privateSubSeasonVal = BWSeasons.cachedSubSeason;
+            privateSubSeasonVal = BWSeasonSystem.cachedSubSeason;
         }
 
-        boolean privateSeasonIsNotCacheSeasonFlag = privateSubSeasonVal != BWSeasons.cachedSubSeason;
+        boolean privateSeasonIsNotCacheSeasonFlag = privateSubSeasonVal != BWSeasonSystem.cachedSubSeason;
 
         if (!isRainActive) {
             if (!BetterWeather.weatherData.isModified() || privateSeasonIsNotCacheSeasonFlag) {
-                this.field_241103_E_.setRainTime(transformRainOrThunderTimeToCurrentSeason(this.field_241103_E_.getRainTime(), Season.getSubSeasonFromEnum(privateSubSeasonVal), Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason)));
-                this.field_241103_E_.setThunderTime(transformRainOrThunderTimeToCurrentSeason(this.field_241103_E_.getThunderTime(), Season.getSubSeasonFromEnum(privateSubSeasonVal), Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason)));
+                this.field_241103_E_.setRainTime(transformRainOrThunderTimeToCurrentSeason(this.field_241103_E_.getRainTime(), Season.getSubSeasonFromEnum(privateSubSeasonVal), Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason)));
+                this.field_241103_E_.setThunderTime(transformRainOrThunderTimeToCurrentSeason(this.field_241103_E_.getThunderTime(), Season.getSubSeasonFromEnum(privateSubSeasonVal), Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason)));
                 BetterWeather.weatherData.setModified(true);
             }
         } else {
@@ -73,7 +74,7 @@ public abstract class MixinServerWorld {
                 else
                     BetterWeather.weatherData.setEvent(BetterWeather.WeatherEvent.NONE);
                 tickCounter++;
-                this.getPlayers().forEach(player -> NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEvent(), BetterWeather.weatherData.isWeatherForced(), BetterWeather.weatherData.isModified())));
+                this.getPlayers().forEach(player -> NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEvent())));
             }
         } else {
             if (!isRainActive) {
@@ -81,14 +82,14 @@ public abstract class MixinServerWorld {
                     BetterWeather.weatherData.setEvent(BetterWeather.WeatherEvent.NONE);
                     ((IsWeatherForced) this.field_241103_E_).setWeatherForced(false);
                     BetterWeather.weatherData.setWeatherForced(((IsWeatherForced) this.field_241103_E_).isWeatherForced());
-                    this.getPlayers().forEach(player -> NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEvent(), BetterWeather.weatherData.isWeatherForced(), BetterWeather.weatherData.isModified())));
+                    this.getPlayers().forEach(player -> NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEvent())));
                     tickCounter = 0;
                 }
             }
         }
 
         if (privateSeasonIsNotCacheSeasonFlag) {
-            privateSubSeasonVal = BWSeasons.cachedSubSeason;
+            privateSubSeasonVal = BWSeasonSystem.cachedSubSeason;
         }
 
     }

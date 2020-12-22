@@ -1,4 +1,4 @@
-package corgitaco.betterweather.weatherevents;
+package corgitaco.betterweather.weatherevent.weatherevents;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;

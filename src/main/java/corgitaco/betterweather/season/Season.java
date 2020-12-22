@@ -16,33 +16,33 @@ public class Season {
 
 
     public static Map<String, Season> SEASON_MAP = Util.make((new TreeMap<>()), (map) -> {
-        map.put(BWSeasons.SeasonVal.SPRING.toString(), SPRING);
-        map.put(BWSeasons.SeasonVal.SUMMER.toString(), SUMMER);
-        map.put(BWSeasons.SeasonVal.AUTUMN.toString(), AUTUMN);
-        map.put(BWSeasons.SeasonVal.WINTER.toString(), WINTER);
+        map.put(BWSeasonSystem.SeasonVal.SPRING.toString(), SPRING);
+        map.put(BWSeasonSystem.SeasonVal.SUMMER.toString(), SUMMER);
+        map.put(BWSeasonSystem.SeasonVal.AUTUMN.toString(), AUTUMN);
+        map.put(BWSeasonSystem.SeasonVal.WINTER.toString(), WINTER);
     });
 
     public static Map<String, SubSeason> SUB_SEASON_MAP = Util.make((new TreeMap<>()), (map) -> {
-        map.put(BWSeasons.SubSeasonVal.SPRING_START.toString(), SEASON_MAP.get(BWSeasons.SeasonVal.SPRING.toString()).getStart());
-        map.put(BWSeasons.SubSeasonVal.SPRING_MID.toString(), SEASON_MAP.get(BWSeasons.SeasonVal.SPRING.toString()).getMid());
-        map.put(BWSeasons.SubSeasonVal.SPRING_END.toString(), SEASON_MAP.get(BWSeasons.SeasonVal.SPRING.toString()).getEnd());
-        map.put(BWSeasons.SubSeasonVal.SUMMER_START.toString(), SEASON_MAP.get(BWSeasons.SeasonVal.SUMMER.toString()).getStart());
-        map.put(BWSeasons.SubSeasonVal.SUMMER_MID.toString(), SEASON_MAP.get(BWSeasons.SeasonVal.SUMMER.toString()).getMid());
-        map.put(BWSeasons.SubSeasonVal.SUMMER_END.toString(), SEASON_MAP.get(BWSeasons.SeasonVal.SUMMER.toString()).getEnd());
-        map.put(BWSeasons.SubSeasonVal.AUTUMN_START.toString(), SEASON_MAP.get(BWSeasons.SeasonVal.AUTUMN.toString()).getStart());
-        map.put(BWSeasons.SubSeasonVal.AUTUMN_MID.toString(), SEASON_MAP.get(BWSeasons.SeasonVal.AUTUMN.toString()).getMid());
-        map.put(BWSeasons.SubSeasonVal.AUTUMN_END.toString(), SEASON_MAP.get(BWSeasons.SeasonVal.AUTUMN.toString()).getEnd());
-        map.put(BWSeasons.SubSeasonVal.WINTER_START.toString(), SEASON_MAP.get(BWSeasons.SeasonVal.WINTER.toString()).getStart());
-        map.put(BWSeasons.SubSeasonVal.WINTER_MID.toString(), SEASON_MAP.get(BWSeasons.SeasonVal.WINTER.toString()).getMid());
-        map.put(BWSeasons.SubSeasonVal.WINTER_END.toString(), SEASON_MAP.get(BWSeasons.SeasonVal.WINTER.toString()).getEnd());
+        map.put(BWSeasonSystem.SubSeasonVal.SPRING_START.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.SPRING.toString()).getStart());
+        map.put(BWSeasonSystem.SubSeasonVal.SPRING_MID.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.SPRING.toString()).getMid());
+        map.put(BWSeasonSystem.SubSeasonVal.SPRING_END.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.SPRING.toString()).getEnd());
+        map.put(BWSeasonSystem.SubSeasonVal.SUMMER_START.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.SUMMER.toString()).getStart());
+        map.put(BWSeasonSystem.SubSeasonVal.SUMMER_MID.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.SUMMER.toString()).getMid());
+        map.put(BWSeasonSystem.SubSeasonVal.SUMMER_END.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.SUMMER.toString()).getEnd());
+        map.put(BWSeasonSystem.SubSeasonVal.AUTUMN_START.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.AUTUMN.toString()).getStart());
+        map.put(BWSeasonSystem.SubSeasonVal.AUTUMN_MID.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.AUTUMN.toString()).getMid());
+        map.put(BWSeasonSystem.SubSeasonVal.AUTUMN_END.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.AUTUMN.toString()).getEnd());
+        map.put(BWSeasonSystem.SubSeasonVal.WINTER_START.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.WINTER.toString()).getStart());
+        map.put(BWSeasonSystem.SubSeasonVal.WINTER_MID.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.WINTER.toString()).getMid());
+        map.put(BWSeasonSystem.SubSeasonVal.WINTER_END.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.WINTER.toString()).getEnd());
     });
 
 
-    public static Season getSeasonFromEnum(BWSeasons.SeasonVal season) {
+    public static Season getSeasonFromEnum(BWSeasonSystem.SeasonVal season) {
         return SEASON_MAP.get(season.toString());
     }
 
-    public static SubSeason getSubSeasonFromEnum(BWSeasons.SubSeasonVal season) {
+    public static SubSeason getSubSeasonFromEnum(BWSeasonSystem.SubSeasonVal season) {
         return SUB_SEASON_MAP.get(season.toString());
     }
 
@@ -69,7 +69,7 @@ public class Season {
         return end;
     }
 
-    public boolean containsSubSeason(BWSeasons.SubSeasonVal subSeason) {
+    public boolean containsSubSeason(BWSeasonSystem.SubSeasonVal subSeason) {
         return subSeason == start.getStageVal() || subSeason == mid.getStageVal() || subSeason == end.getStageVal();
     }
 
@@ -110,12 +110,12 @@ public class Season {
 
         private String stage;
 
-        public void setStageVal(BWSeasons.SubSeasonVal val) {
+        public void setStageVal(BWSeasonSystem.SubSeasonVal val) {
             stage = val.toString();
         }
 
-        public BWSeasons.SubSeasonVal getStageVal() {
-            return BWSeasons.SubSeasonVal.valueOf(stage);
+        public BWSeasonSystem.SubSeasonVal getStageVal() {
+            return BWSeasonSystem.SubSeasonVal.valueOf(stage);
         }
 
         public double getTempModifier() {

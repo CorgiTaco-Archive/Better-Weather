@@ -9,11 +9,12 @@ import corgitaco.betterweather.config.json.SeasonConfig;
 import corgitaco.betterweather.datastorage.BetterWeatherData;
 import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
-import corgitaco.betterweather.season.BWSeasons;
+import corgitaco.betterweather.season.BWSeasonSystem;
 import corgitaco.betterweather.server.SetSeasonCommand;
 import corgitaco.betterweather.server.SetWeatherCommand;
-import corgitaco.betterweather.weatherevents.AcidRain;
-import corgitaco.betterweather.weatherevents.Blizzard;
+import corgitaco.betterweather.weatherevent.BWWeatherEventSystem;
+import corgitaco.betterweather.weatherevent.weatherevents.AcidRain;
+import corgitaco.betterweather.weatherevent.weatherevents.Blizzard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
@@ -100,8 +101,6 @@ public class BetterWeather {
         public static void worldTick(TickEvent.WorldTickEvent event) {
             setWeatherData(event.world);
             setSeasonData(event.world);
-            if (weatherData.getEvent() == null)
-                weatherData.setEvent(WeatherEvent.NONE);
 
             if (event.phase == TickEvent.Phase.END) {
                 if (event.side.isServer()) {
@@ -110,8 +109,12 @@ public class BetterWeather {
                     int tickSpeed = world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
                     long worldTime = world.getWorldInfo().getGameTime();
 
-                    BWSeasons.seasonTime();
-                    serverWorld.getPlayers().forEach(player -> BWSeasons.updateSeasonPacket(player, world));
+                    BWSeasonSystem.seasonTime();
+
+                    serverWorld.getPlayers().forEach(player -> {
+                        BWSeasonSystem.updateSeasonPacket(player, world);
+                        BWWeatherEventSystem.updateWeatherEventPacket(player, world);
+                    });
 
                     List<ChunkHolder> list = Lists.newArrayList((serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
                     modifyLiveWorld(serverWorld, tickSpeed, worldTime, list);
@@ -159,11 +162,11 @@ public class BetterWeather {
         public static void clientTickEvent(TickEvent.ClientTickEvent event) {
             Minecraft minecraft = Minecraft.getInstance();
             if (event.phase == TickEvent.Phase.START) {
-                if (minecraft.world != null) {
-                    setWeatherData(minecraft.world);
-                    setSeasonData(minecraft.world);
-                    if (minecraft.world.getWorldInfo().getGameTime() % 10 == 0)
-                        BWSeasons.clientSeason();
+                if (minecraft.world != null && minecraft.player != null) {
+                    if (minecraft.world.getWorldInfo().getGameTime() % 10 == 0) {
+                        BWSeasonSystem.clientSeason();
+
+                    }
 
                     AcidRain.handleRainTexture(minecraft);
 
@@ -217,7 +220,7 @@ public class BetterWeather {
         @SubscribeEvent
         public static void renderGameOverlayEventText(RenderGameOverlayEvent.Text event) {
             if (Minecraft.getInstance().gameSettings.showDebugInfo) {
-                event.getLeft().add("Season: " + WordUtils.capitalize(BWSeasons.cachedSeason.toString().toLowerCase()) + " | " + WordUtils.capitalize(BWSeasons.cachedSubSeason.toString().replace("_", " ").replace(BWSeasons.cachedSeason.toString(), "").toLowerCase()));
+                event.getLeft().add("Season: " + WordUtils.capitalize(BWSeasonSystem.cachedSeason.toString().toLowerCase()) + " | " + WordUtils.capitalize(BWSeasonSystem.cachedSubSeason.toString().replace("_", " ").replace(BWSeasonSystem.cachedSeason.toString(), "").toLowerCase()));
             }
         }
     }

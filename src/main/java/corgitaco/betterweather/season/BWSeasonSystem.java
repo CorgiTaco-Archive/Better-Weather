@@ -10,7 +10,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-public class BWSeasons {
+public class BWSeasonSystem {
 
     public static SubSeasonVal cachedSubSeason = SubSeasonVal.SPRING_START;
     public static SeasonVal cachedSeason = SeasonVal.SPRING;
