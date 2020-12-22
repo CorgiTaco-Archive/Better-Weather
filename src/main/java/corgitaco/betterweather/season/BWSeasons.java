@@ -102,9 +102,6 @@ public class BWSeasons {
         WINTER;
     }
 
-
-
-
     public enum SubSeasonVal {
         SPRING_START,
         SPRING_MID,
