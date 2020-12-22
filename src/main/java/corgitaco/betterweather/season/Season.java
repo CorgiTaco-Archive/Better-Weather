@@ -1,7 +1,11 @@
 package corgitaco.betterweather.season;
 
 import corgitaco.betterweather.BetterWeather;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.Util;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import java.awt.*;
 import java.util.Map;
@@ -152,7 +156,6 @@ public class Season {
             private final String targetFogHexColor;
             private final double fogColorBlendStrength;
 
-
             public SeasonClient() {
                 this("", 0, "", 0);
             }
@@ -162,30 +165,35 @@ public class Season {
             }
 
             public SeasonClient(String targetFoliageHexColor, double foliageColorBlendStrength, String targetGrassColor, double grassColorBlendStrength, String targetSkyHexColor, double skyColorBlendStrength, String targetFogHexColor, double fogColorBlendStrength) {
-                this.targetFoliageHexColor = targetFoliageHexColor.replace("#", "").replace("0x", "");
+                this.targetFoliageHexColor = targetFoliageHexColor;
                 this.foliageColorBlendStrength = foliageColorBlendStrength;
-                this.targetGrassHexColor = targetGrassColor.replace("#", "").replace("0x", "");
+                this.targetGrassHexColor = targetGrassColor;
                 this.grassColorBlendStrength = grassColorBlendStrength;
-                this.targetSkyHexColor = targetSkyHexColor.replace("#", "").replace("0x", "");
+                this.targetSkyHexColor = targetSkyHexColor;
                 this.targetFogHexColor = targetFogHexColor;
                 this.fogColorBlendStrength = fogColorBlendStrength;
-                ;
                 this.skyColorBlendStrength = skyColorBlendStrength;
             }
 
-            static int stopSpamIDXFoliage;
-            static int stopSpamIDXGrass;
-            static int stopSpamIDXSky;
-            static int stopSpamIDXFog;
+            private void printDebugWarning(String message, Object... args) {
+                Minecraft.getInstance().ingameGUI.getChatGUI().printChatMessage((new StringTextComponent("")).append((new TranslationTextComponent("debug.prefix")).mergeStyle(TextFormatting.RED, TextFormatting.BOLD)).appendString(" ").append(new TranslationTextComponent(message, args)));
+            }
+
+            public static int stopSpamIDXFoliage;
+            public static int stopSpamIDXGrass;
+            public static int stopSpamIDXSky;
+            public static int stopSpamIDXFog;
+            static int spamMaxIDX = 0;
 
             public int getTargetFoliageColor() {
                 if (targetFoliageHexColor.isEmpty())
                     return -1;
                 else {
-                    if (stopSpamIDXFoliage <= 50) {
-                        try {
-                            return (int) Long.parseLong(targetFoliageHexColor, 16);
-                        } catch (Exception e) {
+                    try {
+                        return (int) Long.parseLong(targetFoliageHexColor.replace("#", "").replace("0x", ""), 16);
+                    } catch (Exception e) {
+                        if (stopSpamIDXFoliage <= spamMaxIDX) {
+                            this.printDebugWarning("bw.debug.warn.colorerror", "targetFoliageHexColor", targetFoliageHexColor);
                             BetterWeather.LOGGER.warn("targetFoliageHexColor was not a hex color value, you put: \"" + targetFoliageHexColor + "\" | Using Defaults...");
                             stopSpamIDXFoliage++;
                         }
@@ -202,10 +210,11 @@ public class Season {
                 if (targetGrassHexColor.isEmpty())
                     return -1;
                 else {
-                    if (stopSpamIDXGrass <= 50) {
-                        try {
-                            return (int) Long.parseLong(targetGrassHexColor, 16);
-                        } catch (Exception e) {
+                    try {
+                        return (int) Long.parseLong(targetGrassHexColor.replace("#", "").replace("0x", ""), 16);
+                    } catch (Exception e) {
+                        if (stopSpamIDXGrass <= spamMaxIDX) {
+                            this.printDebugWarning("bw.debug.warn.colorerror", "targetGrassHexColor", targetGrassHexColor);
                             BetterWeather.LOGGER.warn("targetGrassHexColor was not a hex color value, you put: \"" + targetGrassHexColor + "\" | Using Defaults...");
                             stopSpamIDXGrass++;
                         }
@@ -222,10 +231,11 @@ public class Season {
                 if (targetSkyHexColor.isEmpty())
                     return -1;
                 else {
-                    if (stopSpamIDXSky <= 50) {
-                        try {
-                            return (int) Long.parseLong(targetSkyHexColor, 16);
-                        } catch (Exception e) {
+                    try {
+                        return (int) Long.parseLong(targetSkyHexColor.replace("#", "").replace("0x", ""), 16);
+                    } catch (Exception e) {
+                        if (stopSpamIDXSky <= spamMaxIDX) {
+                            this.printDebugWarning("bw.debug.warn.colorerror", "targetSkyHexColor", targetSkyHexColor);
                             BetterWeather.LOGGER.warn("targetSkyHexColor was not a hex color value, you put: \"" + targetSkyHexColor + "\" | Using Defaults...");
                             stopSpamIDXSky++;
                         }
@@ -242,10 +252,11 @@ public class Season {
                 if (targetFogHexColor.isEmpty())
                     return -1;
                 else {
-                    if (stopSpamIDXFog <= 50) {
-                        try {
-                            return (int) Long.parseLong(targetGrassHexColor, 16);
-                        } catch (Exception e) {
+                    try {
+                        return (int) Long.parseLong(targetGrassHexColor.replace("#", "").replace("0x", ""), 16);
+                    } catch (Exception e) {
+                        if (stopSpamIDXFog <= spamMaxIDX) {
+                            this.printDebugWarning("bw.debug.warn.colorerror", "targetFogHexColor", targetFogHexColor);
                             BetterWeather.LOGGER.warn("targetFogHexColor was not a hex color value, you put: \"" + targetFogHexColor + "\" | Using Defaults...");
                             stopSpamIDXFog++;
                         }

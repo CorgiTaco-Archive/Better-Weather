@@ -64,7 +64,7 @@ public class BetterWeather {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
         BetterWeatherConfig.loadConfig(CONFIG_PATH.resolve(MOD_ID + "-common.toml"));
-        BetterWeatherConfigClient.loadConfig(BetterWeatherConfigClient.COMMON_CONFIG, CONFIG_PATH.resolve(MOD_ID + "-client.toml"));
+        BetterWeatherConfigClient.loadConfig(CONFIG_PATH.resolve(MOD_ID + "-client.toml"));
     }
 
     public static BetterWeatherSeasonData seasonData = null;

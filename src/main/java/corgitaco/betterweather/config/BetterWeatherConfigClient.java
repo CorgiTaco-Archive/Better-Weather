@@ -27,7 +27,7 @@ public class BetterWeatherConfigClient {
     public static ForgeConfigSpec.EnumValue<Blizzard.BlizzardLoopSoundTrack> blizzardLoopEnumValue;
 
 
-    static {
+    private static void refreshConfig() {
         COMMON_BUILDER.push("Acid_Rain_Client_Settings");
         removeSmokeParticles = COMMON_BUILDER.comment("Remove the smoke particles emitted by the acid rain.\nDefault is false.").define("RemoveParticles", false);
         COMMON_BUILDER.pop();
@@ -42,11 +42,12 @@ public class BetterWeatherConfigClient {
         COMMON_CONFIG = COMMON_BUILDER.build();
     }
 
-    public static void loadConfig(ForgeConfigSpec config, Path path) {
+    public static void loadConfig(Path path) {
         BetterWeather.LOGGER.info("Loading config: " + path);
+        refreshConfig();
         CommentedFileConfig file = CommentedFileConfig.builder(path).sync().autosave().writingMode(WritingMode.REPLACE).build();
         file.load();
-        config.setConfig(file);
+        COMMON_CONFIG.setConfig(file);
     }
 
     @SubscribeEvent

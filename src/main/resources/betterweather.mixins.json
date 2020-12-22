@@ -6,13 +6,14 @@
   "mixins": [
     "biome.MixinBiome",
     "block.MixinCropBlock",
-    "server.MixinServerWorld",
     "server.MixinDerivedWorldInfo",
+    "server.MixinServerWorld",
     "server.MixinServerWorldInfo"
   ],
   "client": [
-    "client.MixinClientWorld",
+    "MixinKeyboardListener",
     "client.MixinBiomeClient",
+    "client.MixinClientWorld",
     "client.MixinLeavesBlock",
     "client.MixinSoundEngine",
     "client.MixinWorldRenderer"
