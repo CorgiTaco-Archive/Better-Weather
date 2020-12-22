@@ -32,6 +32,8 @@ public abstract class MixinServerWorld {
 
     private static int tickCounter = 0;
 
+    private BWSeasons.SubSeasonVal privateSubSeasonVal;
+
     @Inject(method = "tick", at = @At("HEAD"))
     private void setWeatherData(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
         BetterWeather.setWeatherData(((ServerWorld) (Object) this));
@@ -42,17 +44,21 @@ public abstract class MixinServerWorld {
         double randomDouble = ((ServerWorld) (Object) this).getRandom().nextDouble();
         double acidRainChance = Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getWeatherEventController().getAcidRainChance();
         double blizzardChance = Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getWeatherEventController().getBlizzardChance();
-
         boolean isRainActive = this.field_241103_E_.isRaining() || this.field_241103_E_.isThundering();
 
+        if (privateSubSeasonVal == null) {
+            privateSubSeasonVal = BWSeasons.cachedSubSeason;
+        }
+
+        boolean privateSeasonIsNotCacheSeasonFlag = privateSubSeasonVal != BWSeasons.cachedSubSeason;
+
         if (!isRainActive) {
-            if (!BetterWeather.weatherData.isModified()) {
-                this.field_241103_E_.setRainTime((int) (this.field_241103_E_.getRainTime() * (1 / Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getWeatherEventChanceMultiplier())));
-                this.field_241103_E_.setThunderTime((int) (this.field_241103_E_.getThunderTime() * (1 / Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getWeatherEventChanceMultiplier())));
+            if (!BetterWeather.weatherData.isModified() || privateSeasonIsNotCacheSeasonFlag) {
+                this.field_241103_E_.setRainTime(transformRainOrThunderTimeToCurrentSeason(this.field_241103_E_.getRainTime(), Season.getSubSeasonFromEnum(privateSubSeasonVal), Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason)));
+                this.field_241103_E_.setThunderTime(transformRainOrThunderTimeToCurrentSeason(this.field_241103_E_.getThunderTime(), Season.getSubSeasonFromEnum(privateSubSeasonVal), Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason)));
                 BetterWeather.weatherData.setModified(true);
             }
-        }
-        else {
+        } else {
             if (BetterWeather.weatherData.isModified())
                 BetterWeather.weatherData.setModified(false);
         }
@@ -80,11 +86,24 @@ public abstract class MixinServerWorld {
                 }
             }
         }
+
+        if (privateSeasonIsNotCacheSeasonFlag) {
+            privateSubSeasonVal = BWSeasons.cachedSubSeason;
+        }
+
     }
 
     @Inject(method = "func_241113_a_", at = @At("HEAD"))
     private void setWeatherForced(int clearWeatherTime, int weatherTime, boolean rain, boolean thunder, CallbackInfo ci) {
         ((IsWeatherForced) this.field_241103_E_).setWeatherForced(true);
         BetterWeather.weatherData.setWeatherForced(true);
+    }
+
+    private static int transformRainOrThunderTimeToCurrentSeason(int rainOrThunderTime, Season.SubSeason previous, Season.SubSeason current) {
+        double previousMultiplier = previous.getWeatherEventChanceMultiplier();
+        double currentMultiplier = current.getWeatherEventChanceMultiplier();
+        double normalTime = rainOrThunderTime * previousMultiplier;
+
+        return (int) (normalTime * 1 / currentMultiplier);
     }
 }
