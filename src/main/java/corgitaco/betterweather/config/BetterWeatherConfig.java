@@ -45,8 +45,14 @@ public class BetterWeatherConfig {
     public static ForgeConfigSpec.DoubleValue snowDecayTemperatureThreshold;
 
 
+    public static ForgeConfigSpec.IntValue seasonLength;
+
     static {
-        COMMON_BUILDER.comment("Better Weather Settings").push("Acid_Rain_Settings").push("World_Settings");
+        COMMON_BUILDER.comment("Better Weather Settings");
+        COMMON_BUILDER.push("Season_Settings");
+        seasonLength = COMMON_BUILDER.comment("See betterweather-seasons.json for season specific configs!").comment("The length of each season in ticks. 24000 is a single minecraft day!\nDefault: 240000(10 Minecraft days)").defineInRange("SeasonLength", 240000, 24000, Integer.MAX_VALUE);
+        COMMON_BUILDER.pop();
+        COMMON_BUILDER.push("Acid_Rain_Settings").push("World_Settings");
         tickBlockDestroySpeed = COMMON_BUILDER.comment("How often blocks are destroyed during an acid rain event.\nDefault: 500").defineInRange("BlockDestroyTickSpeed", 250, 1, 100000);
         destroyBlocks = COMMON_BUILDER.comment("Destroy Blocks?\nDefault: true").define("DestroyBlocks", true);
         allowedBlocksToDestroy = COMMON_BUILDER.comment("Destroy what block materials? Allowed Values: GRASS,LEAVES,PLANTS,CROPS\nDefault: GRASS,LEAVES,PLANTS,CROPS").define("BlocksToDestroy", "GRASS,LEAVES,PLANTS,CROPS");
@@ -78,6 +84,7 @@ public class BetterWeatherConfig {
         COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
         COMMON_CONFIG = COMMON_BUILDER.build();
+        BetterWeather.SEASON_LENGTH = seasonLength.get();
     }
 
     public static void loadConfig(ForgeConfigSpec config, Path path) {

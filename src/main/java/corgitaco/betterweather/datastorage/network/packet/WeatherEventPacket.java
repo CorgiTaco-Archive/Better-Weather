@@ -9,11 +9,13 @@ import java.util.function.Supplier;
 
 public class WeatherEventPacket {
     private final String event;
-    private boolean isWeatherForced;
+    private final boolean isWeatherForced;
+    private final boolean modifiedCurrentRainTIme;
 
-    public WeatherEventPacket(String event, boolean isWeatherForced) {
+    public WeatherEventPacket(String event, boolean isWeatherForced, boolean modifiedCurrentRainTIme) {
         this.event = event;
         this.isWeatherForced = isWeatherForced;
+        this.modifiedCurrentRainTIme = modifiedCurrentRainTIme;
     }
 
     public static void writeToPacket(WeatherEventPacket packet, PacketBuffer buf) {
@@ -22,7 +24,7 @@ public class WeatherEventPacket {
     }
 
     public static WeatherEventPacket readFromPacket(PacketBuffer buf) {
-        return new WeatherEventPacket(buf.readString(), buf.readBoolean());
+        return new WeatherEventPacket(buf.readString(), buf.readBoolean(), buf.readBoolean());
     }
 
     public static void handle(WeatherEventPacket message, Supplier<NetworkEvent.Context> ctx) {
@@ -34,6 +36,7 @@ public class WeatherEventPacket {
                     BetterWeather.setWeatherData(minecraft.world);
                     BetterWeather.weatherData.setEvent(message.event);
                     BetterWeather.weatherData.setWeatherForced(message.isWeatherForced);
+                    BetterWeather.weatherData.setModified(message.modifiedCurrentRainTIme);
                 }
             });
         }

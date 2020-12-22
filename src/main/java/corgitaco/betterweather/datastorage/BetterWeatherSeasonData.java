@@ -16,6 +16,7 @@ public class BetterWeatherSeasonData extends WorldSavedData {
     private int seasonCycleLength;
     private String season = BWSeasons.SeasonVal.SPRING.toString();
     private String subseason;
+    private boolean isForced;
 
     public BetterWeatherSeasonData() {
         super(DATA_NAME);
@@ -68,6 +69,14 @@ public class BetterWeatherSeasonData extends WorldSavedData {
         this.subseason = subseason;
     }
 
+    public boolean isForced() {
+        return isForced;
+    }
+
+    public void setForced(boolean forced) {
+        isForced = forced;
+    }
+
     public static BetterWeatherSeasonData get(IWorld world) {
         if (!(world instanceof ServerWorld))
             return new BetterWeatherSeasonData();
@@ -82,5 +91,4 @@ public class BetterWeatherSeasonData extends WorldSavedData {
 
         return weatherData;
     }
-
 }

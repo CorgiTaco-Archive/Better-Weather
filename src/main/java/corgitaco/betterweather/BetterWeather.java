@@ -1,6 +1,8 @@
 package corgitaco.betterweather;
 
 import com.google.common.collect.Lists;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
 import corgitaco.betterweather.config.json.SeasonConfig;
@@ -8,10 +10,13 @@ import corgitaco.betterweather.datastorage.BetterWeatherData;
 import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
 import corgitaco.betterweather.season.BWSeasons;
+import corgitaco.betterweather.server.SetSeasonCommand;
 import corgitaco.betterweather.server.SetWeatherCommand;
 import corgitaco.betterweather.weatherevents.AcidRain;
 import corgitaco.betterweather.weatherevents.Blizzard;
 import net.minecraft.client.Minecraft;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
@@ -43,7 +48,7 @@ import java.util.Optional;
 public class BetterWeather {
     public static Logger LOGGER = LogManager.getLogger();
     public static final String MOD_ID = "betterweather";
-    public static final int SEASON_LENGTH = 180000;
+    public static int SEASON_LENGTH = 180000;
     public static final int SEASON_CYCLE_LENGTH = SEASON_LENGTH * 4;
 
     public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
@@ -56,8 +61,8 @@ public class BetterWeather {
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
-        BetterWeatherConfig.loadConfig(BetterWeatherConfig.COMMON_CONFIG, FMLPaths.CONFIGDIR.get().resolve(MOD_ID + "-common.toml"));
-        BetterWeatherConfigClient.loadConfig(BetterWeatherConfigClient.COMMON_CONFIG, FMLPaths.CONFIGDIR.get().resolve(MOD_ID + "-client.toml"));
+        BetterWeatherConfig.loadConfig(BetterWeatherConfig.COMMON_CONFIG, CONFIG_PATH.resolve(MOD_ID + "-common.toml"));
+        BetterWeatherConfigClient.loadConfig(BetterWeatherConfigClient.COMMON_CONFIG, CONFIG_PATH.resolve(MOD_ID + "-client.toml"));
     }
 
     public static BetterWeatherSeasonData seasonData = null;
@@ -171,8 +176,21 @@ public class BetterWeather {
         @SubscribeEvent
         public static void commandRegisterEvent(FMLServerStartingEvent event) {
             BetterWeather.LOGGER.debug("BW: \"Server Starting\" Event Starting...");
-            SetWeatherCommand.register(event.getServer().getCommandManager().getDispatcher());
+            register(event.getServer().getCommandManager().getDispatcher());
             BetterWeather.LOGGER.info("BW: \"Server Starting\" Event Complete!");
+        }
+
+
+        public static void register(CommandDispatcher<CommandSource> dispatcher) {
+            LOGGER.debug("Registering Better Weather commands...");
+            LiteralCommandNode<CommandSource> source = dispatcher.register(
+                    Commands.literal(MOD_ID).requires(commandSource -> commandSource.hasPermissionLevel(3))
+                            .then(SetSeasonCommand.register(dispatcher))
+                            .then(SetWeatherCommand.register(dispatcher))
+
+            );
+            dispatcher.register(Commands.literal(MOD_ID).redirect(source));
+            LOGGER.debug("Registered Better Weather Commands!");
         }
     }
 

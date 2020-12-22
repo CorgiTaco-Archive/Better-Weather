@@ -1,59 +1,77 @@
-//package corgitaco.betterweather.server;
-//
-//import com.mojang.brigadier.CommandDispatcher;
-//import com.mojang.brigadier.arguments.StringArgumentType;
-//import com.mojang.brigadier.tree.LiteralCommandNode;
-//import corgitaco.betterweather.BetterWeather;
-//import net.minecraft.command.CommandSource;
-//import net.minecraft.command.Commands;
-//import net.minecraft.command.ISuggestionProvider;
-//import net.minecraft.util.text.TranslationTextComponent;
-//import net.minecraft.world.World;
-//
-//import java.util.ArrayList;
-//import java.util.List;
-//
-//public class SetSeasonCommand {
-//
-//    public static void register(CommandDispatcher<CommandSource> dispatcher) {
-//        BetterWeather.LOGGER.debug("Registering BW commands...");
-//        List<String> weatherTypes = new ArrayList<>();
-//        weatherTypes.add("acidrain");
-//        weatherTypes.add("blizzard");
-//        weatherTypes.add("clear");
-//        LiteralCommandNode<CommandSource> source = dispatcher.register(
-//                Commands.literal(BetterWeather.MOD_ID)
-//                        .then(Commands.argument("weathertype", StringArgumentType.string()).suggests((ctx, sb) -> ISuggestionProvider.suggest(weatherTypes.stream(), sb))
-//                                .executes((cs) -> betterWeatherSetWeatherType(cs.getSource().getWorld(), cs.getSource(), cs.getArgument("weathertype", String.class)))));
-//
-//        dispatcher.register(Commands.literal(BetterWeather.MOD_ID).redirect(source));
-//        BetterWeather.LOGGER.debug("Registered BW Commands!");
-//    }
-//
-//    public static int betterWeatherSetWeatherType(World world, CommandSource source, String weatherType) {
-//        switch (weatherType) {
-//            case "acidrain":
-//                BetterWeather.weatherData.setBlizzard(false);
-//                BetterWeather.weatherData.setEvent(true);
-//                world.getWorldInfo().setRaining(true);
-//                source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.acidrain"), true);
-//                break;
-//            case "blizzard":
-//                BetterWeather.weatherData.setEvent(false);
-//                BetterWeather.weatherData.setBlizzard(true);
-//                world.getWorldInfo().setRaining(true);
-//                source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.blizzard"), true);
-//                break;
-//            case "clear":
-//                BetterWeather.weatherData.setEvent(false);
-//                BetterWeather.weatherData.setBlizzard(false);
-//                world.getWorldInfo().setRaining(false);
-//                source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.clear"), true);
-//                break;
-//            default:
-//                source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.failed", weatherType), true);
-//                break;
-//        }
-//        return 1;
-//    }
-//}
+package corgitaco.betterweather.server;
+
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.ArgumentBuilder;
+import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.season.BWSeasons;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
+import net.minecraft.command.ISuggestionProvider;
+import net.minecraft.util.text.TranslationTextComponent;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+public class SetSeasonCommand {
+
+    public static ArgumentBuilder<CommandSource, ?> register(CommandDispatcher<CommandSource> dispatcher) {
+        List<String> seasons = Arrays.stream(BWSeasons.SubSeasonVal.values()).map(Objects::toString).collect(Collectors.toList());
+        return Commands.literal("setseason").then(Commands.argument("season", StringArgumentType.string()).suggests((ctx, sb) -> ISuggestionProvider.suggest(seasons.stream(), sb))
+                .executes((cs) -> betterWeatherSetSeason(cs.getSource(), cs.getArgument("season", String.class))));
+    }
+
+    public static int betterWeatherSetSeason(CommandSource source, String weatherTypeString) {
+        BWSeasons.SubSeasonVal subSeason = BWSeasons.SubSeasonVal.valueOf(weatherTypeString);
+        boolean failedFlag = false;
+        switch (subSeason) {
+            case SPRING_START:
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setseason.success.spring_start"), true);
+                break;
+            case SPRING_MID:
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setseason.success.spring_mid"), true);
+                break;
+            case SPRING_END:
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setseason.success.spring_end"), true);
+                break;
+            case SUMMER_START:
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setseason.success.summer_start"), true);
+                break;
+            case SUMMER_MID:
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setseason.success.summer_mid"), true);
+                break;
+            case SUMMER_END:
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setseason.success.summer_end"), true);
+                break;
+            case AUTUMN_START:
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setseason.success.autumn_start"), true);
+                break;
+            case AUTUMN_MID:
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setseason.success.autumn_mid"), true);
+                break;
+            case AUTUMN_END:
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setseason.success.autumn_end"), true);
+                break;
+            case WINTER_START:
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setseason.success.winter_start"), true);
+                break;
+            case WINTER_MID:
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setseason.success.winter_mid"), true);
+                break;
+            case WINTER_END:
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setseason.success.winter_end"), true);
+                break;
+            default:
+                source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.failed", subSeason.toString()), true);
+                failedFlag = true;
+                break;
+        }
+        if (!failedFlag) {
+            BetterWeather.seasonData.setForced(true);
+            BetterWeather.seasonData.setSeasonTime(BWSeasons.getTimeInCycleForSubSeason(subSeason, BetterWeather.SEASON_CYCLE_LENGTH));
+        }
+        return 1;
+    }
+}

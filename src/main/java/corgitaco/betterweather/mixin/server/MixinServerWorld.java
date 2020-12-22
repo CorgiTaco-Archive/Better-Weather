@@ -29,12 +29,12 @@ public abstract class MixinServerWorld {
 
     @Shadow
     public IServerWorldInfo field_241103_E_;
+
     private static int tickCounter = 0;
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void setWeatherData(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
         BetterWeather.setWeatherData(((ServerWorld) (Object) this));
-
     }
 
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/storage/IServerWorldInfo;setRaining(Z)V"), locals = LocalCapture.CAPTURE_FAILHARD)
@@ -45,6 +45,19 @@ public abstract class MixinServerWorld {
 
         boolean isRainActive = this.field_241103_E_.isRaining() || this.field_241103_E_.isThundering();
 
+        if (!isRainActive) {
+            if (!BetterWeather.weatherData.isModified()) {
+                this.field_241103_E_.setRainTime((int) (this.field_241103_E_.getRainTime() * (1 / Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getWeatherEventChanceMultiplier())));
+                this.field_241103_E_.setThunderTime((int) (this.field_241103_E_.getThunderTime() * (1 / Season.getSubSeasonFromEnum(BWSeasons.cachedSubSeason).getWeatherEventChanceMultiplier())));
+                BetterWeather.weatherData.setModified(true);
+            }
+        }
+        else {
+            if (BetterWeather.weatherData.isModified())
+                BetterWeather.weatherData.setModified(false);
+        }
+
+
         if (tickCounter == 0) {
             if (isRainActive && !BetterWeather.weatherData.isWeatherForced()) {
                 if (randomDouble < acidRainChance)
@@ -54,7 +67,7 @@ public abstract class MixinServerWorld {
                 else
                     BetterWeather.weatherData.setEvent(BetterWeather.WeatherEvent.NONE);
                 tickCounter++;
-                this.getPlayers().forEach(player -> NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEvent(), BetterWeather.weatherData.isWeatherForced())));
+                this.getPlayers().forEach(player -> NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEvent(), BetterWeather.weatherData.isWeatherForced(), BetterWeather.weatherData.isModified())));
             }
         } else {
             if (!isRainActive) {
@@ -62,7 +75,7 @@ public abstract class MixinServerWorld {
                     BetterWeather.weatherData.setEvent(BetterWeather.WeatherEvent.NONE);
                     ((IsWeatherForced) this.field_241103_E_).setWeatherForced(false);
                     BetterWeather.weatherData.setWeatherForced(((IsWeatherForced) this.field_241103_E_).isWeatherForced());
-                    this.getPlayers().forEach(player -> NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEvent(), BetterWeather.weatherData.isWeatherForced())));
+                    this.getPlayers().forEach(player -> NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEvent(), BetterWeather.weatherData.isWeatherForced(), BetterWeather.weatherData.isModified())));
                     tickCounter = 0;
                 }
             }

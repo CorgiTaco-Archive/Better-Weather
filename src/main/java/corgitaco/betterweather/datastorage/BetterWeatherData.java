@@ -13,6 +13,7 @@ public class BetterWeatherData extends WorldSavedData {
 
     private String event;
     private boolean isWeatherForced;
+    private boolean modified;
 
     public BetterWeatherData() {
         super(DATA_NAME);
@@ -32,6 +33,7 @@ public class BetterWeatherData extends WorldSavedData {
     public CompoundNBT write(CompoundNBT compound) {
         compound.putString("Event", event);
         compound.putBoolean("Forced", isWeatherForced);
+        compound.putBoolean("Modified", modified);
         return compound;
     }
 
@@ -66,6 +68,15 @@ public class BetterWeatherData extends WorldSavedData {
 
     public void setWeatherForced(boolean weatherForced) {
         isWeatherForced = weatherForced;
+        markDirty();
+    }
+
+    public boolean isModified() {
+        return modified;
+    }
+
+    public void setModified(boolean modified) {
+        this.modified = modified;
         markDirty();
     }
 

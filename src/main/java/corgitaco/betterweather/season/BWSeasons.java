@@ -33,8 +33,11 @@ public class BWSeasons {
             BetterWeather.seasonData.setSubseason(subSeason.toString());
         }
 
-        if (BetterWeather.seasonData.getSeasonTime() % 25 == 0)
+        if (BetterWeather.seasonData.getSeasonTime() % 25 == 0 || BetterWeather.seasonData.isForced())
             NetworkHandler.sendTo((ServerPlayerEntity) player, new SeasonPacket(BetterWeather.seasonData.getSeasonTime(), BetterWeather.SEASON_CYCLE_LENGTH));
+
+        if (BetterWeather.seasonData.isForced())
+            BetterWeather.seasonData.setForced(false);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -72,6 +75,11 @@ public class BWSeasons {
         else {
             return Season.getSeasonFromEnum(seasonVal).getEnd();
         }
+    }
+
+    public static int getTimeInCycleForSubSeason(SubSeasonVal subSeasonVal, int seasonCycleLength) {
+        int perSubSeasonLength = seasonCycleLength / (SubSeasonVal.values().length);
+        return perSubSeasonLength * subSeasonVal.ordinal();
     }
 
     public static SeasonVal getSeasonFromTime(int seasonTime, int seasonCycleLength) {

@@ -2,7 +2,7 @@ package corgitaco.betterweather.server;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.mojang.brigadier.builder.ArgumentBuilder;
 import corgitaco.betterweather.BetterWeather;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
@@ -15,19 +15,13 @@ import java.util.List;
 
 public class SetWeatherCommand {
 
-    public static void register(CommandDispatcher<CommandSource> dispatcher) {
-        BetterWeather.LOGGER.debug("Registering BW commands...");
+    public static ArgumentBuilder<CommandSource, ?> register(CommandDispatcher<CommandSource> dispatcher) {
         List<String> weatherTypes = new ArrayList<>();
         weatherTypes.add("acidrain");
         weatherTypes.add("blizzard");
         weatherTypes.add("clear");
-        LiteralCommandNode<CommandSource> source = dispatcher.register(
-                Commands.literal(BetterWeather.MOD_ID)
-                        .then(Commands.argument("weathertype", StringArgumentType.string()).suggests((ctx, sb) -> ISuggestionProvider.suggest(weatherTypes.stream(), sb))
-                                .executes((cs) -> betterWeatherSetWeatherType(cs.getSource().getWorld(), cs.getSource(), cs.getArgument("weathertype", String.class)))));
-
-        dispatcher.register(Commands.literal(BetterWeather.MOD_ID).redirect(source));
-        BetterWeather.LOGGER.debug("Registered BW Commands!");
+        return Commands.literal("setweather").then(Commands.argument("weathertype", StringArgumentType.string()).suggests((ctx, sb) -> ISuggestionProvider.suggest(weatherTypes.stream(), sb))
+                .executes((cs) -> betterWeatherSetWeatherType(cs.getSource().getWorld(), cs.getSource(), cs.getArgument("weathertype", String.class))));
     }
 
     public static int betterWeatherSetWeatherType(ServerWorld world, CommandSource source, String weatherType) {
