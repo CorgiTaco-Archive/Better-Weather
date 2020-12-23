@@ -36,6 +36,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -154,7 +155,7 @@ public class BetterWeather {
         public static final Map<Block, Pair<IntegerProperty/*Age Property*/, Integer/*Age Property Max*/>> blockToAgePropertyMap = new HashMap<>();
 
         @SubscribeEvent
-        public static void cropGrowEventPre(BlockEvent.CropGrowEvent event) {
+        public static void cropGrowEventPre(BlockEvent.CropGrowEvent.Pre event) {
             ServerWorld world = (ServerWorld) event.getWorld();
             BlockState cropState = event.getState();
 
@@ -178,75 +179,69 @@ public class BetterWeather {
                     double cropGrowthMultiplier = Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason).getCropGrowthChanceMultiplier();
                     int currentAge = cropState.get(propertyData.getFirst());
                     int maxAge = propertyData.getSecond();
-                    int ageDifference = maxAge - currentAge;
 
                     if (currentAge < maxAge) {
                         if (cropGrowthMultiplier < 1) {
                             if (world.getRandom().nextDouble() < cropGrowthMultiplier) {
-                                event.setCanceled(true);
+                                event.setResult(Event.Result.DENY);
                             }
                         }
                     }
 
                     if (cropGrowthMultiplier > 1) {
-                        int growth = 0;
-                        for (int tries = 0; tries <= (int) Math.ceil(cropGrowthMultiplier - 1); tries++) {
-                            if (world.getRandom().nextDouble() + cropGrowthMultiplier < cropGrowthMultiplier)
-                                growth++;
-                        }
-
-                        while (!((currentAge + growth) < maxAge - 1)) {
-                            growth--;
-                        }
-
-                        world.setBlockState(event.getPos(), cropState.with(propertyData.getFirst(), currentAge + growth));
+                        int growth = world.getRandom().nextInt((int) cropGrowthMultiplier * 3) + 1;
+                        growth = Math.min(growth + currentAge, maxAge - 1);
+                        world.setBlockState(event.getPos(), cropState.with(propertyData.getFirst(), growth));
 
                     }
                 }
             }
         }
-    }
-
-    @SubscribeEvent
-    public static void renderTickEvent(TickEvent.RenderTickEvent event) {
-
-    }
-
-    @SubscribeEvent
-    public static void playerTickEvent(TickEvent.PlayerTickEvent event) {
-        setWeatherData(event.player.world);
-    }
-
-    @SubscribeEvent
-    public static void entityTickEvent(LivingEvent.LivingUpdateEvent event) {
-        AcidRain.entityHandler(event.getEntity());
-        Blizzard.blizzardEntityHandler(event.getEntity());
-    }
 
 
-    @SubscribeEvent
-    public static void clientTickEvent(TickEvent.ClientTickEvent event) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (event.phase == TickEvent.Phase.START) {
-            if (minecraft.world != null && minecraft.player != null) {
-                if (minecraft.world.getWorldInfo().getGameTime() % 10 == 0) {
-                    BWSeasonSystem.clientSeason();
 
+
+        @SubscribeEvent
+        public static void renderTickEvent(TickEvent.RenderTickEvent event) {
+
+        }
+
+        @SubscribeEvent
+        public static void playerTickEvent(TickEvent.PlayerTickEvent event) {
+            setWeatherData(event.player.world);
+        }
+
+        @SubscribeEvent
+        public static void entityTickEvent(LivingEvent.LivingUpdateEvent event) {
+            AcidRain.entityHandler(event.getEntity());
+            Blizzard.blizzardEntityHandler(event.getEntity());
+        }
+
+
+        @SubscribeEvent
+        public static void clientTickEvent(TickEvent.ClientTickEvent event) {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (event.phase == TickEvent.Phase.START) {
+                if (minecraft.world != null && minecraft.player != null) {
+                    if (minecraft.world.getWorldInfo().getGameTime() % 10 == 0) {
+                        BWSeasonSystem.clientSeason();
+
+                    }
+
+                    AcidRain.handleRainTexture(minecraft);
+
+                    Blizzard.handleBlizzardRenderDistance(minecraft);
+                    Blizzard.blizzardSoundHandler(minecraft, minecraft.gameRenderer.getActiveRenderInfo());
                 }
-
-                AcidRain.handleRainTexture(minecraft);
-
-                Blizzard.handleBlizzardRenderDistance(minecraft);
-                Blizzard.blizzardSoundHandler(minecraft, minecraft.gameRenderer.getActiveRenderInfo());
             }
         }
-    }
 
-    @SubscribeEvent
-    public static void commandRegisterEvent(FMLServerStartingEvent event) {
-        BetterWeather.LOGGER.debug("BW: \"Server Starting\" Event Starting...");
-        register(event.getServer().getCommandManager().getDispatcher());
-        BetterWeather.LOGGER.info("BW: \"Server Starting\" Event Complete!");
+        @SubscribeEvent
+        public static void commandRegisterEvent(FMLServerStartingEvent event) {
+            BetterWeather.LOGGER.debug("BW: \"Server Starting\" Event Starting...");
+            register(event.getServer().getCommandManager().getDispatcher());
+            BetterWeather.LOGGER.info("BW: \"Server Starting\" Event Complete!");
+        }
     }
 
 
@@ -274,20 +269,20 @@ public class BetterWeather {
     }
 
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
-public static class BetterWeatherClient {
+    @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
+    public static class BetterWeatherClient {
 
-    @SubscribeEvent
-    public static void renderFogEvent(EntityViewRenderEvent.FogDensity event) {
-        Minecraft minecraft = Minecraft.getInstance();
-        Blizzard.handleFog(event, minecraft);
-    }
+        @SubscribeEvent
+        public static void renderFogEvent(EntityViewRenderEvent.FogDensity event) {
+            Minecraft minecraft = Minecraft.getInstance();
+            Blizzard.handleFog(event, minecraft);
+        }
 
-    @SubscribeEvent
-    public static void renderGameOverlayEventText(RenderGameOverlayEvent.Text event) {
-        if (Minecraft.getInstance().gameSettings.showDebugInfo) {
-            event.getLeft().add("Season: " + WordUtils.capitalize(BWSeasonSystem.cachedSeason.toString().toLowerCase()) + " | " + WordUtils.capitalize(BWSeasonSystem.cachedSubSeason.toString().replace("_", "").replace(BWSeasonSystem.cachedSeason.toString(), "").toLowerCase()));
+        @SubscribeEvent
+        public static void renderGameOverlayEventText(RenderGameOverlayEvent.Text event) {
+            if (Minecraft.getInstance().gameSettings.showDebugInfo) {
+                event.getLeft().add("Season: " + WordUtils.capitalize(BWSeasonSystem.cachedSeason.toString().toLowerCase()) + " | " + WordUtils.capitalize(BWSeasonSystem.cachedSubSeason.toString().replace("_", "").replace(BWSeasonSystem.cachedSeason.toString(), "").toLowerCase()));
+            }
         }
     }
-}
 }
