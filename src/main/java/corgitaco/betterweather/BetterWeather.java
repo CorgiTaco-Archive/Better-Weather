@@ -24,9 +24,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.state.IntegerProperty;
-import net.minecraft.world.GameRules;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.*;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
@@ -151,56 +150,6 @@ public class BetterWeather {
             });
         }
 
-
-        public static final Map<Block, Pair<IntegerProperty/*Age Property*/, Integer/*Age Property Max*/>> blockToAgePropertyMap = new HashMap<>();
-
-        @SubscribeEvent
-        public static void cropGrowEventPre(BlockEvent.CropGrowEvent.Pre event) {
-            ServerWorld world = (ServerWorld) event.getWorld();
-            BlockState cropState = event.getState();
-
-            if (event.hasResult()) {
-                //Cache values to access them faster.
-                if (!blockToAgePropertyMap.containsKey(cropState.getBlock())) {
-                    cropState.getProperties().forEach(property -> {
-                        if (property instanceof IntegerProperty) {
-                            if (property.getName().contains("age")) {
-                                IntegerProperty integerProperty = ((IntegerProperty) property);
-                                int maxAge = integerProperty.getAllowedValues().size();
-                                blockToAgePropertyMap.put(cropState.getBlock(), new Pair<>(integerProperty, maxAge));
-                            }
-                        }
-                    });
-                }
-
-                if (blockToAgePropertyMap.containsKey(cropState.getBlock())) {
-                    Pair<IntegerProperty, Integer> propertyData = blockToAgePropertyMap.get(cropState.getBlock());
-
-                    double cropGrowthMultiplier = Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason).getCropGrowthChanceMultiplier();
-                    int currentAge = cropState.get(propertyData.getFirst());
-                    int maxAge = propertyData.getSecond();
-
-                    if (currentAge < maxAge) {
-                        if (cropGrowthMultiplier < 1) {
-                            if (world.getRandom().nextDouble() < cropGrowthMultiplier) {
-                                event.setResult(Event.Result.DENY);
-                            }
-                        }
-                    }
-
-                    if (cropGrowthMultiplier > 1) {
-                        int growth = world.getRandom().nextInt((int) cropGrowthMultiplier * 3) + 1;
-                        growth = Math.min(growth + currentAge, maxAge - 1);
-                        world.setBlockState(event.getPos(), cropState.with(propertyData.getFirst(), growth));
-
-                    }
-                }
-            }
-        }
-
-
-
-
         @SubscribeEvent
         public static void renderTickEvent(TickEvent.RenderTickEvent event) {
 
@@ -216,7 +165,7 @@ public class BetterWeather {
             AcidRain.entityHandler(event.getEntity());
             Blizzard.blizzardEntityHandler(event.getEntity());
         }
-
+//
 
         @SubscribeEvent
         public static void clientTickEvent(TickEvent.ClientTickEvent event) {

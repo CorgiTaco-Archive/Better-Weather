@@ -5,6 +5,7 @@
   "refmap": "betterweather.refmap.json",
   "mixins": [
     "biome.MixinBiome",
+    "block.MixinAbstractBlockstate",
     "server.MixinDerivedWorldInfo",
     "server.MixinServerWorld",
     "server.MixinServerWorldInfo"
