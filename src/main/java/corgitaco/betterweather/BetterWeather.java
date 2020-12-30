@@ -3,9 +3,9 @@ package corgitaco.betterweather;
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import com.mojang.datafixers.util.Pair;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
+import corgitaco.betterweather.config.json.CropGrowthMultiplierConfigOverride;
 import corgitaco.betterweather.config.json.SeasonConfig;
 import corgitaco.betterweather.datastorage.BetterWeatherData;
 import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
@@ -18,14 +18,12 @@ import corgitaco.betterweather.server.SetWeatherCommand;
 import corgitaco.betterweather.weatherevent.BWWeatherEventSystem;
 import corgitaco.betterweather.weatherevent.weatherevents.AcidRain;
 import corgitaco.betterweather.weatherevent.weatherevents.Blizzard;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
-import net.minecraft.state.IntegerProperty;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.*;
+import net.minecraft.world.GameRules;
+import net.minecraft.world.IWorld;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
@@ -34,8 +32,6 @@ import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.world.BlockEvent;
-import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -49,9 +45,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Mod("betterweather")
@@ -83,13 +77,23 @@ public class BetterWeather {
 //        GlobalEntityTypeAttributes.put(BWEntityRegistry.TORNADO, TornadoEntity.setCustomAttributes().create());
         BetterWeatherConfig.handleCommonConfig();
         NetworkHandler.init();
-        SeasonConfig.handleBWSeasonsConfig(CONFIG_PATH.resolve(MOD_ID + "-seasons.json"));
     }
 
 
     public void clientSetup(FMLClientSetupEvent event) {
 //        RenderingRegistry.registerEntityRenderingHandler(BWEntityRegistry.TORNADO, TornadoRenderer::new);
 
+    }
+
+    public static void loadWorldConfigs() {
+        SeasonConfig.handleBWSeasonsConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-seasons.json"));
+
+        Season.SUB_SEASON_MAP.forEach((subSeasonName, subSeason) -> {
+            if (subSeason.testCropGrowthMultiplier())
+                CropGrowthMultiplierConfigOverride.handleCropGrowthMultiplierConfig(CONFIG_PATH.resolve("overrides").resolve("cropgrowth").resolve(subSeasonName + "-crop-growth.json"), subSeason);
+
+
+        });
     }
 
 

@@ -56,13 +56,16 @@ public class SeasonConfig {
                         String seasonName = BWSeasonSystem.SeasonVal.values()[idx2].toString();
                         if (subSeasonName.contains(seasonName)) {
                             if (subSeasonName.contains("START")) {
-                                stringSeasonMap.get(seasonName).getStart().setStageVal(BWSeasonSystem.SubSeasonVal.valueOf(subSeasonName));
+                                stringSeasonMap.get(seasonName).getStart().setSubSeasonVal(BWSeasonSystem.SubSeasonVal.valueOf(subSeasonName));
+                                stringSeasonMap.get(seasonName).getStart().setParentSeason(BWSeasonSystem.SeasonVal.valueOf(seasonName));
                                 Season.SUB_SEASON_MAP.put(subSeasonName, stringSeasonMap.get(seasonName).getStart());
                             } else if (subSeasonName.contains("MID")) {
-                                stringSeasonMap.get(seasonName).getMid().setStageVal(BWSeasonSystem.SubSeasonVal.valueOf(subSeasonName));
+                                stringSeasonMap.get(seasonName).getMid().setSubSeasonVal(BWSeasonSystem.SubSeasonVal.valueOf(subSeasonName));
+                                stringSeasonMap.get(seasonName).getMid().setParentSeason(BWSeasonSystem.SeasonVal.valueOf(seasonName));
                                 Season.SUB_SEASON_MAP.put(subSeasonName, stringSeasonMap.get(seasonName).getMid());
                             } else {
-                                stringSeasonMap.get(seasonName).getEnd().setStageVal(BWSeasonSystem.SubSeasonVal.valueOf(subSeasonName));
+                                stringSeasonMap.get(seasonName).getEnd().setSubSeasonVal(BWSeasonSystem.SubSeasonVal.valueOf(subSeasonName));
+                                stringSeasonMap.get(seasonName).getEnd().setParentSeason(BWSeasonSystem.SeasonVal.valueOf(seasonName));
                                 Season.SUB_SEASON_MAP.put(subSeasonName, stringSeasonMap.get(seasonName).getEnd());
                             }
                         }

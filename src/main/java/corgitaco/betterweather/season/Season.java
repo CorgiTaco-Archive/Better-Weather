@@ -1,6 +1,7 @@
 package corgitaco.betterweather.season;
 
 import corgitaco.betterweather.BetterWeather;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
@@ -8,6 +9,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import java.awt.*;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -74,36 +76,42 @@ public class Season {
     }
 
     public boolean containsSubSeason(BWSeasonSystem.SubSeasonVal subSeason) {
-        return subSeason == start.getStageVal() || subSeason == mid.getStageVal() || subSeason == end.getStageVal();
+        return subSeason == start.getSubSeasonVal() || subSeason == mid.getSubSeasonVal() || subSeason == end.getSubSeasonVal();
     }
 
     public static class SubSeason {
 
-        public static final SubSeason SPRING_START = new SubSeason(-0.15, 0.5, 1.5, 2.0, new WeatherEventController(0.1, 0.25), new SeasonClient(Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5));
-        public static final SubSeason SPRING_MID = new SubSeason(0.1, 0.5, 2.0, 2.0, new WeatherEventController(0.05, 0.25), new SeasonClient(Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5));
-        public static final SubSeason SPRING_END = new SubSeason(0.25, 0.4, 1.5, 1.5, new WeatherEventController(0, 0.25), new SeasonClient(Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5));
+        public static final SubSeason SPRING_START = new SubSeason(-0.15, 0.5, 1.5, "override", new WeatherEventController(0.1, 0.25), new SeasonClient(Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5));
+        public static final SubSeason SPRING_MID = new SubSeason(0.1, 0.5, 2.0, "override", new WeatherEventController(0.05, 0.25), new SeasonClient(Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5));
+        public static final SubSeason SPRING_END = new SubSeason(0.25, 0.4, 1.5, "override", new WeatherEventController(0, 0.25), new SeasonClient(Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5));
 
-        public static final SubSeason SUMMER_START = new SubSeason(0.35, -0.1, 0.75, 1, new WeatherEventController(0, 0.25), new SeasonClient());
-        public static final SubSeason SUMMER_MID = new SubSeason(0.5, -0.3, 0.2, 1, new WeatherEventController(0, 0.25), new SeasonClient());
-        public static final SubSeason SUMMER_END = new SubSeason(0.15, -0.1, 0.5, 0.8, new WeatherEventController(0, 0.25), new SeasonClient());
+        public static final SubSeason SUMMER_START = new SubSeason(0.35, -0.1, 0.75, "1.0", new WeatherEventController(0, 0.25), new SeasonClient());
+        public static final SubSeason SUMMER_MID = new SubSeason(0.5, -0.3, 0.2, "1.0", new WeatherEventController(0, 0.25), new SeasonClient());
+        public static final SubSeason SUMMER_END = new SubSeason(0.15, -0.1, 0.5, "1.0", new WeatherEventController(0, 0.25), new SeasonClient());
 
-        public static final SubSeason AUTUMN_START = new SubSeason(-0.1, 0, 0.7, 0.7, new WeatherEventController(0, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
-        public static final SubSeason AUTUMN_MID = new SubSeason(-0.2, 0, 0.7, 0.65, new WeatherEventController(0.05, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
-        public static final SubSeason AUTUMN_END = new SubSeason(-0.3, 0.1, 0.75, 0.6, new WeatherEventController(0.1, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
+        public static final SubSeason AUTUMN_START = new SubSeason(-0.1, 0, 0.7, "override", new WeatherEventController(0, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
+        public static final SubSeason AUTUMN_MID = new SubSeason(-0.2, 0, 0.7, "override", new WeatherEventController(0.05, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
+        public static final SubSeason AUTUMN_END = new SubSeason(-0.3, 0.1, 0.75, "override", new WeatherEventController(0.1, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
 
-        public static final SubSeason WINTER_START = new SubSeason(-0.4, 0.2, 1.0, 0.5, new WeatherEventController(0.3, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
-        public static final SubSeason WINTER_MID = new SubSeason(-0.5, 0.2, 1.0, 0.4, new WeatherEventController(0.5, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
-        public static final SubSeason WINTER_END = new SubSeason(-0.35, 0.2, 1.25, 0.4, new WeatherEventController(0.3, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
+        public static final SubSeason WINTER_START = new SubSeason(-0.4, 0.2, 1.0, "override", new WeatherEventController(0.3, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
+        public static final SubSeason WINTER_MID = new SubSeason(-0.5, 0.2, 1.0, "override", new WeatherEventController(0.5, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
+        public static final SubSeason WINTER_END = new SubSeason(-0.35, 0.2, 1.25, "override", new WeatherEventController(0.3, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
 
 
         private final double tempModifier;
         private final double humidityModifier;
         private final double weatherEventChanceMultiplier;
-        private final double cropGrowthChanceMultiplier;
+        private final String cropGrowthChanceMultiplier;
         private final WeatherEventController weatherEventController;
         private final SeasonClient client;
 
-        public SubSeason(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, WeatherEventController weatherEventController, SeasonClient client) {
+        //These are not to be serialized by GSON.
+        private transient BWSeasonSystem.SeasonVal parentSeason;
+        private transient String subSeason;
+        private transient Map<String, Double> cropToMultiplierMap;
+        private transient double cachedCropGrowthMultiplier;
+
+        public SubSeason(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, String cropGrowthChanceMultiplier, WeatherEventController weatherEventController, SeasonClient client) {
             this.tempModifier = tempModifier;
             this.humidityModifier = humidityModifier;
             this.weatherEventChanceMultiplier = weatherEventChanceMultiplier;
@@ -112,14 +120,36 @@ public class Season {
             this.client = client;
         }
 
-        private String stage;
-
-        public void setStageVal(BWSeasonSystem.SubSeasonVal val) {
-            stage = val.toString();
+        public BWSeasonSystem.SubSeasonVal getSubSeasonVal() {
+            return BWSeasonSystem.SubSeasonVal.valueOf(subSeason);
         }
 
-        public BWSeasonSystem.SubSeasonVal getStageVal() {
-            return BWSeasonSystem.SubSeasonVal.valueOf(stage);
+        public void setSubSeasonVal(BWSeasonSystem.SubSeasonVal val) {
+            subSeason = val.toString();
+        }
+
+        public BWSeasonSystem.SeasonVal getParentSeason() {
+            return parentSeason;
+        }
+
+        public void setParentSeason(BWSeasonSystem.SeasonVal parentSeason) {
+            this.parentSeason = parentSeason;
+        }
+
+        public boolean testCropGrowthMultiplier() {
+            try{
+                Double.parseDouble(cropGrowthChanceMultiplier);
+                return false;
+            } catch (NumberFormatException exception) {
+                BetterWeather.LOGGER.info("Using crop growth override file for: \"" + getSubSeasonVal().toString() + "\".");
+                return true;
+            }
+        }
+
+        public Map<String, Double> getCropToMultiplierMap() {
+            if (cropToMultiplierMap == null)
+                cropToMultiplierMap = new HashMap<>();
+            return cropToMultiplierMap;
         }
 
         public double getTempModifier() {
@@ -134,8 +164,21 @@ public class Season {
             return weatherEventChanceMultiplier;
         }
 
-        public double getCropGrowthChanceMultiplier() {
-            return cropGrowthChanceMultiplier;
+        public double getCropGrowthChanceMultiplier(String blockName, Block block, boolean parseDouble) {
+            double value = 1.0;
+
+            if (parseDouble) {
+                try {
+                    if (cachedCropGrowthMultiplier == 0.0)
+                        cachedCropGrowthMultiplier = Double.parseDouble(cropGrowthChanceMultiplier);
+                    return cachedCropGrowthMultiplier;
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Could not read numerical value for cropGrowthMultiplier! You put: " + cropGrowthChanceMultiplier + ".\n This value needs to need be a numerical value or point to a config file in your \"betterweather/overrides\" folder.");
+                }
+            } else if (cropToMultiplierMap.containsKey(blockName)) {
+                value = cropToMultiplierMap.get(blockName);
+            }
+            return value;
         }
 
         public WeatherEventController getWeatherEventController() {

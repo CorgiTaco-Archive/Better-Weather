@@ -31,7 +31,7 @@ public class BWSeasonSystem {
         BetterWeather.setSeasonData(world);
         int currentSeasonTime = BetterWeather.seasonData.getSeasonTime();
 
-        SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, BetterWeather.seasonData.getSeasonCycleLength()).getStageVal();
+        SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, BetterWeather.seasonData.getSeasonCycleLength()).getSubSeasonVal();
 
         if (cachedSubSeason != subSeason) {
             BetterWeather.seasonData.setSubseason(subSeason.toString());
@@ -48,7 +48,7 @@ public class BWSeasonSystem {
     public static void clientSeason() {
         int currentSeasonTime = BetterWeather.seasonData.getSeasonTime();
 
-        SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, BetterWeather.seasonData.getSeasonCycleLength()).getStageVal();
+        SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, BetterWeather.seasonData.getSeasonCycleLength()).getSubSeasonVal();
 
         if (cachedSubSeason != subSeason) {
             BetterWeather.seasonData.setSubseason(subSeason.toString());

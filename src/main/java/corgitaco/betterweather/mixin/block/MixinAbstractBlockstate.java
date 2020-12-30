@@ -5,19 +5,17 @@ import corgitaco.betterweather.season.Season;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.eventbus.api.Event;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 
 @SuppressWarnings("deprecation")
 @Mixin(AbstractBlock.AbstractBlockState.class)
@@ -26,8 +24,6 @@ public abstract class MixinAbstractBlockstate {
     @Shadow public abstract Block getBlock();
 
     @Shadow protected abstract BlockState getSelf();
-
-    private static final Set<String> ids = new HashSet<>();
 
     /**
      * This mixin exists to apply the crop growth modifier as specified by the season to the applicable crop blocks specified by the user.
@@ -41,35 +37,37 @@ public abstract class MixinAbstractBlockstate {
      */
     @Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
     private void cropGrowthModifier(ServerWorld world, BlockPos posIn, Random randomIn, CallbackInfo ci) {
-        if (ids.contains(Registry.BLOCK.getKey(this.getBlock()).toString())) {
+        String blockName = Registry.BLOCK.getKey(this.getBlock()).toString();
+        if (Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason).getCropToMultiplierMap().isEmpty()) {
+            if (BlockTags.CROPS.contains(this.getBlock()) || BlockTags.BEE_GROWABLES.contains(this.getBlock())) {
+                ci.cancel();
+                cropTicker(world, posIn, randomIn, blockName, true);
+            }
+        } else if (Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason).getCropToMultiplierMap().containsKey(blockName)) {
             ci.cancel();
-
-            //Collect the crop multiplier for the given subseason.
-            double cropGrowthMultiplier = Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason).getCropGrowthChanceMultiplier();
-
-            //Pretty self explanatory, basically run a chance on whether or not the crop will tick for this tick
-            if (cropGrowthMultiplier < 1) {
-                if (world.getRandom().nextDouble() < cropGrowthMultiplier) {
-                    this.getBlock().randomTick(this.getSelf(), world, posIn, randomIn);
-                }
-            }
-
-
-            //Here we gather a random number of ticks that this block will tick for this given tick.
-            //We do a random.nextDouble() to determine if we get the ceil or floor value for the given crop growth multiplier.
-            if (cropGrowthMultiplier > 1) {
-                int numberOfTicks = world.getRandom().nextInt((world.getRandom().nextDouble() + (cropGrowthMultiplier - 1) < cropGrowthMultiplier) ? (int) Math.ceil(cropGrowthMultiplier) : (int) cropGrowthMultiplier) + 1;
-                for (int tick = 0; tick < numberOfTicks; tick++) {
-                    this.getBlock().randomTick(this.getSelf(), world, posIn, randomIn);
-                }
-            }
+            cropTicker(world, posIn, randomIn, blockName, false);
         }
     }
 
+    private void cropTicker(ServerWorld world, BlockPos posIn, Random randomIn, String blockName, boolean parseDouble) {
+        //Collect the crop multiplier for the given subseason.
+        double cropGrowthMultiplier = Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason).getCropGrowthChanceMultiplier(blockName, this.getBlock(), parseDouble);
+
+        //Pretty self explanatory, basically run a chance on whether or not the crop will tick for this tick
+        if (cropGrowthMultiplier < 1) {
+            if (world.getRandom().nextDouble() < cropGrowthMultiplier) {
+                this.getBlock().randomTick(this.getSelf(), world, posIn, randomIn);
+            }
+        }
 
 
-    static {
-        ids.add("minecraft:wheat");
-        ids.add("minecraft:carrots");
+        //Here we gather a random number of ticks that this block will tick for this given tick.
+        //We do a random.nextDouble() to determine if we get the ceil or floor value for the given crop growth multiplier.
+        if (cropGrowthMultiplier > 1) {
+            int numberOfTicks = world.getRandom().nextInt((world.getRandom().nextDouble() + (cropGrowthMultiplier - 1) < cropGrowthMultiplier) ? (int) Math.ceil(cropGrowthMultiplier) : (int) cropGrowthMultiplier) + 1;
+            for (int tick = 0; tick < numberOfTicks; tick++) {
+                this.getBlock().randomTick(this.getSelf(), world, posIn, randomIn);
+            }
+        }
     }
 }

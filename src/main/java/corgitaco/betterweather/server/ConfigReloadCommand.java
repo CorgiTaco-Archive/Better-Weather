@@ -4,7 +4,9 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.config.BetterWeatherConfig;
+import corgitaco.betterweather.config.json.CropGrowthMultiplierConfigOverride;
 import corgitaco.betterweather.config.json.SeasonConfig;
+import corgitaco.betterweather.season.Season;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -15,8 +17,9 @@ public class ConfigReloadCommand {
     }
 
     public static int reloadCommand(CommandSource source) {
-        SeasonConfig.handleBWSeasonsConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-seasons.json"));
         BetterWeatherConfig.loadConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-common.toml"));
+        BetterWeather.loadWorldConfigs();
+
         source.sendFeedback(new TranslationTextComponent("commands.bw.reload.success"), true);
         return 1;
     }

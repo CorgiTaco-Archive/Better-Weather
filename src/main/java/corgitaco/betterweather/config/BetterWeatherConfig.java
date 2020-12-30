@@ -110,7 +110,6 @@ public class BetterWeatherConfig {
     public static List<Block> blocksToNotDestroyList = new ArrayList<>();
 
     public static void handleCommonConfig() {
-        BetterWeatherConfig.loadConfig(FMLPaths.CONFIGDIR.get().resolve(BetterWeather.MOD_ID + "-common.toml"));
         String entityTypes = BetterWeatherConfig.entityTypesToDamage.get();
         String removeSpaces = entityTypes.trim().toLowerCase().replace(" ", "");
         String[] entityList = removeSpaces.split(",");
