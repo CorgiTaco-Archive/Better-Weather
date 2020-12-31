@@ -1,6 +1,8 @@
 package corgitaco.betterweather.season;
 
+import com.google.common.collect.Sets;
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.season.seasonoverrides.SeasonOverrides;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Util;
@@ -9,9 +11,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import java.awt.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class Season {
 
@@ -44,6 +44,9 @@ public class Season {
     });
 
 
+    public static SeasonOverrides seasonOverrides;
+
+
     public static Season getSeasonFromEnum(BWSeasonSystem.SeasonVal season) {
         return SEASON_MAP.get(season.toString());
     }
@@ -57,10 +60,13 @@ public class Season {
     private final SubSeason mid;
     private final SubSeason end;
 
+    private final Set<SubSeason> subSeasons;
+
     public Season(SubSeason start, SubSeason mid, SubSeason end) {
         this.start = start;
         this.mid = mid;
         this.end = end;
+        subSeasons = Sets.newHashSet(start, mid, end);
     }
 
     public SubSeason getStart() {
@@ -73,6 +79,10 @@ public class Season {
 
     public SubSeason getEnd() {
         return end;
+    }
+
+    public Set<SubSeason> getSubSeasons() {
+        return subSeasons;
     }
 
     public boolean containsSubSeason(BWSeasonSystem.SubSeasonVal subSeason) {
@@ -109,7 +119,8 @@ public class Season {
         private transient BWSeasonSystem.SeasonVal parentSeason;
         private transient String subSeason;
         private transient Map<String, Double> cropToMultiplierMap;
-        private transient double cachedCropGrowthMultiplier;
+        private transient IdentityHashMap<Block, Double> cropToMultiplierIdentityHashMap;
+        private transient double cropGrowthMultiplier;
 
         public SubSeason(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, String cropGrowthChanceMultiplier, WeatherEventController weatherEventController, SeasonClient client) {
             this.tempModifier = tempModifier;
@@ -152,6 +163,12 @@ public class Season {
             return cropToMultiplierMap;
         }
 
+        public IdentityHashMap<Block, Double> getCropToMultiplierIdentityHashMap() {
+            if (cropToMultiplierIdentityHashMap == null)
+                cropToMultiplierIdentityHashMap = new IdentityHashMap<>();
+            return cropToMultiplierIdentityHashMap;
+        }
+
         public double getTempModifier() {
             return tempModifier;
         }
@@ -169,9 +186,9 @@ public class Season {
 
             if (parseDouble) {
                 try {
-                    if (cachedCropGrowthMultiplier == 0.0)
-                        cachedCropGrowthMultiplier = Double.parseDouble(cropGrowthChanceMultiplier);
-                    return cachedCropGrowthMultiplier;
+                    if (cropGrowthMultiplier == 0.0)
+                        cropGrowthMultiplier = Double.parseDouble(cropGrowthChanceMultiplier);
+                    return cropGrowthMultiplier;
                 } catch (NumberFormatException e) {
                     throw new IllegalArgumentException("Could not read numerical value for cropGrowthMultiplier! You put: " + cropGrowthChanceMultiplier + ".\n This value needs to need be a numerical value or point to a config file in your \"betterweather/overrides\" folder.");
                 }
