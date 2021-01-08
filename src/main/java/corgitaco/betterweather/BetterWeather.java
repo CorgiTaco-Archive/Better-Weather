@@ -48,7 +48,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Optional;
@@ -128,7 +127,7 @@ public class BetterWeather {
                     int tickSpeed = world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
                     long worldTime = world.getWorldInfo().getGameTime();
 
-                    BWSeasonSystem.seasonTime();
+                    BWSeasonSystem.updateSeasonTime();
 
                     BWSeasonSystem.updateSeasonPacket(serverWorld.getPlayers(), world);
                     BWWeatherEventSystem.updateWeatherEventPacket(serverWorld.getPlayers(), world);
@@ -215,7 +214,6 @@ public class BetterWeather {
                 if (minecraft.world != null && minecraft.player != null) {
                     if (minecraft.world.getWorldInfo().getGameTime() % 10 == 0) {
                         BWSeasonSystem.clientSeason();
-
                     }
 
                     AcidRain.handleRainTexture(minecraft);

@@ -23,7 +23,7 @@ public class BWSeasonSystem {
     public static SubSeasonVal cachedSubSeason = SubSeasonVal.SPRING_START;
     public static SeasonVal cachedSeason = SeasonVal.SPRING;
 
-    public static void seasonTime() {
+    public static void updateSeasonTime() {
         int currentSeasonTime = BetterWeather.seasonData.getSeasonTime();
         if (currentSeasonTime > BetterWeather.SEASON_CYCLE_LENGTH)
             BetterWeather.seasonData.setSeasonTime(0);
@@ -35,7 +35,7 @@ public class BWSeasonSystem {
 
     }
 
-    public static void updateSeasonPacket(List<ServerPlayerEntity> player, World world) {
+    public static void updateSeasonPacket(List<ServerPlayerEntity> players, World world) {
         BetterWeather.setSeasonData(world);
         int currentSeasonTime = BetterWeather.seasonData.getSeasonTime();
 
@@ -45,11 +45,12 @@ public class BWSeasonSystem {
             BetterWeather.seasonData.setSubseason(subSeason.toString());
         }
 
-        if (BetterWeather.seasonData.getSeasonTime() % 1200 == 0 || BetterWeather.seasonData.isForced())
-            NetworkHandler.sendTo((ServerPlayerEntity) player, new SeasonPacket(BetterWeather.seasonData.getSeasonTime(), BetterWeather.SEASON_CYCLE_LENGTH));
+        if (BetterWeather.seasonData.getSeasonTime() % 1200 == 0 || BetterWeather.seasonData.isForced()) {
+            players.forEach(player -> NetworkHandler.sendTo(player, new SeasonPacket(BetterWeather.seasonData.getSeasonTime(), BetterWeather.SEASON_CYCLE_LENGTH)));;
 
-        if (BetterWeather.seasonData.isForced())
-            BetterWeather.seasonData.setForced(false);
+            if (BetterWeather.seasonData.isForced())
+                BetterWeather.seasonData.setForced(false);
+        }
     }
 
     @OnlyIn(Dist.CLIENT)
