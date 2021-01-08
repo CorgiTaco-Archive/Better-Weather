@@ -13,14 +13,14 @@ public class BWWeatherEventSystem {
 
     private static BetterWeather.WeatherEvent cachedEvent = BetterWeather.WeatherEvent.NONE;
 
-    public static void updateWeatherEventPacket(List<ServerPlayerEntity> players, World world) {
+    public static void updateWeatherEventPacket(List<ServerPlayerEntity> players, World world, boolean justJoined) {
         BetterWeather.setWeatherData(world);
 
         BetterWeather.WeatherEvent currentEvent = BetterWeather.weatherData.getEventValue();
 
-        if (cachedEvent != currentEvent) {
+        if (cachedEvent != currentEvent || justJoined) {
             players.forEach(player -> {
-                NetworkHandler.sendTo(player, new WeatherEventPacket(cachedEvent.name()));
+                NetworkHandler.sendTo(player, new WeatherEventPacket(currentEvent.name()));
             });
             cachedEvent = currentEvent;
         }

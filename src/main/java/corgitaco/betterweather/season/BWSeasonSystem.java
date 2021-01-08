@@ -35,7 +35,7 @@ public class BWSeasonSystem {
 
     }
 
-    public static void updateSeasonPacket(List<ServerPlayerEntity> players, World world) {
+    public static void updateSeasonPacket(List<ServerPlayerEntity> players, World world, boolean justJoined) {
         BetterWeather.setSeasonData(world);
         int currentSeasonTime = BetterWeather.seasonData.getSeasonTime();
 
@@ -45,7 +45,7 @@ public class BWSeasonSystem {
             BetterWeather.seasonData.setSubseason(subSeason.toString());
         }
 
-        if (BetterWeather.seasonData.getSeasonTime() % 1200 == 0 || BetterWeather.seasonData.isForced()) {
+        if (BetterWeather.seasonData.getSeasonTime() % 1200 == 0 || BetterWeather.seasonData.isForced() || justJoined) {
             players.forEach(player -> NetworkHandler.sendTo(player, new SeasonPacket(BetterWeather.seasonData.getSeasonTime(), BetterWeather.SEASON_CYCLE_LENGTH)));;
 
             if (BetterWeather.seasonData.isForced())
