@@ -20,9 +20,11 @@ import corgitaco.betterweather.weatherevent.weatherevents.Blizzard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
@@ -45,6 +47,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.IdentityHashMap;
 import java.util.Optional;
 
 @Mod("betterweather")
@@ -56,6 +59,7 @@ public class BetterWeather {
 
     public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
 
+    public static Registry<Biome> biomeRegistryEarlyAccess;
 
     public BetterWeather() {
         File dir = new File(CONFIG_PATH.toString());
@@ -81,14 +85,17 @@ public class BetterWeather {
 
     public void clientSetup(FMLClientSetupEvent event) {
 //        RenderingRegistry.registerEntityRenderingHandler(BWEntityRegistry.TORNADO, TornadoRenderer::new);
-
     }
 
     public static void loadWorldConfigs() {
         SeasonConfig.handleBWSeasonsConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-seasons.json"));
 
         Season.SUB_SEASON_MAP.forEach((subSeasonName, subSeason) -> {
-                BiomeOverrideJsonHandler.createOverridesJson(CONFIG_PATH.resolve("overrides").resolve(subSeasonName + "-override.json"));
+            Path overrideFilePath = CONFIG_PATH.resolve("overrides").resolve(subSeasonName + "-override.json");
+            if (subSeason.getParentSeason() == BWSeasonSystem.SeasonVal.WINTER)
+                BiomeOverrideJsonHandler.handleOverrideJsonConfigs(overrideFilePath, Season.SubSeason.WINTER_OVERRIDE, subSeason);
+            else
+                BiomeOverrideJsonHandler.handleOverrideJsonConfigs(overrideFilePath, new IdentityHashMap<>(), subSeason);
         });
     }
 

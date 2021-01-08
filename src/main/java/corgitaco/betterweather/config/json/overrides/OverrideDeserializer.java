@@ -45,7 +45,7 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
 
 
 
-        return new BiomeToOverrideStorageJsonStorage(processKeys(biomeObjects, ServerLifecycleHooks.getCurrentServer().func_244267_aX().getRegistry(Registry.BIOME_KEY)));
+        return new BiomeToOverrideStorageJsonStorage(processKeys(biomeObjects, BetterWeather.biomeRegistryEarlyAccess));
     }
 
 

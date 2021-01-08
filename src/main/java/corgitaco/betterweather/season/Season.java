@@ -13,7 +13,10 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.biome.Biome;
 
 import java.awt.*;
-import java.util.*;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 public class Season {
 
@@ -93,9 +96,9 @@ public class Season {
 
     public static class SubSeason {
 
-        public static final SubSeason SPRING_START = new SubSeason(-0.15, 0.5, 1.5, "override", new WeatherEventController(0.1, 0.25), new SeasonClient(Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5));
-        public static final SubSeason SPRING_MID = new SubSeason(0.1, 0.5, 2.0, "override", new WeatherEventController(0.05, 0.25), new SeasonClient(Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5));
-        public static final SubSeason SPRING_END = new SubSeason(0.25, 0.4, 1.5, "override", new WeatherEventController(0, 0.25), new SeasonClient(Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5));
+        public static final SubSeason SPRING_START = new SubSeason(-0.15, 0.5, 1.5, "1.0", new WeatherEventController(0.1, 0.25), new SeasonClient(Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5));
+        public static final SubSeason SPRING_MID = new SubSeason(0.1, 0.5, 2.0, "1.0", new WeatherEventController(0.05, 0.25), new SeasonClient(Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5));
+        public static final SubSeason SPRING_END = new SubSeason(0.25, 0.4, 1.5, "1.0", new WeatherEventController(0, 0.25), new SeasonClient(Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5));
 
         public static final SubSeason SUMMER_START = new SubSeason(0.35, -0.1, 0.75, "1.0", new WeatherEventController(0, 0.25), new SeasonClient());
         public static final SubSeason SUMMER_MID = new SubSeason(0.5, -0.3, 0.2, "1.0", new WeatherEventController(0, 0.25), new SeasonClient());
@@ -109,6 +112,11 @@ public class Season {
         public static final SubSeason WINTER_MID = new SubSeason(-0.5, 0.2, 1.0, "override", new WeatherEventController(0.5, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
         public static final SubSeason WINTER_END = new SubSeason(-0.35, 0.2, 1.25, "override", new WeatherEventController(0.3, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
 
+        public static OverrideStorage.OverrideClientStorage noRedSwampsClientStorage = new OverrideStorage.OverrideClientStorage().setTargetFoliageHexColor("#964B00").setTargetGrassHexColor("#964B00"); //Target brown instead of red.
+
+        public static final IdentityHashMap<Object, OverrideStorage> WINTER_OVERRIDE = Util.make((new IdentityHashMap<>()), (map) -> {
+            map.put(Biome.Category.SWAMP, new OverrideStorage().setClientStorage(noRedSwampsClientStorage));
+        });
 
         private final double tempModifier;
         private final double humidityModifier;
@@ -121,9 +129,7 @@ public class Season {
         private transient BWSeasonSystem.SeasonVal parentSeason;
         private transient String subSeason;
         private transient IdentityHashMap<Block, Double> cropToMultiplierIdentityHashMap;
-
-        private IdentityHashMap<Biome, OverrideStorage> biomeToOverrideStorage;
-
+        private transient IdentityHashMap<Biome, OverrideStorage> biomeToOverrideStorage;
 
         public SubSeason(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, String cropGrowthChanceMultiplier, WeatherEventController weatherEventController, SeasonClient client) {
             this.tempModifier = tempModifier;
@@ -150,16 +156,6 @@ public class Season {
             this.parentSeason = parentSeason;
         }
 
-        public boolean testCropGrowthMultiplier() {
-            try{
-                Double.parseDouble(cropGrowthChanceMultiplier);
-                return false;
-            } catch (NumberFormatException exception) {
-                BetterWeather.LOGGER.info("Using crop growth override file for: \"" + getSubSeasonVal().toString() + "\".");
-                return true;
-            }
-        }
-
         public IdentityHashMap<Block, Double> getCropToMultiplierIdentityHashMap() {
             if (cropToMultiplierIdentityHashMap == null)
                 cropToMultiplierIdentityHashMap = new IdentityHashMap<>();
@@ -168,10 +164,11 @@ public class Season {
 
 
         public IdentityHashMap<Biome, OverrideStorage> getBiomeToOverrideStorage() {
-            if (biomeToOverrideStorage == null)
-                biomeToOverrideStorage = new IdentityHashMap<>();
             return biomeToOverrideStorage;
+        }
 
+        public void setBiomeToOverrideStorage(IdentityHashMap<Biome, OverrideStorage> biomeToOverrideStorage) {
+            this.biomeToOverrideStorage = biomeToOverrideStorage;
         }
 
         public double getTempModifier() {
@@ -188,7 +185,7 @@ public class Season {
 
         public double getCropGrowthChanceMultiplier(Biome biome, Block block, boolean useSeasonDefault) {
             if (useSeasonDefault)
-                return Double.parseDouble(cropGrowthChanceMultiplier);
+                return 1.0;
 
 
             OverrideStorage overrideStorage = this.biomeToOverrideStorage.getOrDefault(biome, null);
@@ -210,6 +207,36 @@ public class Season {
             return client;
         }
 
+        public int getTargetFoliageColor(Biome biome, boolean useSeasonDefault) {
+            int defaultValue = processFoliageHexColor(client.targetFoliageHexColor);
+            if (useSeasonDefault) {
+                return processFoliageHexColor(client.targetFoliageHexColor);
+            }
+
+            OverrideStorage overrideStorage = this.biomeToOverrideStorage.get(biome);
+            if (overrideStorage == null) {
+                return defaultValue;
+            }
+            String overrideTargetFoliageHexColor = this.biomeToOverrideStorage.get(biome).getClientStorage().getTargetFoliageHexColor();
+
+            if (overrideTargetFoliageHexColor.isEmpty())
+                return defaultValue;
+            else
+                return processFoliageHexColor(overrideTargetFoliageHexColor);
+        }
+
+        public int processFoliageHexColor(String targetFoliageHexColor) {
+            try {
+                return (int) Long.parseLong(targetFoliageHexColor.replace("#", "").replace("0x", ""), 16);
+            } catch (Exception e) {
+                if (SeasonClient.stopSpamIDXFoliage <= SeasonClient.spamMaxIDX) {
+                    client.printDebugWarning("bw.debug.warn.colorerror", "targetFoliageHexColor", targetFoliageHexColor);
+                    BetterWeather.LOGGER.warn("targetFoliageHexColor was not a hex color value, you put: \"" + targetFoliageHexColor + "\" | Using Defaults...");
+                    SeasonClient.stopSpamIDXFoliage++;
+                }
+            }
+            return -1;
+        }
 
         public static class SeasonClient {
             private final String targetFoliageHexColor;

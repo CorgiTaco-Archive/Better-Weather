@@ -2,6 +2,7 @@ package corgitaco.betterweather.season.client;
 
 import corgitaco.betterweather.season.Season;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.biome.Biome;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -10,7 +11,7 @@ import java.awt.*;
 @OnlyIn(Dist.CLIENT)
 public class BiomeColorCalculator {
 
-    public static Color modifyBiomeColor(ColorType colorType, Color originalColorValue, Season.SubSeason subSeason) {
+    public static Color modifyBiomeColor(ColorType colorType, Color originalColorValue, Season.SubSeason subSeason, Biome biome) {
         int red = originalColorValue.getRed();
         int green = originalColorValue.getGreen();
         int blue = originalColorValue.getBlue();
@@ -19,7 +20,7 @@ public class BiomeColorCalculator {
         double blendStrength;
         switch (colorType) {
             case GRASS:
-                int targetGrassColor = subSeason.getClient().getTargetGrassColor();
+                int targetGrassColor = subSeason.getTargetFoliageColor(biome, false);
 
                 if (targetGrassColor == -1)
                     return originalColorValue;
