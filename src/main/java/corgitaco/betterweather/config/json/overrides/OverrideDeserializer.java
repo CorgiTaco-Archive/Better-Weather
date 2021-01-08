@@ -49,8 +49,8 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
     }
 
 
-    public static IdentityHashMap<Biome, OverrideStorage> processKeys(ObjectOpenHashSet<Pair<Object, JsonElement>> oldMap, Registry<Biome> biomeRegistry) {
-        IdentityHashMap<Biome, OverrideStorage> newMap = new IdentityHashMap<>();
+    public static IdentityHashMap<ResourceLocation, OverrideStorage> processKeys(ObjectOpenHashSet<Pair<Object, JsonElement>> oldMap, Registry<Biome> biomeRegistry) {
+        IdentityHashMap<ResourceLocation, OverrideStorage> newMap = new IdentityHashMap<>();
 
         Map<Biome.Category, List<Biome>> categoryListMap = biomeRegistry.getEntries().stream().map(Map.Entry::getValue).collect(Collectors.groupingBy(Biome::getCategory));
         Map<BiomeDictionary.Type, List<Biome>> biomeDictionaryMap = biomeRegistry.getEntries().stream()
@@ -62,21 +62,21 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
             Object object = pair.getFirst();
             if (object instanceof BiomeDictionary.Type) {
                 for (Biome biome : biomeDictionaryMap.get(object)) {
-                    OverrideStorage overrideStorage = newMap.getOrDefault(biome, new OverrideStorage());
+                    OverrideStorage overrideStorage = newMap.getOrDefault(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), new OverrideStorage());
                     updateOverrideStorageData(overrideStorage, pair.getSecond());
-                    newMap.put(biome, overrideStorage);
+                    newMap.put(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), overrideStorage);
                 }
             } else if (object instanceof Biome.Category) {
                 for (Biome biome : categoryListMap.get(object)) {
-                    OverrideStorage overrideStorage = newMap.getOrDefault(biome, new OverrideStorage());
+                    OverrideStorage overrideStorage = newMap.getOrDefault(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), new OverrideStorage());
                     updateOverrideStorageData(overrideStorage, pair.getSecond());
-                    newMap.put(biome, overrideStorage);
+                    newMap.put(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), overrideStorage);
                 }
             } else if (object instanceof Biome) {
                 Biome biome = (Biome) object;
-                OverrideStorage overrideStorage = newMap.getOrDefault(biome, new OverrideStorage());
+                OverrideStorage overrideStorage = newMap.getOrDefault(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), new OverrideStorage());
                 updateOverrideStorageData(overrideStorage, pair.getSecond());
-                newMap.put(biome, overrideStorage);
+                newMap.put(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), overrideStorage);
             }
         }
         return newMap;

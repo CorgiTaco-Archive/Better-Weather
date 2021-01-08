@@ -14,6 +14,8 @@ public class OverrideStorage {
     public OverrideStorage() {}
 
     public IdentityHashMap<Block, Double> getBlockToCropGrowthMultiplierMap() {
+        if (blockToCropGrowthMultiplierMap == null)
+            blockToCropGrowthMultiplierMap = new IdentityHashMap<>();
         return blockToCropGrowthMultiplierMap;
     }
 

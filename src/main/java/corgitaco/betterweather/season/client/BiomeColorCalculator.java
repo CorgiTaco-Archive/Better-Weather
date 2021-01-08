@@ -1,5 +1,6 @@
 package corgitaco.betterweather.season.client;
 
+import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.season.Season;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.biome.Biome;
@@ -20,7 +21,7 @@ public class BiomeColorCalculator {
         double blendStrength;
         switch (colorType) {
             case GRASS:
-                int targetGrassColor = subSeason.getTargetFoliageColor(biome, false);
+                int targetGrassColor = subSeason.getTargetFoliageColor(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), false);
 
                 if (targetGrassColor == -1)
                     return originalColorValue;

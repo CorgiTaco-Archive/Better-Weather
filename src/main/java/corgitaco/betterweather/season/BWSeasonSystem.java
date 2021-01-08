@@ -3,12 +3,18 @@ package corgitaco.betterweather.season;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
 import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 public class BWSeasonSystem {
 
@@ -78,6 +84,42 @@ public class BWSeasonSystem {
             return Season.getSeasonFromEnum(seasonVal).getMid();
         else {
             return Season.getSeasonFromEnum(seasonVal).getEnd();
+        }
+    }
+
+
+    public static void tickCropForBiomeBlockOrSeason(ServerWorld world, BlockPos posIn, Block block, BlockState self, CallbackInfo ci) {
+        Season.SubSeason subSeason = Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason);
+        if (subSeason.getBiomeToOverrideStorage().isEmpty() && subSeason.getCropToMultiplierIdentityHashMap().isEmpty()) {
+            if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block)) {
+                ci.cancel();
+                cropTicker(world, posIn, block, subSeason, true, self);
+            }
+        } else if (subSeason.getCropToMultiplierIdentityHashMap().containsKey(block) || subSeason.getBiomeToOverrideStorage().get(BetterWeather.biomeRegistryEarlyAccess.getKey(world.getBiome(posIn))).getBlockToCropGrowthMultiplierMap().containsKey(block)){
+            ci.cancel();
+            cropTicker(world, posIn, block, subSeason, false, self);
+        }
+    }
+
+    private static void cropTicker(ServerWorld world, BlockPos posIn, Block block, Season.SubSeason subSeason, boolean useSeasonDefault, BlockState self) {
+        //Collect the crop multiplier for the given subseason.
+        double cropGrowthMultiplier = subSeason.getCropGrowthChanceMultiplier(BetterWeather.biomeRegistryEarlyAccess.getKey(world.getBiome(posIn)), block, useSeasonDefault);
+
+        //Pretty self explanatory, basically run a chance on whether or not the crop will tick for this tick
+        if (cropGrowthMultiplier < 1) {
+            if (world.getRandom().nextDouble() < cropGrowthMultiplier) {
+                block.randomTick(self, world, posIn, world.getRandom());
+            }
+        }
+
+
+        //Here we gather a random number of ticks that this block will tick for this given tick.
+        //We do a random.nextDouble() to determine if we get the ceil or floor value for the given crop growth multiplier.
+        if (cropGrowthMultiplier > 1) {
+            int numberOfTicks = world.getRandom().nextInt((world.getRandom().nextDouble() + (cropGrowthMultiplier - 1) < cropGrowthMultiplier) ? (int) Math.ceil(cropGrowthMultiplier) : (int) cropGrowthMultiplier) + 1;
+            for (int tick = 0; tick < numberOfTicks; tick++) {
+                block.randomTick(self, world, posIn, world.getRandom());
+            }
         }
     }
 

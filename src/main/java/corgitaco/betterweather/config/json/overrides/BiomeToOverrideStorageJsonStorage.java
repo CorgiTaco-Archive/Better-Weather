@@ -1,18 +1,19 @@
 package corgitaco.betterweather.config.json.overrides;
 
 import corgitaco.betterweather.util.storage.OverrideStorage;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
 
 import java.util.IdentityHashMap;
 
 public class BiomeToOverrideStorageJsonStorage {
-    private final IdentityHashMap<Biome, OverrideStorage> biomeToOverrideStorage;
+    private final IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage;
 
-    public BiomeToOverrideStorageJsonStorage(IdentityHashMap<Biome, OverrideStorage> biomeToOverrideStorage) {
+    public BiomeToOverrideStorageJsonStorage(IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage) {
         this.biomeToOverrideStorage = biomeToOverrideStorage;
     }
 
-    public IdentityHashMap<Biome, OverrideStorage> getBiomeToOverrideStorage() {
+    public IdentityHashMap<ResourceLocation, OverrideStorage> getBiomeToOverrideStorage() {
         return biomeToOverrideStorage;
     }
 

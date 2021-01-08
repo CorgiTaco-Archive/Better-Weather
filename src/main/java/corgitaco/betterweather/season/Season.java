@@ -6,6 +6,7 @@ import corgitaco.betterweather.season.seasonoverrides.SeasonOverrides;
 import corgitaco.betterweather.util.storage.OverrideStorage;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -65,7 +66,7 @@ public class Season {
     private final SubSeason mid;
     private final SubSeason end;
 
-    private final Set<SubSeason> subSeasons;
+    private final transient Set<SubSeason> subSeasons;
 
     public Season(SubSeason start, SubSeason mid, SubSeason end) {
         this.start = start;
@@ -96,21 +97,21 @@ public class Season {
 
     public static class SubSeason {
 
-        public static final SubSeason SPRING_START = new SubSeason(-0.15, 0.5, 1.5, "1.0", new WeatherEventController(0.1, 0.25), new SeasonClient(Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5));
-        public static final SubSeason SPRING_MID = new SubSeason(0.1, 0.5, 2.0, "1.0", new WeatherEventController(0.05, 0.25), new SeasonClient(Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5));
-        public static final SubSeason SPRING_END = new SubSeason(0.25, 0.4, 1.5, "1.0", new WeatherEventController(0, 0.25), new SeasonClient(Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5));
+        public static final SubSeason SPRING_START = new SubSeason(-0.15, 0.5, 1.5, 1.0, new WeatherEventController(0.1, 0.25), new SeasonClient(Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5));
+        public static final SubSeason SPRING_MID = new SubSeason(0.1, 0.5, 2.0, 1.0, new WeatherEventController(0.05, 0.25), new SeasonClient(Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5));
+        public static final SubSeason SPRING_END = new SubSeason(0.25, 0.4, 1.5, 1.0, new WeatherEventController(0, 0.25), new SeasonClient(Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5));
 
-        public static final SubSeason SUMMER_START = new SubSeason(0.35, -0.1, 0.75, "1.0", new WeatherEventController(0, 0.25), new SeasonClient());
-        public static final SubSeason SUMMER_MID = new SubSeason(0.5, -0.3, 0.2, "1.0", new WeatherEventController(0, 0.25), new SeasonClient());
-        public static final SubSeason SUMMER_END = new SubSeason(0.15, -0.1, 0.5, "1.0", new WeatherEventController(0, 0.25), new SeasonClient());
+        public static final SubSeason SUMMER_START = new SubSeason(0.35, -0.1, 0.75, 1.0, new WeatherEventController(0, 0.25), new SeasonClient());
+        public static final SubSeason SUMMER_MID = new SubSeason(0.5, -0.3, 0.2, 1.0, new WeatherEventController(0, 0.25), new SeasonClient());
+        public static final SubSeason SUMMER_END = new SubSeason(0.15, -0.1, 0.5, 1.0, new WeatherEventController(0, 0.25), new SeasonClient());
 
-        public static final SubSeason AUTUMN_START = new SubSeason(-0.1, 0, 0.7, "override", new WeatherEventController(0, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
-        public static final SubSeason AUTUMN_MID = new SubSeason(-0.2, 0, 0.7, "override", new WeatherEventController(0.05, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
-        public static final SubSeason AUTUMN_END = new SubSeason(-0.3, 0.1, 0.75, "override", new WeatherEventController(0.1, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
+        public static final SubSeason AUTUMN_START = new SubSeason(-0.1, 0, 0.7, 1.0, new WeatherEventController(0, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
+        public static final SubSeason AUTUMN_MID = new SubSeason(-0.2, 0, 0.7, 1.0, new WeatherEventController(0.05, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
+        public static final SubSeason AUTUMN_END = new SubSeason(-0.3, 0.1, 0.75, 1.0, new WeatherEventController(0.1, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
 
-        public static final SubSeason WINTER_START = new SubSeason(-0.4, 0.2, 1.0, "override", new WeatherEventController(0.3, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
-        public static final SubSeason WINTER_MID = new SubSeason(-0.5, 0.2, 1.0, "override", new WeatherEventController(0.5, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
-        public static final SubSeason WINTER_END = new SubSeason(-0.35, 0.2, 1.25, "override", new WeatherEventController(0.3, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
+        public static final SubSeason WINTER_START = new SubSeason(-0.4, 0.2, 1.0, 1.0, new WeatherEventController(0.3, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
+        public static final SubSeason WINTER_MID = new SubSeason(-0.5, 0.2, 1.0, 1.0, new WeatherEventController(0.5, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
+        public static final SubSeason WINTER_END = new SubSeason(-0.35, 0.2, 1.25, 1.0, new WeatherEventController(0.3, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
 
         public static OverrideStorage.OverrideClientStorage noRedSwampsClientStorage = new OverrideStorage.OverrideClientStorage().setTargetFoliageHexColor("#964B00").setTargetGrassHexColor("#964B00"); //Target brown instead of red.
 
@@ -121,7 +122,7 @@ public class Season {
         private final double tempModifier;
         private final double humidityModifier;
         private final double weatherEventChanceMultiplier;
-        private final String cropGrowthChanceMultiplier; //Final Fallback
+        private final double cropGrowthChanceMultiplier; //Final Fallback
         private final WeatherEventController weatherEventController;
         private final SeasonClient client;
 
@@ -129,9 +130,9 @@ public class Season {
         private transient BWSeasonSystem.SeasonVal parentSeason;
         private transient String subSeason;
         private transient IdentityHashMap<Block, Double> cropToMultiplierIdentityHashMap;
-        private transient IdentityHashMap<Biome, OverrideStorage> biomeToOverrideStorage;
+        private transient IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage;
 
-        public SubSeason(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, String cropGrowthChanceMultiplier, WeatherEventController weatherEventController, SeasonClient client) {
+        public SubSeason(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, WeatherEventController weatherEventController, SeasonClient client) {
             this.tempModifier = tempModifier;
             this.humidityModifier = humidityModifier;
             this.weatherEventChanceMultiplier = weatherEventChanceMultiplier;
@@ -163,11 +164,13 @@ public class Season {
         }
 
 
-        public IdentityHashMap<Biome, OverrideStorage> getBiomeToOverrideStorage() {
+        public IdentityHashMap<ResourceLocation, OverrideStorage> getBiomeToOverrideStorage() {
+            if (biomeToOverrideStorage == null)
+                biomeToOverrideStorage = new IdentityHashMap<>();
             return biomeToOverrideStorage;
         }
 
-        public void setBiomeToOverrideStorage(IdentityHashMap<Biome, OverrideStorage> biomeToOverrideStorage) {
+        public void setBiomeToOverrideStorage(IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage) {
             this.biomeToOverrideStorage = biomeToOverrideStorage;
         }
 
@@ -183,15 +186,14 @@ public class Season {
             return weatherEventChanceMultiplier;
         }
 
-        public double getCropGrowthChanceMultiplier(Biome biome, Block block, boolean useSeasonDefault) {
+        public double getCropGrowthChanceMultiplier(ResourceLocation biome, Block block, boolean useSeasonDefault) {
             if (useSeasonDefault)
                 return 1.0;
 
 
-            OverrideStorage overrideStorage = this.biomeToOverrideStorage.getOrDefault(biome, null);
+            OverrideStorage overrideStorage = this.biomeToOverrideStorage.get(biome);
             if (overrideStorage == null) {
-                double fallBack = Double.parseDouble(cropGrowthChanceMultiplier);
-                return cropToMultiplierIdentityHashMap.getOrDefault(block, fallBack);
+                return getCropToMultiplierIdentityHashMap().getOrDefault(block, cropGrowthChanceMultiplier);
             }
 
             double fallBack = overrideStorage.getFallBack();
@@ -207,14 +209,13 @@ public class Season {
             return client;
         }
 
-        public int getTargetFoliageColor(Biome biome, boolean useSeasonDefault) {
+        public int getTargetFoliageColor(ResourceLocation biome, boolean useSeasonDefault) {
             int defaultValue = processFoliageHexColor(client.targetFoliageHexColor);
             if (useSeasonDefault) {
                 return processFoliageHexColor(client.targetFoliageHexColor);
             }
 
-            OverrideStorage overrideStorage = this.biomeToOverrideStorage.get(biome);
-            if (overrideStorage == null) {
+            if (this.getBiomeToOverrideStorage().get(biome) == null) {
                 return defaultValue;
             }
             String overrideTargetFoliageHexColor = this.biomeToOverrideStorage.get(biome).getClientStorage().getTargetFoliageHexColor();
