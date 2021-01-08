@@ -20,6 +20,7 @@ import corgitaco.betterweather.weatherevent.weatherevents.Blizzard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.IWorld;
@@ -47,6 +48,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Optional;
 
@@ -200,7 +203,8 @@ public class BetterWeather {
 
         @SubscribeEvent
         public static void onPlayerJoined(PlayerEvent.PlayerLoggedInEvent event) {
-
+            BWSeasonSystem.updateSeasonPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world);
+            BWWeatherEventSystem.updateWeatherEventPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world);
         }
 
 
