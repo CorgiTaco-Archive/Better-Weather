@@ -127,10 +127,8 @@ public class BetterWeather {
 
                     BWSeasonSystem.seasonTime();
 
-                    serverWorld.getPlayers().forEach(player -> {
-                        BWSeasonSystem.updateSeasonPacket(player, world);
-                        BWWeatherEventSystem.updateWeatherEventPacket(player, world);
-                    });
+                    BWSeasonSystem.updateSeasonPacket(serverWorld.getPlayers(), world);
+                    BWWeatherEventSystem.updateWeatherEventPacket(serverWorld.getPlayers(), world);
 
                     if (weatherData.getEventValue() == WeatherEvent.ACID_RAIN) {
                         modifyLiveWorldForAcidRain(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());

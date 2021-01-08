@@ -2,6 +2,7 @@ package corgitaco.betterweather.season;
 
 import com.google.common.collect.Sets;
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.season.seasonoverrides.SeasonOverrides;
 import corgitaco.betterweather.util.storage.OverrideStorage;
 import net.minecraft.block.Block;
@@ -210,33 +211,71 @@ public class Season {
         }
 
         public int getTargetFoliageColor(ResourceLocation biome, boolean useSeasonDefault) {
-            int defaultValue = processFoliageHexColor(client.targetFoliageHexColor);
+            int defaultValue = client.parsedFoliageHexColor;
             if (useSeasonDefault) {
-                return processFoliageHexColor(client.targetFoliageHexColor);
+                return defaultValue;
             }
 
             if (this.getBiomeToOverrideStorage().get(biome) == null) {
                 return defaultValue;
             }
-            String overrideTargetFoliageHexColor = this.biomeToOverrideStorage.get(biome).getClientStorage().getTargetFoliageHexColor();
+            int overrideTargetFoliageColor = this.biomeToOverrideStorage.get(biome).getClientStorage().getParsedFoliageHexColor();
 
-            if (overrideTargetFoliageHexColor.isEmpty())
+            if (overrideTargetFoliageColor == -1)
                 return defaultValue;
             else
-                return processFoliageHexColor(overrideTargetFoliageHexColor);
+                return overrideTargetFoliageColor;
         }
 
-        public int processFoliageHexColor(String targetFoliageHexColor) {
-            try {
-                return (int) Long.parseLong(targetFoliageHexColor.replace("#", "").replace("0x", ""), 16);
-            } catch (Exception e) {
-                if (SeasonClient.stopSpamIDXFoliage <= SeasonClient.spamMaxIDX) {
-                    client.printDebugWarning("bw.debug.warn.colorerror", "targetFoliageHexColor", targetFoliageHexColor);
-                    BetterWeather.LOGGER.warn("targetFoliageHexColor was not a hex color value, you put: \"" + targetFoliageHexColor + "\" | Using Defaults...");
-                    SeasonClient.stopSpamIDXFoliage++;
-                }
+        public int getTargetGrassColor(ResourceLocation biome, boolean useSeasonDefault) {
+            int defaultValue = client.parsedGrassHexColor;
+            if (useSeasonDefault) {
+                return defaultValue;
             }
-            return -1;
+
+            if (this.getBiomeToOverrideStorage().get(biome) == null) {
+                return defaultValue;
+            }
+            int overrideTargetGrassColor = this.biomeToOverrideStorage.get(biome).getClientStorage().getParsedGrassHexColor();
+
+            if (overrideTargetGrassColor == -1)
+                return defaultValue;
+            else
+                return overrideTargetGrassColor;
+        }
+
+        public int getTargetSkyColor(ResourceLocation biome, boolean useSeasonDefault) {
+            int defaultValue = client.parsedSkyHexColor;
+            if (useSeasonDefault) {
+                return defaultValue;
+            }
+
+            if (this.getBiomeToOverrideStorage().get(biome) == null) {
+                return defaultValue;
+            }
+            int overrideTargetSkyColor = this.biomeToOverrideStorage.get(biome).getClientStorage().getParsedSkyHexColor();
+
+            if (overrideTargetSkyColor == -1)
+                return defaultValue;
+            else
+                return overrideTargetSkyColor;
+        }
+
+        public int getTargetFogColor(ResourceLocation biome, boolean useSeasonDefault) {
+            int defaultValue = client.parsedFogHexColor;
+            if (useSeasonDefault) {
+                return defaultValue;
+            }
+
+            if (this.getBiomeToOverrideStorage().get(biome) == null) {
+                return defaultValue;
+            }
+            int overrideTargetFogColor = this.biomeToOverrideStorage.get(biome).getClientStorage().getParsedFogHexColor();
+
+            if (overrideTargetFogColor == -1)
+                return defaultValue;
+            else
+                return overrideTargetFogColor;
         }
 
         public static class SeasonClient {
@@ -248,6 +287,11 @@ public class Season {
             private final double skyColorBlendStrength;
             private final String targetFogHexColor;
             private final double fogColorBlendStrength;
+            private transient int parsedFoliageHexColor;
+            private transient int parsedGrassHexColor;
+            private transient int parsedSkyHexColor;
+            private transient int parsedFogHexColor;
+
 
             public SeasonClient() {
                 this("", 0, "", 0);
@@ -268,6 +312,13 @@ public class Season {
                 this.skyColorBlendStrength = skyColorBlendStrength;
             }
 
+            public void parseHexColors() {
+                parsedFoliageHexColor = BetterWeatherUtil.parseHexColor(targetFoliageHexColor);
+                parsedGrassHexColor = BetterWeatherUtil.parseHexColor(targetGrassHexColor);
+                parsedSkyHexColor = BetterWeatherUtil.parseHexColor(targetSkyHexColor);
+                parsedFogHexColor = BetterWeatherUtil.parseHexColor(targetFogHexColor);
+            }
+
             private void printDebugWarning(String message, Object... args) {
                 Minecraft.getInstance().ingameGUI.getChatGUI().printChatMessage((new StringTextComponent("")).append((new TranslationTextComponent("debug.prefix")).mergeStyle(TextFormatting.RED, TextFormatting.BOLD)).appendString(" ").append(new TranslationTextComponent(message, args)));
             }
@@ -278,88 +329,36 @@ public class Season {
             public static int stopSpamIDXFog;
             static int spamMaxIDX = 0;
 
-            public int getTargetFoliageColor() {
-                if (targetFoliageHexColor.isEmpty())
-                    return -1;
-                else {
-                    try {
-                        return (int) Long.parseLong(targetFoliageHexColor.replace("#", "").replace("0x", ""), 16);
-                    } catch (Exception e) {
-                        if (stopSpamIDXFoliage <= spamMaxIDX) {
-                            this.printDebugWarning("bw.debug.warn.colorerror", "targetFoliageHexColor", targetFoliageHexColor);
-                            BetterWeather.LOGGER.warn("targetFoliageHexColor was not a hex color value, you put: \"" + targetFoliageHexColor + "\" | Using Defaults...");
-                            stopSpamIDXFoliage++;
-                        }
-                    }
-                    return -1;
-                }
-            }
-
             public double getFoliageColorBlendStrength() {
                 return foliageColorBlendStrength;
-            }
-
-            public int getTargetGrassColor() {
-                if (targetGrassHexColor.isEmpty())
-                    return -1;
-                else {
-                    try {
-                        return (int) Long.parseLong(targetGrassHexColor.replace("#", "").replace("0x", ""), 16);
-                    } catch (Exception e) {
-                        if (stopSpamIDXGrass <= spamMaxIDX) {
-                            this.printDebugWarning("bw.debug.warn.colorerror", "targetGrassHexColor", targetGrassHexColor);
-                            BetterWeather.LOGGER.warn("targetGrassHexColor was not a hex color value, you put: \"" + targetGrassHexColor + "\" | Using Defaults...");
-                            stopSpamIDXGrass++;
-                        }
-                    }
-                    return -1;
-                }
             }
 
             public double getGrassColorBlendStrength() {
                 return grassColorBlendStrength;
             }
 
-            public int getTargetSkyColor() {
-                if (targetSkyHexColor.isEmpty())
-                    return -1;
-                else {
-                    try {
-                        return (int) Long.parseLong(targetSkyHexColor.replace("#", "").replace("0x", ""), 16);
-                    } catch (Exception e) {
-                        if (stopSpamIDXSky <= spamMaxIDX) {
-                            this.printDebugWarning("bw.debug.warn.colorerror", "targetSkyHexColor", targetSkyHexColor);
-                            BetterWeather.LOGGER.warn("targetSkyHexColor was not a hex color value, you put: \"" + targetSkyHexColor + "\" | Using Defaults...");
-                            stopSpamIDXSky++;
-                        }
-                    }
-                    return -1;
-                }
-            }
-
             public double getSkyColorBlendStrength() {
                 return skyColorBlendStrength;
             }
 
-            public int getTargetFogColor() {
-                if (targetFogHexColor.isEmpty())
-                    return -1;
-                else {
-                    try {
-                        return (int) Long.parseLong(targetGrassHexColor.replace("#", "").replace("0x", ""), 16);
-                    } catch (Exception e) {
-                        if (stopSpamIDXFog <= spamMaxIDX) {
-                            this.printDebugWarning("bw.debug.warn.colorerror", "targetFogHexColor", targetFogHexColor);
-                            BetterWeather.LOGGER.warn("targetFogHexColor was not a hex color value, you put: \"" + targetFogHexColor + "\" | Using Defaults...");
-                            stopSpamIDXFog++;
-                        }
-                    }
-                    return -1;
-                }
-            }
-
             public double getFogColorBlendStrength() {
                 return fogColorBlendStrength;
+            }
+
+            public int getParsedFoliageHexColor() {
+                return parsedFoliageHexColor;
+            }
+
+            public int getParsedGrassHexColor() {
+                return parsedGrassHexColor;
+            }
+
+            public int getParsedSkyHexColor() {
+                return parsedSkyHexColor;
+            }
+
+            public int getParsedFogHexColor() {
+                return parsedFogHexColor;
             }
         }
     }

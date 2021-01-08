@@ -15,4 +15,13 @@ public class BetterWeatherUtil {
 
         return heightMapOriginalPos.getY();
     }
+
+    public static int parseHexColor(String targetHexColor) {
+        try {
+            return (int) Long.parseLong(targetHexColor.replace("#", "").replace("0x", ""), 16);
+        } catch (Exception e) {
+            BetterWeather.LOGGER.error("\"" + targetHexColor + "\" was not a hex color value! | Using Defaults...");
+        }
+        return -1;
+    }
 }

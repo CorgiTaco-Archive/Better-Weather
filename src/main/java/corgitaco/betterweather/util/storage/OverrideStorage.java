@@ -1,5 +1,6 @@
 package corgitaco.betterweather.util.storage;
 
+import corgitaco.betterweather.BetterWeatherUtil;
 import net.minecraft.block.Block;
 
 import java.util.IdentityHashMap;
@@ -69,8 +70,24 @@ public class OverrideStorage {
         private double skyColorBlendStrength = Double.MAX_VALUE;
         private String targetFogHexColor = "";
         private double fogColorBlendStrength = Double.MAX_VALUE;
+        private int parsedFoliageHexColor;
+        private int parsedGrassHexColor;
+        private int parsedSkyHexColor;
+        private int parsedFogHexColor;
+
 
         public OverrideClientStorage() {}
+
+        public void parseHexColors() {
+            if (!targetFoliageHexColor.isEmpty())
+                parsedFoliageHexColor = BetterWeatherUtil.parseHexColor(targetFoliageHexColor);
+            if (!targetGrassHexColor.isEmpty())
+                parsedGrassHexColor = BetterWeatherUtil.parseHexColor(targetGrassHexColor);
+            if (!targetSkyHexColor.isEmpty())
+                parsedSkyHexColor = BetterWeatherUtil.parseHexColor(targetSkyHexColor);
+            if (!targetFogHexColor.isEmpty())
+                parsedFogHexColor = BetterWeatherUtil.parseHexColor(targetFogHexColor);
+        }
 
         public String getTargetFoliageHexColor() {
             return targetFoliageHexColor;
@@ -102,6 +119,23 @@ public class OverrideStorage {
 
         public double getFogColorBlendStrength() {
             return fogColorBlendStrength;
+        }
+
+
+        public int getParsedFoliageHexColor() {
+            return parsedFoliageHexColor;
+        }
+
+        public int getParsedGrassHexColor() {
+            return parsedGrassHexColor;
+        }
+
+        public int getParsedSkyHexColor() {
+            return parsedSkyHexColor;
+        }
+
+        public int getParsedFogHexColor() {
+            return parsedFogHexColor;
         }
 
         public OverrideClientStorage setTargetFoliageHexColor(String targetFoliageHexColor) {

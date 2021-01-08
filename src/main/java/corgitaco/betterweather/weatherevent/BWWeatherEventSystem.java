@@ -7,12 +7,17 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.World;
 
+import java.util.List;
+
 public class BWWeatherEventSystem {
 
-    public static void updateWeatherEventPacket(PlayerEntity player, World world) {
+    public static void updateWeatherEventPacket(List<ServerPlayerEntity> players, World world) {
         BetterWeather.setWeatherData(world);
 
-        if (world.getWorldInfo().getGameTime() % 25 == 0)
-            NetworkHandler.sendTo((ServerPlayerEntity) player, new WeatherEventPacket(BetterWeather.weatherData.getEvent()));
+        if (world.getWorldInfo().getGameTime() % 25 == 0) {
+            players.forEach(player ->{
+                NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEvent()));
+            });
+        }
     }
 }

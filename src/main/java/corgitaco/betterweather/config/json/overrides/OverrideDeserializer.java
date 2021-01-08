@@ -137,6 +137,7 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
             if (client.has("fogColorBlendStrength")) {
                 storage.getClientStorage().setFogColorBlendStrength(client.get("fogColorBlendStrength").getAsDouble());
             }
+            storage.getClientStorage().parseHexColors();
         }
 
     }

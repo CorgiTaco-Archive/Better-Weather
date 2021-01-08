@@ -21,7 +21,7 @@ public class BiomeColorCalculator {
         double blendStrength;
         switch (colorType) {
             case GRASS:
-                int targetGrassColor = subSeason.getTargetFoliageColor(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), false);
+                int targetGrassColor = subSeason.getTargetGrassColor(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), false);
 
                 if (targetGrassColor == -1)
                     return originalColorValue;
@@ -30,7 +30,7 @@ public class BiomeColorCalculator {
                 blendStrength = subSeason.getClient().getGrassColorBlendStrength();
                 break;
             case FOLIAGE:
-                int targetFoliageColor = subSeason.getClient().getTargetFoliageColor();
+                int targetFoliageColor = subSeason.getTargetFoliageColor(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), false);
 
                 if (targetFoliageColor == -1)
                     return originalColorValue;
@@ -39,7 +39,7 @@ public class BiomeColorCalculator {
                 blendStrength = subSeason.getClient().getFoliageColorBlendStrength();
                 break;
             case FOG:
-                int targetFogColor = subSeason.getClient().getTargetFogColor();
+                int targetFogColor = subSeason.getTargetFogColor(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), false);
 
                 if (targetFogColor == -1)
                     return originalColorValue;
@@ -48,7 +48,7 @@ public class BiomeColorCalculator {
                 blendStrength = subSeason.getClient().getFogColorBlendStrength();
                 break;
             default:
-                int targetSkyColor = subSeason.getClient().getTargetSkyColor();
+                int targetSkyColor = subSeason.getTargetSkyColor(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), false);
 
                 if (targetSkyColor == -1)
                     return originalColorValue;

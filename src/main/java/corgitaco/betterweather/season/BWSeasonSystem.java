@@ -16,6 +16,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.List;
+
 public class BWSeasonSystem {
 
     public static SubSeasonVal cachedSubSeason = SubSeasonVal.SPRING_START;
@@ -33,17 +35,17 @@ public class BWSeasonSystem {
 
     }
 
-    public static void updateSeasonPacket(PlayerEntity player, World world) {
+    public static void updateSeasonPacket(List<ServerPlayerEntity> player, World world) {
         BetterWeather.setSeasonData(world);
         int currentSeasonTime = BetterWeather.seasonData.getSeasonTime();
 
         SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, BetterWeather.seasonData.getSeasonCycleLength()).getSubSeasonVal();
 
-        if (cachedSubSeason != subSeason) {
+        if (cachedSubSeason != subSeason || BetterWeather.seasonData.isForced()) {
             BetterWeather.seasonData.setSubseason(subSeason.toString());
         }
 
-        if (BetterWeather.seasonData.getSeasonTime() % 25 == 0 || BetterWeather.seasonData.isForced())
+        if (BetterWeather.seasonData.getSeasonTime() % 1200 == 0 || BetterWeather.seasonData.isForced())
             NetworkHandler.sendTo((ServerPlayerEntity) player, new SeasonPacket(BetterWeather.seasonData.getSeasonTime(), BetterWeather.SEASON_CYCLE_LENGTH));
 
         if (BetterWeather.seasonData.isForced())
