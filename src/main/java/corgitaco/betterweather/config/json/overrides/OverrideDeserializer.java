@@ -1,0 +1,249 @@
+package corgitaco.betterweather.config.json.overrides;
+
+import com.google.gson.*;
+import com.mojang.datafixers.util.Pair;
+import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.util.storage.OverrideStorage;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.minecraft.block.Block;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.biome.Biome;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
+
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideStorageJsonStorage> {
+
+    @Override
+    public BiomeToOverrideStorageJsonStorage deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        JsonObject object = json.getAsJsonObject();
+        StringBuilder errorBuilder = new StringBuilder();
+
+        ObjectOpenHashSet<Pair<Object, JsonElement>> biomeObjects = new ObjectOpenHashSet<>();
+
+        int idx = 0;
+        Set<Map.Entry<String, JsonElement>> entrySet = object.entrySet();
+
+        for (Map.Entry<String, JsonElement> entry : entrySet) {
+            String key = entry.getKey();
+            Object value = extractKey(errorBuilder, key);
+
+            if (value == null)
+                continue;
+
+            biomeObjects.add(new Pair<>(value, entry.getValue()));
+
+            idx++;
+        }
+
+        if (!errorBuilder.toString().isEmpty())
+            throw new IllegalArgumentException("Errors were found in your override file: " + errorBuilder.toString());
+
+
+
+        return new BiomeToOverrideStorageJsonStorage(processKeys(biomeObjects, ServerLifecycleHooks.getCurrentServer().func_244267_aX().getRegistry(Registry.BIOME_KEY)));
+    }
+
+
+    public static IdentityHashMap<Biome, OverrideStorage> processKeys(ObjectOpenHashSet<Pair<Object, JsonElement>> oldMap, Registry<Biome> biomeRegistry) {
+        IdentityHashMap<Biome, OverrideStorage> newMap = new IdentityHashMap<>();
+
+        Map<Biome.Category, List<Biome>> categoryListMap = biomeRegistry.getEntries().stream().map(Map.Entry::getValue).collect(Collectors.groupingBy(Biome::getCategory));
+        Map<BiomeDictionary.Type, List<Biome>> biomeDictionaryMap = biomeRegistry.getEntries().stream()
+                .flatMap(e -> BiomeDictionary.getTypes(e.getKey()).stream().map(x -> new AbstractMap.SimpleEntry<>(x, e.getValue())))
+                .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
+
+
+        for (Pair<Object, JsonElement> pair : oldMap) {
+            Object object = pair.getFirst();
+            if (object instanceof BiomeDictionary.Type) {
+                for (Biome biome : biomeDictionaryMap.get(object)) {
+                    OverrideStorage overrideStorage = newMap.getOrDefault(biome, new OverrideStorage());
+                    updateOverrideStorageData(overrideStorage, pair.getSecond());
+                    newMap.put(biome, overrideStorage);
+                }
+            } else if (object instanceof Biome.Category) {
+                for (Biome biome : categoryListMap.get(object)) {
+                    OverrideStorage overrideStorage = newMap.getOrDefault(biome, new OverrideStorage());
+                    updateOverrideStorageData(overrideStorage, pair.getSecond());
+                    newMap.put(biome, overrideStorage);
+                }
+            } else if (object instanceof Biome) {
+                Biome biome = (Biome) object;
+                OverrideStorage overrideStorage = newMap.getOrDefault(biome, new OverrideStorage());
+                updateOverrideStorageData(overrideStorage, pair.getSecond());
+                newMap.put(biome, overrideStorage);
+            }
+        }
+        return newMap;
+    }
+
+
+    public static void updateOverrideStorageData(OverrideStorage storage, JsonElement element) {
+        JsonObject jsonObject = element.getAsJsonObject();
+        if (jsonObject.has("tempModifier")) {
+            storage.setTempModifier(jsonObject.get("tempModifier").getAsDouble());
+        }
+        if (jsonObject.has("humidityModifier")) {
+            storage.setHumidityModifier(jsonObject.get("humidityModifier").getAsDouble());
+        }
+
+        if (jsonObject.has("cropMultiplierDefault")) {
+            storage.setFallBack(jsonObject.get("cropMultiplierDefault").getAsDouble());
+        }
+
+        if (jsonObject.has("cropOverrides")) {
+            JsonObject cropOverrides = jsonObject.get("cropOverrides").getAsJsonObject();
+            IdentityHashMap<Block, Double> cropMulitplierMap = new IdentityHashMap<>();
+            for (Map.Entry<String, JsonElement> jsonElementEntry : cropOverrides.entrySet()) {
+                Optional<Block> blockOptional = Registry.BLOCK.getOptional(new ResourceLocation(jsonElementEntry.getKey()));
+
+                if (blockOptional.isPresent())
+                    cropMulitplierMap.put(blockOptional.get(), jsonElementEntry.getValue().getAsDouble());
+                else
+                    BetterWeather.LOGGER.error("Block ID: \"" + jsonElementEntry + "\" is not a valid block ID in the registry, the override will not be applied...");
+
+            }
+            storage.setBlockToCropGrowthMultiplierMap(cropMulitplierMap);
+        }
+        if (element.getAsJsonObject().has("client")) {
+            JsonObject client = element.getAsJsonObject().get("client").getAsJsonObject();
+
+            if (client.has("targetFoliageHexColor")) {
+                storage.getClientStorage().setTargetFoliageHexColor(client.get("targetFoliageHexColor").getAsString());
+            }
+            if (client.has("foliageColorBlendStrength")) {
+                storage.getClientStorage().setFoliageColorBlendStrength(client.get("foliageColorBlendStrength").getAsDouble());
+            }
+            if (client.has("targetGrassHexColor")) {
+                storage.getClientStorage().setTargetGrassHexColor(client.get("targetGrassHexColor").getAsString());
+            }
+            if (client.has("grassColorBlendStrength")) {
+                storage.getClientStorage().setGrassColorBlendStrength(client.get("grassColorBlendStrength").getAsDouble());
+            }
+            if (client.has("targetSkyHexColor")) {
+                storage.getClientStorage().setTargetSkyHexColor(client.get("targetSkyHexColor").getAsString());
+            }
+            if (client.has("skyColorBlendStrength")) {
+                storage.getClientStorage().setSkyColorBlendStrength(client.get("skyColorBlendStrength").getAsDouble());
+            }
+            if (client.has("targetFogHexColor")) {
+                storage.getClientStorage().setTargetFogHexColor(client.get("targetFogHexColor").getAsString());
+            }
+            if (client.has("fogColorBlendStrength")) {
+                storage.getClientStorage().setFogColorBlendStrength(client.get("fogColorBlendStrength").getAsDouble());
+            }
+        }
+
+    }
+
+    private Object extractKey(StringBuilder errorBuilder, String key) {
+        Object value;
+        if (key.startsWith("category/")) {
+            try {
+                value = Biome.Category.valueOf(key.substring("category/".length()));
+            } catch (IllegalArgumentException e) {
+                errorBuilder.append(key.substring("category/".length())).append(" is not a Biome Category Value!\n");
+                return null;
+            }
+        }
+        else if (key.startsWith("forge/")) {
+            value = BiomeDictionary.Type.getType(key.substring("forge/".length()));
+        }
+        else if (key.startsWith("biome/")) {
+            value = ServerLifecycleHooks.getCurrentServer().func_244267_aX().func_230521_a_(Registry.BIOME_KEY).get().getOptional(new ResourceLocation(key.substring("biome/".length()))).orElse(null);
+            if (value == null) {
+                errorBuilder.append(key.substring("biome/".length())).append(" is not a biome in this world!\n");
+                return null;
+            }
+        }
+        else {
+            errorBuilder.append(key).append(" is not a Biome/Category/Forge identifier\n");
+            return null;
+        }
+        return value;
+    }
+
+
+
+    public static class ObjectToOverrideStorageJsonStorageSerializer implements JsonSerializer<BiomeToOverrideStorageJsonStorage.ObjectToOverrideStorageJsonStorage> {
+
+        @Override
+        public JsonElement serialize(BiomeToOverrideStorageJsonStorage.ObjectToOverrideStorageJsonStorage src, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject result = new JsonObject();
+            for (Map.Entry<Object, OverrideStorage> entry : src.getObjectToOverrideStorage().entrySet()) {
+                Object object = entry.getKey();
+                OverrideStorage overrideStorage = entry.getValue();
+                if (object instanceof Biome.Category) {
+                    Biome.Category category = (Biome.Category) object;
+                    result.add("category/" + category.toString(), overrideStorageJsonObject(overrideStorage));
+                } else if (object instanceof BiomeDictionary.Type) {
+                    BiomeDictionary.Type type = (BiomeDictionary.Type) object;
+                    result.add("forge/" + type.toString(), overrideStorageJsonObject(overrideStorage));
+                } else if (object instanceof ResourceLocation) {
+                    ResourceLocation location = (ResourceLocation) object;
+                    result.add("biome/" + location.toString(), overrideStorageJsonObject(overrideStorage));
+                } else {
+                    BetterWeather.LOGGER.error("Could not serialize object of class type: " + object.getClass().getName());
+                }
+            }
+            return result;
+        }
+
+        public JsonObject overrideStorageJsonObject(OverrideStorage storage) {
+            JsonObject jsonObject = new JsonObject();
+
+            if (storage.getTempModifier() != Double.MAX_VALUE)
+                jsonObject.addProperty("tempModifier", storage.getTempModifier());
+            if (storage.getHumidityModifier() != Double.MAX_VALUE)
+                jsonObject.addProperty("humidityModifier", storage.getHumidityModifier());
+            if (storage.getFallBack() != Double.MAX_VALUE)
+                jsonObject.addProperty("cropMultiplierDefault", storage.getFallBack());
+            if (!storage.getBlockToCropGrowthMultiplierMap().isEmpty())
+                jsonObject.add("cropOverrides", new Gson().toJsonTree(storage.getBlockToCropGrowthMultiplierMap(), Map.class));
+
+            getClientJsonData(storage, jsonObject);
+
+            return jsonObject;
+        }
+
+        private void getClientJsonData(OverrideStorage storage, JsonObject jsonObject) {
+            OverrideStorage.OverrideClientStorage clientStorage = storage.getClientStorage();
+            if (clientStorage != null) {
+                JsonObject clientJsonObject = new JsonObject();
+                if (!clientStorage.getTargetFoliageHexColor().isEmpty()) {
+                    clientJsonObject.addProperty("targetFoliageHexColor", clientStorage.getTargetFoliageHexColor());
+                }
+                if (clientStorage.getFoliageColorBlendStrength() != Double.MAX_VALUE) {
+                    clientJsonObject.addProperty("foliageColorBlendStrength", clientStorage.getFoliageColorBlendStrength());
+                }
+
+                if (!clientStorage.getTargetGrassHexColor().isEmpty()) {
+                    clientJsonObject.addProperty("targetGrassHexColor", clientStorage.getTargetGrassHexColor());
+                }
+                if (clientStorage.getGrassColorBlendStrength() != Double.MAX_VALUE) {
+                    clientJsonObject.addProperty("grassColorBlendStrength", clientStorage.getGrassColorBlendStrength());
+                }
+
+                if (!clientStorage.getTargetSkyHexColor().isEmpty()) {
+                    clientJsonObject.addProperty("targetSkyHexColor", clientStorage.getTargetSkyHexColor());
+                }
+                if (clientStorage.getSkyColorBlendStrength() != Double.MAX_VALUE) {
+                    clientJsonObject.addProperty("skyColorBlendStrength", clientStorage.getSkyColorBlendStrength());
+                }
+
+                if (!clientStorage.getTargetFogHexColor().isEmpty()) {
+                    clientJsonObject.addProperty("targetFogHexColor", clientStorage.getTargetFogHexColor());
+                }
+                if (clientStorage.getFogColorBlendStrength() != Double.MAX_VALUE) {
+                    clientJsonObject.addProperty("fogColorBlendStrength", clientStorage.getFogColorBlendStrength());
+                }
+                jsonObject.add("client", clientJsonObject);
+            }
+        }
+    }
+}

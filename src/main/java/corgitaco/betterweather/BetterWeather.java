@@ -1,12 +1,11 @@
 package corgitaco.betterweather;
 
-import com.google.common.collect.Lists;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
-import corgitaco.betterweather.config.json.CropGrowthMultiplierConfigOverride;
 import corgitaco.betterweather.config.json.SeasonConfig;
+import corgitaco.betterweather.config.json.overrides.BiomeOverrideJsonHandler;
 import corgitaco.betterweather.datastorage.BetterWeatherData;
 import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
@@ -32,6 +31,7 @@ import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -45,7 +45,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Optional;
 
 @Mod("betterweather")
@@ -89,10 +88,7 @@ public class BetterWeather {
         SeasonConfig.handleBWSeasonsConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-seasons.json"));
 
         Season.SUB_SEASON_MAP.forEach((subSeasonName, subSeason) -> {
-            if (subSeason.testCropGrowthMultiplier())
-                CropGrowthMultiplierConfigOverride.handleCropGrowthMultiplierConfig(CONFIG_PATH.resolve("overrides").resolve("cropgrowth").resolve(subSeasonName + "-crop-growth.json"), subSeason);
-
-
+                BiomeOverrideJsonHandler.createOverridesJson(CONFIG_PATH.resolve("overrides").resolve(subSeasonName + "-override.json"));
         });
     }
 
@@ -129,13 +125,31 @@ public class BetterWeather {
                         BWWeatherEventSystem.updateWeatherEventPacket(player, world);
                     });
 
-                    List<ChunkHolder> list = Lists.newArrayList((serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
-                    modifyLiveWorld(serverWorld, tickSpeed, worldTime, list);
+                    if (weatherData.getEventValue() == WeatherEvent.ACID_RAIN) {
+                        modifyLiveWorldForAcidRain(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
+                    } else if (weatherData.getEventValue() == WeatherEvent.BLIZZARD) {
+                        modifyLiveWorldForBlizzard(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
+                    } else if (weatherData.getEventValue() == WeatherEvent.NONE && BetterWeatherConfig.decaySnowAndIce.get())
+                        decayIceAndSnowFaster(serverWorld, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
                 }
             }
         }
 
-        private static void modifyLiveWorld(ServerWorld serverWorld, int tickSpeed, long worldTime, List<ChunkHolder> list) {
+        private static void modifyLiveWorldForAcidRain(ServerWorld serverWorld, int tickSpeed, long worldTime, Iterable<ChunkHolder> list) {
+            list.forEach(chunkHolder -> {
+                Optional<Chunk> optional = chunkHolder.getTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
+                //Gets chunks to tick
+                if (optional.isPresent()) {
+                    Optional<Chunk> optional1 = chunkHolder.getEntityTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
+                    if (optional1.isPresent()) {
+                        Chunk chunk = optional1.get();
+                        AcidRain.acidRainEvent(chunk, serverWorld, tickSpeed, worldTime);
+                    }
+                }
+            });
+        }
+
+        private static void modifyLiveWorldForBlizzard(ServerWorld serverWorld, int tickSpeed, long worldTime, Iterable<ChunkHolder> list) {
             list.forEach(chunkHolder -> {
                 Optional<Chunk> optional = chunkHolder.getTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
                 //Gets chunks to tick
@@ -144,11 +158,20 @@ public class BetterWeather {
                     if (optional1.isPresent()) {
                         Chunk chunk = optional1.get();
                         Blizzard.addSnowAndIce(chunk, serverWorld, tickSpeed, worldTime);
-                        if (BetterWeatherConfig.decaySnowAndIce.get())
-                            Blizzard.doesIceAndSnowDecay(chunk, serverWorld, worldTime);
-                        AcidRain.acidRainEvent(chunk, serverWorld, tickSpeed, worldTime);
+                    }
+                }
+            });
+        }
 
-
+        private static void decayIceAndSnowFaster(ServerWorld serverWorld, long worldTime, Iterable<ChunkHolder> list) {
+            list.forEach(chunkHolder -> {
+                Optional<Chunk> optional = chunkHolder.getTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
+                //Gets chunks to tick
+                if (optional.isPresent()) {
+                    Optional<Chunk> optional1 = chunkHolder.getEntityTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
+                    if (optional1.isPresent()) {
+                        Chunk chunk = optional1.get();
+                        Blizzard.doesIceAndSnowDecay(chunk, serverWorld, worldTime);
                     }
                 }
             });
@@ -169,7 +192,12 @@ public class BetterWeather {
             AcidRain.entityHandler(event.getEntity());
             Blizzard.blizzardEntityHandler(event.getEntity());
         }
-//
+
+        @SubscribeEvent
+        public static void onPlayerJoined(PlayerEvent.PlayerLoggedInEvent event) {
+
+        }
+
 
         @SubscribeEvent
         public static void clientTickEvent(TickEvent.ClientTickEvent event) {

@@ -7,7 +7,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.server.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -37,26 +36,27 @@ public abstract class MixinAbstractBlockstate {
      */
     @Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
     private void cropGrowthModifier(ServerWorld world, BlockPos posIn, Random randomIn, CallbackInfo ci) {
-        String blockName = Registry.BLOCK.getKey(this.getBlock()).toString();
-        if (Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason).getCropToMultiplierMap().isEmpty()) {
+
+        Season.SubSeason subSeason = Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason);
+        if (subSeason.getBiomeToOverrideStorage().isEmpty() && subSeason.getCropToMultiplierIdentityHashMap().isEmpty()) {
             if (BlockTags.CROPS.contains(this.getBlock()) || BlockTags.BEE_GROWABLES.contains(this.getBlock())) {
                 ci.cancel();
-                cropTicker(world, posIn, randomIn, blockName, true);
+                cropTicker(world, posIn, this.getBlock(), subSeason, true);
             }
-        } else if (Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason).getCropToMultiplierMap().containsKey(blockName)) {
+        } else {
             ci.cancel();
-            cropTicker(world, posIn, randomIn, blockName, false);
+            cropTicker(world, posIn, this.getBlock(), subSeason, false);
         }
     }
 
-    private void cropTicker(ServerWorld world, BlockPos posIn, Random randomIn, String blockName, boolean parseDouble) {
+    private void cropTicker(ServerWorld world, BlockPos posIn, Block block, Season.SubSeason subSeason, boolean useSeasonDefault) {
         //Collect the crop multiplier for the given subseason.
-        double cropGrowthMultiplier = Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason).getCropGrowthChanceMultiplier(blockName, this.getBlock(), parseDouble);
+        double cropGrowthMultiplier = subSeason.getCropGrowthChanceMultiplier(world.getBiome(posIn), block, useSeasonDefault);
 
         //Pretty self explanatory, basically run a chance on whether or not the crop will tick for this tick
         if (cropGrowthMultiplier < 1) {
             if (world.getRandom().nextDouble() < cropGrowthMultiplier) {
-                this.getBlock().randomTick(this.getSelf(), world, posIn, randomIn);
+                this.getBlock().randomTick(this.getSelf(), world, posIn, world.getRandom());
             }
         }
 
@@ -66,7 +66,7 @@ public abstract class MixinAbstractBlockstate {
         if (cropGrowthMultiplier > 1) {
             int numberOfTicks = world.getRandom().nextInt((world.getRandom().nextDouble() + (cropGrowthMultiplier - 1) < cropGrowthMultiplier) ? (int) Math.ceil(cropGrowthMultiplier) : (int) cropGrowthMultiplier) + 1;
             for (int tick = 0; tick < numberOfTicks; tick++) {
-                this.getBlock().randomTick(this.getSelf(), world, posIn, randomIn);
+                this.getBlock().randomTick(this.getSelf(), world, posIn, world.getRandom());
             }
         }
     }

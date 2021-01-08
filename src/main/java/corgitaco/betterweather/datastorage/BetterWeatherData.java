@@ -51,6 +51,10 @@ public class BetterWeatherData extends WorldSavedData {
         return event;
     }
 
+    public BetterWeather.WeatherEvent getEventValue() {
+        return BetterWeather.WeatherEvent.valueOf(event);
+    }
+
     public void setEvent(String event) {
         this.event = event;
         markDirty();

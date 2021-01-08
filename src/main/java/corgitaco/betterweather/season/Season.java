@@ -3,12 +3,14 @@ package corgitaco.betterweather.season;
 import com.google.common.collect.Sets;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.season.seasonoverrides.SeasonOverrides;
+import corgitaco.betterweather.util.storage.OverrideStorage;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.biome.Biome;
 
 import java.awt.*;
 import java.util.*;
@@ -111,16 +113,17 @@ public class Season {
         private final double tempModifier;
         private final double humidityModifier;
         private final double weatherEventChanceMultiplier;
-        private final String cropGrowthChanceMultiplier;
+        private final String cropGrowthChanceMultiplier; //Final Fallback
         private final WeatherEventController weatherEventController;
         private final SeasonClient client;
 
         //These are not to be serialized by GSON.
         private transient BWSeasonSystem.SeasonVal parentSeason;
         private transient String subSeason;
-        private transient Map<String, Double> cropToMultiplierMap;
         private transient IdentityHashMap<Block, Double> cropToMultiplierIdentityHashMap;
-        private transient double cropGrowthMultiplier;
+
+        private IdentityHashMap<Biome, OverrideStorage> biomeToOverrideStorage;
+
 
         public SubSeason(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, String cropGrowthChanceMultiplier, WeatherEventController weatherEventController, SeasonClient client) {
             this.tempModifier = tempModifier;
@@ -157,16 +160,18 @@ public class Season {
             }
         }
 
-        public Map<String, Double> getCropToMultiplierMap() {
-            if (cropToMultiplierMap == null)
-                cropToMultiplierMap = new HashMap<>();
-            return cropToMultiplierMap;
-        }
-
         public IdentityHashMap<Block, Double> getCropToMultiplierIdentityHashMap() {
             if (cropToMultiplierIdentityHashMap == null)
                 cropToMultiplierIdentityHashMap = new IdentityHashMap<>();
             return cropToMultiplierIdentityHashMap;
+        }
+
+
+        public IdentityHashMap<Biome, OverrideStorage> getBiomeToOverrideStorage() {
+            if (biomeToOverrideStorage == null)
+                biomeToOverrideStorage = new IdentityHashMap<>();
+            return biomeToOverrideStorage;
+
         }
 
         public double getTempModifier() {
@@ -181,21 +186,20 @@ public class Season {
             return weatherEventChanceMultiplier;
         }
 
-        public double getCropGrowthChanceMultiplier(String blockName, Block block, boolean parseDouble) {
-            double value = 1.0;
+        public double getCropGrowthChanceMultiplier(Biome biome, Block block, boolean useSeasonDefault) {
+            if (useSeasonDefault)
+                return Double.parseDouble(cropGrowthChanceMultiplier);
 
-            if (parseDouble) {
-                try {
-                    if (cropGrowthMultiplier == 0.0)
-                        cropGrowthMultiplier = Double.parseDouble(cropGrowthChanceMultiplier);
-                    return cropGrowthMultiplier;
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("Could not read numerical value for cropGrowthMultiplier! You put: " + cropGrowthChanceMultiplier + ".\n This value needs to need be a numerical value or point to a config file in your \"betterweather/overrides\" folder.");
-                }
-            } else if (cropToMultiplierMap.containsKey(blockName)) {
-                value = cropToMultiplierMap.get(blockName);
+
+            OverrideStorage overrideStorage = this.biomeToOverrideStorage.getOrDefault(biome, null);
+            if (overrideStorage == null) {
+                double fallBack = Double.parseDouble(cropGrowthChanceMultiplier);
+                return cropToMultiplierIdentityHashMap.getOrDefault(block, fallBack);
             }
-            return value;
+
+            double fallBack = overrideStorage.getFallBack();
+            IdentityHashMap<Block, Double> blockToCropGrowthMultiplierMap = overrideStorage.getBlockToCropGrowthMultiplierMap();
+            return blockToCropGrowthMultiplierMap.getOrDefault(block, fallBack);
         }
 
         public WeatherEventController getWeatherEventController() {
@@ -205,6 +209,7 @@ public class Season {
         public SeasonClient getClient() {
             return client;
         }
+
 
         public static class SeasonClient {
             private final String targetFoliageHexColor;
