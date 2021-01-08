@@ -11,13 +11,18 @@ import java.util.List;
 
 public class BWWeatherEventSystem {
 
+    private static BetterWeather.WeatherEvent cachedEvent = BetterWeather.WeatherEvent.NONE;
+
     public static void updateWeatherEventPacket(List<ServerPlayerEntity> players, World world) {
         BetterWeather.setWeatherData(world);
 
-        if (world.getWorldInfo().getGameTime() % 25 == 0) {
-            players.forEach(player ->{
-                NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEvent()));
+        BetterWeather.WeatherEvent currentEvent = BetterWeather.weatherData.getEventValue();
+
+        if (cachedEvent != currentEvent) {
+            players.forEach(player -> {
+                NetworkHandler.sendTo(player, new WeatherEventPacket(cachedEvent.name()));
             });
+            cachedEvent = currentEvent;
         }
     }
 }
