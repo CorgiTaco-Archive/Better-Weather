@@ -1,5 +1,6 @@
 package corgitaco.betterweather.mixin.client;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
@@ -154,6 +155,17 @@ public abstract class MixinWorldRenderer {
 
     @Inject(at = @At("HEAD"), method = "addRainParticles(Lnet/minecraft/client/renderer/ActiveRenderInfo;)V", cancellable = true)
     private void stopRainParticles(ActiveRenderInfo activeRenderInfoIn, CallbackInfo ci) {
+        if (mc.world != null) {
+            if (BetterWeather.weatherData.isBlizzard()) {
+                ci.cancel();
+            }
+        }
+    }
+
+
+
+    @Inject(at = @At("HEAD"), method = "renderSky(Lcom/mojang/blaze3d/matrix/MatrixStack;F)V", cancellable = true)
+    private void changeSkyCOlor(MatrixStack stack, float f, CallbackInfo ci) {
         if (mc.world != null) {
             if (BetterWeather.weatherData.isBlizzard()) {
                 ci.cancel();
