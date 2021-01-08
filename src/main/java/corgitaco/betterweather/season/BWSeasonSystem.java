@@ -41,7 +41,7 @@ public class BWSeasonSystem {
 
         SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, BetterWeather.seasonData.getSeasonCycleLength()).getSubSeasonVal();
 
-        if (cachedSubSeason != subSeason || BetterWeather.seasonData.isForced()) {
+        if (cachedSubSeason != subSeason || BetterWeather.seasonData.isForced() || justJoined) {
             BetterWeather.seasonData.setSubseason(subSeason.toString());
         }
 

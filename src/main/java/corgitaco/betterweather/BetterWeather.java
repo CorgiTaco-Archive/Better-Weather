@@ -123,21 +123,23 @@ public class BetterWeather {
             if (event.phase == TickEvent.Phase.END) {
                 if (event.side.isServer()) {
                     ServerWorld serverWorld = (ServerWorld) event.world;
-                    World world = event.world;
-                    int tickSpeed = world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
-                    long worldTime = world.getWorldInfo().getGameTime();
+                    if (serverWorld.getDimensionKey() == World.OVERWORLD) {
+                        World world = event.world;
+                        int tickSpeed = world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
+                        long worldTime = world.getWorldInfo().getGameTime();
 
-                    BWSeasonSystem.updateSeasonTime();
+                        BWSeasonSystem.updateSeasonTime();
 
-                    BWSeasonSystem.updateSeasonPacket(serverWorld.getPlayers(), world, false);
-                    BWWeatherEventSystem.updateWeatherEventPacket(serverWorld.getPlayers(), world, false);
+                        BWSeasonSystem.updateSeasonPacket(serverWorld.getPlayers(), world, false);
+                        BWWeatherEventSystem.updateWeatherEventPacket(serverWorld.getPlayers(), world, false);
 
-                    if (weatherData.getEventValue() == WeatherEvent.ACID_RAIN) {
-                        modifyLiveWorldForAcidRain(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
-                    } else if (weatherData.getEventValue() == WeatherEvent.BLIZZARD) {
-                        modifyLiveWorldForBlizzard(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
-                    } else if (weatherData.getEventValue() == WeatherEvent.NONE && BetterWeatherConfig.decaySnowAndIce.get())
-                        decayIceAndSnowFaster(serverWorld, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
+                        if (weatherData.getEventValue() == WeatherEvent.ACID_RAIN) {
+                            modifyLiveWorldForAcidRain(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
+                        } else if (weatherData.getEventValue() == WeatherEvent.BLIZZARD) {
+                            modifyLiveWorldForBlizzard(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
+                        } else if (weatherData.getEventValue() == WeatherEvent.NONE && BetterWeatherConfig.decaySnowAndIce.get())
+                            decayIceAndSnowFaster(serverWorld, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
+                    }
                 }
             }
         }
