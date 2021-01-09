@@ -176,12 +176,38 @@ public class Season {
             this.biomeToOverrideStorage = biomeToOverrideStorage;
         }
 
-        public double getTempModifier() {
-            return tempModifier;
+        public double getTempModifier(ResourceLocation biome, boolean useSeasonDefault) {
+            double defaultValue = tempModifier;
+            if (useSeasonDefault) {
+                return defaultValue;
+            }
+
+            if (this.getBiomeToOverrideStorage().get(biome) == null) {
+                return defaultValue;
+            }
+            double tempModifier = this.biomeToOverrideStorage.get(biome).getTempModifier();
+
+            if (tempModifier == Double.MAX_VALUE)
+                return defaultValue;
+            else
+                return tempModifier;
         }
 
-        public double getHumidityModifier() {
-            return humidityModifier;
+        public double getHumidityModifier(ResourceLocation biome, boolean useSeasonDefault) {
+            double defaultValue = humidityModifier;
+            if (useSeasonDefault) {
+                return defaultValue;
+            }
+
+            if (this.getBiomeToOverrideStorage().get(biome) == null) {
+                return defaultValue;
+            }
+            double humidityModifier = this.biomeToOverrideStorage.get(biome).getHumidityModifier();
+
+            if (humidityModifier == Double.MAX_VALUE)
+                return defaultValue;
+            else
+                return humidityModifier;
         }
 
         public double getWeatherEventChanceMultiplier() {
