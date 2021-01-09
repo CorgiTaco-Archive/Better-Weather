@@ -56,10 +56,6 @@ public class BiomeOverrideJsonHandler {
         Gson gson = gsonBuilder.create();
 
 
-        OverrideStorage overrideStorage = new OverrideStorage();
-        OverrideStorage.OverrideClientStorage clientStorage = overrideStorage.getClientStorage().setGrassColorBlendStrength(0);
-        overrideStorage.setClientStorage(clientStorage);
-        objectToOverrideStorageDefault.put(Biome.Category.SWAMP, overrideStorage);
         String jsonString = gson.toJson(new BiomeToOverrideStorageJsonStorage.ObjectToOverrideStorageJsonStorage(objectToOverrideStorageDefault));
 
         try {

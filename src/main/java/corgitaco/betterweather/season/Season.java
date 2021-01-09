@@ -114,10 +114,11 @@ public class Season {
         public static final SubSeason WINTER_MID = new SubSeason(-0.5, 0.2, 1.0, 1.0, new WeatherEventController(0.5, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
         public static final SubSeason WINTER_END = new SubSeason(-0.35, 0.2, 1.25, 1.0, new WeatherEventController(0.3, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
 
-        public static OverrideStorage.OverrideClientStorage noRedSwampsClientStorage = new OverrideStorage.OverrideClientStorage().setTargetFoliageHexColor("#964B00").setTargetGrassHexColor("#964B00"); //Target brown instead of red.
 
         public static final IdentityHashMap<Object, OverrideStorage> WINTER_OVERRIDE = Util.make((new IdentityHashMap<>()), (map) -> {
-            map.put(Biome.Category.SWAMP, new OverrideStorage().setClientStorage(noRedSwampsClientStorage));
+            OverrideStorage overrideStorage = new OverrideStorage();
+            overrideStorage.getClientStorage().setTargetFoliageHexColor("#964B00").setTargetGrassHexColor("#964B00"); //Target brown instead of red.
+            map.put(Biome.Category.SWAMP, overrideStorage);
         });
 
         private final double tempModifier;
