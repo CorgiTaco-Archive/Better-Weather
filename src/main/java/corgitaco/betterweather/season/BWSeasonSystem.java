@@ -58,6 +58,7 @@ public class BWSeasonSystem {
 
         SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, BetterWeather.seasonData.getSeasonCycleLength()).getSubSeasonVal();
 
+
         if (cachedSubSeason != subSeason) {
             BetterWeather.seasonData.setSubseason(subSeason.toString());
             Minecraft minecraft = Minecraft.getInstance();

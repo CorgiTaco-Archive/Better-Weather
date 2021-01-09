@@ -2,8 +2,11 @@ package corgitaco.betterweather.season.client;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.season.Season;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.registry.DynamicRegistries;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -20,7 +23,11 @@ public class BiomeColorCalculator {
 
         Color target;
         double blendStrength;
-        ResourceLocation biomeKey = BetterWeather.biomeRegistryEarlyAccess.getKey(biome);
+        DynamicRegistries dynamicRegistries = Minecraft.getInstance().world.func_241828_r();
+        ResourceLocation biomeKey = dynamicRegistries.getRegistry(Registry.BIOME_KEY).getKey(biome);
+            if (biomeKey == null)
+                return originalColorValue;
+
         switch (colorType) {
             case GRASS:
                 int targetGrassColor = subSeason.getTargetGrassColor(biomeKey, false);

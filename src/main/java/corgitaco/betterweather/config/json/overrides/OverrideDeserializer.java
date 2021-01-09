@@ -7,6 +7,7 @@ import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.util.storage.OverrideStorage;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
@@ -24,6 +25,8 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
         JsonObject object = json.getAsJsonObject();
         StringBuilder errorBuilder = new StringBuilder();
 
+        Registry<Biome> biomeRegistry =  BetterWeather.biomeRegistryEarlyAccess == null ? Minecraft.getInstance().world.func_241828_r().getRegistry(Registry.BIOME_KEY) : BetterWeather.biomeRegistryEarlyAccess;
+
         ObjectOpenHashSet<Pair<Object, JsonElement>> biomeObjects = new ObjectOpenHashSet<>();
 
         Map uncastedCropOverrides = null;
@@ -38,7 +41,7 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
 
 
             String key = entry.getKey();
-            Object value = extractKey(errorBuilder, key);
+            Object value = extractKey(errorBuilder, key, biomeRegistry);
 
             if (value == null)
                 continue;
@@ -57,7 +60,7 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
 
 
 
-        IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage = processKeys(biomeObjects, BetterWeather.biomeRegistryEarlyAccess);
+        IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage = processKeys(biomeObjects, biomeRegistry);
         IdentityHashMap<Block, Double> cropToMultiplierMap = new IdentityHashMap<>();
 
         if (!uncastedCropOverrides.isEmpty()) {
@@ -89,21 +92,21 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
             Object object = pair.getFirst();
             if (object instanceof BiomeDictionary.Type) {
                 for (Biome biome : biomeDictionaryMap.get(object)) {
-                    ResourceLocation biomeKey = BetterWeather.biomeRegistryEarlyAccess.getKey(biome);
+                    ResourceLocation biomeKey = biomeRegistry.getKey(biome);
                     OverrideStorage overrideStorage = newMap.getOrDefault(biomeKey, new OverrideStorage());
                     updateOverrideStorageData(overrideStorage, pair.getSecond());
                     newMap.put(biomeKey, overrideStorage);
                 }
             } else if (object instanceof Biome.Category) {
                 for (Biome biome : categoryListMap.get(object)) {
-                    ResourceLocation biomeKey = BetterWeather.biomeRegistryEarlyAccess.getKey(biome);
+                    ResourceLocation biomeKey = biomeRegistry.getKey(biome);
                     OverrideStorage overrideStorage = newMap.getOrDefault(biomeKey, new OverrideStorage());
                     updateOverrideStorageData(overrideStorage, pair.getSecond());
                     newMap.put(biomeKey, overrideStorage);
                 }
             } else if (object instanceof Biome) {
                 Biome biome = (Biome) object;
-                ResourceLocation biomeKey = BetterWeather.biomeRegistryEarlyAccess.getKey(biome);
+                ResourceLocation biomeKey = biomeRegistry.getKey(biome);
                 OverrideStorage overrideStorage = newMap.getOrDefault(biomeKey, new OverrideStorage());
                 updateOverrideStorageData(overrideStorage, pair.getSecond());
                 newMap.put(biomeKey, overrideStorage);
@@ -172,7 +175,7 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
 
     }
 
-    private Object extractKey(StringBuilder errorBuilder, String key) {
+    private Object extractKey(StringBuilder errorBuilder, String key, Registry<Biome> biomeRegistry) {
         String lowerCaseKey = key.toLowerCase();
         Object value;
         if (lowerCaseKey.startsWith("category/")) {
@@ -187,7 +190,7 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
             value = BiomeDictionary.Type.getType(lowerCaseKey.substring("forge/".length()).toUpperCase());
         }
         else if (lowerCaseKey.startsWith("biome/")) {
-            value = BetterWeather.biomeRegistryEarlyAccess.getOptional(new ResourceLocation(lowerCaseKey.substring("biome/".length()))).orElse(null);
+            value = biomeRegistry.getOptional(new ResourceLocation(lowerCaseKey.substring("biome/".length()))).orElse(null);
             if (value == null) {
                 errorBuilder.append(lowerCaseKey.substring("biome/".length())).append(" is not a biome in this world!\n");
                 return null;

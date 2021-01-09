@@ -26,15 +26,15 @@ import net.minecraft.world.GameRules;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -87,6 +87,11 @@ public class BetterWeather {
 
     public void clientSetup(FMLClientSetupEvent event) {
 //        RenderingRegistry.registerEntityRenderingHandler(BWEntityRegistry.TORNADO, TornadoRenderer::new);
+    }
+
+    public static void loadClientConfigs() {
+        BetterWeatherConfigClient.loadConfig(CONFIG_PATH.resolve(MOD_ID + "-client.toml"));
+        loadCommonConfigs();
     }
 
     public static void loadCommonConfigs() {
@@ -150,6 +155,10 @@ public class BetterWeather {
         }
 
         @SubscribeEvent
+        public static void worldLoadEvent(WorldEvent.Load event) {
+        }
+
+        @SubscribeEvent
         public static void playerTickEvent(TickEvent.PlayerTickEvent event) {
             setWeatherData(event.player.world);
         }
@@ -178,6 +187,7 @@ public class BetterWeather {
                         }
 
                         AcidRain.handleRainTexture(minecraft);
+
 
                         Blizzard.handleBlizzardRenderDistance(minecraft);
                         Blizzard.blizzardSoundHandler(minecraft, minecraft.gameRenderer.getActiveRenderInfo());
@@ -233,6 +243,11 @@ public class BetterWeather {
             if (Minecraft.getInstance().gameSettings.showDebugInfo) {
                 event.getLeft().add("Season: " + WordUtils.capitalize(BWSeasonSystem.cachedSeason.toString().toLowerCase()) + " | " + WordUtils.capitalize(BWSeasonSystem.cachedSubSeason.toString().replace("_", "").replace(BWSeasonSystem.cachedSeason.toString(), "").toLowerCase()));
             }
+        }
+
+        @SubscribeEvent
+        public static void loggedInEvent(ClientPlayerNetworkEvent.LoggedInEvent event) {
+            loadClientConfigs();
         }
     }
 }

@@ -48,8 +48,7 @@ public abstract class MixinBiomeClient {
     @Inject(method = "getFogColor", at = @At("RETURN"), cancellable = true)
     private void modifyFogColor(CallbackInfoReturnable<Integer> cir) {
         if (this.getCategory() != Biome.Category.NETHER || this.getCategory() != Biome.Category.THEEND || this.getCategory() != Biome.Category.NONE) {
-            if (BetterWeather.biomeRegistryEarlyAccess != null)
-                cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.FOG, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason), (Biome) (Object) this).getRGB());
+            cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.FOG, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason), (Biome) (Object) this).getRGB());
         }
     }
 }
