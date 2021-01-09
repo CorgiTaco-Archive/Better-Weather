@@ -10,7 +10,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import java.lang.reflect.Type;
 import java.util.*;
@@ -43,8 +42,6 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
         if (!errorBuilder.toString().isEmpty())
             throw new IllegalArgumentException("Errors were found in your override file: " + errorBuilder.toString());
 
-
-
         return new BiomeToOverrideStorageJsonStorage(processKeys(biomeObjects, BetterWeather.biomeRegistryEarlyAccess));
     }
 
@@ -62,21 +59,24 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
             Object object = pair.getFirst();
             if (object instanceof BiomeDictionary.Type) {
                 for (Biome biome : biomeDictionaryMap.get(object)) {
-                    OverrideStorage overrideStorage = newMap.getOrDefault(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), new OverrideStorage());
+                    ResourceLocation biomeKey = BetterWeather.biomeRegistryEarlyAccess.getKey(biome);
+                    OverrideStorage overrideStorage = newMap.getOrDefault(biomeKey, new OverrideStorage());
                     updateOverrideStorageData(overrideStorage, pair.getSecond());
-                    newMap.put(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), overrideStorage);
+                    newMap.put(biomeKey, overrideStorage);
                 }
             } else if (object instanceof Biome.Category) {
                 for (Biome biome : categoryListMap.get(object)) {
-                    OverrideStorage overrideStorage = newMap.getOrDefault(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), new OverrideStorage());
+                    ResourceLocation biomeKey = BetterWeather.biomeRegistryEarlyAccess.getKey(biome);
+                    OverrideStorage overrideStorage = newMap.getOrDefault(biomeKey, new OverrideStorage());
                     updateOverrideStorageData(overrideStorage, pair.getSecond());
-                    newMap.put(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), overrideStorage);
+                    newMap.put(biomeKey, overrideStorage);
                 }
             } else if (object instanceof Biome) {
                 Biome biome = (Biome) object;
-                OverrideStorage overrideStorage = newMap.getOrDefault(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), new OverrideStorage());
+                ResourceLocation biomeKey = BetterWeather.biomeRegistryEarlyAccess.getKey(biome);
+                OverrideStorage overrideStorage = newMap.getOrDefault(biomeKey, new OverrideStorage());
                 updateOverrideStorageData(overrideStorage, pair.getSecond());
-                newMap.put(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), overrideStorage);
+                newMap.put(biomeKey, overrideStorage);
             }
         }
         return newMap;
@@ -156,7 +156,7 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
             value = BiomeDictionary.Type.getType(key.substring("forge/".length()));
         }
         else if (key.startsWith("biome/")) {
-            value = ServerLifecycleHooks.getCurrentServer().func_244267_aX().func_230521_a_(Registry.BIOME_KEY).get().getOptional(new ResourceLocation(key.substring("biome/".length()))).orElse(null);
+            value = BetterWeather.biomeRegistryEarlyAccess.getOptional(new ResourceLocation(key.substring("biome/".length()))).orElse(null);
             if (value == null) {
                 errorBuilder.append(key.substring("biome/".length())).append(" is not a biome in this world!\n");
                 return null;

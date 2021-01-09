@@ -15,7 +15,7 @@ public class ConfigReloadCommand {
 
     public static int reloadCommand(CommandSource source) {
         BetterWeatherConfig.loadConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-common.toml"));
-        BetterWeather.loadWorldConfigs();
+        BetterWeather.loadCommonConfigs();
 
         source.sendFeedback(new TranslationTextComponent("commands.bw.reload.success"), true);
         return 1;

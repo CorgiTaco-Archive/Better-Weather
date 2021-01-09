@@ -89,7 +89,7 @@ public class BetterWeather {
 //        RenderingRegistry.registerEntityRenderingHandler(BWEntityRegistry.TORNADO, TornadoRenderer::new);
     }
 
-    public static void loadWorldConfigs() {
+    public static void loadCommonConfigs() {
         SeasonConfig.handleBWSeasonsConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-seasons.json"));
 
         Season.SUB_SEASON_MAP.forEach((subSeasonName, subSeason) -> {
