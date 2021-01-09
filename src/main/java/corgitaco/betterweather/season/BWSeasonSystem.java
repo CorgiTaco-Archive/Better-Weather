@@ -95,30 +95,32 @@ public class BWSeasonSystem {
         Season.SubSeason subSeason = Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason);
         if (subSeason.getBiomeToOverrideStorage().isEmpty() && subSeason.getCropToMultiplierIdentityHashMap().isEmpty()) {
             if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block)) {
-                ci.cancel();
-                cropTicker(world, posIn, block, subSeason, true, self);
+                cropTicker(world, posIn, block, subSeason, true, self, ci);
             }
-        } else if (subSeason.getCropToMultiplierIdentityHashMap().containsKey(block) || subSeason.getBiomeToOverrideStorage().get(BetterWeather.biomeRegistryEarlyAccess.getKey(world.getBiome(posIn))).getBlockToCropGrowthMultiplierMap().containsKey(block)){
-            ci.cancel();
-            cropTicker(world, posIn, block, subSeason, false, self);
+        } else {
+            if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block)) {
+                cropTicker(world, posIn, block, subSeason, false, self, ci);
+            }
         }
     }
 
-    private static void cropTicker(ServerWorld world, BlockPos posIn, Block block, Season.SubSeason subSeason, boolean useSeasonDefault, BlockState self) {
+    private static void cropTicker(ServerWorld world, BlockPos posIn, Block block, Season.SubSeason subSeason, boolean useSeasonDefault, BlockState self, CallbackInfo ci) {
         //Collect the crop multiplier for the given subseason.
         double cropGrowthMultiplier = subSeason.getCropGrowthChanceMultiplier(BetterWeather.biomeRegistryEarlyAccess.getKey(world.getBiome(posIn)), block, useSeasonDefault);
+        if (cropGrowthMultiplier == 1)
+            return;
 
         //Pretty self explanatory, basically run a chance on whether or not the crop will tick for this tick
         if (cropGrowthMultiplier < 1) {
+            ci.cancel();
             if (world.getRandom().nextDouble() < cropGrowthMultiplier) {
                 block.randomTick(self, world, posIn, world.getRandom());
             }
         }
-
-
         //Here we gather a random number of ticks that this block will tick for this given tick.
         //We do a random.nextDouble() to determine if we get the ceil or floor value for the given crop growth multiplier.
-        if (cropGrowthMultiplier > 1) {
+        else if (cropGrowthMultiplier > 1) {
+            ci.cancel();
             int numberOfTicks = world.getRandom().nextInt((world.getRandom().nextDouble() + (cropGrowthMultiplier - 1) < cropGrowthMultiplier) ? (int) Math.ceil(cropGrowthMultiplier) : (int) cropGrowthMultiplier) + 1;
             for (int tick = 0; tick < numberOfTicks; tick++) {
                 block.randomTick(self, world, posIn, world.getRandom());

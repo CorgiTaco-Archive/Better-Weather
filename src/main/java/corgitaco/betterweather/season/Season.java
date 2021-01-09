@@ -189,7 +189,7 @@ public class Season {
 
         public double getCropGrowthChanceMultiplier(ResourceLocation biome, Block block, boolean useSeasonDefault) {
             if (useSeasonDefault)
-                return 1.0;
+                return cropGrowthChanceMultiplier;
 
 
             OverrideStorage overrideStorage = this.biomeToOverrideStorage.get(biome);
@@ -198,6 +198,9 @@ public class Season {
             }
 
             double fallBack = overrideStorage.getFallBack();
+            if (fallBack == Double.MAX_VALUE)
+                fallBack = cropGrowthChanceMultiplier;
+
             IdentityHashMap<Block, Double> blockToCropGrowthMultiplierMap = overrideStorage.getBlockToCropGrowthMultiplierMap();
             return blockToCropGrowthMultiplierMap.getOrDefault(block, fallBack);
         }

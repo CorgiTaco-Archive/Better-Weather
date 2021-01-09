@@ -92,8 +92,8 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
             storage.setHumidityModifier(jsonObject.get("humidityModifier").getAsDouble());
         }
 
-        if (jsonObject.has("cropMultiplierDefault")) {
-            storage.setFallBack(jsonObject.get("cropMultiplierDefault").getAsDouble());
+        if (jsonObject.has("cropGrowthMultiplier")) {
+            storage.setFallBack(jsonObject.get("cropGrowthMultiplier").getAsDouble());
         }
 
         if (jsonObject.has("cropOverrides")) {

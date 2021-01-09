@@ -36,6 +36,6 @@ public abstract class MixinAbstractBlockstate {
      */
     @Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
     private void cropGrowthModifier(ServerWorld world, BlockPos posIn, Random randomIn, CallbackInfo ci) {
-//        BWSeasonSystem.tickCropForBiomeBlockOrSeason(world, posIn, this.getBlock(), this.getSelf(), ci);
+        BWSeasonSystem.tickCropForBiomeBlockOrSeason(world, posIn, this.getBlock(), this.getSelf(), ci);
     }
 }
