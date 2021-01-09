@@ -1,9 +1,7 @@
 package corgitaco.betterweather.season;
 
 import com.google.common.collect.Sets;
-import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
-import corgitaco.betterweather.season.seasonoverrides.SeasonOverrides;
 import corgitaco.betterweather.util.storage.OverrideStorage;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -49,9 +47,6 @@ public class Season {
         map.put(BWSeasonSystem.SubSeasonVal.WINTER_MID.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.WINTER.toString()).getMid());
         map.put(BWSeasonSystem.SubSeasonVal.WINTER_END.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.WINTER.toString()).getEnd());
     });
-
-
-    public static SeasonOverrides seasonOverrides;
 
 
     public static Season getSeasonFromEnum(BWSeasonSystem.SeasonVal season) {
