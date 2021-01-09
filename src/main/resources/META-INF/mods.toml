@@ -4,7 +4,7 @@ license="LGPLv3"
 issueTrackerURL="https://github.com/CorgiTaco/Better-Weather/issues"
 [[mods]]
 modId="betterweather"
-version="1.0.3"
+version="1.1.4"
 displayName="Better Weather"
 displayURL="null"
 logoFile="logo_text.png"
