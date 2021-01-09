@@ -6,7 +6,6 @@ import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.math.BlockPos;
@@ -93,7 +92,7 @@ public class BWSeasonSystem {
 
     public static void tickCropForBiomeBlockOrSeason(ServerWorld world, BlockPos posIn, Block block, BlockState self, CallbackInfo ci) {
         Season.SubSeason subSeason = Season.getSubSeasonFromEnum(BWSeasonSystem.cachedSubSeason);
-        if (subSeason.getBiomeToOverrideStorage().isEmpty() && subSeason.getCropToMultiplierIdentityHashMap().isEmpty()) {
+        if (subSeason.getBiomeToOverrideStorage().isEmpty() && subSeason.getCropToMultiplierStorage().isEmpty()) {
             if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block)) {
                 cropTicker(world, posIn, block, subSeason, true, self, ci);
             }

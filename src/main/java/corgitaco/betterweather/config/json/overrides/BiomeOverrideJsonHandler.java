@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.season.Season;
 import corgitaco.betterweather.util.storage.OverrideStorage;
-import net.minecraft.world.biome.Biome;
 
 import java.io.File;
 import java.io.FileReader;
@@ -36,6 +35,7 @@ public class BiomeOverrideJsonHandler {
                 BiomeToOverrideStorageJsonStorage biomeToOverrideStorageJsonStorage = gson.fromJson(reader, BiomeToOverrideStorageJsonStorage.class);
                 if (biomeToOverrideStorageJsonStorage != null) {
                     subSeason.setBiomeToOverrideStorage(biomeToOverrideStorageJsonStorage.getBiomeToOverrideStorage());
+                    subSeason.setCropToMultiplierStorage(biomeToOverrideStorageJsonStorage.getSeasonCropOverrides());
 
                 } else
                     BetterWeather.LOGGER.error(BetterWeather.MOD_ID + "-biomes.json could not be read");

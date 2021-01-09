@@ -126,7 +126,7 @@ public class Season {
         //These are not to be serialized by GSON.
         private transient BWSeasonSystem.SeasonVal parentSeason;
         private transient String subSeason;
-        private transient IdentityHashMap<Block, Double> cropToMultiplierIdentityHashMap;
+        private transient IdentityHashMap<Block, Double> cropToMultiplierStorage;
         private transient IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage;
 
         public SubSeason(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, WeatherEventController weatherEventController, SeasonClient client) {
@@ -154,10 +154,10 @@ public class Season {
             this.parentSeason = parentSeason;
         }
 
-        public IdentityHashMap<Block, Double> getCropToMultiplierIdentityHashMap() {
-            if (cropToMultiplierIdentityHashMap == null)
-                cropToMultiplierIdentityHashMap = new IdentityHashMap<>();
-            return cropToMultiplierIdentityHashMap;
+        public IdentityHashMap<Block, Double> getCropToMultiplierStorage() {
+            if (cropToMultiplierStorage == null)
+                cropToMultiplierStorage = new IdentityHashMap<>();
+            return cropToMultiplierStorage;
         }
 
 
@@ -165,6 +165,10 @@ public class Season {
             if (biomeToOverrideStorage == null)
                 biomeToOverrideStorage = new IdentityHashMap<>();
             return biomeToOverrideStorage;
+        }
+
+        public void setCropToMultiplierStorage(IdentityHashMap<Block, Double> cropToMultiplierStorage) {
+            this.cropToMultiplierStorage = cropToMultiplierStorage;
         }
 
         public void setBiomeToOverrideStorage(IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage) {
@@ -216,7 +220,7 @@ public class Season {
 
             OverrideStorage overrideStorage = this.biomeToOverrideStorage.get(biome);
             if (overrideStorage == null) {
-                return getCropToMultiplierIdentityHashMap().getOrDefault(block, cropGrowthChanceMultiplier);
+                return getCropToMultiplierStorage().getOrDefault(block, cropGrowthChanceMultiplier);
             }
 
             double fallBack = overrideStorage.getFallBack();
