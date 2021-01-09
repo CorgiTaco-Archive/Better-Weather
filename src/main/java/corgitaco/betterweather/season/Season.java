@@ -224,10 +224,27 @@ public class Season {
             }
             int overrideTargetFoliageColor = this.biomeToOverrideStorage.get(biome).getClientStorage().getParsedFoliageHexColor();
 
-            if (overrideTargetFoliageColor == -1)
+            if (overrideTargetFoliageColor == Integer.MAX_VALUE)
                 return defaultValue;
             else
                 return overrideTargetFoliageColor;
+        }
+
+        public double getFoliageColorBlendStrength(ResourceLocation biome, boolean useSeasonDefault) {
+            double defaultValue = client.foliageColorBlendStrength;
+            if (useSeasonDefault) {
+                return defaultValue;
+            }
+
+            if (this.getBiomeToOverrideStorage().get(biome) == null) {
+                return defaultValue;
+            }
+            double overrideTargetFoliageBlendStrength = this.biomeToOverrideStorage.get(biome).getClientStorage().getFoliageColorBlendStrength();
+
+            if (overrideTargetFoliageBlendStrength == Double.MAX_VALUE)
+                return defaultValue;
+            else
+                return overrideTargetFoliageBlendStrength;
         }
 
         public int getTargetGrassColor(ResourceLocation biome, boolean useSeasonDefault) {
@@ -241,10 +258,27 @@ public class Season {
             }
             int overrideTargetGrassColor = this.biomeToOverrideStorage.get(biome).getClientStorage().getParsedGrassHexColor();
 
-            if (overrideTargetGrassColor == -1)
+            if (overrideTargetGrassColor == Integer.MAX_VALUE)
                 return defaultValue;
             else
                 return overrideTargetGrassColor;
+        }
+
+        public double getGrassColorBlendStrength(ResourceLocation biome, boolean useSeasonDefault) {
+            double defaultValue = client.grassColorBlendStrength;
+            if (useSeasonDefault) {
+                return defaultValue;
+            }
+
+            if (this.getBiomeToOverrideStorage().get(biome) == null) {
+                return defaultValue;
+            }
+            double overrideTargetGrassBlendStrength = this.biomeToOverrideStorage.get(biome).getClientStorage().getGrassColorBlendStrength();
+
+            if (overrideTargetGrassBlendStrength == Double.MAX_VALUE)
+                return defaultValue;
+            else
+                return overrideTargetGrassBlendStrength;
         }
 
         public int getTargetSkyColor(ResourceLocation biome, boolean useSeasonDefault) {
@@ -258,10 +292,27 @@ public class Season {
             }
             int overrideTargetSkyColor = this.biomeToOverrideStorage.get(biome).getClientStorage().getParsedSkyHexColor();
 
-            if (overrideTargetSkyColor == -1)
+            if (overrideTargetSkyColor == Integer.MAX_VALUE)
                 return defaultValue;
             else
                 return overrideTargetSkyColor;
+        }
+
+        public double getSkyColorBlendStrength(ResourceLocation biome, boolean useSeasonDefault) {
+            double defaultValue = client.skyColorBlendStrength;
+            if (useSeasonDefault) {
+                return defaultValue;
+            }
+
+            if (this.getBiomeToOverrideStorage().get(biome) == null) {
+                return defaultValue;
+            }
+            double overrideTargetGrassBlendStrength = this.biomeToOverrideStorage.get(biome).getClientStorage().getSkyColorBlendStrength();
+
+            if (overrideTargetGrassBlendStrength == Double.MAX_VALUE)
+                return defaultValue;
+            else
+                return overrideTargetGrassBlendStrength;
         }
 
         public int getTargetFogColor(ResourceLocation biome, boolean useSeasonDefault) {
@@ -275,10 +326,27 @@ public class Season {
             }
             int overrideTargetFogColor = this.biomeToOverrideStorage.get(biome).getClientStorage().getParsedFogHexColor();
 
-            if (overrideTargetFogColor == -1)
+            if (overrideTargetFogColor == Integer.MAX_VALUE)
                 return defaultValue;
             else
                 return overrideTargetFogColor;
+        }
+
+        public double getFogColorBlendStrength(ResourceLocation biome, boolean useSeasonDefault) {
+            double defaultValue = client.fogColorBlendStrength;
+            if (useSeasonDefault) {
+                return defaultValue;
+            }
+
+            if (this.getBiomeToOverrideStorage().get(biome) == null) {
+                return defaultValue;
+            }
+            double overrideFogColorBlendStrangth = this.biomeToOverrideStorage.get(biome).getClientStorage().getFogColorBlendStrength();
+
+            if (overrideFogColorBlendStrangth == Double.MAX_VALUE)
+                return defaultValue;
+            else
+                return overrideFogColorBlendStrangth;
         }
 
         public static class SeasonClient {
@@ -330,39 +398,6 @@ public class Season {
             public static int stopSpamIDXGrass;
             public static int stopSpamIDXSky;
             public static int stopSpamIDXFog;
-            static int spamMaxIDX = 0;
-
-            public double getFoliageColorBlendStrength() {
-                return foliageColorBlendStrength;
-            }
-
-            public double getGrassColorBlendStrength() {
-                return grassColorBlendStrength;
-            }
-
-            public double getSkyColorBlendStrength() {
-                return skyColorBlendStrength;
-            }
-
-            public double getFogColorBlendStrength() {
-                return fogColorBlendStrength;
-            }
-
-            public int getParsedFoliageHexColor() {
-                return parsedFoliageHexColor;
-            }
-
-            public int getParsedGrassHexColor() {
-                return parsedGrassHexColor;
-            }
-
-            public int getParsedSkyHexColor() {
-                return parsedSkyHexColor;
-            }
-
-            public int getParsedFogHexColor() {
-                return parsedFogHexColor;
-            }
         }
     }
 

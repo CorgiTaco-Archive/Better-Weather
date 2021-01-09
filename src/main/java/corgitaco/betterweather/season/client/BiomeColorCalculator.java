@@ -2,6 +2,7 @@ package corgitaco.betterweather.season.client;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.season.Season;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.api.distmarker.Dist;
@@ -19,42 +20,43 @@ public class BiomeColorCalculator {
 
         Color target;
         double blendStrength;
+        ResourceLocation biomeKey = BetterWeather.biomeRegistryEarlyAccess.getKey(biome);
         switch (colorType) {
             case GRASS:
-                int targetGrassColor = subSeason.getTargetGrassColor(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), false);
+                int targetGrassColor = subSeason.getTargetGrassColor(biomeKey, false);
 
                 if (targetGrassColor == -1)
                     return originalColorValue;
 
                 target = new Color(targetGrassColor);
-                blendStrength = subSeason.getClient().getGrassColorBlendStrength();
+                blendStrength = subSeason.getGrassColorBlendStrength(biomeKey, false);
                 break;
             case FOLIAGE:
-                int targetFoliageColor = subSeason.getTargetFoliageColor(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), false);
+                int targetFoliageColor = subSeason.getTargetFoliageColor(biomeKey, false);
 
                 if (targetFoliageColor == -1)
                     return originalColorValue;
 
                 target = new Color(targetFoliageColor);
-                blendStrength = subSeason.getClient().getFoliageColorBlendStrength();
+                blendStrength = subSeason.getFoliageColorBlendStrength(biomeKey, false);
                 break;
             case FOG:
-                int targetFogColor = subSeason.getTargetFogColor(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), false);
+                int targetFogColor = subSeason.getTargetFogColor(biomeKey, false);
 
                 if (targetFogColor == -1)
                     return originalColorValue;
 
                 target = new Color(targetFogColor);
-                blendStrength = subSeason.getClient().getFogColorBlendStrength();
+                blendStrength = subSeason.getFogColorBlendStrength(biomeKey, false);
                 break;
             default:
-                int targetSkyColor = subSeason.getTargetSkyColor(BetterWeather.biomeRegistryEarlyAccess.getKey(biome), false);
+                int targetSkyColor = subSeason.getTargetSkyColor(biomeKey, false);
 
                 if (targetSkyColor == -1)
                     return originalColorValue;
 
                 target = new Color(targetSkyColor);
-                blendStrength = subSeason.getClient().getSkyColorBlendStrength();
+                blendStrength = subSeason.getSkyColorBlendStrength(biomeKey, false);
                 break;
         }
 

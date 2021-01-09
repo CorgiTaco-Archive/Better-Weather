@@ -70,10 +70,10 @@ public class OverrideStorage {
         private double skyColorBlendStrength = Double.MAX_VALUE;
         private String targetFogHexColor = "";
         private double fogColorBlendStrength = Double.MAX_VALUE;
-        private int parsedFoliageHexColor = -1;
-        private int parsedGrassHexColor = -1;
-        private int parsedSkyHexColor = -1;
-        private int parsedFogHexColor = -1;
+        private int parsedFoliageHexColor = Integer.MAX_VALUE;
+        private int parsedGrassHexColor = Integer.MAX_VALUE;
+        private int parsedSkyHexColor = Integer.MAX_VALUE;
+        private int parsedFogHexColor = Integer.MAX_VALUE;
 
 
         public OverrideClientStorage() {}
