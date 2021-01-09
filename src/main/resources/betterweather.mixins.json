@@ -6,6 +6,7 @@
   "mixins": [
     "biome.MixinBiome",
     "block.MixinAbstractBlockstate",
+    "entity.MixinAnimalBreedTask",
     "server.MixinDerivedWorldInfo",
     "server.MixinMinecraftServer",
     "server.MixinServerWorld",
@@ -15,10 +16,10 @@
     "MixinKeyboardListener",
     "client.MixinBiomeClient",
     "client.MixinClientWorld",
+    "client.MixinDimensionRenderInfo",
     "client.MixinLeavesBlock",
     "client.MixinSoundEngine",
-    "client.MixinWorldRenderer",
-    "client.MixinDimensionRenderInfo"
+    "client.MixinWorldRenderer"
   ],
   "injectors": {
     "defaultRequire": 1

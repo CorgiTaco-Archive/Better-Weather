@@ -2,7 +2,9 @@ package corgitaco.betterweather;
 
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Direction;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 
@@ -25,5 +27,14 @@ public class BetterWeatherUtil {
             }
         }
         return Integer.MAX_VALUE;
+    }
+
+    public static boolean filterRegistryID(ResourceLocation id, Registry<?> registry, String registryTypeName) {
+        if (registry.keySet().contains(id))
+            return true;
+        else {
+            BetterWeather.LOGGER.error("\"" + id.toString() + "\" was not a registryID in the " + registryTypeName + "! Skipping entry...");
+            return false;
+        }
     }
 }

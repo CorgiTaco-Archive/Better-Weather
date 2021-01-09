@@ -3,20 +3,21 @@ package corgitaco.betterweather.season;
 import com.google.common.collect.Sets;
 import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.util.storage.OverrideStorage;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.EntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.biome.Biome;
 
 import java.awt.*;
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Season {
 
@@ -122,20 +123,32 @@ public class Season {
         private final double cropGrowthChanceMultiplier; //Final Fallback
         private final WeatherEventController weatherEventController;
         private final SeasonClient client;
+        private final Set<String> entityBreedingBlacklist;
+
 
         //These are not to be serialized by GSON.
         private transient BWSeasonSystem.SeasonVal parentSeason;
         private transient String subSeason;
         private transient IdentityHashMap<Block, Double> cropToMultiplierStorage;
         private transient IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage;
+        private transient ObjectOpenHashSet<EntityType<?>> entityTypeBreedingBlacklist;
 
         public SubSeason(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, WeatherEventController weatherEventController, SeasonClient client) {
+            this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, client, new ObjectOpenHashSet<>());
+        }
+
+        public SubSeason(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, WeatherEventController weatherEventController, SeasonClient client, Set<String> entityBreedingBlacklist) {
             this.tempModifier = tempModifier;
             this.humidityModifier = humidityModifier;
             this.weatherEventChanceMultiplier = weatherEventChanceMultiplier;
             this.cropGrowthChanceMultiplier = cropGrowthChanceMultiplier;
             this.weatherEventController = weatherEventController;
             this.client = client;
+            this.entityBreedingBlacklist = entityBreedingBlacklist;
+        }
+
+        public void processInfo() {
+            entityTypeBreedingBlacklist = new ObjectOpenHashSet<>(entityBreedingBlacklist.stream().map(ResourceLocation::new).filter((resourceLocation) -> (BetterWeatherUtil.filterRegistryID(resourceLocation, Registry.ENTITY_TYPE, "Entity"))).map(Registry.ENTITY_TYPE::getOptional).map(Optional::get).collect(Collectors.toSet()));
         }
 
         public BWSeasonSystem.SubSeasonVal getSubSeasonVal() {
@@ -373,6 +386,10 @@ public class Season {
                 return defaultValue;
             else
                 return overrideFogColorBlendStrangth;
+        }
+
+        public ObjectOpenHashSet<EntityType<?>> getEntityTypeBreedingBlacklist() {
+            return entityTypeBreedingBlacklist;
         }
 
         public static class SeasonClient {

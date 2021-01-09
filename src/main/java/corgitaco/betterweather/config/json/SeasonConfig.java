@@ -69,7 +69,9 @@ public class SeasonConfig {
                                 Season.SUB_SEASON_MAP.put(subSeasonName, stringSeasonMap.get(seasonName).getEnd());
                             }
                         }
-                        Season.SUB_SEASON_MAP.get(subSeasonName).getClient().parseHexColors();
+                        Season.SubSeason subSeason = Season.SUB_SEASON_MAP.get(subSeasonName);
+                        subSeason.getClient().parseHexColors();
+                        subSeason.processInfo();
                     }
                 }
                 Season.SEASON_MAP = stringSeasonMap;
