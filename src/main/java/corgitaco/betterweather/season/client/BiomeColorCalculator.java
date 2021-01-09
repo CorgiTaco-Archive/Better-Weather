@@ -25,7 +25,7 @@ public class BiomeColorCalculator {
             case GRASS:
                 int targetGrassColor = subSeason.getTargetGrassColor(biomeKey, false);
 
-                if (targetGrassColor == -1)
+                if (targetGrassColor == Integer.MAX_VALUE)
                     return originalColorValue;
 
                 target = new Color(targetGrassColor);
@@ -34,7 +34,7 @@ public class BiomeColorCalculator {
             case FOLIAGE:
                 int targetFoliageColor = subSeason.getTargetFoliageColor(biomeKey, false);
 
-                if (targetFoliageColor == -1)
+                if (targetFoliageColor == Integer.MAX_VALUE)
                     return originalColorValue;
 
                 target = new Color(targetFoliageColor);
@@ -43,7 +43,7 @@ public class BiomeColorCalculator {
             case FOG:
                 int targetFogColor = subSeason.getTargetFogColor(biomeKey, false);
 
-                if (targetFogColor == -1)
+                if (targetFogColor == Integer.MAX_VALUE)
                     return originalColorValue;
 
                 target = new Color(targetFogColor);
@@ -52,7 +52,7 @@ public class BiomeColorCalculator {
             default:
                 int targetSkyColor = subSeason.getTargetSkyColor(biomeKey, false);
 
-                if (targetSkyColor == -1)
+                if (targetSkyColor == Integer.MAX_VALUE)
                     return originalColorValue;
 
                 target = new Color(targetSkyColor);

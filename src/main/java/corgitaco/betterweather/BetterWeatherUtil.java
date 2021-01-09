@@ -24,6 +24,6 @@ public class BetterWeatherUtil {
                 BetterWeather.LOGGER.error("\"" + targetHexColor + "\" was not a hex color value! | Using Defaults...");
             }
         }
-        return -1;
+        return Integer.MAX_VALUE;
     }
 }

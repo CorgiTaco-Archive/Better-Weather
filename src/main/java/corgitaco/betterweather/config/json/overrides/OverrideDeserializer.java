@@ -39,10 +39,13 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
             idx++;
         }
 
-        if (!errorBuilder.toString().isEmpty())
-            throw new IllegalArgumentException("Errors were found in your override file: " + errorBuilder.toString());
+        if (!errorBuilder.toString().isEmpty()) {
+           BetterWeather.LOGGER.error("Errors were found in your override file: " + errorBuilder.toString());
+           return new BiomeToOverrideStorageJsonStorage(new IdentityHashMap<>());
+        }
 
-        return new BiomeToOverrideStorageJsonStorage(processKeys(biomeObjects, BetterWeather.biomeRegistryEarlyAccess));
+        IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage = processKeys(biomeObjects, BetterWeather.biomeRegistryEarlyAccess);
+        return new BiomeToOverrideStorageJsonStorage(biomeToOverrideStorage);
     }
 
 
