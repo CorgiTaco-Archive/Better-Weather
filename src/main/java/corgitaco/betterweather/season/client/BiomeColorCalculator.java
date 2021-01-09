@@ -1,6 +1,5 @@
 package corgitaco.betterweather.season.client;
 
-import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.season.Season;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
