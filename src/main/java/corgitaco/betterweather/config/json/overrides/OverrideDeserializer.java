@@ -146,22 +146,23 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
     }
 
     private Object extractKey(StringBuilder errorBuilder, String key) {
+        String lowerCaseKey = key.toLowerCase();
         Object value;
-        if (key.startsWith("category/")) {
+        if (lowerCaseKey.startsWith("category/")) {
             try {
-                value = Biome.Category.valueOf(key.substring("category/".length()));
+                value = Biome.Category.valueOf(lowerCaseKey.substring("category/".length()).toUpperCase());
             } catch (IllegalArgumentException e) {
                 errorBuilder.append(key.substring("category/".length())).append(" is not a Biome Category Value!\n");
                 return null;
             }
         }
-        else if (key.startsWith("forge/")) {
-            value = BiomeDictionary.Type.getType(key.substring("forge/".length()));
+        else if (lowerCaseKey.startsWith("forge/")) {
+            value = BiomeDictionary.Type.getType(lowerCaseKey.substring("forge/".length()).toUpperCase());
         }
-        else if (key.startsWith("biome/")) {
-            value = BetterWeather.biomeRegistryEarlyAccess.getOptional(new ResourceLocation(key.substring("biome/".length()))).orElse(null);
+        else if (lowerCaseKey.startsWith("biome/")) {
+            value = BetterWeather.biomeRegistryEarlyAccess.getOptional(new ResourceLocation(lowerCaseKey.substring("biome/".length()))).orElse(null);
             if (value == null) {
-                errorBuilder.append(key.substring("biome/".length())).append(" is not a biome in this world!\n");
+                errorBuilder.append(lowerCaseKey.substring("biome/".length())).append(" is not a biome in this world!\n");
                 return null;
             }
         }
