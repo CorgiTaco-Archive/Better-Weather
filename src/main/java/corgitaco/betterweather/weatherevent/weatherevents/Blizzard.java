@@ -24,9 +24,13 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.server.ChunkHolder;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
+
+import java.util.Optional;
 
 import static corgitaco.betterweather.BetterWeather.weatherData;
 
@@ -97,6 +101,34 @@ public class Blizzard {
             }
         }
         iprofiler.endSection();
+    }
+
+    public static void modifyLiveWorldForBlizzard(ServerWorld serverWorld, int tickSpeed, long worldTime, Iterable<ChunkHolder> list) {
+        list.forEach(chunkHolder -> {
+            Optional<Chunk> optional = chunkHolder.getTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
+            //Gets chunks to tick
+            if (optional.isPresent()) {
+                Optional<Chunk> optional1 = chunkHolder.getEntityTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
+                if (optional1.isPresent()) {
+                    Chunk chunk = optional1.get();
+                    Blizzard.addSnowAndIce(chunk, serverWorld, tickSpeed, worldTime);
+                }
+            }
+        });
+    }
+
+    public static void decayIceAndSnowFaster(ServerWorld serverWorld, long worldTime, Iterable<ChunkHolder> list) {
+        list.forEach(chunkHolder -> {
+            Optional<Chunk> optional = chunkHolder.getTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
+            //Gets chunks to tick
+            if (optional.isPresent()) {
+                Optional<Chunk> optional1 = chunkHolder.getEntityTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
+                if (optional1.isPresent()) {
+                    Chunk chunk = optional1.get();
+                    Blizzard.doesIceAndSnowDecay(chunk, serverWorld, worldTime);
+                }
+            }
+        });
     }
 
 

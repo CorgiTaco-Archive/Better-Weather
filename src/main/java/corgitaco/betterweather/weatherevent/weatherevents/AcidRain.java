@@ -28,10 +28,12 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
 
+import java.util.Optional;
 import java.util.Random;
 
 import static corgitaco.betterweather.BetterWeather.weatherData;
@@ -117,6 +119,20 @@ public class AcidRain {
                 }
             }
         }
+    }
+
+    public static void modifyLiveWorldForAcidRain(ServerWorld serverWorld, int tickSpeed, long worldTime, Iterable<ChunkHolder> list) {
+        list.forEach(chunkHolder -> {
+            Optional<Chunk> optional = chunkHolder.getTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
+            //Gets chunks to tick
+            if (optional.isPresent()) {
+                Optional<Chunk> optional1 = chunkHolder.getEntityTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
+                if (optional1.isPresent()) {
+                    Chunk chunk = optional1.get();
+                    AcidRain.acidRainEvent(chunk, serverWorld, tickSpeed, worldTime);
+                }
+            }
+        });
     }
 
     public static final ResourceLocation RAIN_TEXTURE = new ResourceLocation("textures/environment/rain.png");

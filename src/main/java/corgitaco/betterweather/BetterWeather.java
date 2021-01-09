@@ -134,56 +134,14 @@ public class BetterWeather {
                         BWWeatherEventSystem.updateWeatherEventPacket(serverWorld.getPlayers(), world, false);
 
                         if (weatherData.getEventValue() == WeatherEvent.ACID_RAIN) {
-                            modifyLiveWorldForAcidRain(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
+                            AcidRain.modifyLiveWorldForAcidRain(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
                         } else if (weatherData.getEventValue() == WeatherEvent.BLIZZARD) {
-                            modifyLiveWorldForBlizzard(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
+                            Blizzard.modifyLiveWorldForBlizzard(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
                         } else if (weatherData.getEventValue() == WeatherEvent.NONE && BetterWeatherConfig.decaySnowAndIce.get())
-                            decayIceAndSnowFaster(serverWorld, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
+                            Blizzard.decayIceAndSnowFaster(serverWorld, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
                     }
                 }
             }
-        }
-
-        private static void modifyLiveWorldForAcidRain(ServerWorld serverWorld, int tickSpeed, long worldTime, Iterable<ChunkHolder> list) {
-            list.forEach(chunkHolder -> {
-                Optional<Chunk> optional = chunkHolder.getTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
-                //Gets chunks to tick
-                if (optional.isPresent()) {
-                    Optional<Chunk> optional1 = chunkHolder.getEntityTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
-                    if (optional1.isPresent()) {
-                        Chunk chunk = optional1.get();
-                        AcidRain.acidRainEvent(chunk, serverWorld, tickSpeed, worldTime);
-                    }
-                }
-            });
-        }
-
-        private static void modifyLiveWorldForBlizzard(ServerWorld serverWorld, int tickSpeed, long worldTime, Iterable<ChunkHolder> list) {
-            list.forEach(chunkHolder -> {
-                Optional<Chunk> optional = chunkHolder.getTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
-                //Gets chunks to tick
-                if (optional.isPresent()) {
-                    Optional<Chunk> optional1 = chunkHolder.getEntityTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
-                    if (optional1.isPresent()) {
-                        Chunk chunk = optional1.get();
-                        Blizzard.addSnowAndIce(chunk, serverWorld, tickSpeed, worldTime);
-                    }
-                }
-            });
-        }
-
-        private static void decayIceAndSnowFaster(ServerWorld serverWorld, long worldTime, Iterable<ChunkHolder> list) {
-            list.forEach(chunkHolder -> {
-                Optional<Chunk> optional = chunkHolder.getTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
-                //Gets chunks to tick
-                if (optional.isPresent()) {
-                    Optional<Chunk> optional1 = chunkHolder.getEntityTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
-                    if (optional1.isPresent()) {
-                        Chunk chunk = optional1.get();
-                        Blizzard.doesIceAndSnowDecay(chunk, serverWorld, worldTime);
-                    }
-                }
-            });
         }
 
         @SubscribeEvent
@@ -214,14 +172,16 @@ public class BetterWeather {
             Minecraft minecraft = Minecraft.getInstance();
             if (event.phase == TickEvent.Phase.START) {
                 if (minecraft.world != null && minecraft.player != null) {
-                    if (minecraft.world.getWorldInfo().getGameTime() % 10 == 0) {
-                        BWSeasonSystem.clientSeason();
+                    if (minecraft.world.getDimensionKey() == World.OVERWORLD) {
+                        if (minecraft.world.getWorldInfo().getGameTime() % 10 == 0) {
+                            BWSeasonSystem.clientSeason();
+                        }
+
+                        AcidRain.handleRainTexture(minecraft);
+
+                        Blizzard.handleBlizzardRenderDistance(minecraft);
+                        Blizzard.blizzardSoundHandler(minecraft, minecraft.gameRenderer.getActiveRenderInfo());
                     }
-
-                    AcidRain.handleRainTexture(minecraft);
-
-                    Blizzard.handleBlizzardRenderDistance(minecraft);
-                    Blizzard.blizzardSoundHandler(minecraft, minecraft.gameRenderer.getActiveRenderInfo());
                 }
             }
         }
