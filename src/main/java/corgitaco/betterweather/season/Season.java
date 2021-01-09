@@ -98,21 +98,21 @@ public class Season {
 
     public static class SubSeason {
 
-        public static final SubSeason SPRING_START = new SubSeason(-0.15, 0.5, 1.5, 1.0, new WeatherEventController(0.1, 0.25), new SeasonClient(Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5));
-        public static final SubSeason SPRING_MID = new SubSeason(0.1, 0.5, 2.0, 1.0, new WeatherEventController(0.05, 0.25), new SeasonClient(Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5));
-        public static final SubSeason SPRING_END = new SubSeason(0.25, 0.4, 1.5, 1.0, new WeatherEventController(0, 0.25), new SeasonClient(Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5));
+        public static final SubSeason SPRING_START = new SubSeason(-0.15, 0.5, 1.5, 1.3, new WeatherEventController(0.1, 0.25), new SeasonClient(Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5));
+        public static final SubSeason SPRING_MID = new SubSeason(0.1, 0.5, 2.0, 2.0, new WeatherEventController(0.05, 0.25), new SeasonClient(Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5));
+        public static final SubSeason SPRING_END = new SubSeason(0.25, 0.4, 1.5, 1.7, new WeatherEventController(0, 0.25), new SeasonClient(Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5));
 
-        public static final SubSeason SUMMER_START = new SubSeason(0.35, -0.1, 0.75, 1.0, new WeatherEventController(0, 0.25), new SeasonClient());
+        public static final SubSeason SUMMER_START = new SubSeason(0.35, -0.1, 0.75, 1.15, new WeatherEventController(0, 0.25), new SeasonClient());
         public static final SubSeason SUMMER_MID = new SubSeason(0.5, -0.3, 0.2, 1.0, new WeatherEventController(0, 0.25), new SeasonClient());
         public static final SubSeason SUMMER_END = new SubSeason(0.15, -0.1, 0.5, 1.0, new WeatherEventController(0, 0.25), new SeasonClient());
 
-        public static final SubSeason AUTUMN_START = new SubSeason(-0.1, 0, 0.7, 1.0, new WeatherEventController(0, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
-        public static final SubSeason AUTUMN_MID = new SubSeason(-0.2, 0, 0.7, 1.0, new WeatherEventController(0.05, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
-        public static final SubSeason AUTUMN_END = new SubSeason(-0.3, 0.1, 0.75, 1.0, new WeatherEventController(0.1, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
+        public static final SubSeason AUTUMN_START = new SubSeason(-0.1, 0, 0.7, 0.8, new WeatherEventController(0, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
+        public static final SubSeason AUTUMN_MID = new SubSeason(-0.2, 0, 0.7, 0.75, new WeatherEventController(0.05, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
+        public static final SubSeason AUTUMN_END = new SubSeason(-0.3, 0.1, 0.75, 0.65, new WeatherEventController(0.1, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
 
-        public static final SubSeason WINTER_START = new SubSeason(-0.4, 0.2, 1.0, 1.0, new WeatherEventController(0.3, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
-        public static final SubSeason WINTER_MID = new SubSeason(-0.5, 0.2, 1.0, 1.0, new WeatherEventController(0.5, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
-        public static final SubSeason WINTER_END = new SubSeason(-0.35, 0.2, 1.25, 1.0, new WeatherEventController(0.3, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
+        public static final SubSeason WINTER_START = new SubSeason(-0.4, 0.2, 1.0, 0.6, new WeatherEventController(0.3, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
+        public static final SubSeason WINTER_MID = new SubSeason(-0.5, 0.2, 1.0, 0.5, new WeatherEventController(0.5, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
+        public static final SubSeason WINTER_END = new SubSeason(-0.35, 0.2, 1.25, 0.75, new WeatherEventController(0.3, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
 
 
         public static final IdentityHashMap<Object, OverrideStorage> WINTER_OVERRIDE = Util.make((new IdentityHashMap<>()), (map) -> {
