@@ -41,7 +41,7 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
 
         if (!errorBuilder.toString().isEmpty()) {
            BetterWeather.LOGGER.error("Errors were found in your override file: " + errorBuilder.toString());
-           return new BiomeToOverrideStorageJsonStorage(new IdentityHashMap<>());
+           biomeObjects.removeIf(Objects::isNull);
         }
 
         IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage = processKeys(biomeObjects, BetterWeather.biomeRegistryEarlyAccess);
