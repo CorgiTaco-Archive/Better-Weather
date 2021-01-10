@@ -35,8 +35,6 @@ public abstract class MixinWorldRenderer {
 
     @Inject(at = @At("HEAD"), method = "renderRainSnow(Lnet/minecraft/client/renderer/LightTexture;FDDD)V", cancellable = true)
     private void renderBlizzardSnow(LightTexture lightmapIn, float partialTicks, double xIn, double yIn, double zIn, CallbackInfo ci) {
-        BetterWeather.setWeatherData(mc.world);
-        BetterWeather.setSeasonData(mc.world);
 
         if (BetterWeather.weatherData.isBlizzard()) {
             ci.cancel();

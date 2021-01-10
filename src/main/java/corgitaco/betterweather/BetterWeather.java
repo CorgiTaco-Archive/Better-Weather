@@ -180,7 +180,6 @@ public class BetterWeather {
             });
         }
 
-        public static boolean refreshRenderers = false;
 
         @SubscribeEvent
         public static void clientTickEvent(TickEvent.ClientTickEvent event) {
@@ -192,11 +191,6 @@ public class BetterWeather {
                             if (minecraft.world.getWorldInfo().getGameTime() % 10 == 0) {
                                 SeasonSystem.clientSeason();
                             }
-                        }
-
-                        if (refreshRenderers) {
-                            minecraft.worldRenderer.loadRenderers();
-                            refreshRenderers = false;
                         }
 
                         AcidRain.handleRainTexture(minecraft);
