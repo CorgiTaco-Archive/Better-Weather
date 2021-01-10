@@ -3,6 +3,7 @@ package corgitaco.betterweather.season;
 import com.google.common.collect.Sets;
 import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.util.storage.OverrideStorage;
+import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -28,33 +29,33 @@ public class Season {
 
 
     public static Map<String, Season> SEASON_MAP = Util.make((new TreeMap<>()), (map) -> {
-        map.put(BWSeasonSystem.SeasonVal.SPRING.toString(), SPRING);
-        map.put(BWSeasonSystem.SeasonVal.SUMMER.toString(), SUMMER);
-        map.put(BWSeasonSystem.SeasonVal.AUTUMN.toString(), AUTUMN);
-        map.put(BWSeasonSystem.SeasonVal.WINTER.toString(), WINTER);
+        map.put(SeasonSystem.SeasonVal.SPRING.toString(), SPRING);
+        map.put(SeasonSystem.SeasonVal.SUMMER.toString(), SUMMER);
+        map.put(SeasonSystem.SeasonVal.AUTUMN.toString(), AUTUMN);
+        map.put(SeasonSystem.SeasonVal.WINTER.toString(), WINTER);
     });
 
     public static Map<String, SubSeason> SUB_SEASON_MAP = Util.make((new TreeMap<>()), (map) -> {
-        map.put(BWSeasonSystem.SubSeasonVal.SPRING_START.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.SPRING.toString()).getStart());
-        map.put(BWSeasonSystem.SubSeasonVal.SPRING_MID.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.SPRING.toString()).getMid());
-        map.put(BWSeasonSystem.SubSeasonVal.SPRING_END.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.SPRING.toString()).getEnd());
-        map.put(BWSeasonSystem.SubSeasonVal.SUMMER_START.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.SUMMER.toString()).getStart());
-        map.put(BWSeasonSystem.SubSeasonVal.SUMMER_MID.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.SUMMER.toString()).getMid());
-        map.put(BWSeasonSystem.SubSeasonVal.SUMMER_END.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.SUMMER.toString()).getEnd());
-        map.put(BWSeasonSystem.SubSeasonVal.AUTUMN_START.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.AUTUMN.toString()).getStart());
-        map.put(BWSeasonSystem.SubSeasonVal.AUTUMN_MID.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.AUTUMN.toString()).getMid());
-        map.put(BWSeasonSystem.SubSeasonVal.AUTUMN_END.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.AUTUMN.toString()).getEnd());
-        map.put(BWSeasonSystem.SubSeasonVal.WINTER_START.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.WINTER.toString()).getStart());
-        map.put(BWSeasonSystem.SubSeasonVal.WINTER_MID.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.WINTER.toString()).getMid());
-        map.put(BWSeasonSystem.SubSeasonVal.WINTER_END.toString(), SEASON_MAP.get(BWSeasonSystem.SeasonVal.WINTER.toString()).getEnd());
+        map.put(SeasonSystem.SubSeasonVal.SPRING_START.toString(), SEASON_MAP.get(SeasonSystem.SeasonVal.SPRING.toString()).getStart());
+        map.put(SeasonSystem.SubSeasonVal.SPRING_MID.toString(), SEASON_MAP.get(SeasonSystem.SeasonVal.SPRING.toString()).getMid());
+        map.put(SeasonSystem.SubSeasonVal.SPRING_END.toString(), SEASON_MAP.get(SeasonSystem.SeasonVal.SPRING.toString()).getEnd());
+        map.put(SeasonSystem.SubSeasonVal.SUMMER_START.toString(), SEASON_MAP.get(SeasonSystem.SeasonVal.SUMMER.toString()).getStart());
+        map.put(SeasonSystem.SubSeasonVal.SUMMER_MID.toString(), SEASON_MAP.get(SeasonSystem.SeasonVal.SUMMER.toString()).getMid());
+        map.put(SeasonSystem.SubSeasonVal.SUMMER_END.toString(), SEASON_MAP.get(SeasonSystem.SeasonVal.SUMMER.toString()).getEnd());
+        map.put(SeasonSystem.SubSeasonVal.AUTUMN_START.toString(), SEASON_MAP.get(SeasonSystem.SeasonVal.AUTUMN.toString()).getStart());
+        map.put(SeasonSystem.SubSeasonVal.AUTUMN_MID.toString(), SEASON_MAP.get(SeasonSystem.SeasonVal.AUTUMN.toString()).getMid());
+        map.put(SeasonSystem.SubSeasonVal.AUTUMN_END.toString(), SEASON_MAP.get(SeasonSystem.SeasonVal.AUTUMN.toString()).getEnd());
+        map.put(SeasonSystem.SubSeasonVal.WINTER_START.toString(), SEASON_MAP.get(SeasonSystem.SeasonVal.WINTER.toString()).getStart());
+        map.put(SeasonSystem.SubSeasonVal.WINTER_MID.toString(), SEASON_MAP.get(SeasonSystem.SeasonVal.WINTER.toString()).getMid());
+        map.put(SeasonSystem.SubSeasonVal.WINTER_END.toString(), SEASON_MAP.get(SeasonSystem.SeasonVal.WINTER.toString()).getEnd());
     });
 
 
-    public static Season getSeasonFromEnum(BWSeasonSystem.SeasonVal season) {
+    public static Season getSeasonFromEnum(SeasonSystem.SeasonVal season) {
         return SEASON_MAP.get(season.toString());
     }
 
-    public static SubSeason getSubSeasonFromEnum(BWSeasonSystem.SubSeasonVal season) {
+    public static SubSeason getSubSeasonFromEnum(SeasonSystem.SubSeasonVal season) {
         return SUB_SEASON_MAP.get(season.toString());
     }
 
@@ -88,27 +89,77 @@ public class Season {
         return subSeasons;
     }
 
-    public boolean containsSubSeason(BWSeasonSystem.SubSeasonVal subSeason) {
+    public boolean containsSubSeason(SeasonSystem.SubSeasonVal subSeason) {
         return subSeason == start.getSubSeasonVal() || subSeason == mid.getSubSeasonVal() || subSeason == end.getSubSeasonVal();
     }
 
     public static class SubSeason {
 
-        public static final SubSeason SPRING_START = new SubSeason(-0.15, 0.5, 1.5, 1.3, new WeatherEventController(0.1, 0.25), new SeasonClient(Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5));
-        public static final SubSeason SPRING_MID = new SubSeason(0.1, 0.5, 2.0, 2.0, new WeatherEventController(0.05, 0.25), new SeasonClient(Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5));
-        public static final SubSeason SPRING_END = new SubSeason(0.25, 0.4, 1.5, 1.7, new WeatherEventController(0, 0.25), new SeasonClient(Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5));
+        public static final IdentityHashMap<String, Double> SPRING_START_WEATHER_EVENT_CONTROLLER = Util.make((new IdentityHashMap<>()), (map) -> {
+            map.put(WeatherEventSystem.BLIZZARD, 0.1);
+            map.put(WeatherEventSystem.ACID_RAIN, 0.25);
+        });
+        public static final IdentityHashMap<String, Double> SPRING_MID_WEATHER_EVENT_CONTROLLER = Util.make((new IdentityHashMap<>()), (map) -> {
+            map.put(WeatherEventSystem.BLIZZARD, 0.05);
+            map.put(WeatherEventSystem.ACID_RAIN, 0.25);
+        });
+        public static final IdentityHashMap<String, Double> SPRING_END_WEATHER_EVENT_CONTROLLER = Util.make((new IdentityHashMap<>()), (map) -> {
+            map.put(WeatherEventSystem.BLIZZARD, 0.0);
+            map.put(WeatherEventSystem.ACID_RAIN, 0.25);
+        });
+        public static final IdentityHashMap<String, Double> SUMMER_START_WEATHER_EVENT_CONTROLLER = Util.make((new IdentityHashMap<>()), (map) -> {
+            map.put(WeatherEventSystem.BLIZZARD, 0.0);
+            map.put(WeatherEventSystem.ACID_RAIN, 0.25);
+        });
+        public static final IdentityHashMap<String, Double> SUMMER_MID_WEATHER_EVENT_CONTROLLER = Util.make((new IdentityHashMap<>()), (map) -> {
+            map.put(WeatherEventSystem.BLIZZARD, 0.0);
+            map.put(WeatherEventSystem.ACID_RAIN, 0.25);
+        });
+        public static final IdentityHashMap<String, Double> SUMMER_END_WEATHER_EVENT_CONTROLLER = Util.make((new IdentityHashMap<>()), (map) -> {
+            map.put(WeatherEventSystem.BLIZZARD, 0.0);
+            map.put(WeatherEventSystem.ACID_RAIN, 0.25);
+        });
+        public static final IdentityHashMap<String, Double> AUTUMN_START_WEATHER_EVENT_CONTROLLER = Util.make((new IdentityHashMap<>()), (map) -> {
+            map.put(WeatherEventSystem.BLIZZARD, 0.0);
+            map.put(WeatherEventSystem.ACID_RAIN, 0.25);
+        });
+        public static final IdentityHashMap<String, Double> AUTUMN_MID_WEATHER_EVENT_CONTROLLER = Util.make((new IdentityHashMap<>()), (map) -> {
+            map.put(WeatherEventSystem.BLIZZARD, 0.05);
+            map.put(WeatherEventSystem.ACID_RAIN, 0.25);
+        });
+        public static final IdentityHashMap<String, Double> AUTUMN_END_WEATHER_EVENT_CONTROLLER = Util.make((new IdentityHashMap<>()), (map) -> {
+            map.put(WeatherEventSystem.BLIZZARD, 0.1);
+            map.put(WeatherEventSystem.ACID_RAIN, 0.25);
+        });
+        public static final IdentityHashMap<String, Double> WINTER_START_WEATHER_EVENT_CONTROLLER = Util.make((new IdentityHashMap<>()), (map) -> {
+            map.put(WeatherEventSystem.BLIZZARD, 0.3);
+            map.put(WeatherEventSystem.ACID_RAIN, 0.25);
+        });
+        public static final IdentityHashMap<String, Double> WINTER_MID_WEATHER_EVENT_CONTROLLER = Util.make((new IdentityHashMap<>()), (map) -> {
+            map.put(WeatherEventSystem.BLIZZARD, 0.5);
+            map.put(WeatherEventSystem.ACID_RAIN, 0.25);
+        });
+        public static final IdentityHashMap<String, Double> WINTER_END_WEATHER_EVENT_CONTROLLER = Util.make((new IdentityHashMap<>()), (map) -> {
+            map.put(WeatherEventSystem.BLIZZARD, 0.3);
+            map.put(WeatherEventSystem.ACID_RAIN, 0.25);
+        });
 
-        public static final SubSeason SUMMER_START = new SubSeason(0.35, -0.1, 0.75, 1.15, new WeatherEventController(0, 0.25), new SeasonClient());
-        public static final SubSeason SUMMER_MID = new SubSeason(0.5, -0.3, 0.2, 1.0, new WeatherEventController(0, 0.25), new SeasonClient());
-        public static final SubSeason SUMMER_END = new SubSeason(0.15, -0.1, 0.5, 1.0, new WeatherEventController(0, 0.25), new SeasonClient());
 
-        public static final SubSeason AUTUMN_START = new SubSeason(-0.1, 0, 0.7, 0.8, new WeatherEventController(0, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
-        public static final SubSeason AUTUMN_MID = new SubSeason(-0.2, 0, 0.7, 0.75, new WeatherEventController(0.05, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
-        public static final SubSeason AUTUMN_END = new SubSeason(-0.3, 0.1, 0.75, 0.65, new WeatherEventController(0.1, 0.25), new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
+        public static final SubSeason SPRING_START = new SubSeason(-0.15, 0.5, 1.5, 1.3, SPRING_START_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5));
+        public static final SubSeason SPRING_MID = new SubSeason(0.1, 0.5, 2.0, 2.0, SPRING_MID_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5));
+        public static final SubSeason SPRING_END = new SubSeason(0.25, 0.4, 1.5, 1.7, SPRING_END_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5));
 
-        public static final SubSeason WINTER_START = new SubSeason(-0.4, 0.2, 1.0, 0.6, new WeatherEventController(0.3, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
-        public static final SubSeason WINTER_MID = new SubSeason(-0.5, 0.2, 1.0, 0.5, new WeatherEventController(0.5, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
-        public static final SubSeason WINTER_END = new SubSeason(-0.35, 0.2, 1.25, 0.75, new WeatherEventController(0.3, 0.25), new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
+        public static final SubSeason SUMMER_START = new SubSeason(0.35, -0.1, 0.75, 1.15, SUMMER_START_WEATHER_EVENT_CONTROLLER, new SeasonClient());
+        public static final SubSeason SUMMER_MID = new SubSeason(0.5, -0.3, 0.2, 1.0, SUMMER_MID_WEATHER_EVENT_CONTROLLER, new SeasonClient());
+        public static final SubSeason SUMMER_END = new SubSeason(0.15, -0.1, 0.5, 1.0, SUMMER_END_WEATHER_EVENT_CONTROLLER, new SeasonClient());
+
+        public static final SubSeason AUTUMN_START = new SubSeason(-0.1, 0, 0.7, 0.8, AUTUMN_START_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
+        public static final SubSeason AUTUMN_MID = new SubSeason(-0.2, 0, 0.7, 0.75, AUTUMN_MID_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
+        public static final SubSeason AUTUMN_END = new SubSeason(-0.3, 0.1, 0.75, 0.65, AUTUMN_END_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
+
+        public static final SubSeason WINTER_START = new SubSeason(-0.4, 0.2, 1.0, 0.6, WINTER_START_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
+        public static final SubSeason WINTER_MID = new SubSeason(-0.5, 0.2, 1.0, 0.5, WINTER_MID_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
+        public static final SubSeason WINTER_END = new SubSeason(-0.35, 0.2, 1.25, 0.75, WINTER_END_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
 
 
         public static final IdentityHashMap<Object, OverrideStorage> WINTER_OVERRIDE = Util.make((new IdentityHashMap<>()), (map) -> {
@@ -121,23 +172,23 @@ public class Season {
         private final double humidityModifier;
         private final double weatherEventChanceMultiplier;
         private final double cropGrowthChanceMultiplier; //Final Fallback
-        private final WeatherEventController weatherEventController;
+        private final IdentityHashMap<String, Double> weatherEventController;
         private final SeasonClient client;
         private final Set<String> entityBreedingBlacklist;
 
 
         //These are not to be serialized by GSON.
-        private transient BWSeasonSystem.SeasonVal parentSeason;
+        private transient SeasonSystem.SeasonVal parentSeason;
         private transient String subSeason;
         private transient IdentityHashMap<Block, Double> cropToMultiplierStorage;
         private transient IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage;
         private transient ObjectOpenHashSet<EntityType<?>> entityTypeBreedingBlacklist;
 
-        public SubSeason(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, WeatherEventController weatherEventController, SeasonClient client) {
+        public SubSeason(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, IdentityHashMap<String, Double> weatherEventController, SeasonClient client) {
             this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, client, new ObjectOpenHashSet<>());
         }
 
-        public SubSeason(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, WeatherEventController weatherEventController, SeasonClient client, Set<String> entityBreedingBlacklist) {
+        public SubSeason(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, IdentityHashMap<String, Double> weatherEventController, SeasonClient client, Set<String> entityBreedingBlacklist) {
             this.tempModifier = tempModifier;
             this.humidityModifier = humidityModifier;
             this.weatherEventChanceMultiplier = weatherEventChanceMultiplier;
@@ -151,19 +202,19 @@ public class Season {
             entityTypeBreedingBlacklist = new ObjectOpenHashSet<>(entityBreedingBlacklist.stream().map(ResourceLocation::new).filter((resourceLocation) -> (BetterWeatherUtil.filterRegistryID(resourceLocation, Registry.ENTITY_TYPE, "Entity"))).map(Registry.ENTITY_TYPE::getOptional).map(Optional::get).collect(Collectors.toSet()));
         }
 
-        public BWSeasonSystem.SubSeasonVal getSubSeasonVal() {
-            return BWSeasonSystem.SubSeasonVal.valueOf(subSeason);
+        public SeasonSystem.SubSeasonVal getSubSeasonVal() {
+            return SeasonSystem.SubSeasonVal.valueOf(subSeason);
         }
 
-        public void setSubSeasonVal(BWSeasonSystem.SubSeasonVal val) {
+        public void setSubSeasonVal(SeasonSystem.SubSeasonVal val) {
             subSeason = val.toString();
         }
 
-        public BWSeasonSystem.SeasonVal getParentSeason() {
+        public SeasonSystem.SeasonVal getParentSeason() {
             return parentSeason;
         }
 
-        public void setParentSeason(BWSeasonSystem.SeasonVal parentSeason) {
+        public void setParentSeason(SeasonSystem.SeasonVal parentSeason) {
             this.parentSeason = parentSeason;
         }
 
@@ -244,7 +295,7 @@ public class Season {
             return blockToCropGrowthMultiplierMap.getOrDefault(block, fallBack);
         }
 
-        public WeatherEventController getWeatherEventController() {
+        public IdentityHashMap<String, Double> getWeatherEventController() {
             return weatherEventController;
         }
 
@@ -433,33 +484,10 @@ public class Season {
                 parsedFogHexColor = BetterWeatherUtil.parseHexColor(targetFogHexColor);
             }
 
-            private void printDebugWarning(String message, Object... args) {
-                Minecraft.getInstance().ingameGUI.getChatGUI().printChatMessage((new StringTextComponent("")).append((new TranslationTextComponent("debug.prefix")).mergeStyle(TextFormatting.RED, TextFormatting.BOLD)).appendString(" ").append(new TranslationTextComponent(message, args)));
-            }
-
             public static int stopSpamIDXFoliage;
             public static int stopSpamIDXGrass;
             public static int stopSpamIDXSky;
             public static int stopSpamIDXFog;
-        }
-    }
-
-
-    public static class WeatherEventController {
-        private final double blizzardChance;
-        private final double acidRainChance;
-
-        public WeatherEventController(double blizzardChance, double acidRainChance) {
-            this.blizzardChance = blizzardChance;
-            this.acidRainChance = acidRainChance;
-        }
-
-        public double getBlizzardChance() {
-            return blizzardChance;
-        }
-
-        public double getAcidRainChance() {
-            return acidRainChance;
         }
     }
 }

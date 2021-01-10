@@ -4,6 +4,9 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.config.BetterWeatherConfig;
+import corgitaco.betterweather.config.json.WeatherEventControllerConfig;
+import corgitaco.betterweather.datastorage.network.NetworkHandler;
+import corgitaco.betterweather.datastorage.network.packet.RefreshRenderersPacket;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -15,7 +18,15 @@ public class ConfigReloadCommand {
 
     public static int reloadCommand(CommandSource source) {
         BetterWeatherConfig.loadConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-common.toml"));
-        BetterWeather.loadCommonConfigs();
+        BetterWeather.BetterWeatherEvents.updateGeneralDataPacket(source.getWorld().getPlayers(), source.getWorld());
+
+        if (!BetterWeather.useSeasons)
+            WeatherEventControllerConfig.handleConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-weather-controller.json"));
+
+        BetterWeather.loadSeasonConfigs();
+
+        source.getWorld().getPlayers().forEach(player ->NetworkHandler.sendTo(player, new RefreshRenderersPacket()));
+
 
         source.sendFeedback(new TranslationTextComponent("commands.bw.reload.success"), true);
         return 1;

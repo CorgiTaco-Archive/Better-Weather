@@ -6,7 +6,7 @@
   "mixins": [
     "biome.MixinBiome",
     "block.MixinAbstractBlockstate",
-    "entity.MixinAnimalBreedTask",
+    "entity.MixinBreedGoal",
     "server.MixinDerivedWorldInfo",
     "server.MixinMinecraftServer",
     "server.MixinServerWorld",

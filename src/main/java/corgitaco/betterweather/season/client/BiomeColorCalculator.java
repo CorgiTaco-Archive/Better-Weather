@@ -1,5 +1,6 @@
 package corgitaco.betterweather.season.client;
 
+import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.season.Season;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
@@ -16,6 +17,9 @@ import java.awt.*;
 public class BiomeColorCalculator {
 
     public static Color modifyBiomeColor(ColorType colorType, Color originalColorValue, Season.SubSeason subSeason, Biome biome) {
+        if (!BetterWeather.useSeasons)
+            return originalColorValue;
+
         int red = originalColorValue.getRed();
         int green = originalColorValue.getGreen();
         int blue = originalColorValue.getBlue();

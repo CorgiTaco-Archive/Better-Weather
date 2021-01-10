@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.season.BWSeasonSystem;
+import corgitaco.betterweather.season.SeasonSystem;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.ISuggestionProvider;
@@ -18,13 +18,13 @@ import java.util.stream.Collectors;
 public class SetSeasonCommand {
 
     public static ArgumentBuilder<CommandSource, ?> register(CommandDispatcher<CommandSource> dispatcher) {
-        List<String> seasons = Arrays.stream(BWSeasonSystem.SubSeasonVal.values()).map(Objects::toString).collect(Collectors.toList());
+        List<String> seasons = Arrays.stream(SeasonSystem.SubSeasonVal.values()).map(Objects::toString).collect(Collectors.toList());
         return Commands.literal("setseason").then(Commands.argument("season", StringArgumentType.string()).suggests((ctx, sb) -> ISuggestionProvider.suggest(seasons.stream(), sb))
                 .executes((cs) -> betterWeatherSetSeason(cs.getSource(), cs.getArgument("season", String.class))));
     }
 
     public static int betterWeatherSetSeason(CommandSource source, String weatherTypeString) {
-        BWSeasonSystem.SubSeasonVal subSeason = BWSeasonSystem.SubSeasonVal.valueOf(weatherTypeString);
+        SeasonSystem.SubSeasonVal subSeason = SeasonSystem.SubSeasonVal.valueOf(weatherTypeString);
         boolean failedFlag = false;
         switch (subSeason) {
             case SPRING_START:
@@ -70,7 +70,7 @@ public class SetSeasonCommand {
         }
         if (!failedFlag) {
             BetterWeather.seasonData.setForced(true);
-            BetterWeather.seasonData.setSeasonTime(BWSeasonSystem.getTimeInCycleForSubSeason(subSeason, BetterWeather.SEASON_CYCLE_LENGTH));
+            BetterWeather.seasonData.setSeasonTime(SeasonSystem.getTimeInCycleForSubSeason(subSeason, BetterWeather.SEASON_CYCLE_LENGTH));
         }
         return 1;
     }

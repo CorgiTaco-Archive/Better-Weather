@@ -1,6 +1,7 @@
 package corgitaco.betterweather.datastorage;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
@@ -8,18 +9,18 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.DimensionSavedDataManager;
 import net.minecraft.world.storage.WorldSavedData;
 
-public class BetterWeatherData extends WorldSavedData {
+public class BetterWeatherEventData extends WorldSavedData {
     public static String DATA_NAME = BetterWeather.MOD_ID + ":weather_event_data";
 
-    private String event = BetterWeather.WeatherEvent.NONE.toString();
+    private String event = WeatherEventSystem.NONE;
     private boolean isWeatherForced;
     private boolean modified;
 
-    public BetterWeatherData() {
+    public BetterWeatherEventData() {
         super(DATA_NAME);
     }
 
-    public BetterWeatherData(String s) {
+    public BetterWeatherEventData(String s) {
         super(s);
     }
 
@@ -39,32 +40,22 @@ public class BetterWeatherData extends WorldSavedData {
 
     @Deprecated
     public boolean isAcidRain() {
-        return BetterWeather.WeatherEvent.valueOf(this.event) == BetterWeather.WeatherEvent.ACID_RAIN;
+        return this.event.equals(WeatherEventSystem.ACID_RAIN);
     }
 
     @Deprecated
     public boolean isBlizzard() {
-        return BetterWeather.WeatherEvent.valueOf(this.event) == BetterWeather.WeatherEvent.BLIZZARD;
+        return this.event.equals(WeatherEventSystem.BLIZZARD);
     }
 
     public String getEvent() {
         return event;
     }
 
-    public BetterWeather.WeatherEvent getEventValue() {
-        return BetterWeather.WeatherEvent.valueOf(event);
-    }
-
     public void setEvent(String event) {
         this.event = event;
         markDirty();
     }
-
-    public void setEvent(BetterWeather.WeatherEvent event) {
-        this.event = event.toString();
-        markDirty();
-    }
-
 
     public boolean isWeatherForced() {
         return isWeatherForced;
@@ -84,15 +75,15 @@ public class BetterWeatherData extends WorldSavedData {
         markDirty();
     }
 
-    public static BetterWeatherData get(IWorld world) {
+    public static BetterWeatherEventData get(IWorld world) {
         if (!(world instanceof ServerWorld))
-            return new BetterWeatherData();
+            return new BetterWeatherEventData();
         ServerWorld overWorld = ((ServerWorld) world).getWorld().getServer().getWorld(World.OVERWORLD);
         DimensionSavedDataManager data = overWorld.getSavedData();
-        BetterWeatherData weatherData = data.getOrCreate(BetterWeatherData::new, DATA_NAME);
+        BetterWeatherEventData weatherData = data.getOrCreate(BetterWeatherEventData::new, DATA_NAME);
 
         if (weatherData == null) {
-            weatherData = new BetterWeatherData();
+            weatherData = new BetterWeatherEventData();
             data.set(weatherData);
         }
 

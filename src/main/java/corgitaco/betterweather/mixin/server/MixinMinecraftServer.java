@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.datafixers.DataFixer;
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.config.json.WeatherEventControllerConfig;
 import net.minecraft.resources.DataPackRegistries;
 import net.minecraft.resources.ResourcePackList;
 import net.minecraft.server.MinecraftServer;
@@ -26,6 +27,9 @@ public class MixinMinecraftServer {
     @Inject(method = "<init>", at = @At("RETURN"))
     private void readConfigsAtWorldCreation(Thread serverThread, DynamicRegistries.Impl registries, SaveFormat.LevelSave anvilConverterForAnvilFile, IServerConfiguration p_i232576_4_, ResourcePackList dataPacks, Proxy serverProxy, DataFixer dataFixer, DataPackRegistries dataRegistries, MinecraftSessionService sessionService, GameProfileRepository profileRepo, PlayerProfileCache profileCache, IChunkStatusListenerFactory chunkStatusListenerFactory, CallbackInfo ci) {
         BetterWeather.biomeRegistryEarlyAccess = registries.getRegistry(Registry.BIOME_KEY);
-        BetterWeather.loadCommonConfigs();
+        if (!BetterWeather.useSeasons)
+            WeatherEventControllerConfig.handleConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-weather-controller.json"));
+
+        BetterWeather.loadSeasonConfigs();
     }
 }

@@ -1,20 +1,23 @@
 package corgitaco.betterweather;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
 import corgitaco.betterweather.config.json.SeasonConfig;
 import corgitaco.betterweather.config.json.overrides.BiomeOverrideJsonHandler;
-import corgitaco.betterweather.datastorage.BetterWeatherData;
+import corgitaco.betterweather.datastorage.BetterWeatherEventData;
+import corgitaco.betterweather.datastorage.BetterWeatherGeneralData;
 import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
-import corgitaco.betterweather.season.BWSeasonSystem;
+import corgitaco.betterweather.datastorage.network.packet.GeneralPacket;
+import corgitaco.betterweather.season.SeasonSystem;
 import corgitaco.betterweather.season.Season;
 import corgitaco.betterweather.server.ConfigReloadCommand;
 import corgitaco.betterweather.server.SetSeasonCommand;
 import corgitaco.betterweather.server.SetWeatherCommand;
-import corgitaco.betterweather.weatherevent.BWWeatherEventSystem;
+import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import corgitaco.betterweather.weatherevent.weatherevents.AcidRain;
 import corgitaco.betterweather.weatherevent.weatherevents.Blizzard;
 import net.minecraft.client.Minecraft;
@@ -50,7 +53,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.Optional;
+import java.util.List;
 
 @Mod("betterweather")
 public class BetterWeather {
@@ -58,6 +61,7 @@ public class BetterWeather {
     public static final String MOD_ID = "betterweather";
     public static int SEASON_LENGTH = 240000;
     public static int SEASON_CYCLE_LENGTH = SEASON_LENGTH * 4;
+    public static boolean useSeasons = true;
 
     public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
 
@@ -75,7 +79,8 @@ public class BetterWeather {
     }
 
     public static BetterWeatherSeasonData seasonData = null;
-    public static BetterWeatherData weatherData = null;
+    public static BetterWeatherEventData weatherData = null;
+    public static BetterWeatherGeneralData generalData = null;
 
 
     public void commonSetup(FMLCommonSetupEvent event) {
@@ -91,32 +96,21 @@ public class BetterWeather {
 
     public static void loadClientConfigs() {
         BetterWeatherConfigClient.loadConfig(CONFIG_PATH.resolve(MOD_ID + "-client.toml"));
-        loadCommonConfigs();
+        loadSeasonConfigs();
     }
 
-    public static void loadCommonConfigs() {
-        SeasonConfig.handleBWSeasonsConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-seasons.json"));
-
-        Season.SUB_SEASON_MAP.forEach((subSeasonName, subSeason) -> {
-            Path overrideFilePath = CONFIG_PATH.resolve("overrides").resolve(subSeasonName + "-override.json");
-            if (subSeason.getParentSeason() == BWSeasonSystem.SeasonVal.WINTER)
-                BiomeOverrideJsonHandler.handleOverrideJsonConfigs(overrideFilePath, Season.SubSeason.WINTER_OVERRIDE, subSeason);
-            else
-                BiomeOverrideJsonHandler.handleOverrideJsonConfigs(overrideFilePath, new IdentityHashMap<>(), subSeason);
-        });
+    public static void loadSeasonConfigs() {
+        if (useSeasons) {
+            SeasonConfig.handleBWSeasonsConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-seasons.json"));
+            Season.SUB_SEASON_MAP.forEach((subSeasonName, subSeason) -> {
+                Path overrideFilePath = CONFIG_PATH.resolve("overrides").resolve(subSeasonName + "-override.json");
+                if (subSeason.getParentSeason() == SeasonSystem.SeasonVal.WINTER)
+                    BiomeOverrideJsonHandler.handleOverrideJsonConfigs(overrideFilePath, Season.SubSeason.WINTER_OVERRIDE, subSeason);
+                else
+                    BiomeOverrideJsonHandler.handleOverrideJsonConfigs(overrideFilePath, new IdentityHashMap<>(), subSeason);
+            });
+        }
     }
-
-
-    public enum WeatherEvent {
-        NONE,
-        ACID_RAIN,
-        BLIZZARD,
-//        HAIL,
-//        HEATWAVE,
-//        WINDSTORM,
-//        SANDSTORM,
-    }
-
 
     @Mod.EventBusSubscriber(modid = BetterWeather.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class BetterWeatherEvents {
@@ -132,17 +126,18 @@ public class BetterWeather {
                         World world = event.world;
                         int tickSpeed = world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
                         long worldTime = world.getWorldInfo().getGameTime();
+                        if (useSeasons) {
+                            SeasonSystem.updateSeasonTime();
+                            SeasonSystem.updateSeasonPacket(serverWorld.getPlayers(), world, false);
+                        }
 
-                        BWSeasonSystem.updateSeasonTime();
+                        WeatherEventSystem.updateWeatherEventPacket(serverWorld.getPlayers(), world, false);
 
-                        BWSeasonSystem.updateSeasonPacket(serverWorld.getPlayers(), world, false);
-                        BWWeatherEventSystem.updateWeatherEventPacket(serverWorld.getPlayers(), world, false);
-
-                        if (weatherData.getEventValue() == WeatherEvent.ACID_RAIN) {
+                        if (weatherData.getEvent().equals(WeatherEventSystem.ACID_RAIN)) {
                             AcidRain.modifyLiveWorldForAcidRain(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
-                        } else if (weatherData.getEventValue() == WeatherEvent.BLIZZARD) {
+                        } else if (weatherData.getEvent().equals(WeatherEventSystem.BLIZZARD)) {
                             Blizzard.modifyLiveWorldForBlizzard(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
-                        } else if (weatherData.getEventValue() == WeatherEvent.NONE && BetterWeatherConfig.decaySnowAndIce.get())
+                        } else if (weatherData.getEvent().equals(WeatherEventSystem.NONE) && BetterWeatherConfig.decaySnowAndIce.get())
                             Blizzard.decayIceAndSnowFaster(serverWorld, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
                     }
                 }
@@ -171,10 +166,21 @@ public class BetterWeather {
 
         @SubscribeEvent
         public static void onPlayerJoined(PlayerEvent.PlayerLoggedInEvent event) {
-            BWSeasonSystem.updateSeasonPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world, true);
-            BWWeatherEventSystem.updateWeatherEventPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world, true);
+            updateGeneralDataPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world);
+            if (useSeasons)
+                SeasonSystem.updateSeasonPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world, true);
+            WeatherEventSystem.updateWeatherEventPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world, true);
         }
 
+        public static void updateGeneralDataPacket(List<ServerPlayerEntity> players, World world) {
+            setGeneralData(world);
+
+            players.forEach(player -> {
+                NetworkHandler.sendTo(player, new GeneralPacket(useSeasons));
+            });
+        }
+
+        public static boolean refreshRenderers = false;
 
         @SubscribeEvent
         public static void clientTickEvent(TickEvent.ClientTickEvent event) {
@@ -182,8 +188,15 @@ public class BetterWeather {
             if (event.phase == TickEvent.Phase.START) {
                 if (minecraft.world != null && minecraft.player != null) {
                     if (minecraft.world.getDimensionKey() == World.OVERWORLD) {
-                        if (minecraft.world.getWorldInfo().getGameTime() % 10 == 0) {
-                            BWSeasonSystem.clientSeason();
+                        if (useSeasons) {
+                            if (minecraft.world.getWorldInfo().getGameTime() % 10 == 0) {
+                                SeasonSystem.clientSeason();
+                            }
+                        }
+
+                        if (refreshRenderers) {
+                            minecraft.worldRenderer.loadRenderers();
+                            refreshRenderers = false;
                         }
 
                         AcidRain.handleRainTexture(minecraft);
@@ -207,25 +220,33 @@ public class BetterWeather {
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         LOGGER.debug("Registering Better Weather commands...");
-        LiteralCommandNode<CommandSource> source = dispatcher.register(
-                Commands.literal(MOD_ID).requires(commandSource -> commandSource.hasPermissionLevel(3))
-                        .then(SetSeasonCommand.register(dispatcher))
-                        .then(SetWeatherCommand.register(dispatcher))
-                        .then(ConfigReloadCommand.register(dispatcher))
+        LiteralArgumentBuilder<CommandSource> requires = Commands.literal(MOD_ID).requires(commandSource -> commandSource.hasPermissionLevel(3));
+        if (useSeasons)
+            requires.then(SetSeasonCommand.register(dispatcher));
 
-        );
+        LiteralCommandNode<CommandSource> source = dispatcher.register(requires.then(SetWeatherCommand.register(dispatcher)).then(ConfigReloadCommand.register(dispatcher)));
+
+
+
         dispatcher.register(Commands.literal(MOD_ID).redirect(source));
         LOGGER.debug("Registered Better Weather Commands!");
     }
 
     public static void setSeasonData(IWorld world) {
-        if (seasonData == null)
-            seasonData = BetterWeatherSeasonData.get(world);
+        if (useSeasons) {
+            if (seasonData == null)
+                seasonData = BetterWeatherSeasonData.get(world);
+        }
     }
 
     public static void setWeatherData(IWorld world) {
         if (weatherData == null)
-            weatherData = BetterWeatherData.get(world);
+            weatherData = BetterWeatherEventData.get(world);
+    }
+
+    public static void setGeneralData(IWorld world) {
+        if (generalData == null)
+            generalData = BetterWeatherGeneralData.get(world);
     }
 
 
@@ -240,8 +261,10 @@ public class BetterWeather {
 
         @SubscribeEvent
         public static void renderGameOverlayEventText(RenderGameOverlayEvent.Text event) {
-            if (Minecraft.getInstance().gameSettings.showDebugInfo) {
-                event.getLeft().add("Season: " + WordUtils.capitalize(BWSeasonSystem.cachedSeason.toString().toLowerCase()) + " | " + WordUtils.capitalize(BWSeasonSystem.cachedSubSeason.toString().replace("_", "").replace(BWSeasonSystem.cachedSeason.toString(), "").toLowerCase()));
+            if (useSeasons) {
+                if (Minecraft.getInstance().gameSettings.showDebugInfo) {
+                    event.getLeft().add("Season: " + WordUtils.capitalize(SeasonSystem.cachedSeason.toString().toLowerCase()) + " | " + WordUtils.capitalize(SeasonSystem.cachedSubSeason.toString().replace("_", "").replace(SeasonSystem.cachedSeason.toString(), "").toLowerCase()));
+                }
             }
         }
 

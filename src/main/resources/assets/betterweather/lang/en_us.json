@@ -1,5 +1,6 @@
 {
   "bw.debug.reloadconfig.message": "BW: Reloaded Client Configs!",
+  "bw.debug.serverchanges.message": "BW: You are not synced with the server! Use \"F4+R\" to resync!",
   "bw.debug.warn.colorerror": "BW: %s was not a hex color value, you put: \"%s\". | Using defaults... ",
   "commands.bw.reload.success": "BW: Reloaded Configs!",
   "commands.bw.setseason.success.autumn_end": "BW: Set the season to Autumn | End.",
