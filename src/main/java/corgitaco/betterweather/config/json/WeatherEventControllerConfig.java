@@ -3,6 +3,7 @@ package corgitaco.betterweather.config.json;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 
 import java.io.File;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 
 public class WeatherEventControllerConfig {
@@ -28,7 +30,7 @@ public class WeatherEventControllerConfig {
             createJson(path);
         }
         try (Reader reader = new FileReader(path.toString())) {
-            IdentityHashMap<String, Double> hashMap = gson.fromJson(reader, IdentityHashMap.class);
+            HashMap<BetterWeatherID, Double> hashMap = gson.fromJson(reader, HashMap.class);
             if (hashMap != null) {
                 WeatherEventSystem.WEATHER_EVENT_CONTROLLER = hashMap;
             }

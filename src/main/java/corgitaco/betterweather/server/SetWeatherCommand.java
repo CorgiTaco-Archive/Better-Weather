@@ -28,17 +28,17 @@ public class SetWeatherCommand {
     public static int betterWeatherSetWeatherType(ServerWorld world, CommandSource source, String weatherType) {
         switch (weatherType) {
             case "acidrain":
-                BetterWeather.weatherData.setEvent(WeatherEventSystem.ACID_RAIN);
+                BetterWeather.weatherData.setEvent(WeatherEventSystem.ACID_RAIN.toString());
                 world.func_241113_a_(0, 6000, true, false);
                 source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.acidrain"), true);
                 break;
             case "blizzard":
-                BetterWeather.weatherData.setEvent(WeatherEventSystem.BLIZZARD);
+                BetterWeather.weatherData.setEvent(WeatherEventSystem.BLIZZARD.toString());
                 world.func_241113_a_(0, 6000, true, false);
                 source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.blizzard"), true);
                 break;
             case "clear":
-                BetterWeather.weatherData.setEvent(WeatherEventSystem.NONE);
+                BetterWeather.weatherData.setEvent(WeatherEventSystem.CLEAR.toString());
                 world.func_241113_a_(0, 6000, false, false);
                 source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.success.clear"), true);
                 break;

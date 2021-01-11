@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "betterweather.refmap.json",
   "mixins": [
+    "MixinWorld",
     "biome.MixinBiome",
     "block.MixinAbstractBlockstate",
     "entity.MixinBreedGoal",

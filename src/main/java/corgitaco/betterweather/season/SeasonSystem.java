@@ -3,6 +3,9 @@ package corgitaco.betterweather.season;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.access.IsWeatherForced;
+import corgitaco.betterweather.api.SeasonData;
+import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
+import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
 import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
 import corgitaco.betterweather.datastorage.network.packet.WeatherEventPacket;
@@ -15,7 +18,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.IServerWorldInfo;
 import net.minecraft.world.storage.ServerWorldInfo;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -26,9 +28,6 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SeasonSystem {
-
-    public static SubSeasonVal cachedSubSeason = SubSeasonVal.SPRING_START;
-    public static SeasonVal cachedSeason = SeasonVal.SPRING;
 
     public static void updateSeasonTime() {
         if (!BetterWeather.useSeasons)
@@ -52,9 +51,9 @@ public class SeasonSystem {
         BetterWeather.setSeasonData(world);
         int currentSeasonTime = BetterWeather.seasonData.getSeasonTime();
 
-        SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, BetterWeather.seasonData.getSeasonCycleLength()).getSubSeasonVal();
+        SeasonData.SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, BetterWeather.seasonData.getSeasonCycleLength()).getSubSeasonVal();
 
-        if (cachedSubSeason != subSeason || BetterWeather.seasonData.isForced() || justJoined) {
+        if (SeasonData.currentSubSeason != subSeason || BetterWeather.seasonData.isForced() || justJoined) {
             BetterWeather.seasonData.setSubseason(subSeason.toString());
         }
 
@@ -73,13 +72,13 @@ public class SeasonSystem {
 
         int currentSeasonTime = BetterWeather.seasonData.getSeasonTime();
 
-        SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, BetterWeather.seasonData.getSeasonCycleLength()).getSubSeasonVal();
+        SeasonData.SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, BetterWeather.seasonData.getSeasonCycleLength()).getSubSeasonVal();
 
 
-        if (cachedSubSeason != subSeason) {
+        if (SeasonData.currentSubSeason != subSeason) {
             BetterWeather.seasonData.setSubseason(subSeason.toString());
             Minecraft minecraft = Minecraft.getInstance();
-            cachedSubSeason = subSeason;
+            SeasonData.currentSubSeason = subSeason;
             minecraft.worldRenderer.loadRenderers();
         }
     }
@@ -91,10 +90,10 @@ public class SeasonSystem {
 
         int perSeasonTime = seasonCycleLength / 4;
 
-        SeasonVal seasonVal = getSeasonFromTime(seasonTime, seasonCycleLength);
-        if (cachedSeason != seasonVal) {
+        SeasonData.SeasonVal seasonVal = getSeasonFromTime(seasonTime, seasonCycleLength);
+        if (SeasonData.currentSeason != seasonVal) {
             BetterWeather.seasonData.setSeason(seasonVal.toString());
-            cachedSeason = seasonVal;
+            SeasonData.currentSeason = seasonVal;
         }
 
         int perSeasonTime3rd = perSeasonTime / 3;
@@ -115,7 +114,7 @@ public class SeasonSystem {
         if (!BetterWeather.useSeasons)
             throw new UnsupportedOperationException("Seasons are disabled in this instance!");
 
-        Season.SubSeason subSeason = Season.getSubSeasonFromEnum(SeasonSystem.cachedSubSeason);
+        Season.SubSeason subSeason = Season.getSubSeasonFromEnum(SeasonData.currentSubSeason);
         if (subSeason.getBiomeToOverrideStorage().isEmpty() && subSeason.getCropToMultiplierStorage().isEmpty()) {
             if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block)) {
                 cropTicker(world, posIn, block, subSeason, true, self, ci);
@@ -155,20 +154,20 @@ public class SeasonSystem {
     }
 
     private static int tickCounter = 0;
-    private static SeasonSystem.SubSeasonVal privateSubSeasonVal;
+    private static SeasonData.SubSeasonVal privateSubSeasonVal;
 
     public static void rollWeatherEventChanceForSeason(Random random, boolean isRaining, boolean isThundering, ServerWorldInfo worldInfo, List<ServerPlayerEntity> players) {
         if (!BetterWeather.useSeasons)
             throw new UnsupportedOperationException("Seasons are disabled in this instance!");
 
-        Season.SubSeason subSeason = Season.getSubSeasonFromEnum(SeasonSystem.cachedSubSeason);
+        Season.SubSeason subSeason = Season.getSubSeasonFromEnum(SeasonData.currentSubSeason);
         boolean isRainActive = isRaining || isThundering;
 
         if (privateSubSeasonVal == null) {
-            privateSubSeasonVal = SeasonSystem.cachedSubSeason;
+            privateSubSeasonVal = SeasonData.currentSubSeason;
         }
 
-        boolean privateSeasonIsNotCacheSeasonFlag = privateSubSeasonVal != SeasonSystem.cachedSubSeason;
+        boolean privateSeasonIsNotCacheSeasonFlag = privateSubSeasonVal != SeasonData.currentSubSeason;
 
         if (!isRainActive) {
             if (!BetterWeather.weatherData.isModified() || privateSeasonIsNotCacheSeasonFlag) {
@@ -187,80 +186,58 @@ public class SeasonSystem {
                 AtomicBoolean weatherEventWasSet = new AtomicBoolean(false);
                 if (!BetterWeather.weatherData.isWeatherForced()) { //If weather isn't forced, roll chance
                     subSeason.getWeatherEventController().forEach((event, chance) -> {
-                        if (random.nextDouble() < chance) {
-                            weatherEventWasSet.set(true);
-                            BetterWeather.weatherData.setEvent(event);
+                        if (!event.equals(WeatherEventSystem.CLEAR.toString())) {
+                            if (random.nextDouble() < chance) {
+                                weatherEventWasSet.set(true);
+                                BetterWeather.weatherData.setEvent(event);
+                                worldInfo.setThundering(WeatherData.currentWeatherEvent.hasSkyDarkness());
+                            }
                         }
                     });
                     if (!weatherEventWasSet.get())
-                        BetterWeather.weatherData.setEvent(WeatherEventSystem.NONE);
-                    players.forEach(player -> NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEvent())));
+                        BetterWeather.weatherData.setEvent(WeatherEventSystem.CLEAR.toString());
+                    players.forEach(player -> NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString())));
                 }
                 tickCounter++;
             }
         } else {
             if (!isRainActive) {
                 if (tickCounter > 0) {
-                    BetterWeather.weatherData.setEvent(WeatherEventSystem.NONE);
+                    BetterWeather.weatherData.setEvent(WeatherEventSystem.CLEAR.toString());
                     ((IsWeatherForced) worldInfo).setWeatherForced(false);
                     BetterWeather.weatherData.setWeatherForced(((IsWeatherForced) worldInfo).isWeatherForced());
-                    players.forEach(player -> NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEvent())));
+                    players.forEach(player -> NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString())));
                     tickCounter = 0;
                 }
             }
         }
 
         if (privateSeasonIsNotCacheSeasonFlag) {
-            privateSubSeasonVal = SeasonSystem.cachedSubSeason;
+            privateSubSeasonVal = SeasonData.currentSubSeason;
         }
     }
 
-    public static int getTimeInCycleForSubSeason(SubSeasonVal subSeasonVal, int seasonCycleLength) {
+    public static int getTimeInCycleForSubSeason(SeasonData.SubSeasonVal subSeasonVal, int seasonCycleLength) {
         if (!BetterWeather.useSeasons)
             throw new UnsupportedOperationException("Seasons are disabled in this instance!");
 
-        int perSubSeasonLength = seasonCycleLength / (SubSeasonVal.values().length);
+        int perSubSeasonLength = seasonCycleLength / (SeasonData.SubSeasonVal.values().length);
         return perSubSeasonLength * subSeasonVal.ordinal();
     }
 
-    public static SeasonVal getSeasonFromTime(int seasonTime, int seasonCycleLength) {
+    public static SeasonData.SeasonVal getSeasonFromTime(int seasonTime, int seasonCycleLength) {
         if (!BetterWeather.useSeasons)
             throw new UnsupportedOperationException("Seasons are disabled in this instance!");
 
         int perSeasonTime = seasonCycleLength / 4;
 
         if (seasonTime < perSeasonTime) {
-            return SeasonVal.SPRING;
+            return SeasonData.SeasonVal.SPRING;
         } else if (seasonTime < perSeasonTime * 2) {
-            return SeasonVal.SUMMER;
+            return SeasonData.SeasonVal.SUMMER;
         } else if (seasonTime < perSeasonTime * 3) {
-            return SeasonVal.AUTUMN;
+            return SeasonData.SeasonVal.AUTUMN;
         } else
-            return SeasonVal.WINTER;
-    }
-
-    public enum SeasonVal {
-        SPRING,
-        SUMMER,
-        AUTUMN,
-        WINTER;
-    }
-
-    public enum SubSeasonVal {
-        SPRING_START,
-        SPRING_MID,
-        SPRING_END,
-
-        SUMMER_START,
-        SUMMER_MID,
-        SUMMER_END,
-
-        AUTUMN_START,
-        AUTUMN_MID,
-        AUTUMN_END,
-
-        WINTER_START,
-        WINTER_MID,
-        WINTER_END;
+            return SeasonData.SeasonVal.WINTER;
     }
 }

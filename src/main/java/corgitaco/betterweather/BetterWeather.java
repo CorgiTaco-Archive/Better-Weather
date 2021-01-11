@@ -3,6 +3,9 @@ package corgitaco.betterweather;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import corgitaco.betterweather.api.SeasonData;
+import corgitaco.betterweather.api.weatherevent.WeatherData;
+import corgitaco.betterweather.api.weatherevent.WeatherEvent;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
 import corgitaco.betterweather.config.json.SeasonConfig;
@@ -18,8 +21,6 @@ import corgitaco.betterweather.server.ConfigReloadCommand;
 import corgitaco.betterweather.server.SetSeasonCommand;
 import corgitaco.betterweather.server.SetWeatherCommand;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
-import corgitaco.betterweather.weatherevent.weatherevents.AcidRain;
-import corgitaco.betterweather.weatherevent.weatherevents.Blizzard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
@@ -42,6 +43,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -74,6 +76,7 @@ public class BetterWeather {
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::lateSetup);
         BetterWeatherConfig.loadConfig(CONFIG_PATH.resolve(MOD_ID + "-common.toml"));
         BetterWeatherConfigClient.loadConfig(CONFIG_PATH.resolve(MOD_ID + "-client.toml"));
     }
@@ -86,7 +89,12 @@ public class BetterWeather {
     public void commonSetup(FMLCommonSetupEvent event) {
 //        GlobalEntityTypeAttributes.put(BWEntityRegistry.TORNADO, TornadoEntity.setCustomAttributes().create());
         BetterWeatherConfig.handleCommonConfig();
+        WeatherEventSystem.addDefaultWeatherEvents();
         NetworkHandler.init();
+    }
+
+    public void lateSetup(FMLLoadCompleteEvent event) {
+        WeatherEventSystem.fillWeatherEventsMapAndWeatherEventController();
     }
 
 
@@ -104,7 +112,7 @@ public class BetterWeather {
             SeasonConfig.handleBWSeasonsConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-seasons.json"));
             Season.SUB_SEASON_MAP.forEach((subSeasonName, subSeason) -> {
                 Path overrideFilePath = CONFIG_PATH.resolve("overrides").resolve(subSeasonName + "-override.json");
-                if (subSeason.getParentSeason() == SeasonSystem.SeasonVal.WINTER)
+                if (subSeason.getParentSeason() == SeasonData.SeasonVal.WINTER)
                     BiomeOverrideJsonHandler.handleOverrideJsonConfigs(overrideFilePath, Season.SubSeason.WINTER_OVERRIDE, subSeason);
                 else
                     BiomeOverrideJsonHandler.handleOverrideJsonConfigs(overrideFilePath, new IdentityHashMap<>(), subSeason);
@@ -133,12 +141,7 @@ public class BetterWeather {
 
                         WeatherEventSystem.updateWeatherEventPacket(serverWorld.getPlayers(), world, false);
 
-                        if (weatherData.getEvent().equals(WeatherEventSystem.ACID_RAIN)) {
-                            AcidRain.modifyLiveWorldForAcidRain(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
-                        } else if (weatherData.getEvent().equals(WeatherEventSystem.BLIZZARD)) {
-                            Blizzard.modifyLiveWorldForBlizzard(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
-                        } else if (weatherData.getEvent().equals(WeatherEventSystem.NONE) && BetterWeatherConfig.decaySnowAndIce.get())
-                            Blizzard.decayIceAndSnowFaster(serverWorld, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
+                        WeatherData.currentWeatherEvent.worldTick(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
                     }
                 }
             }
@@ -160,8 +163,7 @@ public class BetterWeather {
 
         @SubscribeEvent
         public static void entityTickEvent(LivingEvent.LivingUpdateEvent event) {
-            AcidRain.entityHandler(event.getEntity());
-            Blizzard.blizzardEntityHandler(event.getEntity());
+            WeatherData.currentWeatherEvent.livingEntityUpdate(event.getEntity());
         }
 
         @SubscribeEvent
@@ -181,23 +183,34 @@ public class BetterWeather {
         }
 
 
+        private static int ticksLeft = 0;
+        private static WeatherEvent cachedWeatherEvent;
+
         @SubscribeEvent
         public static void clientTickEvent(TickEvent.ClientTickEvent event) {
             Minecraft minecraft = Minecraft.getInstance();
             if (event.phase == TickEvent.Phase.START) {
                 if (minecraft.world != null && minecraft.player != null) {
                     if (minecraft.world.getDimensionKey() == World.OVERWORLD) {
+                        int tickSpeed = minecraft.world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
                         if (useSeasons) {
                             if (minecraft.world.getWorldInfo().getGameTime() % 10 == 0) {
                                 SeasonSystem.clientSeason();
                             }
                         }
 
-                        AcidRain.handleRainTexture(minecraft);
+                        if (ticksLeft == 0) {
+                            ticksLeft = WeatherData.currentWeatherEvent.postClientTicks;
+                            cachedWeatherEvent = WeatherData.currentWeatherEvent;
+                        }
+
+                        if (cachedWeatherEvent != WeatherData.currentWeatherEvent) {
+                            cachedWeatherEvent.clientTick(minecraft.world, tickSpeed, minecraft.world.getWorldInfo().getGameTime(), minecraft, ticksLeft);
+                            ticksLeft--;
+                        }
 
 
-                        Blizzard.handleBlizzardRenderDistance(minecraft);
-                        Blizzard.blizzardSoundHandler(minecraft, minecraft.gameRenderer.getActiveRenderInfo());
+                        WeatherData.currentWeatherEvent.clientTick(minecraft.world, tickSpeed, minecraft.world.getWorldInfo().getGameTime(), minecraft, WeatherData.currentWeatherEvent.postClientTicks);
                     }
                 }
             }
@@ -250,14 +263,14 @@ public class BetterWeather {
         @SubscribeEvent
         public static void renderFogEvent(EntityViewRenderEvent.FogDensity event) {
             Minecraft minecraft = Minecraft.getInstance();
-            Blizzard.handleFog(event, minecraft);
+            WeatherData.currentWeatherEvent.handleFogDensity(event, minecraft);
         }
 
         @SubscribeEvent
         public static void renderGameOverlayEventText(RenderGameOverlayEvent.Text event) {
             if (useSeasons) {
                 if (Minecraft.getInstance().gameSettings.showDebugInfo) {
-                    event.getLeft().add("Season: " + WordUtils.capitalize(SeasonSystem.cachedSeason.toString().toLowerCase()) + " | " + WordUtils.capitalize(SeasonSystem.cachedSubSeason.toString().replace("_", "").replace(SeasonSystem.cachedSeason.toString(), "").toLowerCase()));
+                    event.getLeft().add("Season: " + WordUtils.capitalize(SeasonData.currentSeason.toString().toLowerCase()) + " | " + WordUtils.capitalize(SeasonData.currentSubSeason.toString().replace("_", "").replace(SeasonData.currentSeason.toString(), "").toLowerCase()));
                 }
             }
         }

@@ -1,6 +1,8 @@
 package corgitaco.betterweather.weatherevent.weatherevents;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
+import corgitaco.betterweather.api.weatherevent.WeatherEvent;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -8,8 +10,10 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.settings.ParticleStatus;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.player.PlayerEntity;
@@ -39,11 +43,90 @@ import java.util.Random;
 import static corgitaco.betterweather.BetterWeather.weatherData;
 import static corgitaco.betterweather.config.BetterWeatherConfig.*;
 
-public class AcidRain {
+public class AcidRain extends WeatherEvent {
     public static final ForgeRegistry<Block> blockRegistry = ((ForgeRegistry<Block>) ForgeRegistries.BLOCKS);
     static Block block = blockRegistry.getRaw(new ResourceLocation(blockToChangeFromGrass.get()));
+    public static final ResourceLocation RAIN_TEXTURE = new ResourceLocation("textures/environment/rain.png");
+    public static final ResourceLocation ACID_RAIN_TEXTURE = new ResourceLocation(BetterWeather.MOD_ID, "textures/environment/acid_rain.png");
 
-    public static void acidRainEvent(Chunk chunk, ServerWorld world, int gameRuleTickSpeed, long worldTime) {
+
+
+    public AcidRain() {
+        super(new BetterWeatherID(BetterWeather.MOD_ID, "ACID_RAIN"), 0.25);
+    }
+
+    @Override
+    public void worldTick(ServerWorld world, int tickSpeed, long worldTime, Iterable<ChunkHolder> loadedChunks) {
+        loadedChunks.forEach(chunkHolder -> {
+            Optional<Chunk> optional = chunkHolder.getTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
+            //Gets chunks to tick
+            if (optional.isPresent()) {
+                Optional<Chunk> optional1 = chunkHolder.getEntityTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
+                if (optional1.isPresent()) {
+                    Chunk chunk = optional1.get();
+                    acidRainEvent(chunk, world, worldTime);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void livingEntityUpdate(Entity entity) {
+        if (damageMonsters) {
+            if (entity.getClassification(true) == EntityClassification.MONSTER) {
+                World world = entity.world;
+                BlockPos entityPos = new BlockPos(entity.getPositionVec());
+
+                if (world.canSeeSky(entityPos) && weatherData.isAcidRain() && world.getWorldInfo().isRaining() && world.getGameTime() % hurtEntityTickSpeed.get() == 0) {
+                    entity.attackEntityFrom(DamageSource.GENERIC, 0.5F);
+                }
+            }
+        }
+
+        if (damageAnimals) {
+            if (entity.getClassification(true) == EntityClassification.CREATURE || entity.getClassification(true) == EntityClassification.AMBIENT) {
+                World world = entity.world;
+                BlockPos entityPos = new BlockPos(entity.getPositionVec());
+
+                if (world.canSeeSky(entityPos) && weatherData.isAcidRain() && world.getWorldInfo().isRaining() && world.getGameTime() % hurtEntityTickSpeed.get() == 0) {
+                    entity.attackEntityFrom(DamageSource.GENERIC, hurtEntityDamage.get().floatValue());
+                }
+            }
+        }
+
+        if (damagePlayer) {
+            if (entity instanceof PlayerEntity) {
+                World world = entity.world;
+                BlockPos entityPos = new BlockPos(entity.getPositionVec());
+
+                if (world.canSeeSky(entityPos) && weatherData.isAcidRain() && world.getWorldInfo().isRaining() && world.getGameTime() % hurtEntityTickSpeed.get() == 0) {
+                    entity.attackEntityFrom(DamageSource.GENERIC, 0.5F);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc, int postClientTicksLeft) {
+        if (mc.world != null) {
+            if (mc.world.getWorldInfo().isRaining() && weatherData.isAcidRain()) {
+                if (!BetterWeatherConfigClient.removeSmokeParticles.get())
+                    addAcidRainParticles(mc.gameRenderer.getActiveRenderInfo(), mc, mc.worldRenderer);
+
+                if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE)
+                    WorldRenderer.RAIN_TEXTURES = ACID_RAIN_TEXTURE;
+            } else if (WorldRenderer.RAIN_TEXTURES != RAIN_TEXTURE)
+                WorldRenderer.RAIN_TEXTURES = RAIN_TEXTURE;
+        }
+    }
+
+    @Override
+    public boolean renderWeather(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z) {
+        return false;
+    }
+
+
+    public static void acidRainEvent(Chunk chunk, ServerWorld world, long worldTime) {
         ChunkPos chunkpos = chunk.getPos();
         int chunkXStart = chunkpos.getXStart();
         int chunkZStart = chunkpos.getZStart();
@@ -116,71 +199,6 @@ public class AcidRain {
                     mc.world.playSound(blockpos1, SoundEvents.WEATHER_RAIN_ABOVE, SoundCategory.WEATHER, 0.1F, 0.5F, false);
                 } else {
                     mc.world.playSound(blockpos1, SoundEvents.WEATHER_RAIN, SoundCategory.WEATHER, 0.2F, 1.0F, false);
-                }
-            }
-        }
-    }
-
-    public static void modifyLiveWorldForAcidRain(ServerWorld serverWorld, int tickSpeed, long worldTime, Iterable<ChunkHolder> list) {
-        list.forEach(chunkHolder -> {
-            Optional<Chunk> optional = chunkHolder.getTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
-            //Gets chunks to tick
-            if (optional.isPresent()) {
-                Optional<Chunk> optional1 = chunkHolder.getEntityTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
-                if (optional1.isPresent()) {
-                    Chunk chunk = optional1.get();
-                    AcidRain.acidRainEvent(chunk, serverWorld, tickSpeed, worldTime);
-                }
-            }
-        });
-    }
-
-    public static final ResourceLocation RAIN_TEXTURE = new ResourceLocation("textures/environment/rain.png");
-    public static final ResourceLocation ACID_RAIN_TEXTURE = new ResourceLocation(BetterWeather.MOD_ID, "textures/environment/acid_rain.png");
-
-    public static void handleRainTexture(Minecraft minecraft) {
-        if (minecraft.world != null) {
-            if (minecraft.world.getWorldInfo().isRaining() && weatherData.isAcidRain()) {
-                if (!BetterWeatherConfigClient.removeSmokeParticles.get())
-                    addAcidRainParticles(minecraft.gameRenderer.getActiveRenderInfo(), minecraft, minecraft.worldRenderer);
-
-                if (WorldRenderer.RAIN_TEXTURES != ACID_RAIN_TEXTURE)
-                    WorldRenderer.RAIN_TEXTURES = ACID_RAIN_TEXTURE;
-            } else if (WorldRenderer.RAIN_TEXTURES != RAIN_TEXTURE)
-                WorldRenderer.RAIN_TEXTURES = RAIN_TEXTURE;
-        }
-    }
-
-    public static void entityHandler(Entity entity) {
-        if (damageMonsters) {
-            if (entity.getClassification(true) == EntityClassification.MONSTER) {
-                World world = entity.world;
-                BlockPos entityPos = new BlockPos(entity.getPositionVec());
-
-                if (world.canSeeSky(entityPos) && weatherData.isAcidRain() && world.getWorldInfo().isRaining() && world.getGameTime() % hurtEntityTickSpeed.get() == 0) {
-                    entity.attackEntityFrom(DamageSource.GENERIC, 0.5F);
-                }
-            }
-        }
-
-        if (damageAnimals) {
-            if (entity.getClassification(true) == EntityClassification.CREATURE || entity.getClassification(true) == EntityClassification.AMBIENT) {
-                World world = entity.world;
-                BlockPos entityPos = new BlockPos(entity.getPositionVec());
-
-                if (world.canSeeSky(entityPos) && weatherData.isAcidRain() && world.getWorldInfo().isRaining() && world.getGameTime() % hurtEntityTickSpeed.get() == 0) {
-                    entity.attackEntityFrom(DamageSource.GENERIC, hurtEntityDamage.get().floatValue());
-                }
-            }
-        }
-
-        if (damagePlayer) {
-            if (entity instanceof PlayerEntity) {
-                World world = entity.world;
-                BlockPos entityPos = new BlockPos(entity.getPositionVec());
-
-                if (world.canSeeSky(entityPos) && weatherData.isAcidRain() && world.getWorldInfo().isRaining() && world.getGameTime() % hurtEntityTickSpeed.get() == 0) {
-                    entity.attackEntityFrom(DamageSource.GENERIC, 0.5F);
                 }
             }
         }

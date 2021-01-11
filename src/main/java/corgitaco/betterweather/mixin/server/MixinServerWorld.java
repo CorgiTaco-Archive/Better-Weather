@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
@@ -27,10 +28,8 @@ import java.util.function.BooleanSupplier;
 @Mixin(ServerWorld.class)
 public abstract class MixinServerWorld {
 
-
     @Shadow
     public IServerWorldInfo field_241103_E_;
-
 
     @Shadow
     public abstract List<ServerPlayerEntity> getPlayers();
@@ -48,7 +47,7 @@ public abstract class MixinServerWorld {
         if (BetterWeather.useSeasons)
             SeasonSystem.rollWeatherEventChanceForSeason(random, this.field_241103_E_.isRaining(), this.field_241103_E_.isThundering(), (ServerWorldInfo) this.field_241103_E_, this.getPlayers());
         else
-            WeatherEventSystem.rollWeatherEventChance(random, this.field_241103_E_.isRaining(), this.field_241103_E_.isThundering(), (ServerWorldInfo) this.field_241103_E_, this.getPlayers());
+            WeatherEventSystem.rollWeatherEventChance(random, this.field_241103_E_.isRaining(), (ServerWorldInfo) this.field_241103_E_, this.getPlayers());
 
     }
 
@@ -56,5 +55,15 @@ public abstract class MixinServerWorld {
     private void setWeatherForced(int clearWeatherTime, int weatherTime, boolean rain, boolean thunder, CallbackInfo ci) {
         ((IsWeatherForced) this.field_241103_E_).setWeatherForced(true);
         BetterWeather.weatherData.setWeatherForced(true);
+    }
+
+    @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 1))
+    private int neverTickIceAndSnow(Random random, int bound) {
+        return Integer.MAX_VALUE;
+    }
+
+    @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 0))
+    private int neverSpawnLightning(Random random, int bound) {
+        return Integer.MAX_VALUE;
     }
 }

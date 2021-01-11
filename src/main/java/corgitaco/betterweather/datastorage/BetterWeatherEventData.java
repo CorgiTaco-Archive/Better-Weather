@@ -1,6 +1,8 @@
 package corgitaco.betterweather.datastorage;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
+import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.IWorld;
@@ -12,7 +14,7 @@ import net.minecraft.world.storage.WorldSavedData;
 public class BetterWeatherEventData extends WorldSavedData {
     public static String DATA_NAME = BetterWeather.MOD_ID + ":weather_event_data";
 
-    private String event = WeatherEventSystem.NONE;
+    private BetterWeatherID event = WeatherEventSystem.CLEAR;
     private boolean isWeatherForced;
     private boolean modified;
 
@@ -28,11 +30,12 @@ public class BetterWeatherEventData extends WorldSavedData {
     public void read(CompoundNBT nbt) {
         setEvent(nbt.getString("Event"));
         setWeatherForced(nbt.getBoolean("Forced"));
+        setModified(nbt.getBoolean("Modified"));
     }
 
     @Override
     public CompoundNBT write(CompoundNBT compound) {
-        compound.putString("Event", event);
+        compound.putString("Event", event.toString());
         compound.putBoolean("Forced", isWeatherForced);
         compound.putBoolean("Modified", modified);
         return compound;
@@ -40,21 +43,26 @@ public class BetterWeatherEventData extends WorldSavedData {
 
     @Deprecated
     public boolean isAcidRain() {
-        return this.event.equals(WeatherEventSystem.ACID_RAIN);
+        return this.event == WeatherEventSystem.ACID_RAIN;
     }
 
     @Deprecated
     public boolean isBlizzard() {
-        return this.event.equals(WeatherEventSystem.BLIZZARD);
+        return this.event == WeatherEventSystem.BLIZZARD;
     }
 
-    public String getEvent() {
+    public String getEventString() {
+        return event.toString();
+    }
+
+    public BetterWeatherID getEvent() {
         return event;
     }
 
     public void setEvent(String event) {
-        this.event = event;
+        this.event = new BetterWeatherID(event);
         markDirty();
+        WeatherData.currentWeatherEvent = WeatherEventSystem.WEATHER_EVENTS.get(this.event);
     }
 
     public boolean isWeatherForced() {
