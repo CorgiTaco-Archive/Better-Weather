@@ -88,15 +88,18 @@ public class BiomeColorCalculator {
 
 
     public static Color modifyColorForWeatherEvent(ColorType type, Color biomeColor, @Nullable Color modifiedColor, @Nullable Color seasonTargetColor) {
+        Minecraft instance = Minecraft.getInstance();
+        float partialTicks = instance.isGamePaused() ? instance.renderPartialTicksPaused : instance.timer.renderPartialTicks;
+
         switch (type) {
             case GRASS:
                 return WeatherData.currentWeatherEvent.modifyGrassColor(biomeColor, modifiedColor, seasonTargetColor);
             case FOLIAGE:
                 return WeatherData.currentWeatherEvent.modifyFoliageColor(biomeColor, modifiedColor, seasonTargetColor);
             case SKY:
-                return WeatherData.currentWeatherEvent.modifySkyColor(biomeColor, modifiedColor, seasonTargetColor);
+                return WeatherData.currentWeatherEvent.modifySkyColor(biomeColor, modifiedColor, seasonTargetColor, partialTicks);
             case FOG:
-                return WeatherData.currentWeatherEvent.modifyFogColor(biomeColor, modifiedColor, seasonTargetColor);
+                return WeatherData.currentWeatherEvent.modifyFogColor(biomeColor, modifiedColor, seasonTargetColor, partialTicks);
         }
         return biomeColor;
     }

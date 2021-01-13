@@ -38,7 +38,6 @@ public abstract class MixinBiomeClient {
     private void modifySkyColor(CallbackInfoReturnable<Integer> cir) {
         if (this.getCategory() != Biome.Category.NETHER || this.getCategory() != Biome.Category.THEEND || this.getCategory() != Biome.Category.NONE) {
             cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.SKY, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(SeasonData.currentSubSeason), (Biome) (Object) this).getRGB());
-
         }
     }
 

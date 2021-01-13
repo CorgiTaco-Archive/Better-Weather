@@ -79,12 +79,12 @@ public abstract class WeatherEvent {
 
 
     @OnlyIn(Dist.CLIENT)
-    public Color modifySkyColor(Color biomeColor, @Nullable Color modifiedColor, @Nullable Color seasonColor) {
+    public Color modifySkyColor(Color biomeColor, @Nullable Color modifiedColor, @Nullable Color seasonColor, float partialTicks) {
         return modifiedColor == null ? biomeColor : modifiedColor;
     }
 
     @OnlyIn(Dist.CLIENT)
-    public Color modifyFogColor(Color biomeColor, @Nullable Color modifiedColor, @Nullable Color seasonColor) {
+    public Color modifyFogColor(Color biomeColor, @Nullable Color modifiedColor, @Nullable Color seasonColor, float partialTicks) {
         return modifiedColor == null ? biomeColor : modifiedColor;
     }
 
