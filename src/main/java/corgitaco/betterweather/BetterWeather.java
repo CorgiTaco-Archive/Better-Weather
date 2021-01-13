@@ -198,18 +198,6 @@ public class BetterWeather {
                                 SeasonSystem.clientSeason();
                             }
                         }
-
-                        if (ticksLeft == 0) {
-                            ticksLeft = WeatherData.currentWeatherEvent.postClientTicks;
-                            cachedWeatherEvent = WeatherData.currentWeatherEvent;
-                        }
-
-                        if (cachedWeatherEvent != WeatherData.currentWeatherEvent) {
-                            cachedWeatherEvent.clientTick(minecraft.world, tickSpeed, minecraft.world.getWorldInfo().getGameTime(), minecraft, ticksLeft);
-                            ticksLeft--;
-                        }
-
-
                         WeatherData.currentWeatherEvent.clientTick(minecraft.world, tickSpeed, minecraft.world.getWorldInfo().getGameTime(), minecraft, WeatherData.currentWeatherEvent.postClientTicks);
                     }
                 }

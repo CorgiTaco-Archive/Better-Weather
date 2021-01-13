@@ -107,10 +107,6 @@ public abstract class WeatherEvent {
         return Float.MAX_VALUE;
     }
 
-    public float skyDarkness(float originalVal, float partialTicks, float prevThunderingStrength, float thunderStrength, float prevRainStength, float rainStrength) {
-        return originalVal;
-    }
-
     public boolean hasSkyDarkness() {
         return false;
     }

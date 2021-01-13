@@ -190,7 +190,6 @@ public class SeasonSystem {
                             if (random.nextDouble() < chance) {
                                 weatherEventWasSet.set(true);
                                 BetterWeather.weatherData.setEvent(event);
-                                worldInfo.setThundering(WeatherData.currentWeatherEvent.hasSkyDarkness());
                             }
                         }
                     });

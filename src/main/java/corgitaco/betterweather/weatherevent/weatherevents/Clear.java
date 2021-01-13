@@ -90,9 +90,4 @@ public class Clear extends WeatherEvent {
     public boolean hasSkyDarkness() {
         return true;
     }
-
-    @Override
-    public float skyDarkness(float originalVal, float partialTicks, float prevThunderingStrength, float thunderStrength, float prevRainStength, float rainStrength) {
-        return 0.5F;
-    }
 }
