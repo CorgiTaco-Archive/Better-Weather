@@ -14,6 +14,13 @@ public abstract class MixinViewFrustum implements WeatherViewFrustum {
     @Shadow
     public abstract void updateChunkPositions(double viewEntityX, double viewEntityZ);
 
+    /**
+     * @param renderDistance Forced Render distance specified by the current weather event.
+     *
+     * Called every Weather Event Changing Packet, and at the tail of loadRenderers.
+     *
+     * Forces the current render distance down for the current weather event.
+     */
     @Override
     public void forceRenderDistance(int renderDistance, double x, double y, double z) {
         this.setCountChunksXYZ(renderDistance);
