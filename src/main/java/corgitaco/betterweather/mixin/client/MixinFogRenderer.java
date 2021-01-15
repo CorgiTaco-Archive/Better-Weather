@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(FogRenderer.class)
-public class MixinFogRenderer {
+public abstract class MixinFogRenderer {
 
     @Redirect(method = "updateFogColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
     private static float doNotDarkenFogWithRainStrength(ClientWorld world, float delta) {

@@ -6,7 +6,6 @@ import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -20,7 +19,7 @@ public class Clouded extends WeatherEvent {
     }
 
     @Override
-    public void worldTick(ServerWorld world, int tickSpeed, long worldTime, Iterable<ChunkHolder> loadedChunks) {
+    public void worldTick(ServerWorld world, int tickSpeed, long worldTime) {
 
     }
 

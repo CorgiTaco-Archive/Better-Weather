@@ -33,14 +33,12 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
 
 import javax.annotation.Nullable;
 import java.awt.*;
-import java.util.Optional;
 import java.util.Random;
 
 import static corgitaco.betterweather.BetterWeather.weatherData;
@@ -57,52 +55,7 @@ public class AcidRain extends WeatherEvent {
     }
 
     @Override
-    public void worldTick(ServerWorld world, int tickSpeed, long worldTime, Iterable<ChunkHolder> loadedChunks) {
-        loadedChunks.forEach(chunkHolder -> {
-            Optional<Chunk> optional = chunkHolder.getTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
-            //Gets chunks to tick
-            if (optional.isPresent()) {
-                Optional<Chunk> optional1 = chunkHolder.getEntityTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
-                if (optional1.isPresent()) {
-                    Chunk chunk = optional1.get();
-                    acidRainEvent(chunk, world, worldTime);
-                }
-            }
-        });
-    }
-
-    public static void acidRainEvent(Chunk chunk, ServerWorld world, long worldTime) {
-        ChunkPos chunkpos = chunk.getPos();
-        int chunkXStart = chunkpos.getXStart();
-        int chunkZStart = chunkpos.getZStart();
-        IProfiler iprofiler = world.getProfiler();
-        iprofiler.startSection("acidrain");
-        BlockPos blockpos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
-        if (world.isAreaLoaded(blockpos, 1)) {
-            if (world.getWorldInfo().isRaining() && worldTime % tickBlockDestroySpeed.get() == 0 && destroyBlocks.get() && world.getBiome(blockpos).getPrecipitation() == Biome.RainType.RAIN) {
-                if (destroyGrass) {
-                    if (block == null) {
-                        BetterWeather.LOGGER.error("The block replacing grass, registry location was incorrect. You put: " + blockToChangeFromGrass.get() + "\n Reverting to dirt!");
-                        block = Blocks.DIRT;
-                    }
-                    if (world.getBlockState(blockpos.down()).getBlock() == Blocks.GRASS_BLOCK)
-                        world.setBlockState(blockpos.down(), block.getDefaultState());
-                }
-                if (destroyPlants) {
-                    if (world.getBlockState(blockpos).getMaterial() == Material.PLANTS || world.getBlockState(blockpos).getMaterial() == Material.TALL_PLANTS && !blocksToNotDestroyList.contains(world.getBlockState(blockpos).getBlock()))
-                        world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
-                }
-                if (destroyLeaves) {
-                    if (world.getBlockState(blockpos.down()).getBlock().isIn(BlockTags.LEAVES) && !blocksToNotDestroyList.contains(world.getBlockState(blockpos.down()).getBlock()))
-                        world.setBlockState(blockpos.down(), Blocks.AIR.getDefaultState());
-                }
-                if (destroyCrops) {
-                    if (world.getBlockState(blockpos).getBlock().isIn(BlockTags.CROPS) && !blocksToNotDestroyList.contains(world.getBlockState(blockpos).getBlock()))
-                        world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
-                }
-            }
-        }
-        iprofiler.endSection();
+    public void worldTick(ServerWorld world, int tickSpeed, long worldTime) {
     }
 
     public static void addAcidRainParticles(ActiveRenderInfo activeRenderInfoIn, Minecraft mc, WorldRenderer worldRenderer) {
@@ -216,5 +169,44 @@ public class AcidRain extends WeatherEvent {
     @Override
     public Color modifyFogColor(Color biomeColor, Color returnColor, @Nullable Color seasonTargetColor, float rainStrength) {
         return BetterWeatherUtil.blendColor(returnColor, BetterWeatherUtil.DEFAULT_RAIN_FOG, rainStrength);
+    }
+
+    @Override
+    public void tickLiveChunks(Chunk chunk, ServerWorld world) {
+        acidRainEvent(chunk, world, world.getWorldInfo().getGameTime());
+    }
+
+    public static void acidRainEvent(Chunk chunk, ServerWorld world, long worldTime) {
+        ChunkPos chunkpos = chunk.getPos();
+        int chunkXStart = chunkpos.getXStart();
+        int chunkZStart = chunkpos.getZStart();
+        IProfiler iprofiler = world.getProfiler();
+        iprofiler.startSection("acidrain");
+        BlockPos blockpos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
+        if (world.isAreaLoaded(blockpos, 1)) {
+            if (world.getWorldInfo().isRaining() && worldTime % tickBlockDestroySpeed.get() == 0 && destroyBlocks.get() && world.getBiome(blockpos).getPrecipitation() == Biome.RainType.RAIN) {
+                if (destroyGrass) {
+                    if (block == null) {
+                        BetterWeather.LOGGER.error("The block replacing grass, registry location was incorrect. You put: " + blockToChangeFromGrass.get() + "\n Reverting to dirt!");
+                        block = Blocks.DIRT;
+                    }
+                    if (world.getBlockState(blockpos.down()).getBlock() == Blocks.GRASS_BLOCK)
+                        world.setBlockState(blockpos.down(), block.getDefaultState());
+                }
+                if (destroyPlants) {
+                    if (world.getBlockState(blockpos).getMaterial() == Material.PLANTS || world.getBlockState(blockpos).getMaterial() == Material.TALL_PLANTS && !blocksToNotDestroyList.contains(world.getBlockState(blockpos).getBlock()))
+                        world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
+                }
+                if (destroyLeaves) {
+                    if (world.getBlockState(blockpos.down()).getBlock().isIn(BlockTags.LEAVES) && !blocksToNotDestroyList.contains(world.getBlockState(blockpos.down()).getBlock()))
+                        world.setBlockState(blockpos.down(), Blocks.AIR.getDefaultState());
+                }
+                if (destroyCrops) {
+                    if (world.getBlockState(blockpos).getBlock().isIn(BlockTags.CROPS) && !blocksToNotDestroyList.contains(world.getBlockState(blockpos).getBlock()))
+                        world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
+                }
+            }
+        }
+        iprofiler.endSection();
     }
 }

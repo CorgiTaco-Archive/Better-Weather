@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(BreedGoal.class)
-public class MixinBreedGoal {
+public abstract class MixinBreedGoal {
 
 
     @Shadow @Final protected AnimalEntity animal;

@@ -13,8 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Random;
 
 @Mixin(LeavesBlock.class)
-public class MixinLeavesBlock {
-
+public abstract class MixinLeavesBlock {
 
     @Inject(at = @At("HEAD"), method = "animateTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Ljava/util/Random;)V", cancellable = true)
     private void cancelRainDrippingEffect(BlockState stateIn, World worldIn, BlockPos pos, Random rand, CallbackInfo ci) {

@@ -6,7 +6,7 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.server.ChunkHolder;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -45,7 +45,7 @@ public abstract class WeatherEvent {
         return seasonChance;
     }
 
-    public abstract void worldTick(ServerWorld world, int tickSpeed, long worldTime, Iterable<ChunkHolder> loadedChunks);
+    public abstract void worldTick(ServerWorld world, int tickSpeed, long worldTime);
 
     public abstract void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc);
 
@@ -129,7 +129,18 @@ public abstract class WeatherEvent {
         return new TranslationTextComponent("commands.bw.setweather.success." + name.toString().toLowerCase());
     }
 
+    public void tickLiveChunks(Chunk chunk, ServerWorld world) {
+    }
+
     public final boolean drippingLeaves() {
+        return false;
+    }
+
+    public boolean fillBlocksWithWater() {
+        return false;
+    }
+
+    public boolean spawnSnowInFreezingClimates() {
         return false;
     }
 }

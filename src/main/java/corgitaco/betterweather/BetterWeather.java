@@ -15,8 +15,8 @@ import corgitaco.betterweather.datastorage.BetterWeatherGeneralData;
 import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
 import corgitaco.betterweather.datastorage.network.packet.GeneralPacket;
-import corgitaco.betterweather.season.SeasonSystem;
 import corgitaco.betterweather.season.Season;
+import corgitaco.betterweather.season.SeasonSystem;
 import corgitaco.betterweather.server.ConfigReloadCommand;
 import corgitaco.betterweather.server.SetSeasonCommand;
 import corgitaco.betterweather.server.SetWeatherCommand;
@@ -141,7 +141,7 @@ public class BetterWeather {
 
                         WeatherEventSystem.updateWeatherEventPacket(serverWorld.getPlayers(), world, false);
 
-                        WeatherData.currentWeatherEvent.worldTick(serverWorld, tickSpeed, worldTime, (serverWorld.getChunkProvider()).chunkManager.getLoadedChunksIterable());
+                        WeatherData.currentWeatherEvent.worldTick(serverWorld, tickSpeed, worldTime);
                     }
                 }
             }

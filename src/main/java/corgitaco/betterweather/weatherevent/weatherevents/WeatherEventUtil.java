@@ -1,8 +1,15 @@
 package corgitaco.betterweather.weatherevent.weatherevents;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.season.SeasonSystem;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
+import net.minecraft.block.Blocks;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.IServerWorldInfo;
 import net.minecraft.world.storage.ServerWorldInfo;
@@ -84,5 +91,31 @@ public class WeatherEventUtil {
         worldInfo.setRainTime(rainTime);
         worldInfo.setClearWeatherTime(clearWeatherTime);
         worldInfo.setRaining(isRaining);
+    }
+
+    public static void vanillaIceAndSnowChunkTicks(Chunk chunk, ServerWorld world) {
+        ChunkPos chunkpos = chunk.getPos();
+        int xStart = chunkpos.getXStart();
+        int zStart = chunkpos.getZStart();
+        boolean isRaining = world.isRaining();
+        BlockPos randomPos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(xStart, 0, zStart, 15));
+        BlockPos randomPosDown = randomPos.down();
+
+        Biome biome = world.getBiome(randomPos);
+
+
+        if (world.isAreaLoaded(randomPos, 1)) { // Forge: check area to avoid loading neighbors in unloaded chunks
+            if (biome.doesWaterFreeze(world, randomPosDown)) {
+                world.setBlockState(randomPosDown, Blocks.ICE.getDefaultState());
+            }
+        }
+
+        if (isRaining && biome.doesSnowGenerate(world, randomPos) && WeatherData.currentWeatherEvent.spawnSnowInFreezingClimates()) {
+            world.setBlockState(randomPos, Blocks.SNOW.getDefaultState());
+        }
+
+        if (isRaining && biome.getPrecipitation() == Biome.RainType.RAIN && WeatherData.currentWeatherEvent.fillBlocksWithWater()) {
+            world.getBlockState(randomPosDown).getBlock().fillWithRain(world, randomPosDown);
+        }
     }
 }

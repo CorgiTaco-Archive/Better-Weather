@@ -17,10 +17,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
-
-import java.util.Optional;
 
 import static corgitaco.betterweather.weatherevent.weatherevents.Blizzard.doBlizzardsAffectDeserts;
 
@@ -30,8 +27,7 @@ public class Clear extends WeatherEvent {
     }
 
     @Override
-    public void worldTick(ServerWorld world, int tickSpeed, long worldTime, Iterable<ChunkHolder> loadedChunks) {
-        decayIceAndSnowFaster(world, worldTime, loadedChunks);
+    public void worldTick(ServerWorld world, int tickSpeed, long worldTime) {
     }
 
     @Override
@@ -45,23 +41,13 @@ public class Clear extends WeatherEvent {
         return false;
     }
 
-    private static void decayIceAndSnowFaster(ServerWorld serverWorld, long worldTime, Iterable<ChunkHolder> list) {
-        if (SeasonData.SeasonVal.WINTER != SeasonData.currentSeason) {
-            list.forEach(chunkHolder -> {
-                Optional<Chunk> optional = chunkHolder.getTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
-                //Gets chunks to tick
-                if (optional.isPresent()) {
-                    Optional<Chunk> optional1 = chunkHolder.getEntityTickingFuture().getNow(ChunkHolder.UNLOADED_CHUNK).left();
-                    if (optional1.isPresent()) {
-                        Chunk chunk = optional1.get();
-                        doesIceAndSnowDecay(chunk, serverWorld, worldTime);
-                    }
-                }
-            });
-        }
+    @Override
+    public void tickLiveChunks(Chunk chunk, ServerWorld world) {
+        if (SeasonData.currentSeason != SeasonData.SeasonVal.WINTER)
+            doesIceAndSnowDecayFaster(chunk, world, world.getWorldInfo().getGameTime());
     }
 
-    private static void doesIceAndSnowDecay(Chunk chunk, World world, long worldTime) {
+    private static void doesIceAndSnowDecayFaster(Chunk chunk, World world, long worldTime) {
         ChunkPos chunkpos = chunk.getPos();
         int chunkXStart = chunkpos.getXStart();
         int chunkZStart = chunkpos.getZStart();

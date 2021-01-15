@@ -7,7 +7,6 @@ import corgitaco.betterweather.api.weatherevent.WeatherEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
@@ -19,7 +18,7 @@ public class DefaultRain extends WeatherEvent {
     }
 
     @Override
-    public void worldTick(ServerWorld world, int tickSpeed, long worldTime, Iterable<ChunkHolder> loadedChunks) {
+    public void worldTick(ServerWorld world, int tickSpeed, long worldTime) {
     }
 
     @Override

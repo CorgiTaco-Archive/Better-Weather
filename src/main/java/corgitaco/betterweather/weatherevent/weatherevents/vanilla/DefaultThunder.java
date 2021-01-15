@@ -18,8 +18,8 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.GameRules;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
@@ -32,34 +32,35 @@ public class DefaultThunder extends WeatherEvent {
     }
 
     @Override
-    public void worldTick(ServerWorld world, int tickSpeed, long worldTime, Iterable<ChunkHolder> loadedChunks) {
-        loadedChunks.forEach(chunk -> {
-            ChunkPos chunkpos = chunk.getPosition();
-            boolean flag = world.isRaining();
-            int i = chunkpos.getXStart();
-            int j = chunkpos.getZStart();
-            IProfiler iprofiler = world.getProfiler();
-            iprofiler.startSection("thunder");
-            if (flag && world.isThundering() && world.rand.nextInt(100000) == 0) {
-                BlockPos blockpos = adjustPosToNearbyEntity(world.getBlockRandomPos(i, 0, j, 15), world);
-                if (world.isRainingAt(blockpos)) {
-                    DifficultyInstance difficultyinstance = world.getDifficultyForLocation(blockpos);
-                    boolean flag1 = world.getGameRules().getBoolean(GameRules.DO_MOB_SPAWNING) && world.rand.nextDouble() < (double) difficultyinstance.getAdditionalDifficulty() * 0.01D;
-                    if (flag1) {
-                        SkeletonHorseEntity skeletonhorseentity = EntityType.SKELETON_HORSE.create(world);
-                        skeletonhorseentity.setTrap(true);
-                        skeletonhorseentity.setGrowingAge(0);
-                        skeletonhorseentity.setPosition(blockpos.getX(), blockpos.getY(), blockpos.getZ());
-                        world.addEntity(skeletonhorseentity);
-                    }
+    public void worldTick(ServerWorld world, int tickSpeed, long worldTime) {
+    }
 
-                    LightningBoltEntity lightningboltentity = EntityType.LIGHTNING_BOLT.create(world);
-                    lightningboltentity.moveForced(Vector3d.copyCenteredHorizontally(blockpos));
-                    lightningboltentity.setEffectOnly(flag1);
-                    world.addEntity(lightningboltentity);
+    private void spawnLightning(Chunk chunk, ServerWorld world) {
+        ChunkPos chunkpos = chunk.getPos();
+        boolean flag = world.isRaining();
+        int i = chunkpos.getXStart();
+        int j = chunkpos.getZStart();
+        IProfiler iprofiler = world.getProfiler();
+        iprofiler.startSection("thunder");
+        if (flag && world.isThundering() && world.rand.nextInt(100000) == 0) {
+            BlockPos blockpos = adjustPosToNearbyEntity(world.getBlockRandomPos(i, 0, j, 15), world);
+            if (world.isRainingAt(blockpos)) {
+                DifficultyInstance difficultyinstance = world.getDifficultyForLocation(blockpos);
+                boolean flag1 = world.getGameRules().getBoolean(GameRules.DO_MOB_SPAWNING) && world.rand.nextDouble() < (double) difficultyinstance.getAdditionalDifficulty() * 0.01D;
+                if (flag1) {
+                    SkeletonHorseEntity skeletonhorseentity = EntityType.SKELETON_HORSE.create(world);
+                    skeletonhorseentity.setTrap(true);
+                    skeletonhorseentity.setGrowingAge(0);
+                    skeletonhorseentity.setPosition(blockpos.getX(), blockpos.getY(), blockpos.getZ());
+                    world.addEntity(skeletonhorseentity);
                 }
+
+                LightningBoltEntity lightningboltentity = EntityType.LIGHTNING_BOLT.create(world);
+                lightningboltentity.moveForced(Vector3d.copyCenteredHorizontally(blockpos));
+                lightningboltentity.setEffectOnly(flag1);
+                world.addEntity(lightningboltentity);
             }
-        });
+        }
     }
 
     @Override
@@ -104,7 +105,8 @@ public class DefaultThunder extends WeatherEvent {
     }
 
     @Override
-    public float skyOpacity() {
-        return super.skyOpacity();
+    public void tickLiveChunks(Chunk chunk, ServerWorld world) {
+        spawnLightning(chunk, world);
+
     }
 }

@@ -2,8 +2,10 @@ package corgitaco.betterweather.mixin.client;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import corgitaco.betterweather.access.ViewFrustumGetter;
+import corgitaco.betterweather.access.WeatherViewFrustum;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.ViewFrustum;
@@ -39,14 +41,12 @@ public abstract class MixinWorldRenderer implements ViewFrustumGetter {
     }
 
 
-//    @Inject(at = @At("HEAD"), method = "loadRenderers()V", cancellable = true)
-//    private void cancelGameSettingsUpdate(CallbackInfo ci) {
-//        if (world != null) {
-//            if (WeatherData.currentWeatherEvent.stopRendererUpdates()) {
-//                ci.cancel();
-//            }
-//        }
-//    }
+    @Inject(at = @At("TAIL"), method = "loadRenderers()V", cancellable = true)
+    private void forceWeatherEventRenderDistance(CallbackInfo ci) {
+        ClientPlayerEntity player = mc.player;
+        if (mc.world != null && player != null)
+            ((WeatherViewFrustum) this.viewFrustum).forceRenderDistance(WeatherData.currentWeatherEvent.forcedRenderDistance(), player.getPosY(), player.getPosY(), player.getPosZ());
+    }
 
     @Inject(at = @At("HEAD"), method = "addRainParticles(Lnet/minecraft/client/renderer/ActiveRenderInfo;)V", cancellable = true)
     private void stopRainParticles(ActiveRenderInfo activeRenderInfoIn, CallbackInfo ci) {
