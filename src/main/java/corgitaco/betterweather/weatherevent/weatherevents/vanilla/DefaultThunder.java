@@ -63,7 +63,7 @@ public class DefaultThunder extends WeatherEvent {
     }
 
     @Override
-    public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc, int postClientTicksLeft) {
+    public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc) {
 
     }
 

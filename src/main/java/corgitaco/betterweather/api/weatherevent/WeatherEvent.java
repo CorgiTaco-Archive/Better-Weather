@@ -47,7 +47,7 @@ public abstract class WeatherEvent {
 
     public abstract void worldTick(ServerWorld world, int tickSpeed, long worldTime, Iterable<ChunkHolder> loadedChunks);
 
-    public abstract void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc, int postClientTicksLeft);
+    public abstract void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc);
 
     public boolean refreshRenderers() {
         return false;

@@ -1,37 +1,34 @@
-package corgitaco.betterweather.weatherevent.weatherevents;
+package corgitaco.betterweather.weatherevent.weatherevents.vanilla;
 
+import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
+import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
 import corgitaco.betterweather.api.weatherevent.WeatherEvent;
-import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.awt.*;
 
-public class Clouded extends WeatherEvent {
-    public Clouded() {
-        super(WeatherEventSystem.CLOUDED, 0.4);
+public class DefaultRain extends WeatherEvent {
+    public DefaultRain() {
+        super(new BetterWeatherID(BetterWeather.MOD_ID, "DEFAULT"), 0.5);
     }
 
     @Override
     public void worldTick(ServerWorld world, int tickSpeed, long worldTime, Iterable<ChunkHolder> loadedChunks) {
-
     }
 
     @Override
     public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc) {
-
     }
 
     @Override
     public boolean renderWeather(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z) {
-        return true;
+        return false;
     }
 
     @Override
@@ -49,13 +46,4 @@ public class Clouded extends WeatherEvent {
         return BetterWeatherUtil.blendColor(returnColor, BetterWeatherUtil.DEFAULT_RAIN_FOG, rainStrength);
     }
 
-    @OnlyIn(Dist.CLIENT)
-    public float skyOpacity() {
-        return 0.85F;
-    }
-
-    @Override
-    public float daylightBrightness() {
-        return 2.5F;
-    }
 }

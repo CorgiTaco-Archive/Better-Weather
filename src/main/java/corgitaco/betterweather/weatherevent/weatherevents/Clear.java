@@ -35,7 +35,7 @@ public class Clear extends WeatherEvent {
     }
 
     @Override
-    public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc, int postClientTicksLeft) {
+    public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc) {
         if (WorldRenderer.RAIN_TEXTURES != AcidRain.RAIN_TEXTURE)
             WorldRenderer.RAIN_TEXTURES = AcidRain.RAIN_TEXTURE;
     }

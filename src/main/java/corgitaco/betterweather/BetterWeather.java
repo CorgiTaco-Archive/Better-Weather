@@ -198,7 +198,7 @@ public class BetterWeather {
                                 SeasonSystem.clientSeason();
                             }
                         }
-                        WeatherData.currentWeatherEvent.clientTick(minecraft.world, tickSpeed, minecraft.world.getWorldInfo().getGameTime(), minecraft, WeatherData.currentWeatherEvent.postClientTicks);
+                        WeatherData.currentWeatherEvent.clientTick(minecraft.world, tickSpeed, minecraft.world.getWorldInfo().getGameTime(), minecraft);
                     }
                 }
             }

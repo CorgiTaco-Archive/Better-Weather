@@ -130,7 +130,7 @@ public class Blizzard extends WeatherEvent {
     static int cycleBlizzardSounds = 0;
 
     @Override
-    public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc, int postClientTicksLeft) {
+    public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc) {
         SoundHandler soundHandler = mc.getSoundHandler();
         if (!soundHandler.isPlaying(BLIZZARD_SOUND)) {
             MovingWeatherSoundHandler blizzardSound = new MovingWeatherSoundHandler(BetterWeatherConfigClient.blizzardLoopEnumValue.get().getSoundEvent(), BetterWeatherConfigClient.blizzardLoopEnumValue.get().getReplayRate(), SoundCategory.WEATHER, Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getBlockPos(), BetterWeatherConfigClient.blizzardVolume.get().floatValue(), BetterWeatherConfigClient.blizzardPitch.get().floatValue());
