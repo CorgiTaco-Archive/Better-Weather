@@ -5,6 +5,7 @@ import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
 import corgitaco.betterweather.api.weatherevent.WeatherEvent;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.world.server.ServerWorld;
@@ -43,6 +44,11 @@ public class DefaultRain extends WeatherEvent {
     @Override
     public Color modifyFogColor(Color biomeColor, Color returnColor, @Nullable Color seasonTargetColor, float rainStrength) {
         return BetterWeatherUtil.blendColor(returnColor, BetterWeatherUtil.DEFAULT_RAIN_FOG, rainStrength);
+    }
+
+    @Override
+    public boolean weatherParticlesAndSound(ActiveRenderInfo renderInfo, Minecraft mc) {
+        return false;
     }
 
     @Override
