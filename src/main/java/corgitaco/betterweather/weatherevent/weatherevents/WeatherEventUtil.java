@@ -52,12 +52,12 @@ public class WeatherEventUtil {
         worldInfo.setRaining(isRaining);
     }
 
-    public static void doVanillaWeatherAndRollWeatherEventChance(IServerWorldInfo worldInfo, ServerWorld world) {
+    public static void doWeatherAndRollWeatherEventChance(IServerWorldInfo worldInfo, ServerWorld world) {
         doWeather(worldInfo, world);
         if (BetterWeather.useSeasons)
-            SeasonSystem.rollWeatherEventChanceForSeason(world.rand, worldInfo.isRaining(), worldInfo.isThundering(), (ServerWorldInfo) worldInfo, world.getPlayers());
+            SeasonSystem.rollWeatherEventChanceForSeason(world.rand, world, worldInfo.isRaining(), worldInfo.isThundering(), (ServerWorldInfo) worldInfo, world.getPlayers());
         else
-            WeatherEventSystem.rollWeatherEventChance(world.rand, worldInfo.isRaining(), (ServerWorldInfo) worldInfo, world.getPlayers());
+            WeatherEventSystem.rollWeatherEventChance(world.rand, world, worldInfo.isRaining(), (ServerWorldInfo) worldInfo, world.getPlayers());
 
     }
 
@@ -78,7 +78,7 @@ public class WeatherEventUtil {
             } else if (isRaining) {
                 rainTime = world.rand.nextInt(12000) + 12000;
             } else {
-                rainTime = world.rand.nextInt(168000) + 12000; //Sets up the time til the very first rain.
+                rainTime = world.rand.nextInt(168000) + 12000; //Sets up the time til the very first precipitation upon world creation.
             }
         }
         worldInfo.setRainTime(rainTime);

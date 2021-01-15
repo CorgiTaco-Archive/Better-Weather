@@ -11,6 +11,6 @@ public class MixinWorld {
 
     @Inject(method = "getThunderStrength", at = @At("HEAD"), cancellable = true)
     private void removeThunderStrength(float delta, CallbackInfoReturnable<Float> cir) {
-        cir.setReturnValue(0.0F); //TODO: Reimplement use during vanilla thunderstorms.
+        cir.setReturnValue(0.0F);
     }
 }

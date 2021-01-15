@@ -19,7 +19,7 @@ import java.awt.*;
 public class BiomeColorCalculator {
 
     public static Color modifyBiomeColor(ColorType colorType, Color originalColorValue, Season.SubSeason subSeason, Biome biome) {
-        Color fallbackColor = modifyColorForWeatherEvent(colorType, originalColorValue, null, null);
+        Color fallbackColor = modifyColorForWeatherEvent(colorType, originalColorValue, originalColorValue, null);
 
         if (!BetterWeather.useSeasons)
             return fallbackColor;
@@ -81,27 +81,27 @@ public class BiomeColorCalculator {
         int clampedRed = MathHelper.clamp(red, 0, 255);
         int clampedGreen = MathHelper.clamp(green, 0, 255);
         int clampedBlue = MathHelper.clamp(blue, 0, 255);
-        Color modifiedColor = new Color(clampedRed, clampedGreen, clampedBlue);
 
+        Color modifiedColor = new Color(clampedRed, clampedGreen, clampedBlue);
         return modifyColorForWeatherEvent(colorType, originalColorValue, modifiedColor, target);
     }
 
 
-    public static Color modifyColorForWeatherEvent(ColorType type, Color biomeColor, @Nullable Color modifiedColor, @Nullable Color seasonTargetColor) {
+    public static Color modifyColorForWeatherEvent(ColorType type, Color originalBiomeColor, Color returnColor, @Nullable Color seasonTargetColor) {
         Minecraft instance = Minecraft.getInstance();
         float partialTicks = instance.isGamePaused() ? instance.renderPartialTicksPaused : instance.timer.renderPartialTicks;
 
         switch (type) {
             case GRASS:
-                return WeatherData.currentWeatherEvent.modifyGrassColor(biomeColor, modifiedColor, seasonTargetColor);
+                return WeatherData.currentWeatherEvent.modifyGrassColor(originalBiomeColor, returnColor, seasonTargetColor);
             case FOLIAGE:
-                return WeatherData.currentWeatherEvent.modifyFoliageColor(biomeColor, modifiedColor, seasonTargetColor);
+                return WeatherData.currentWeatherEvent.modifyFoliageColor(originalBiomeColor, returnColor, seasonTargetColor);
             case SKY:
-                return WeatherData.currentWeatherEvent.modifySkyColor(biomeColor, modifiedColor, seasonTargetColor, partialTicks);
+                return WeatherData.currentWeatherEvent.modifySkyColor(originalBiomeColor, returnColor, seasonTargetColor, instance.world.getRainStrength(partialTicks));
             case FOG:
-                return WeatherData.currentWeatherEvent.modifyFogColor(biomeColor, modifiedColor, seasonTargetColor, partialTicks);
+                return WeatherData.currentWeatherEvent.modifyFogColor(originalBiomeColor, returnColor, seasonTargetColor, instance.world.getRainStrength(partialTicks));
         }
-        return biomeColor;
+        return originalBiomeColor;
     }
 
     private static int modifiedColorValue(int original, int target, double blendStrength) {

@@ -1,6 +1,7 @@
 package corgitaco.betterweather.weatherevent.weatherevents.vanilla;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
 import corgitaco.betterweather.api.weatherevent.WeatherEvent;
 import net.minecraft.client.Minecraft;
@@ -21,6 +22,8 @@ import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
 
+import javax.annotation.Nullable;
+import java.awt.*;
 import java.util.List;
 
 public class DefaultThunder extends WeatherEvent {
@@ -83,5 +86,25 @@ public class DefaultThunder extends WeatherEvent {
             }
             return blockpos;
         }
+    }
+
+    @Override
+    public Color modifySkyColor(Color biomeColor, Color returnColor, @Nullable Color seasonTargetColor, float rainStrength) {
+        return BetterWeatherUtil.blendColor(returnColor, BetterWeatherUtil.DEFAULT_THUNDER_SKY, rainStrength);
+    }
+
+    @Override
+    public Color modifyCloudColor(Color returnColor, float rainStrength) {
+        return BetterWeatherUtil.blendColor(returnColor, BetterWeatherUtil.DEFAULT_THUNDER_CLOUDS, rainStrength);
+    }
+
+    @Override
+    public Color modifyFogColor(Color biomeColor, Color returnColor, @Nullable Color seasonTargetColor, float rainStrength) {
+        return BetterWeatherUtil.blendColor(returnColor, BetterWeatherUtil.DEFAULT_THUNDER_FOG, rainStrength);
+    }
+
+    @Override
+    public float skyOpacity() {
+        return super.skyOpacity();
     }
 }

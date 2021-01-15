@@ -8,6 +8,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.util.math.BlockPos;
@@ -35,7 +36,8 @@ public class Clear extends WeatherEvent {
 
     @Override
     public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc, int postClientTicksLeft) {
-
+        if (WorldRenderer.RAIN_TEXTURES != AcidRain.RAIN_TEXTURE)
+            WorldRenderer.RAIN_TEXTURES = AcidRain.RAIN_TEXTURE;
     }
 
     @Override
@@ -84,10 +86,5 @@ public class Clear extends WeatherEvent {
             }
         }
         iprofiler.endSection();
-    }
-
-    @Override
-    public boolean hasSkyDarkness() {
-        return true;
     }
 }

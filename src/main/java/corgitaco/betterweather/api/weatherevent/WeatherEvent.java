@@ -1,12 +1,11 @@
 package corgitaco.betterweather.api.weatherevent;
 
-import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
@@ -79,13 +78,18 @@ public abstract class WeatherEvent {
 
 
     @OnlyIn(Dist.CLIENT)
-    public Color modifySkyColor(Color biomeColor, @Nullable Color modifiedColor, @Nullable Color seasonColor, float partialTicks) {
-        return modifiedColor == null ? biomeColor : modifiedColor;
+    public Color modifySkyColor(Color biomeColor, Color returnColor, @Nullable Color seasonTargetColor, float rainStrength) {
+        return returnColor;
     }
 
     @OnlyIn(Dist.CLIENT)
-    public Color modifyFogColor(Color biomeColor, @Nullable Color modifiedColor, @Nullable Color seasonColor, float partialTicks) {
-        return modifiedColor == null ? biomeColor : modifiedColor;
+    public Color modifyFogColor(Color biomeColor, Color returnColor, @Nullable Color seasonTargetColor, float rainStrength) {
+        return returnColor;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public Color modifyCloudColor(Color returnColor, float rainStrength) {
+        return returnColor;
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -103,11 +107,29 @@ public abstract class WeatherEvent {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public float modifySoundVolume(SoundCategory category, Minecraft mc, GameSettings options) {
-        return Float.MAX_VALUE;
+    public float skyOpacity() {
+        return 1.0F;
     }
 
-    public boolean hasSkyDarkness() {
+    @OnlyIn(Dist.CLIENT)
+    public float daylightBrightness() {
+        return 1.0F;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public boolean refreshPlayerRenderer() {
+        return false;
+    }
+
+    public int forcedRenderDistance() {
+        return Minecraft.getInstance().gameSettings.renderDistanceChunks;
+    }
+
+    public final TranslationTextComponent successTranslationTextComponent() {
+        return new TranslationTextComponent("commands.bw.setweather.success." + name.toString().toLowerCase());
+    }
+
+    public final boolean drippingLeaves() {
         return false;
     }
 }

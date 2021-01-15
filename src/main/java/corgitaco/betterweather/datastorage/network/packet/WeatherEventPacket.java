@@ -1,6 +1,9 @@
 package corgitaco.betterweather.datastorage.network.packet;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.access.ViewFrustumGetter;
+import corgitaco.betterweather.access.WeatherViewFrustum;
+import corgitaco.betterweather.api.weatherevent.WeatherData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -29,6 +32,7 @@ public class WeatherEventPacket {
                 if (minecraft.world != null && minecraft.player != null) {
                     BetterWeather.setWeatherData(minecraft.world);
                     BetterWeather.weatherData.setEvent(message.event);
+                    ((WeatherViewFrustum) ((ViewFrustumGetter) minecraft.worldRenderer).getViewFrustum()).forceRenderDistance(WeatherData.currentWeatherEvent.forcedRenderDistance(), minecraft.player.getPosX(), minecraft.player.getPosY(), minecraft.player.getPosZ());
                 }
             });
         }

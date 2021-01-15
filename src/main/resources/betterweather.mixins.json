@@ -7,6 +7,9 @@
     "MixinWorld",
     "biome.MixinBiome",
     "block.MixinAbstractBlockstate",
+    "client.MixinFogRenderer",
+    "client.MixinLightTexture",
+    "client.MixinViewFrustum",
     "entity.MixinBreedGoal",
     "server.MixinDerivedWorldInfo",
     "server.MixinMinecraftServer",
@@ -19,7 +22,6 @@
     "client.MixinClientWorld",
     "client.MixinDimensionRenderInfo",
     "client.MixinLeavesBlock",
-    "client.MixinSoundEngine",
     "client.MixinWorldRenderer"
   ],
   "injectors": {
