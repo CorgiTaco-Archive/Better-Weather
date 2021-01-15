@@ -19,6 +19,7 @@ public class BetterWeatherConfigClient {
 
     public static ForgeConfigSpec.BooleanValue removeSmokeParticles;
 
+    public static ForgeConfigSpec.BooleanValue forceRenderDistanceDuringBlizzards;
     public static ForgeConfigSpec.BooleanValue blizzardFog;
     public static ForgeConfigSpec.IntValue forcedRenderDistanceDuringBlizzards;
     public static ForgeConfigSpec.DoubleValue blizzardVolume;

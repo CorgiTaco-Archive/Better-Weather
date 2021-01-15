@@ -2,35 +2,28 @@ package corgitaco.betterweather.mixin.server;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.access.IsWeatherForced;
-import corgitaco.betterweather.datastorage.network.NetworkHandler;
-import corgitaco.betterweather.datastorage.network.packet.WeatherEventPacket;
-import corgitaco.betterweather.season.SeasonSystem;
-import corgitaco.betterweather.weatherevent.WeatherEventSystem;
+import corgitaco.betterweather.weatherevent.weatherevents.WeatherEventUtil;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.profiler.IProfiler;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.IServerWorldInfo;
-import net.minecraft.world.storage.ServerWorldInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 
 
 @Mixin(ServerWorld.class)
 public abstract class MixinServerWorld {
 
-
     @Shadow
     public IServerWorldInfo field_241103_E_;
-
 
     @Shadow
     public abstract List<ServerPlayerEntity> getPlayers();
@@ -42,14 +35,10 @@ public abstract class MixinServerWorld {
             BetterWeather.setSeasonData(((ServerWorld) (Object) this));
     }
 
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/storage/IServerWorldInfo;setRaining(Z)V"), locals = LocalCapture.CAPTURE_FAILHARD)
-    private void rollBetterWeatherEvent(BooleanSupplier hasTimeLeft, CallbackInfo ci, IProfiler iprofiler, boolean flag, int i, int j, int k, boolean flag1, boolean flag2) {
-        Random random = ((ServerWorld) (Object) this).getRandom();
-        if (BetterWeather.useSeasons)
-            SeasonSystem.rollWeatherEventChanceForSeason(random, this.field_241103_E_.isRaining(), this.field_241103_E_.isThundering(), (ServerWorldInfo) this.field_241103_E_, this.getPlayers());
-        else
-            WeatherEventSystem.rollWeatherEventChance(random, this.field_241103_E_.isRaining(), this.field_241103_E_.isThundering(), (ServerWorldInfo) this.field_241103_E_, this.getPlayers());
-
+    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z", ordinal = 0))
+    private boolean rollBetterWeatherEvent(GameRules gameRules, GameRules.RuleKey<GameRules.BooleanValue> key) {
+        WeatherEventUtil.doWeatherAndRollWeatherEventChance(this.field_241103_E_, (ServerWorld) (Object) this);
+        return false;
     }
 
     @Inject(method = "func_241113_a_", at = @At("HEAD"))
@@ -57,4 +46,16 @@ public abstract class MixinServerWorld {
         ((IsWeatherForced) this.field_241103_E_).setWeatherForced(true);
         BetterWeather.weatherData.setWeatherForced(true);
     }
+
+    @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 1))
+    private int neverTickIceAndSnow(Random random, int bound) {
+        return Integer.MAX_VALUE;
+    }
+
+    @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 0))
+    private int neverSpawnLightning(Random random, int bound) {
+        return Integer.MAX_VALUE;
+    }
+
+
 }

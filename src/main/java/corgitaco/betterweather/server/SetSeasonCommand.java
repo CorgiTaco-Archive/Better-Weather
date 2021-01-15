@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.api.SeasonData;
 import corgitaco.betterweather.season.SeasonSystem;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
@@ -18,13 +19,13 @@ import java.util.stream.Collectors;
 public class SetSeasonCommand {
 
     public static ArgumentBuilder<CommandSource, ?> register(CommandDispatcher<CommandSource> dispatcher) {
-        List<String> seasons = Arrays.stream(SeasonSystem.SubSeasonVal.values()).map(Objects::toString).collect(Collectors.toList());
+        List<String> seasons = Arrays.stream(SeasonData.SubSeasonVal.values()).map(Objects::toString).collect(Collectors.toList());
         return Commands.literal("setseason").then(Commands.argument("season", StringArgumentType.string()).suggests((ctx, sb) -> ISuggestionProvider.suggest(seasons.stream(), sb))
                 .executes((cs) -> betterWeatherSetSeason(cs.getSource(), cs.getArgument("season", String.class))));
     }
 
     public static int betterWeatherSetSeason(CommandSource source, String weatherTypeString) {
-        SeasonSystem.SubSeasonVal subSeason = SeasonSystem.SubSeasonVal.valueOf(weatherTypeString);
+        SeasonData.SubSeasonVal subSeason = SeasonData.SubSeasonVal.valueOf(weatherTypeString);
         boolean failedFlag = false;
         switch (subSeason) {
             case SPRING_START:

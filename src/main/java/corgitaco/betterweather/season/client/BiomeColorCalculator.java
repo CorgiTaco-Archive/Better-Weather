@@ -1,6 +1,7 @@
 package corgitaco.betterweather.season.client;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.season.Season;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
@@ -11,14 +12,17 @@ import net.minecraft.world.biome.Biome;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import javax.annotation.Nullable;
 import java.awt.*;
 
 @OnlyIn(Dist.CLIENT)
 public class BiomeColorCalculator {
 
     public static Color modifyBiomeColor(ColorType colorType, Color originalColorValue, Season.SubSeason subSeason, Biome biome) {
+        Color fallbackColor = modifyColorForWeatherEvent(colorType, originalColorValue, originalColorValue, null);
+
         if (!BetterWeather.useSeasons)
-            return originalColorValue;
+            return fallbackColor;
 
         int red = originalColorValue.getRed();
         int green = originalColorValue.getGreen();
@@ -29,14 +33,14 @@ public class BiomeColorCalculator {
         DynamicRegistries dynamicRegistries = Minecraft.getInstance().world.func_241828_r();
         ResourceLocation biomeKey = dynamicRegistries.getRegistry(Registry.BIOME_KEY).getKey(biome);
             if (biomeKey == null)
-                return originalColorValue;
+                return fallbackColor;
 
         switch (colorType) {
             case GRASS:
                 int targetGrassColor = subSeason.getTargetGrassColor(biomeKey, false);
 
                 if (targetGrassColor == Integer.MAX_VALUE)
-                    return originalColorValue;
+                    return fallbackColor;
 
                 target = new Color(targetGrassColor);
                 blendStrength = subSeason.getGrassColorBlendStrength(biomeKey, false);
@@ -45,7 +49,7 @@ public class BiomeColorCalculator {
                 int targetFoliageColor = subSeason.getTargetFoliageColor(biomeKey, false);
 
                 if (targetFoliageColor == Integer.MAX_VALUE)
-                    return originalColorValue;
+                    return fallbackColor;
 
                 target = new Color(targetFoliageColor);
                 blendStrength = subSeason.getFoliageColorBlendStrength(biomeKey, false);
@@ -54,7 +58,7 @@ public class BiomeColorCalculator {
                 int targetFogColor = subSeason.getTargetFogColor(biomeKey, false);
 
                 if (targetFogColor == Integer.MAX_VALUE)
-                    return originalColorValue;
+                    return fallbackColor;
 
                 target = new Color(targetFogColor);
                 blendStrength = subSeason.getFogColorBlendStrength(biomeKey, false);
@@ -63,25 +67,41 @@ public class BiomeColorCalculator {
                 int targetSkyColor = subSeason.getTargetSkyColor(biomeKey, false);
 
                 if (targetSkyColor == Integer.MAX_VALUE)
-                    return originalColorValue;
+                    return fallbackColor;
 
                 target = new Color(targetSkyColor);
                 blendStrength = subSeason.getSkyColorBlendStrength(biomeKey, false);
                 break;
         }
 
-
         red = modifiedColorValue(red, target.getRed(), blendStrength);
-
         green = modifiedColorValue(green, target.getGreen(), blendStrength);
-
         blue = modifiedColorValue(blue, target.getBlue(), blendStrength);
 
         int clampedRed = MathHelper.clamp(red, 0, 255);
         int clampedGreen = MathHelper.clamp(green, 0, 255);
         int clampedBlue = MathHelper.clamp(blue, 0, 255);
 
-        return new Color(clampedRed, clampedGreen, clampedBlue);
+        Color modifiedColor = new Color(clampedRed, clampedGreen, clampedBlue);
+        return modifyColorForWeatherEvent(colorType, originalColorValue, modifiedColor, target);
+    }
+
+
+    public static Color modifyColorForWeatherEvent(ColorType type, Color originalBiomeColor, Color returnColor, @Nullable Color seasonTargetColor) {
+        Minecraft instance = Minecraft.getInstance();
+        float partialTicks = instance.isGamePaused() ? instance.renderPartialTicksPaused : instance.timer.renderPartialTicks;
+
+        switch (type) {
+            case GRASS:
+                return WeatherData.currentWeatherEvent.modifyGrassColor(originalBiomeColor, returnColor, seasonTargetColor);
+            case FOLIAGE:
+                return WeatherData.currentWeatherEvent.modifyFoliageColor(originalBiomeColor, returnColor, seasonTargetColor);
+            case SKY:
+                return WeatherData.currentWeatherEvent.modifySkyColor(originalBiomeColor, returnColor, seasonTargetColor, instance.world.getRainStrength(partialTicks));
+            case FOG:
+                return WeatherData.currentWeatherEvent.modifyFogColor(originalBiomeColor, returnColor, seasonTargetColor, instance.world.getRainStrength(partialTicks));
+        }
+        return originalBiomeColor;
     }
 
     private static int modifiedColorValue(int original, int target, double blendStrength) {

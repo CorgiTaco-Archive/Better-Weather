@@ -1,6 +1,7 @@
 package corgitaco.betterweather.datastorage;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.api.SeasonData;
 import corgitaco.betterweather.season.SeasonSystem;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.IWorld;
@@ -14,7 +15,7 @@ public class BetterWeatherSeasonData extends WorldSavedData {
 
     private int seasonTime;
     private int seasonCycleLength;
-    private String season = SeasonSystem.SeasonVal.SPRING.toString();
+    private String season = SeasonData.SeasonVal.SPRING.toString();
     private String subseason;
     private boolean isForced;
 
@@ -48,8 +49,8 @@ public class BetterWeatherSeasonData extends WorldSavedData {
         markDirty();
     }
 
-    public SeasonSystem.SeasonVal getSeason() {
-        return SeasonSystem.SeasonVal.valueOf(season);
+    public SeasonData.SeasonVal getSeason() {
+        return SeasonData.SeasonVal.valueOf(season);
     }
 
     public void setSeason(String season) {
