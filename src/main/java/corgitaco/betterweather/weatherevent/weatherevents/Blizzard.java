@@ -223,9 +223,8 @@ public class Blizzard extends WeatherEvent {
                 if (Blizzard.doBlizzardsAffectDeserts(mc.world.getBiome(playerPos))) {
                     float partialTicks = mc.isGamePaused() ? mc.renderPartialTicksPaused : mc.timer.renderPartialTicks;
                     float fade = mc.world.getRainStrength(partialTicks);
-
-//                    event.setDensity(fade * 0.1F);
-//                    event.setCanceled(true);
+                    event.setDensity(fade * 0.1F);
+                    event.setCanceled(true);
                     if (idx2 != 0)
                         idx2 = 0;
                 } else {

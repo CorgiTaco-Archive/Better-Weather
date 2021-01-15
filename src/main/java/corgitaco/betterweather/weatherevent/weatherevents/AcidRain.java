@@ -172,6 +172,16 @@ public class AcidRain extends WeatherEvent {
     }
 
     @Override
+    public boolean fillBlocksWithWater() {
+        return true;
+    }
+
+    @Override
+    public boolean spawnSnowInFreezingClimates() {
+        return true;
+    }
+
+    @Override
     public void tickLiveChunks(Chunk chunk, ServerWorld world) {
         acidRainEvent(chunk, world, world.getWorldInfo().getGameTime());
     }

@@ -107,6 +107,15 @@ public class DefaultThunder extends WeatherEvent {
     @Override
     public void tickLiveChunks(Chunk chunk, ServerWorld world) {
         spawnLightning(chunk, world);
+    }
 
+    @Override
+    public boolean fillBlocksWithWater() {
+        return true;
+    }
+
+    @Override
+    public boolean spawnSnowInFreezingClimates() {
+        return true;
     }
 }

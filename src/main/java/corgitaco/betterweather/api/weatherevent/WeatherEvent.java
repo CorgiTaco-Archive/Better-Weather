@@ -21,8 +21,6 @@ public abstract class WeatherEvent {
     private final double defaultChance;
     private final SeasonChance seasonChance;
 
-    @OnlyIn(Dist.CLIENT) public int postClientTicks = 20;
-
     public WeatherEvent(BetterWeatherID name, double defaultChance) {
         this(name, defaultChance, new SeasonChance());
     }
@@ -61,15 +59,30 @@ public abstract class WeatherEvent {
         return modifiedBiomeHumidity == Double.MAX_VALUE ? biomeHumidity : modifiedBiomeHumidity;
     }
 
-    @OnlyIn(Dist.CLIENT)
-    public abstract boolean renderWeather(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z);
-
     public void livingEntityUpdate(Entity entity) {
     }
 
     public boolean weatherParticlesAndSound(ActiveRenderInfo renderInfo, Minecraft mc) {
         return true;
     }
+
+    public void tickLiveChunks(Chunk chunk, ServerWorld world) {
+    }
+
+    public boolean fillBlocksWithWater() {
+        return false;
+    }
+
+    public boolean spawnSnowInFreezingClimates() {
+        return false;
+    }
+
+    public final TranslationTextComponent successTranslationTextComponent() {
+        return new TranslationTextComponent("commands.bw.setweather.success." + name.toString().toLowerCase());
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public abstract boolean renderWeather(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z);
 
     @OnlyIn(Dist.CLIENT)
     public boolean disableSkyColor() {
@@ -121,26 +134,13 @@ public abstract class WeatherEvent {
         return false;
     }
 
+    @OnlyIn(Dist.CLIENT)
     public int forcedRenderDistance() {
         return Minecraft.getInstance().gameSettings.renderDistanceChunks;
     }
 
-    public final TranslationTextComponent successTranslationTextComponent() {
-        return new TranslationTextComponent("commands.bw.setweather.success." + name.toString().toLowerCase());
-    }
-
-    public void tickLiveChunks(Chunk chunk, ServerWorld world) {
-    }
-
+    @OnlyIn(Dist.CLIENT)
     public final boolean drippingLeaves() {
-        return false;
-    }
-
-    public boolean fillBlocksWithWater() {
-        return false;
-    }
-
-    public boolean spawnSnowInFreezingClimates() {
         return false;
     }
 }

@@ -45,4 +45,13 @@ public class DefaultRain extends WeatherEvent {
         return BetterWeatherUtil.blendColor(returnColor, BetterWeatherUtil.DEFAULT_RAIN_FOG, rainStrength);
     }
 
+    @Override
+    public boolean fillBlocksWithWater() {
+        return true;
+    }
+
+    @Override
+    public boolean spawnSnowInFreezingClimates() {
+        return true;
+    }
 }
