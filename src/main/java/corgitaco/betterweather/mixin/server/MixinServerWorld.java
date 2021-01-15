@@ -1,7 +1,7 @@
 package corgitaco.betterweather.mixin.server;
 
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.access.IsWeatherForced;
+import corgitaco.betterweather.helper.IsWeatherForced;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.weatherevent.weatherevents.WeatherEventUtil;
 import net.minecraft.world.GameRules;

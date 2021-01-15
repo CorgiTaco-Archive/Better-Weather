@@ -1,6 +1,6 @@
 package corgitaco.betterweather.mixin.client;
 
-import corgitaco.betterweather.access.WeatherViewFrustum;
+import corgitaco.betterweather.helper.WeatherViewFrustum;
 import net.minecraft.client.renderer.ViewFrustum;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

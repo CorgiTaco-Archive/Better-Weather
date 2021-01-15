@@ -1,4 +1,4 @@
-package corgitaco.betterweather.access;
+package corgitaco.betterweather.helper;
 
 import net.minecraft.client.renderer.ViewFrustum;
 

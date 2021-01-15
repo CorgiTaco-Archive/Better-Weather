@@ -2,7 +2,7 @@ package corgitaco.betterweather.season;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
-import corgitaco.betterweather.access.IsWeatherForced;
+import corgitaco.betterweather.helper.IsWeatherForced;
 import corgitaco.betterweather.api.SeasonData;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;

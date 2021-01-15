@@ -1,7 +1,7 @@
 package corgitaco.betterweather.weatherevent;
 
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.access.IsWeatherForced;
+import corgitaco.betterweather.helper.IsWeatherForced;
 import corgitaco.betterweather.api.BetterWeatherEntryPoint;
 import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
 import corgitaco.betterweather.api.weatherevent.WeatherData;

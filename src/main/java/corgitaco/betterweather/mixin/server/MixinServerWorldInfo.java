@@ -1,6 +1,6 @@
 package corgitaco.betterweather.mixin.server;
 
-import corgitaco.betterweather.access.IsWeatherForced;
+import corgitaco.betterweather.helper.IsWeatherForced;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import net.minecraft.world.storage.ServerWorldInfo;

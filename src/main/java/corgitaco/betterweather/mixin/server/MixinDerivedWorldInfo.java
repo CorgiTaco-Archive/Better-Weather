@@ -1,6 +1,6 @@
 package corgitaco.betterweather.mixin.server;
 
-import corgitaco.betterweather.access.IsWeatherForced;
+import corgitaco.betterweather.helper.IsWeatherForced;
 import net.minecraft.world.storage.DerivedWorldInfo;
 import net.minecraft.world.storage.IServerWorldInfo;
 import org.spongepowered.asm.mixin.Final;

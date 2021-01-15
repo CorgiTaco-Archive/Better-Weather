@@ -1,8 +1,8 @@
 package corgitaco.betterweather.datastorage.network.packet;
 
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.access.ViewFrustumGetter;
-import corgitaco.betterweather.access.WeatherViewFrustum;
+import corgitaco.betterweather.helper.ViewFrustumGetter;
+import corgitaco.betterweather.helper.WeatherViewFrustum;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.PacketBuffer;
