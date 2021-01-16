@@ -220,6 +220,7 @@ public class BetterWeatherUtil {
 
     @OnlyIn(Dist.CLIENT)
     public static void refreshViewFrustum(Minecraft minecraft, int renderDistance) {
-        ((WeatherViewFrustum) ((ViewFrustumGetter) minecraft.worldRenderer).getViewFrustum()).forceRenderDistance(renderDistance, minecraft.player.getPosX(), minecraft.player.getPosY(), minecraft.player.getPosZ());
+        if (!BetterWeather.usingOptifine)
+            ((WeatherViewFrustum) ((ViewFrustumGetter) minecraft.worldRenderer).getViewFrustum()).forceRenderDistance(renderDistance, minecraft.player.getPosX(), minecraft.player.getPosY(), minecraft.player.getPosZ());
     }
 }
