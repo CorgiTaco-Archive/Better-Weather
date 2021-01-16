@@ -195,7 +195,7 @@ public class SeasonSystem {
                         }
                     });
                     if (!weatherEventWasSet.get())
-                        BetterWeather.weatherData.setEvent(WeatherEventSystem.CLEAR.toString());
+                        BetterWeather.weatherData.setEvent(WeatherEventSystem.DEFAULT.toString());
 
                     players.forEach(player -> {
                         NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString()));

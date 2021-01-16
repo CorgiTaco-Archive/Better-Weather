@@ -143,4 +143,8 @@ public abstract class WeatherEvent {
     public final boolean drippingLeaves() {
         return false;
     }
+
+    @OnlyIn(Dist.CLIENT)
+    public void onCommandWeatherChange() {
+    }
 }

@@ -216,6 +216,11 @@ public class Blizzard extends WeatherEvent {
     }
 
     @Override
+    public void onCommandWeatherChange() {
+        BLIZZARD_SOUND.finishPlaying();
+    }
+
+    @Override
     public void handleFogDensity(EntityViewRenderEvent.FogDensity event, Minecraft mc) {
         if (BetterWeatherConfigClient.blizzardFog.get()) {
             if (mc.world != null && mc.player != null) {

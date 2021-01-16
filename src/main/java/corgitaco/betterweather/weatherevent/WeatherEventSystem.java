@@ -48,8 +48,6 @@ public class WeatherEventSystem {
 
     private static boolean isFadingOut = true;
 
-    private static BetterWeatherID cachedEvent = CLEAR;
-
     public static void addDefaultWeatherEvents() {
         BetterWeatherEntryPoint.WEATHER_EVENTS.add(new Blizzard());
         BetterWeatherEntryPoint.WEATHER_EVENTS.add(new AcidRain());
@@ -59,24 +57,21 @@ public class WeatherEventSystem {
         BetterWeatherEntryPoint.WEATHER_EVENTS.add(new Clouded());
     }
 
-    public static void updateWeatherEventPacket(List<ServerPlayerEntity> players, World world, boolean justJoined) {
+    public static void updateWeatherEventPacketOnPlayerJoin(List<ServerPlayerEntity> players, World world) {
         BetterWeather.setWeatherData(world);
 
         BetterWeatherID currentEvent = BetterWeather.weatherData.getEvent();
-
-        if (!cachedEvent.equals(currentEvent) || justJoined) {
-            players.forEach(player -> {
+         players.forEach(player -> {
                 NetworkHandler.sendTo(player, new WeatherEventPacket(currentEvent.toString()));
-            });
-            cachedEvent = currentEvent;
-        }
+         });
     }
 
     public static void rollWeatherEventChance(Random random, ServerWorld world, boolean isRaining, ServerWorldInfo worldInfo, List<ServerPlayerEntity> players) {
         if (world.rainingStrength == 0.0F) {
             if (isRaining) {
-                AtomicBoolean weatherEventWasSet = new AtomicBoolean(false);
-                if (!BetterWeather.weatherData.isWeatherForced()) { //If weather isn't forced, roll chance
+                if (!BetterWeather.weatherData.isWeatherForced()) {
+                    AtomicBoolean weatherEventWasSet = new AtomicBoolean(false);
+                    //If weather isn't forced, roll chance
                     WeatherEventSystem.WEATHER_EVENT_CONTROLLER.forEach((event, chance) -> {
                         if (event != WeatherEventSystem.CLEAR) {
                             if (random.nextDouble() < chance) {
@@ -86,14 +81,13 @@ public class WeatherEventSystem {
                         }
                     });
                     if (!weatherEventWasSet.get())
-                        BetterWeather.weatherData.setEvent(WeatherEventSystem.CLEAR.toString());
+                        BetterWeather.weatherData.setEvent(WeatherEventSystem.DEFAULT.toString());
 
                     players.forEach(player -> {
                         NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString()));
                         if (WeatherData.currentWeatherEvent.refreshPlayerRenderer())
                             NetworkHandler.sendTo(player, new RefreshRenderersPacket());
                     });
-
                 }
             }
         } else {
