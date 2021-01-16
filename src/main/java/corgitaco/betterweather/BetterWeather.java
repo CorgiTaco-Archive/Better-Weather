@@ -180,10 +180,6 @@ public class BetterWeather {
             });
         }
 
-
-        private static int ticksLeft = 0;
-        private static WeatherEvent cachedWeatherEvent;
-
         @SubscribeEvent
         public static void clientTickEvent(TickEvent.ClientTickEvent event) {
             Minecraft minecraft = Minecraft.getInstance();

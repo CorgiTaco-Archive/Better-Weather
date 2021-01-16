@@ -10,6 +10,7 @@ import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.api.weatherevent.WeatherEvent;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
 import corgitaco.betterweather.datastorage.network.packet.OnCommandWeatherChangePacket;
+import corgitaco.betterweather.datastorage.network.packet.WeatherEventPacket;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
@@ -35,13 +36,15 @@ public class SetWeatherCommand {
         if (weatherEvent != null) {
             BetterWeather.weatherData.setEvent(weatherEvent.getID().toString());
             world.func_241113_a_(0, 6000, weatherEvent.getID() != WeatherEventSystem.CLEAR, false);
+
+            source.getWorld().getPlayers().forEach(player -> {
+                    NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString()));
+                    if (previousWeatherEvent != WeatherData.currentWeatherEvent)
+                        NetworkHandler.sendTo(player, new OnCommandWeatherChangePacket(previousWeatherEvent.getID().toString()));
+            });
+
             source.sendFeedback(weatherEvent.successTranslationTextComponent(), true);
 
-            if (previousWeatherEvent != WeatherData.currentWeatherEvent) {
-                source.getWorld().getPlayers().forEach(player -> {
-                    NetworkHandler.sendTo(player, new OnCommandWeatherChangePacket(previousWeatherEvent.getID().toString()));
-                });
-            }
         } else {
             source.sendFeedback(new TranslationTextComponent("commands.bw.setweather.failed", weatherType), true);
         }
