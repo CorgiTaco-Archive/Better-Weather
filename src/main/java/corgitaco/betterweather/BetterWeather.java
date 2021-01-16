@@ -139,8 +139,6 @@ public class BetterWeather {
                             SeasonSystem.updateSeasonPacket(serverWorld.getPlayers(), world, false);
                         }
 
-                        WeatherEventSystem.updateWeatherEventPacket(serverWorld.getPlayers(), world, false);
-
                         WeatherData.currentWeatherEvent.worldTick(serverWorld, tickSpeed, worldTime);
                     }
                 }
@@ -171,7 +169,7 @@ public class BetterWeather {
             updateGeneralDataPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world);
             if (useSeasons)
                 SeasonSystem.updateSeasonPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world, true);
-            WeatherEventSystem.updateWeatherEventPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world, true);
+            WeatherEventSystem.updateWeatherEventPacketOnPlayerJoin(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world);
         }
 
         public static void updateGeneralDataPacket(List<ServerPlayerEntity> players, World world) {
