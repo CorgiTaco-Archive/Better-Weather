@@ -1,6 +1,7 @@
 package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.api.weatherevent.WeatherData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.DimensionRenderInfo;
 import net.minecraft.world.World;
@@ -14,11 +15,12 @@ public abstract class MixinDimensionRenderInfo {
     Minecraft minecraft = Minecraft.getInstance();
 
     @Inject(at = @At("HEAD"), method = "func_230492_a_", cancellable = true)
-    private void yeet(float f, float g, CallbackInfoReturnable<float[]> cir) {
+    private void constantSkyColor(float f, float g, CallbackInfoReturnable<float[]> cir) {
         if (minecraft.world != null) {
-            BetterWeather.setWeatherData(minecraft.world);
-            if (BetterWeather.weatherData.isBlizzard() && minecraft.world.getWorldInfo().isRaining() && minecraft.world.getDimensionKey() == World.OVERWORLD)
-                cir.setReturnValue(null);
+            if (WeatherData.currentWeatherEvent.disableSkyColor() && minecraft.world.getDimensionKey() == World.OVERWORLD) {
+                float[] rgba = {1.0F, 1.0F, 1.0F, 1.0F};
+                cir.setReturnValue(rgba);
+            }
         }
     }
 }

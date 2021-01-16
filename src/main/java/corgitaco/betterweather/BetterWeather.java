@@ -65,7 +65,7 @@ public class BetterWeather {
     public static int SEASON_LENGTH = 240000;
     public static int SEASON_CYCLE_LENGTH = SEASON_LENGTH * 4;
     public static boolean useSeasons = true;
-    public static boolean usingOptifine;
+    public static boolean usingOptifine = true;
 
     public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
 
@@ -101,7 +101,7 @@ public class BetterWeather {
 
 
     public void clientSetup(FMLClientSetupEvent event) {
-        usingOptifine = OptifineCompat.IS_OPTIFINE_PRESENT.getValue();
+//        usingOptifine = OptifineCompat.IS_OPTIFINE_PRESENT.getValue();
 //        RenderingRegistry.registerEntityRenderingHandler(BWEntityRegistry.TORNADO, TornadoRenderer::new);
     }
 

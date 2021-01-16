@@ -202,22 +202,6 @@ public class BetterWeatherUtil {
         return worldIn.getDimensionType().getAmbientLight(lightLevelIn);
     }
 
-    public static void extracted(int playerX, int playerZ, BlockPos pos, CallbackInfoReturnable<ChunkRenderDispatcher.ChunkRender> cir) {
-        int x = MathHelper.intFloorDiv(pos.getX(), 16);
-        int y = MathHelper.intFloorDiv(pos.getY(), 16);
-        int z = MathHelper.intFloorDiv(pos.getZ(), 16);
-
-        if (getChunkDistance(playerX, playerZ, x, z) > WeatherData.currentWeatherEvent.forcedRenderDistance())
-            cir.setReturnValue(null);
-    }
-
-
-    private static int getChunkDistance(int chunkX, int chunkZ, int x, int z) {
-        int i = chunkX - x;
-        int j = chunkZ - z;
-        return Math.max(Math.abs(i), Math.abs(j));
-    }
-
     @OnlyIn(Dist.CLIENT)
     public static void refreshViewFrustum(Minecraft minecraft, int renderDistance) {
         if (!BetterWeather.usingOptifine)

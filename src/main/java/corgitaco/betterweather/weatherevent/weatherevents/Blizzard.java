@@ -37,13 +37,9 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 
 import java.util.Random;
-
-import static corgitaco.betterweather.BetterWeather.weatherData;
 
 public class Blizzard extends WeatherEvent {
 
@@ -80,9 +76,6 @@ public class Blizzard extends WeatherEvent {
             soundHandler.play(blizzardSound);
             BLIZZARD_SOUND = blizzardSound;
         }
-
-        float partialTicks = mc.isGamePaused() ? mc.renderPartialTicksPaused : mc.timer.renderPartialTicks;
-        float fade = world.getRainStrength(partialTicks);
 
         if (BetterWeather.usingOptifine)
             mc.worldRenderer.renderDistanceChunks = forcedRenderDistance();
@@ -346,22 +339,6 @@ public class Blizzard extends WeatherEvent {
     @Override
     public boolean refreshPlayerRenderer() {
         return BetterWeather.usingOptifine;
-    }
-
-    static int idx = 0;
-
-    @OnlyIn(Dist.CLIENT)
-    public static void handleBlizzardRenderDistance(Minecraft minecraft) {
-        if (minecraft.world != null) {
-            if (minecraft.world.getWorldInfo().isRaining() && weatherData.isBlizzard()) {
-                minecraft.worldRenderer.renderDistanceChunks = BetterWeatherConfigClient.forcedRenderDistanceDuringBlizzards.get();
-                idx = 0;
-            }
-            if (minecraft.worldRenderer.renderDistanceChunks != minecraft.gameSettings.renderDistanceChunks && !weatherData.isBlizzard() && idx == 0) {
-                minecraft.worldRenderer.renderDistanceChunks = minecraft.gameSettings.renderDistanceChunks;
-                idx++;
-            }
-        }
     }
 
     @Override

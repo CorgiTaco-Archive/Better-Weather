@@ -42,13 +42,19 @@ public abstract class MixinWorldRenderer implements ViewFrustumGetter {
             ci.cancel();
     }
 
-
-    @Inject(at = @At("TAIL"), method = "loadRenderers()V", cancellable = true)
-    private void forceWeatherEventRenderDistance(CallbackInfo ci) {
+    @Inject(at = @At("HEAD"), method = "loadRenderers()V", cancellable = true)
+    private void handleOptifineCompat(CallbackInfo ci) {
         if (BetterWeather.usingOptifine) {
             if (WeatherData.currentWeatherEvent.preventChunkRendererRefreshingWhenOptifineIsPresent())
                 ci.cancel();
-        } else {
+        }
+    }
+
+
+
+    @Inject(at = @At("TAIL"), method = "loadRenderers()V", cancellable = true)
+    private void forceWeatherEventRenderDistance(CallbackInfo ci) {
+        if (!BetterWeather.usingOptifine) {
             ClientPlayerEntity player = mc.player;
             if (mc.world != null && player != null) {
                 if (Blizzard.doBlizzardsAffectDeserts(mc.world.getBiome(mc.player.getPosition())))
@@ -62,15 +68,6 @@ public abstract class MixinWorldRenderer implements ViewFrustumGetter {
     private void stopRainParticles(ActiveRenderInfo activeRenderInfoIn, CallbackInfo ci) {
         if (mc.world != null) {
             if (WeatherData.currentWeatherEvent.weatherParticlesAndSound(activeRenderInfoIn, this.mc))
-                ci.cancel();
-        }
-    }
-
-
-    @Inject(at = @At("HEAD"), method = "renderSky(Lcom/mojang/blaze3d/matrix/MatrixStack;F)V", cancellable = true)
-    private void changeSkyColor(MatrixStack stack, float f, CallbackInfo ci) {
-        if (mc.world != null) {
-            if (WeatherData.currentWeatherEvent.disableSkyColor())
                 ci.cancel();
         }
     }

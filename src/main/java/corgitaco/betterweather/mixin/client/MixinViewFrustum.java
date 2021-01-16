@@ -24,7 +24,7 @@ public abstract class MixinViewFrustum implements WeatherViewFrustum {
      */
     @Override
     public void forceRenderDistance(int renderDistance, double x, double y, double z) {
-        if (BetterWeather.usingOptifine) {
+        if (!BetterWeather.usingOptifine) {
             this.setCountChunksXYZ(renderDistance);
             this.updateChunkPositions(x, z);
         }
