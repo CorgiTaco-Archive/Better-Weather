@@ -1,6 +1,8 @@
 package corgitaco.betterweather;
 
 import corgitaco.betterweather.api.weatherevent.WeatherData;
+import corgitaco.betterweather.helper.ViewFrustumGetter;
+import corgitaco.betterweather.helper.WeatherViewFrustum;
 import corgitaco.betterweather.season.Season;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -214,5 +216,10 @@ public class BetterWeatherUtil {
         int i = chunkX - x;
         int j = chunkZ - z;
         return Math.max(Math.abs(i), Math.abs(j));
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static void refreshViewFrustum(Minecraft minecraft, int renderDistance) {
+        ((WeatherViewFrustum) ((ViewFrustumGetter) minecraft.worldRenderer).getViewFrustum()).forceRenderDistance(renderDistance, minecraft.player.getPosX(), minecraft.player.getPosY(), minecraft.player.getPosZ());
     }
 }

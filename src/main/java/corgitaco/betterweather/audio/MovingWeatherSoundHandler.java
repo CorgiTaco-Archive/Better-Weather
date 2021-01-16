@@ -37,16 +37,18 @@ public class MovingWeatherSoundHandler extends TickableSound {
 
 
     public void changeVolumeDynamically(Minecraft mc, BlockPos livePosition) {
-        int motionBlockingY = mc.world.getHeight(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, livePosition.getX(), livePosition.getZ());
+        int worldHeight = mc.world.getHeight(Heightmap.Type.WORLD_SURFACE, livePosition.getX(), livePosition.getZ());
+        int motionBlockingNoLeavesY = mc.world.getHeight(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, livePosition.getX(), livePosition.getZ());
+        int y = motionBlockingNoLeavesY;
         float partialTicks = mc.isGamePaused() ? mc.renderPartialTicksPaused : mc.timer.renderPartialTicks;
         float fade = mc.world.getRainStrength(partialTicks);
 
 
         float finalVolume = this.originalVolume;
-        float playerHeightToMotionBlockingHeightDifference = (motionBlockingY - livePosition.getY()) * 0.02F;
+        float playerHeightToMotionBlockingHeightDifference = (y - livePosition.getY()) * 0.02F;
         float heightMapCalculatedVolume = this.volume - (playerHeightToMotionBlockingHeightDifference + 0.5F);
         //Implement a protection to prevent the sound from stopping when it reaches volume 0.0F.
-        if (livePosition.getY() < motionBlockingY) {
+        if (livePosition.getY() < y) {
             finalVolume = heightMapCalculatedVolume;
         }
 

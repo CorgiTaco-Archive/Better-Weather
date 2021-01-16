@@ -140,6 +140,11 @@ public abstract class WeatherEvent {
     }
 
     @OnlyIn(Dist.CLIENT)
+    public boolean preventChunkRendererRefreshingWhenOptifineIsPresent() {
+        return false;
+    }
+
+    @OnlyIn(Dist.CLIENT)
     public final boolean drippingLeaves() {
         return false;
     }

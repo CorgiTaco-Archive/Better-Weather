@@ -1,5 +1,6 @@
 package corgitaco.betterweather.mixin.client;
 
+import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.helper.WeatherViewFrustum;
 import net.minecraft.client.renderer.ViewFrustum;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,7 +24,9 @@ public abstract class MixinViewFrustum implements WeatherViewFrustum {
      */
     @Override
     public void forceRenderDistance(int renderDistance, double x, double y, double z) {
-        this.setCountChunksXYZ(renderDistance);
-        this.updateChunkPositions(x, z);
+        if (BetterWeather.usingOptifine) {
+            this.setCountChunksXYZ(renderDistance);
+            this.updateChunkPositions(x, z);
+        }
     }
 }

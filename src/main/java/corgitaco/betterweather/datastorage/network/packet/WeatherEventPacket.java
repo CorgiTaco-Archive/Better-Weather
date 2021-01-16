@@ -32,7 +32,8 @@ public class WeatherEventPacket {
                 if (minecraft.world != null && minecraft.player != null) {
                     BetterWeather.setWeatherData(minecraft.world);
                     BetterWeather.weatherData.setEvent(message.event);
-                    ((WeatherViewFrustum) ((ViewFrustumGetter) minecraft.worldRenderer).getViewFrustum()).forceRenderDistance(WeatherData.currentWeatherEvent.forcedRenderDistance(), minecraft.player.getPosX(), minecraft.player.getPosY(), minecraft.player.getPosZ());
+                    if (!BetterWeather.usingOptifine)
+                        ((WeatherViewFrustum) ((ViewFrustumGetter) minecraft.worldRenderer).getViewFrustum()).forceRenderDistance(WeatherData.currentWeatherEvent.forcedRenderDistance(), minecraft.player.getPosX(), minecraft.player.getPosY(), minecraft.player.getPosZ());
                 }
             });
         }

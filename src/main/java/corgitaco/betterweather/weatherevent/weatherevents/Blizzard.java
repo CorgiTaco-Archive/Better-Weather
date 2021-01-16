@@ -2,6 +2,7 @@ package corgitaco.betterweather.weatherevent.weatherevents;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.SoundRegistry;
 import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
 import corgitaco.betterweather.api.weatherevent.WeatherEvent;
@@ -75,6 +76,19 @@ public class Blizzard extends WeatherEvent {
             soundHandler.play(blizzardSound);
             BLIZZARD_SOUND = blizzardSound;
         }
+
+        if (worldTime % 20 == 0) {
+            if (doBlizzardsAffectDeserts(world.getBiome(mc.player.getPosition())))
+                BetterWeatherUtil.refreshViewFrustum(mc, forcedRenderDistance());
+            else
+                BetterWeatherUtil.refreshViewFrustum(mc, mc.gameSettings.renderDistanceChunks);
+        }
+
+        if (BetterWeather.usingOptifine) {
+            if (mc.worldRenderer.renderDistanceChunks != BetterWeatherConfigClient.forcedRenderDistanceDuringBlizzards.get())
+                mc.worldRenderer.renderDistanceChunks = BetterWeatherConfigClient.forcedRenderDistanceDuringBlizzards.get();
+        }
+
     }
 
     @Override
@@ -322,5 +336,10 @@ public class Blizzard extends WeatherEvent {
             }
         }
         iprofiler.endSection();
+    }
+
+    @Override
+    public boolean refreshPlayerRenderer() {
+        return BetterWeather.usingOptifine;
     }
 }

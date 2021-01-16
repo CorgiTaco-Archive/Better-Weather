@@ -1,9 +1,11 @@
 package corgitaco.betterweather.mixin.client;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.helper.ViewFrustumGetter;
 import corgitaco.betterweather.helper.WeatherViewFrustum;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
+import corgitaco.betterweather.weatherevent.weatherevents.Blizzard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.renderer.ActiveRenderInfo;
@@ -43,9 +45,17 @@ public abstract class MixinWorldRenderer implements ViewFrustumGetter {
 
     @Inject(at = @At("TAIL"), method = "loadRenderers()V", cancellable = true)
     private void forceWeatherEventRenderDistance(CallbackInfo ci) {
-        ClientPlayerEntity player = mc.player;
-        if (mc.world != null && player != null)
-            ((WeatherViewFrustum) this.viewFrustum).forceRenderDistance(WeatherData.currentWeatherEvent.forcedRenderDistance(), player.getPosY(), player.getPosY(), player.getPosZ());
+        if (BetterWeather.usingOptifine) {
+            if (WeatherData.currentWeatherEvent.preventChunkRendererRefreshingWhenOptifineIsPresent())
+                ci.cancel();
+        } else {
+            ClientPlayerEntity player = mc.player;
+            if (mc.world != null && player != null) {
+                if (Blizzard.doBlizzardsAffectDeserts(mc.world.getBiome(mc.player.getPosition())))
+                    ((WeatherViewFrustum) this.viewFrustum).forceRenderDistance(WeatherData.currentWeatherEvent.forcedRenderDistance(), player.getPosY(), player.getPosY(), player.getPosZ());
+
+            }
+        }
     }
 
     @Inject(at = @At("HEAD"), method = "addRainParticles(Lnet/minecraft/client/renderer/ActiveRenderInfo;)V", cancellable = true)
