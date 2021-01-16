@@ -65,7 +65,7 @@ public class BetterWeather {
     public static int SEASON_LENGTH = 240000;
     public static int SEASON_CYCLE_LENGTH = SEASON_LENGTH * 4;
     public static boolean useSeasons = true;
-    public static boolean usingOptifine = true;
+    public static boolean usingOptifine;
 
     public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
 
@@ -101,7 +101,7 @@ public class BetterWeather {
 
 
     public void clientSetup(FMLClientSetupEvent event) {
-//        usingOptifine = OptifineCompat.IS_OPTIFINE_PRESENT.getValue();
+        usingOptifine = OptifineCompat.IS_OPTIFINE_PRESENT.getValue();
 //        RenderingRegistry.registerEntityRenderingHandler(BWEntityRegistry.TORNADO, TornadoRenderer::new);
     }
 
@@ -133,7 +133,7 @@ public class BetterWeather {
             if (event.phase == TickEvent.Phase.END) {
                 if (event.side.isServer()) {
                     ServerWorld serverWorld = (ServerWorld) event.world;
-                    if (serverWorld.getDimensionKey() == World.OVERWORLD) {
+                    if (BetterWeatherUtil.isOverworld(serverWorld.getDimensionKey())) {
                         World world = event.world;
                         int tickSpeed = world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
                         long worldTime = world.getWorldInfo().getGameTime();
@@ -188,7 +188,7 @@ public class BetterWeather {
             Minecraft minecraft = Minecraft.getInstance();
             if (event.phase == TickEvent.Phase.START) {
                 if (minecraft.world != null && minecraft.player != null) {
-                    if (minecraft.world.getDimensionKey() == World.OVERWORLD) {
+                    if (BetterWeatherUtil.isOverworld(minecraft.world.getDimensionKey())) {
                         int tickSpeed = minecraft.world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
                         if (useSeasons) {
                             if (minecraft.world.getWorldInfo().getGameTime() % 10 == 0) {

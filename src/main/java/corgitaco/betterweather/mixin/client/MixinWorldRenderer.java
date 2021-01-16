@@ -2,6 +2,7 @@ package corgitaco.betterweather.mixin.client;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.helper.ViewFrustumGetter;
 import corgitaco.betterweather.helper.WeatherViewFrustum;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
@@ -32,19 +33,20 @@ public abstract class MixinWorldRenderer implements ViewFrustumGetter {
     @Shadow
     private ClientWorld world;
 
-
     @Shadow
     private ViewFrustum viewFrustum;
 
     @Inject(at = @At("HEAD"), method = "renderRainSnow(Lnet/minecraft/client/renderer/LightTexture;FDDD)V", cancellable = true)
     private void renderWeather(LightTexture lightmapIn, float partialTicks, double x, double y, double z, CallbackInfo ci) {
-        if (WeatherData.currentWeatherEvent.renderWeather(mc, this.world, lightmapIn, ticks, partialTicks, x, y, z))
-            ci.cancel();
+        if (BetterWeatherUtil.isOverworld((mc.world.getDimensionKey()))) {
+            if (WeatherData.currentWeatherEvent.renderWeather(mc, this.world, lightmapIn, ticks, partialTicks, x, y, z))
+                ci.cancel();
+        }
     }
 
     @Inject(at = @At("HEAD"), method = "loadRenderers()V", cancellable = true)
     private void handleOptifineCompat(CallbackInfo ci) {
-        if (BetterWeather.usingOptifine) {
+        if (BetterWeather.usingOptifine && BetterWeatherUtil.isOverworld(world.getDimensionKey())) {
             if (WeatherData.currentWeatherEvent.preventChunkRendererRefreshingWhenOptifineIsPresent())
                 ci.cancel();
         }
@@ -54,7 +56,7 @@ public abstract class MixinWorldRenderer implements ViewFrustumGetter {
 
     @Inject(at = @At("TAIL"), method = "loadRenderers()V", cancellable = true)
     private void forceWeatherEventRenderDistance(CallbackInfo ci) {
-        if (!BetterWeather.usingOptifine) {
+        if (!BetterWeather.usingOptifine && BetterWeatherUtil.isOverworld(world.getDimensionKey())) {
             ClientPlayerEntity player = mc.player;
             if (mc.world != null && player != null) {
                 if (Blizzard.doBlizzardsAffectDeserts(mc.world.getBiome(mc.player.getPosition())))
@@ -66,7 +68,7 @@ public abstract class MixinWorldRenderer implements ViewFrustumGetter {
 
     @Inject(at = @At("HEAD"), method = "addRainParticles(Lnet/minecraft/client/renderer/ActiveRenderInfo;)V", cancellable = true)
     private void stopRainParticles(ActiveRenderInfo activeRenderInfoIn, CallbackInfo ci) {
-        if (mc.world != null) {
+        if (mc.world != null && BetterWeatherUtil.isOverworld(world.getDimensionKey())) {
             if (WeatherData.currentWeatherEvent.weatherParticlesAndSound(activeRenderInfoIn, this.mc))
                 ci.cancel();
         }
@@ -74,7 +76,8 @@ public abstract class MixinWorldRenderer implements ViewFrustumGetter {
 
     @Redirect(method = "renderSky(Lcom/mojang/blaze3d/matrix/MatrixStack;F)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
     public float sunRemoval(ClientWorld clientWorld, float delta) {
-        return this.world.getRainStrength(delta) * WeatherData.currentWeatherEvent.skyOpacity();
+        float rainStrength = this.world.getRainStrength(delta);
+        return BetterWeatherUtil.isOverworld(world.getDimensionKey()) ? rainStrength * WeatherData.currentWeatherEvent.skyOpacity() : rainStrength;
     }
 
     @Override

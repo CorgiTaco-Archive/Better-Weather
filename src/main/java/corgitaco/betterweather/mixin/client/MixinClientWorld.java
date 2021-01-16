@@ -32,8 +32,8 @@ public abstract class MixinClientWorld {
     }
 
     @Redirect(method = "getSkyColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
-    private float doNotDarkenSkyWithRainStrength(ClientWorld clientWorld, float delta) {
-        return 0.0F;
+    private float doNotDarkenSkyWithRainStrength(ClientWorld world, float delta) {
+        return BetterWeatherUtil.isOverworld(world.getDimensionKey()) ? 0.0F : world.getRainStrength(delta);
     }
 
     @Redirect(method = "getCloudColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
@@ -43,15 +43,18 @@ public abstract class MixinClientWorld {
 
     @Inject(method = "getCloudColor", at = @At("RETURN"), cancellable = true)
     private void modifyCloudColor(float partialTicks, CallbackInfoReturnable<Vector3d> cir) {
-        int rgbColor = WeatherData.currentWeatherEvent.modifyCloudColor(BetterWeatherUtil.transformFloatColor(cir.getReturnValue()), ((ClientWorld) (Object) this).getRainStrength(partialTicks)).getRGB();
-        float r = (float) (rgbColor >> 16 & 255) / 255.0F;
-        float g = (float) (rgbColor >> 8 & 255) / 255.0F;
-        float b = (float) (rgbColor & 255) / 255.0F;
-        cir.setReturnValue(new Vector3d(r, g, b));
+        if (BetterWeatherUtil.isOverworld(((ClientWorld)(Object) this).getDimensionKey())) {
+            int rgbColor = WeatherData.currentWeatherEvent.modifyCloudColor(BetterWeatherUtil.transformFloatColor(cir.getReturnValue()), ((ClientWorld) (Object) this).getRainStrength(partialTicks)).getRGB();
+            float r = (float) (rgbColor >> 16 & 255) / 255.0F;
+            float g = (float) (rgbColor >> 8 & 255) / 255.0F;
+            float b = (float) (rgbColor & 255) / 255.0F;
+            cir.setReturnValue(new Vector3d(r, g, b));
+        }
     }
 
     @Redirect(method = "getSunBrightness", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
     private float sunBrightness(ClientWorld world, float delta) {
-        return ((ClientWorld) (Object) this).getRainStrength(delta) * WeatherData.currentWeatherEvent.daylightBrightness();
+        float rainStrength = ((ClientWorld) (Object) this).getRainStrength(delta);
+        return BetterWeatherUtil.isOverworld(world.getDimensionKey()) ? rainStrength * WeatherData.currentWeatherEvent.daylightBrightness() : rainStrength;
     }
 }

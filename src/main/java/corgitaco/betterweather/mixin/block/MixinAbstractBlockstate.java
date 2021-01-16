@@ -1,10 +1,12 @@
 package corgitaco.betterweather.mixin.block;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.season.SeasonSystem;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
@@ -35,7 +37,7 @@ public abstract class MixinAbstractBlockstate {
      */
     @Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
     private void cropGrowthModifier(ServerWorld world, BlockPos posIn, Random randomIn, CallbackInfo ci) {
-        if (BetterWeather.useSeasons)
+        if (BetterWeather.useSeasons && BetterWeatherUtil.isOverworld(world.getDimensionKey()))
             SeasonSystem.tickCropForBiomeBlockOrSeason(world, posIn, this.getBlock(), this.getSelf(), ci);
     }
 }

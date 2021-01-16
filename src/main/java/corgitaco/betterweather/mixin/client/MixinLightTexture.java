@@ -1,5 +1,6 @@
 package corgitaco.betterweather.mixin.client;
 
+import corgitaco.betterweather.BetterWeatherUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
@@ -46,5 +47,4 @@ public abstract class MixinLightTexture {
 //            needsUpdate = BetterWeatherUtil.updateLightmap(partialTicks, torchFlicker, client, entityRenderer, nativeImage, dynamicTexture);
 //        }
 //    }
-
 }

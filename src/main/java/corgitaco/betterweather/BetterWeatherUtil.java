@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.texture.NativeImage;
 import net.minecraft.client.util.InputMappings;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.potion.Effects;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -206,5 +207,9 @@ public class BetterWeatherUtil {
     public static void refreshViewFrustum(Minecraft minecraft, int renderDistance) {
         if (!BetterWeather.usingOptifine)
             ((WeatherViewFrustum) ((ViewFrustumGetter) minecraft.worldRenderer).getViewFrustum()).forceRenderDistance(renderDistance, minecraft.player.getPosX(), minecraft.player.getPosY(), minecraft.player.getPosZ());
+    }
+
+    public static boolean isOverworld(RegistryKey<World> worldKey) {
+        return worldKey == World.OVERWORLD;
     }
 }

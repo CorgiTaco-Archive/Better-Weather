@@ -47,10 +47,6 @@ public abstract class WeatherEvent {
 
     public abstract void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc);
 
-    public boolean refreshRenderers() {
-        return false;
-    }
-
     public float modifyTemperature(float biomeTemp, float modifiedBiomeTemp, double seasonModifier) {
         return modifiedBiomeTemp == Double.MAX_VALUE ? biomeTemp : modifiedBiomeTemp;
     }
