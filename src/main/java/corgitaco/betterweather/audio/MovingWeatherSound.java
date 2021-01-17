@@ -7,12 +7,12 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.LightType;
 
-public class MovingWeatherSoundHandler extends TickableSound {
+public class MovingWeatherSound extends TickableSound {
     private final float originalVolume;
 
-    public MovingWeatherSoundHandler(SoundEvent soundIn, int replayRate, SoundCategory categoryIn, BlockPos initialPosition, float originalVolume, float pitch) {
+    public MovingWeatherSound(SoundEvent soundIn, int replayRate, SoundCategory categoryIn, BlockPos initialPosition, float originalVolume, float pitch) {
         super(soundIn, categoryIn);
         this.x = initialPosition.getX();
         this.y = initialPosition.getY();
@@ -37,29 +37,43 @@ public class MovingWeatherSoundHandler extends TickableSound {
 
 
     public void changeVolumeDynamically(Minecraft mc, BlockPos livePosition) {
-        int worldHeight = mc.world.getHeight(Heightmap.Type.WORLD_SURFACE, livePosition.getX(), livePosition.getZ());
-        int motionBlockingNoLeavesY = mc.world.getHeight(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, livePosition.getX(), livePosition.getZ());
-        int y = motionBlockingNoLeavesY;
         float partialTicks = mc.isGamePaused() ? mc.renderPartialTicksPaused : mc.timer.renderPartialTicks;
         float fade = mc.world.getRainStrength(partialTicks);
-
-
         float finalVolume = this.originalVolume;
-        float playerHeightToMotionBlockingHeightDifference = (y - livePosition.getY()) * 0.02F;
-        float heightMapCalculatedVolume = this.volume - (playerHeightToMotionBlockingHeightDifference + 0.5F);
-        //Implement a protection to prevent the sound from stopping when it reaches volume 0.0F.
-        if (livePosition.getY() < y) {
-            finalVolume = heightMapCalculatedVolume;
-        }
+
+        IsInsideAudioHelper isInsideAudioHelper = new IsInsideAudioHelper(livePosition, mc, this.originalVolume);
+        finalVolume = isInsideAudioHelper.getFinalVolume();
+
 
         //Check if the player is underwater then chop the noise volume in half(essentially muffling it)
         if (mc.world.getBlockState(livePosition).getBlock() == Blocks.WATER && mc.world.getBlockState(livePosition).getFluidState().getLevel() >= 6)
             finalVolume = finalVolume / 2;
 
-        float clampedFinalVolume = MathHelper.clamp(finalVolume, 0.05F, 1.0F);
+
+
+
+
+        float clampedFinalVolume = MathHelper.clamp(finalVolume, 0.01F, 1.0F);
         this.volume = fade * clampedFinalVolume;
         if (this.volume == 0.0F) {
             this.finishPlaying();
+        }
+    }
+
+    public static class IsInsideAudioHelper {
+        private final float originalVolume;
+        private final float finalVolume;
+
+        private IsInsideAudioHelper(BlockPos playerLivePos, Minecraft mc, float originalVolume) {
+            this.originalVolume = originalVolume;
+            int lightLevel = mc.world.getLightFor(LightType.SKY, playerLivePos);
+            this.finalVolume = lightLevel * 0.02F;
+
+        }
+
+
+        public float getFinalVolume() {
+            return MathHelper.clamp(finalVolume, 0.01F, originalVolume);
         }
     }
 }

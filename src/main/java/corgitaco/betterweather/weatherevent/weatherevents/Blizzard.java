@@ -6,7 +6,7 @@ import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.SoundRegistry;
 import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
 import corgitaco.betterweather.api.weatherevent.WeatherEvent;
-import corgitaco.betterweather.audio.MovingWeatherSoundHandler;
+import corgitaco.betterweather.audio.MovingWeatherSound;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
 import net.minecraft.block.Block;
@@ -64,7 +64,7 @@ public class Blizzard extends WeatherEvent {
     public void worldTick(ServerWorld world, int tickSpeed, long worldTime) {
     }
 
-    public static MovingWeatherSoundHandler BLIZZARD_SOUND = new MovingWeatherSoundHandler(SoundRegistry.BLIZZARD_LOOP1, BetterWeatherConfigClient.blizzardLoopEnumValue.get().getReplayRate(), SoundCategory.WEATHER, Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getBlockPos(), BetterWeatherConfigClient.blizzardVolume.get().floatValue(), BetterWeatherConfigClient.blizzardPitch.get().floatValue());
+    public static MovingWeatherSound BLIZZARD_SOUND = new MovingWeatherSound(SoundRegistry.BLIZZARD_LOOP1, BetterWeatherConfigClient.blizzardLoopEnumValue.get().getReplayRate(), SoundCategory.WEATHER, Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getBlockPos(), BetterWeatherConfigClient.blizzardVolume.get().floatValue(), BetterWeatherConfigClient.blizzardPitch.get().floatValue());
     static int idx2 = 0;
 
 
@@ -72,7 +72,7 @@ public class Blizzard extends WeatherEvent {
     public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc) {
         SoundHandler soundHandler = mc.getSoundHandler();
         if (!soundHandler.isPlaying(BLIZZARD_SOUND)) {
-            MovingWeatherSoundHandler blizzardSound = new MovingWeatherSoundHandler(BetterWeatherConfigClient.blizzardLoopEnumValue.get().getSoundEvent(), BetterWeatherConfigClient.blizzardLoopEnumValue.get().getReplayRate(), SoundCategory.WEATHER, Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getBlockPos(), BetterWeatherConfigClient.blizzardVolume.get().floatValue(), BetterWeatherConfigClient.blizzardPitch.get().floatValue());
+            MovingWeatherSound blizzardSound = new MovingWeatherSound(BetterWeatherConfigClient.blizzardLoopEnumValue.get().getSoundEvent(), BetterWeatherConfigClient.blizzardLoopEnumValue.get().getReplayRate(), SoundCategory.WEATHER, Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getBlockPos(), BetterWeatherConfigClient.blizzardVolume.get().floatValue(), BetterWeatherConfigClient.blizzardPitch.get().floatValue());
             soundHandler.play(blizzardSound);
             BLIZZARD_SOUND = blizzardSound;
         }
@@ -124,7 +124,7 @@ public class Blizzard extends WeatherEvent {
                 double rainSizeZ = (double) this.rainSizeZ[rainSizeIdx] * 0.5D;
                 blockPos.setPos(graphicQualityX, 0, graphicQualityZ);
                 Biome biome = world.getBiome(blockPos);
-                int topPosY = mc.world.getHeight(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, blockPos.getX(), blockPos.getY());
+                int topPosY = mc.world.getHeight(Heightmap.Type.MOTION_BLOCKING, blockPos.getX(), blockPos.getY());
                 int floorYMinusGraphicsQuality = floorY - graphicsQuality;
                 int floorYPlusGraphicsQuality = floorY + graphicsQuality;
                 if (floorYMinusGraphicsQuality < topPosY) {
