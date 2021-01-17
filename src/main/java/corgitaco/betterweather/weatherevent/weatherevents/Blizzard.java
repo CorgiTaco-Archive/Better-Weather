@@ -26,7 +26,6 @@ import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
@@ -151,8 +150,6 @@ public class Blizzard extends WeatherEvent {
                         }
 
                         i1 = 1;
-                        ResourceLocation THICC_SNOW = new ResourceLocation(BetterWeather.MOD_ID, "textures/environment/thick_snow.png");
-
                         mc.getTextureManager().bindTexture(WorldRenderer.SNOW_TEXTURES);
                         bufferbuilder.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
                     }
@@ -345,4 +342,6 @@ public class Blizzard extends WeatherEvent {
     public boolean preventChunkRendererRefreshingWhenOptifineIsPresent() {
         return true;
     }
+
+
 }
