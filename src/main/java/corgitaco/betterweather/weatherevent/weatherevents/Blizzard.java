@@ -70,10 +70,14 @@ public class Blizzard extends WeatherEvent {
     @Override
     public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc) {
         SoundHandler soundHandler = mc.getSoundHandler();
-        if (!soundHandler.isPlaying(BLIZZARD_SOUND)) {
+        if (!soundHandler.isPlaying(BLIZZARD_SOUND) && doBlizzardsAffectDeserts(mc.world.getBiome(mc.gameRenderer.getActiveRenderInfo().getBlockPos()))) {
             MovingWeatherSound blizzardSound = new MovingWeatherSound(BetterWeatherConfigClient.blizzardLoopEnumValue.get().getSoundEvent(), BetterWeatherConfigClient.blizzardLoopEnumValue.get().getReplayRate(), SoundCategory.WEATHER, Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getBlockPos(), BetterWeatherConfigClient.blizzardVolume.get().floatValue(), BetterWeatherConfigClient.blizzardPitch.get().floatValue());
             soundHandler.play(blizzardSound);
             BLIZZARD_SOUND = blizzardSound;
+        }
+
+        if (!BLIZZARD_SOUND.isDonePlaying() && !doBlizzardsAffectDeserts(mc.world.getBiome(mc.gameRenderer.getActiveRenderInfo().getBlockPos()))) {
+            BLIZZARD_SOUND.finishPlaying();
         }
 
         if (BetterWeather.usingOptifine)

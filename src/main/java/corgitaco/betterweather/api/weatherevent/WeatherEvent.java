@@ -141,7 +141,7 @@ public abstract class WeatherEvent {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public final boolean drippingLeaves() {
+    public boolean drippingLeaves() {
         return false;
     }
 

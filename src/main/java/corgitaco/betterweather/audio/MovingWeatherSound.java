@@ -49,10 +49,6 @@ public class MovingWeatherSound extends TickableSound {
         if (mc.world.getBlockState(livePosition).getBlock() == Blocks.WATER && mc.world.getBlockState(livePosition).getFluidState().getLevel() >= 6)
             finalVolume = finalVolume / 2;
 
-
-
-
-
         float clampedFinalVolume = MathHelper.clamp(finalVolume, 0.01F, 1.0F);
         this.volume = fade * clampedFinalVolume;
         if (this.volume == 0.0F) {

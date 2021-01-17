@@ -20,8 +20,12 @@ public class BiomeColorCalculator {
 
     public static Color modifyBiomeColor(ColorType colorType, Color originalColorValue, Season.SubSeason subSeason, Biome biome) {
         Color fallbackColor = modifyColorForWeatherEvent(colorType, originalColorValue, originalColorValue, null);
+        Minecraft mc = Minecraft.getInstance();
 
         if (!BetterWeather.useSeasons)
+            return fallbackColor;
+
+        if (mc.world == null)
             return fallbackColor;
 
         int red = originalColorValue.getRed();
@@ -30,10 +34,10 @@ public class BiomeColorCalculator {
 
         Color target;
         double blendStrength;
-        DynamicRegistries dynamicRegistries = Minecraft.getInstance().world.func_241828_r();
+        DynamicRegistries dynamicRegistries = mc.world.func_241828_r();
         ResourceLocation biomeKey = dynamicRegistries.getRegistry(Registry.BIOME_KEY).getKey(biome);
-            if (biomeKey == null)
-                return fallbackColor;
+        if (biomeKey == null)
+            return fallbackColor;
 
         switch (colorType) {
             case GRASS:
