@@ -12,7 +12,8 @@ public class OverrideStorage {
     private double fallBack = Double.MAX_VALUE;
     private OverrideClientStorage clientStorage = new OverrideClientStorage();
 
-    public OverrideStorage() {}
+    public OverrideStorage() {
+    }
 
     public IdentityHashMap<Block, Double> getBlockToCropGrowthMultiplierMap() {
         if (blockToCropGrowthMultiplierMap == null)
@@ -20,20 +21,22 @@ public class OverrideStorage {
         return blockToCropGrowthMultiplierMap;
     }
 
+    public OverrideStorage setBlockToCropGrowthMultiplierMap(IdentityHashMap<Block, Double> blockToCropGrowthMultiplierMap) {
+        this.blockToCropGrowthMultiplierMap = blockToCropGrowthMultiplierMap;
+        return this;
+    }
+
     public double getFallBack() {
         return fallBack;
     }
 
+    public OverrideStorage setFallBack(double fallBack) {
+        this.fallBack = fallBack;
+        return this;
+    }
+
     public double getTempModifier() {
         return tempModifier;
-    }
-
-    public double getHumidityModifier() {
-        return humidityModifier;
-    }
-
-    public OverrideClientStorage getClientStorage() {
-        return clientStorage;
     }
 
     public OverrideStorage setTempModifier(double tempModifier) {
@@ -41,19 +44,17 @@ public class OverrideStorage {
         return this;
     }
 
+    public double getHumidityModifier() {
+        return humidityModifier;
+    }
+
     public OverrideStorage setHumidityModifier(double humidityModifier) {
         this.humidityModifier = humidityModifier;
         return this;
     }
 
-    public OverrideStorage setBlockToCropGrowthMultiplierMap(IdentityHashMap<Block, Double> blockToCropGrowthMultiplierMap) {
-        this.blockToCropGrowthMultiplierMap = blockToCropGrowthMultiplierMap;
-        return this;
-    }
-
-    public OverrideStorage setFallBack(double fallBack) {
-        this.fallBack = fallBack;
-        return this;
+    public OverrideClientStorage getClientStorage() {
+        return clientStorage;
     }
 
     public OverrideStorage setClientStorage(OverrideClientStorage clientStorage) {
@@ -76,7 +77,8 @@ public class OverrideStorage {
         private int parsedFogHexColor = Integer.MAX_VALUE;
 
 
-        public OverrideClientStorage() {}
+        public OverrideClientStorage() {
+        }
 
         public void parseHexColors() {
             if (!targetFoliageHexColor.isEmpty())
@@ -93,34 +95,73 @@ public class OverrideStorage {
             return targetFoliageHexColor;
         }
 
+        public OverrideClientStorage setTargetFoliageHexColor(String targetFoliageHexColor) {
+            this.targetFoliageHexColor = targetFoliageHexColor;
+            return this;
+        }
+
         public double getFoliageColorBlendStrength() {
             return foliageColorBlendStrength;
+        }
+
+        public OverrideClientStorage setFoliageColorBlendStrength(double foliageColorBlendStrength) {
+            this.foliageColorBlendStrength = foliageColorBlendStrength;
+            return this;
         }
 
         public String getTargetGrassHexColor() {
             return targetGrassHexColor;
         }
 
+        public OverrideClientStorage setTargetGrassHexColor(String targetGrassHexColor) {
+            this.targetGrassHexColor = targetGrassHexColor;
+            return this;
+        }
+
         public double getGrassColorBlendStrength() {
             return grassColorBlendStrength;
+        }
+
+        public OverrideClientStorage setGrassColorBlendStrength(double grassColorBlendStrength) {
+            this.grassColorBlendStrength = grassColorBlendStrength;
+            return this;
         }
 
         public String getTargetSkyHexColor() {
             return targetSkyHexColor;
         }
 
+        public OverrideClientStorage setTargetSkyHexColor(String targetSkyHexColor) {
+            this.targetSkyHexColor = targetSkyHexColor;
+            return this;
+        }
+
         public double getSkyColorBlendStrength() {
             return skyColorBlendStrength;
+        }
+
+        public OverrideClientStorage setSkyColorBlendStrength(double skyColorBlendStrength) {
+            this.skyColorBlendStrength = skyColorBlendStrength;
+            return this;
         }
 
         public String getTargetFogHexColor() {
             return targetFogHexColor;
         }
 
+        public OverrideClientStorage setTargetFogHexColor(String targetFogHexColor) {
+            this.targetFogHexColor = targetFogHexColor;
+            return this;
+        }
+
         public double getFogColorBlendStrength() {
             return fogColorBlendStrength;
         }
 
+        public OverrideClientStorage setFogColorBlendStrength(double fogColorBlendStrength) {
+            this.fogColorBlendStrength = fogColorBlendStrength;
+            return this;
+        }
 
         public int getParsedFoliageHexColor() {
             return parsedFoliageHexColor;
@@ -136,46 +177,6 @@ public class OverrideStorage {
 
         public int getParsedFogHexColor() {
             return parsedFogHexColor;
-        }
-
-        public OverrideClientStorage setTargetFoliageHexColor(String targetFoliageHexColor) {
-            this.targetFoliageHexColor = targetFoliageHexColor;
-            return this;
-        }
-
-        public OverrideClientStorage setFoliageColorBlendStrength(double foliageColorBlendStrength) {
-            this.foliageColorBlendStrength = foliageColorBlendStrength;
-            return this;
-        }
-
-        public OverrideClientStorage setTargetGrassHexColor(String targetGrassHexColor) {
-            this.targetGrassHexColor = targetGrassHexColor;
-            return this;
-        }
-
-        public OverrideClientStorage setGrassColorBlendStrength(double grassColorBlendStrength) {
-            this.grassColorBlendStrength = grassColorBlendStrength;
-            return this;
-        }
-
-        public OverrideClientStorage setTargetSkyHexColor(String targetSkyHexColor) {
-            this.targetSkyHexColor = targetSkyHexColor;
-            return this;
-        }
-
-        public OverrideClientStorage setSkyColorBlendStrength(double skyColorBlendStrength) {
-            this.skyColorBlendStrength = skyColorBlendStrength;
-            return this;
-        }
-
-        public OverrideClientStorage setTargetFogHexColor(String targetFogHexColor) {
-            this.targetFogHexColor = targetFogHexColor;
-            return this;
-        }
-
-        public OverrideClientStorage setFogColorBlendStrength(double fogColorBlendStrength) {
-            this.fogColorBlendStrength = fogColorBlendStrength;
-            return this;
         }
     }
 }

@@ -41,9 +41,9 @@ public class WeatherEventUtil {
             }
 
             if (rainTime > 0) {
-                --rainTime ;
+                --rainTime;
                 if (rainTime == 0) {
-                    isRaining = !isRaining ;
+                    isRaining = !isRaining;
                 }
             } else if (isRaining) {
                 rainTime = world.rand.nextInt(12000) + 12000;
@@ -78,9 +78,9 @@ public class WeatherEventUtil {
             isRaining = false;
         } else {
             if (rainTime > 0) {
-                --rainTime ;
+                --rainTime;
                 if (rainTime == 0) {
-                    isRaining = !isRaining ;
+                    isRaining = !isRaining;
                 }
             } else if (isRaining) {
                 rainTime = world.rand.nextInt(12000) + 12000;

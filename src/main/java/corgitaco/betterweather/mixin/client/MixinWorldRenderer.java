@@ -1,11 +1,10 @@
 package corgitaco.betterweather.mixin.client;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
+import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.helper.ViewFrustumGetter;
 import corgitaco.betterweather.helper.WeatherViewFrustum;
-import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.weatherevent.weatherevents.Blizzard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
@@ -51,7 +50,6 @@ public abstract class MixinWorldRenderer implements ViewFrustumGetter {
                 ci.cancel();
         }
     }
-
 
 
     @Inject(at = @At("TAIL"), method = "loadRenderers()V", cancellable = true)

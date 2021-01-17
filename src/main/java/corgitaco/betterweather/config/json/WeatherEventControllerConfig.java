@@ -13,7 +13,6 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 
 public class WeatherEventControllerConfig {
 
@@ -33,15 +32,13 @@ public class WeatherEventControllerConfig {
             HashMap<BetterWeatherID, Double> hashMap = gson.fromJson(reader, HashMap.class);
             if (hashMap != null) {
                 WeatherEventSystem.WEATHER_EVENT_CONTROLLER = hashMap;
-            }
-            else
+            } else
                 BetterWeather.LOGGER.info(path.getFileName().toString() + " failed to load!");
 
         } catch (IOException e) {
             BetterWeather.LOGGER.error(path.getFileName().toString() + " could not be read");
         }
     }
-
 
 
     public static void createJson(Path path) {

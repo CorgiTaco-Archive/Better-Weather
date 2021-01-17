@@ -1,18 +1,18 @@
 package corgitaco.betterweather.weatherevent;
 
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.helper.IsWeatherForced;
 import corgitaco.betterweather.api.BetterWeatherEntryPoint;
 import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.api.weatherevent.WeatherEvent;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
-import corgitaco.betterweather.datastorage.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.datastorage.network.packet.WeatherEventPacket;
+import corgitaco.betterweather.datastorage.network.packet.util.RefreshRenderersPacket;
+import corgitaco.betterweather.helper.IsWeatherForced;
 import corgitaco.betterweather.weatherevent.weatherevents.AcidRain;
 import corgitaco.betterweather.weatherevent.weatherevents.Blizzard;
-import corgitaco.betterweather.weatherevent.weatherevents.vanilla.Clear;
 import corgitaco.betterweather.weatherevent.weatherevents.Clouded;
+import corgitaco.betterweather.weatherevent.weatherevents.vanilla.Clear;
 import corgitaco.betterweather.weatherevent.weatherevents.vanilla.DefaultRain;
 import corgitaco.betterweather.weatherevent.weatherevents.vanilla.DefaultThunder;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -37,7 +37,7 @@ public class WeatherEventSystem {
     public static HashMap<BetterWeatherID, Double> WEATHER_EVENT_CONTROLLER = new HashMap<>();
 
     public static HashMap<BetterWeatherID, WeatherEvent> WEATHER_EVENTS = new HashMap<>();
-
+    private static boolean isFadingOut = true;
 
     public static void fillWeatherEventsMapAndWeatherEventController() {
         for (WeatherEvent weatherEvent : BetterWeatherEntryPoint.WEATHER_EVENTS) {
@@ -45,8 +45,6 @@ public class WeatherEventSystem {
             WEATHER_EVENT_CONTROLLER.put(weatherEvent.getID(), weatherEvent.getDefaultChance());
         }
     }
-
-    private static boolean isFadingOut = true;
 
     public static void addDefaultWeatherEvents() {
         BetterWeatherEntryPoint.WEATHER_EVENTS.add(new Blizzard());
@@ -61,9 +59,9 @@ public class WeatherEventSystem {
         BetterWeather.setWeatherData(world);
 
         BetterWeatherID currentEvent = BetterWeather.weatherData.getEvent();
-         players.forEach(player -> {
-                NetworkHandler.sendTo(player, new WeatherEventPacket(currentEvent.toString()));
-         });
+        players.forEach(player -> {
+            NetworkHandler.sendTo(player, new WeatherEventPacket(currentEvent.toString()));
+        });
     }
 
     public static void rollWeatherEventChance(Random random, ServerWorld world, boolean isRaining, ServerWorldInfo worldInfo, List<ServerPlayerEntity> players) {

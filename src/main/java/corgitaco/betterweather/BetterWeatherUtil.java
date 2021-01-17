@@ -34,6 +34,7 @@ public class BetterWeatherUtil {
     public static final Color DEFAULT_THUNDER_SKY = new Color(42, 45, 51);
     public static final Color DEFAULT_THUNDER_FOG = new Color(85, 95, 135);
     public static final Color DEFAULT_THUNDER_CLOUDS = new Color(37, 37, 37);
+    private static int configReloadIdx = 0;
 
     public static int parseHexColor(String targetHexColor) {
         if (!targetHexColor.isEmpty()) {
@@ -63,8 +64,6 @@ public class BetterWeatherUtil {
         return (int) (normalTime * 1 / currentMultiplier);
     }
 
-    private static int configReloadIdx = 0;
-
     @OnlyIn(Dist.CLIENT)
     public static void configReloadKeybind(int key) {
         Minecraft minecraft = Minecraft.getInstance();
@@ -80,8 +79,7 @@ public class BetterWeatherUtil {
                 printDebugMessage("bw.debug.reloadconfig.message");
                 configReloadIdx = 1;
             }
-        }
-        else
+        } else
             configReloadIdx = 0;
     }
 
@@ -92,7 +90,7 @@ public class BetterWeatherUtil {
 
     @OnlyIn(Dist.CLIENT)
     public static void printDebugMessage(String message, Object... args) {
-        Minecraft.getInstance().ingameGUI.getChatGUI().printChatMessage((new StringTextComponent("")).append((new TranslationTextComponent("debug.prefix")).mergeStyle(new TextFormatting[]{TextFormatting.YELLOW, TextFormatting.BOLD})).appendString(" ").append(new TranslationTextComponent(message, args)));
+        Minecraft.getInstance().ingameGUI.getChatGUI().printChatMessage((new StringTextComponent("")).append((new TranslationTextComponent("debug.prefix")).mergeStyle(TextFormatting.YELLOW, TextFormatting.BOLD)).appendString(" ").append(new TranslationTextComponent(message, args)));
     }
 
     public static int modifiedColorValue(int original, int target, double blendStrength) {

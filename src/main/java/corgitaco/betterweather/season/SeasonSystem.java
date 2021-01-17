@@ -2,13 +2,13 @@ package corgitaco.betterweather.season;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
-import corgitaco.betterweather.helper.IsWeatherForced;
 import corgitaco.betterweather.api.SeasonData;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
-import corgitaco.betterweather.datastorage.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
 import corgitaco.betterweather.datastorage.network.packet.WeatherEventPacket;
+import corgitaco.betterweather.datastorage.network.packet.util.RefreshRenderersPacket;
+import corgitaco.betterweather.helper.IsWeatherForced;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -28,6 +28,9 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SeasonSystem {
+
+    private static SeasonData.SubSeasonVal privateSubSeasonVal;
+    private static boolean isFadingOut = true;
 
     public static void updateSeasonTime() {
         if (!BetterWeather.useSeasons)
@@ -58,7 +61,7 @@ public class SeasonSystem {
         }
 
         if (BetterWeather.seasonData.getSeasonTime() % 1200 == 0 || BetterWeather.seasonData.isForced() || justJoined) {
-            players.forEach(player -> NetworkHandler.sendTo(player, new SeasonPacket(BetterWeather.seasonData.getSeasonTime(), BetterWeather.SEASON_CYCLE_LENGTH)));;
+            players.forEach(player -> NetworkHandler.sendTo(player, new SeasonPacket(BetterWeather.seasonData.getSeasonTime(), BetterWeather.SEASON_CYCLE_LENGTH)));
 
             if (BetterWeather.seasonData.isForced())
                 BetterWeather.seasonData.setForced(false);
@@ -82,7 +85,6 @@ public class SeasonSystem {
             minecraft.worldRenderer.loadRenderers();
         }
     }
-
 
     public static Season.SubSeason getSubSeasonFromTime(int seasonTime, int seasonCycleLength) {
         if (!BetterWeather.useSeasons)
@@ -108,7 +110,6 @@ public class SeasonSystem {
             return Season.getSeasonFromEnum(seasonVal).getEnd();
         }
     }
-
 
     public static void tickCropForBiomeBlockOrSeason(ServerWorld world, BlockPos posIn, Block block, BlockState self, CallbackInfo ci) {
         if (!BetterWeather.useSeasons)
@@ -152,10 +153,6 @@ public class SeasonSystem {
             }
         }
     }
-
-    private static SeasonData.SubSeasonVal privateSubSeasonVal;
-
-    private static boolean isFadingOut = true;
 
     public static void rollWeatherEventChanceForSeason(Random random, ServerWorld world, boolean isRaining, boolean isThundering, ServerWorldInfo worldInfo, List<ServerPlayerEntity> players) {
         if (!BetterWeather.useSeasons)

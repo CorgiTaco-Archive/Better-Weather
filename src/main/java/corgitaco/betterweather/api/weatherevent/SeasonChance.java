@@ -17,7 +17,7 @@ public class SeasonChance {
     private double winterStartWeight;
     private double winterMidWeight;
     private double winterEndWeight;
-    
+
     public double getSpringStartWeight() {
         return springStartWeight;
     }

@@ -9,7 +9,6 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
 
@@ -46,6 +45,14 @@ public class BetterWeatherConfig {
 
     public static ForgeConfigSpec.BooleanValue seasons;
     public static ForgeConfigSpec.IntValue seasonLength;
+    public static boolean damageAnimals = false;
+    public static boolean damageMonsters = false;
+    public static boolean damagePlayer = false;
+    public static boolean destroyGrass = false;
+    public static boolean destroyLeaves = false;
+    public static boolean destroyCrops = false;
+    public static boolean destroyPlants = false;
+    public static List<Block> blocksToNotDestroyList = new ArrayList<>();
 
     public static void loadConfig(Path path) {
         BetterWeather.LOGGER.info("Loading config: " + path);
@@ -104,15 +111,6 @@ public class BetterWeatherConfig {
     public static void onLoad(final ModConfig.Loading configEvent) {
 
     }
-
-    public static boolean damageAnimals = false;
-    public static boolean damageMonsters = false;
-    public static boolean damagePlayer = false;
-    public static boolean destroyGrass = false;
-    public static boolean destroyLeaves = false;
-    public static boolean destroyCrops = false;
-    public static boolean destroyPlants = false;
-    public static List<Block> blocksToNotDestroyList = new ArrayList<>();
 
     public static void handleCommonConfig() {
         String entityTypes = BetterWeatherConfig.entityTypesToDamage.get();

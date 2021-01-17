@@ -47,7 +47,6 @@ public class BiomeOverrideJsonHandler {
     }
 
 
-
     public static void createOverridesJson(Path path, IdentityHashMap<Object, OverrideStorage> objectToOverrideStorageDefault) {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(BiomeToOverrideStorageJsonStorage.ObjectToOverrideStorageJsonStorage.class, new OverrideDeserializer.ObjectToOverrideStorageJsonStorageSerializer());

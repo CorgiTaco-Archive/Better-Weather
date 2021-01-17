@@ -1,6 +1,5 @@
 package corgitaco.betterweather.mixin.client;
 
-import corgitaco.betterweather.BetterWeatherUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;

@@ -1,9 +1,8 @@
 package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.api.SeasonData;
-import corgitaco.betterweather.season.SeasonSystem;
-import corgitaco.betterweather.season.client.BiomeColorCalculator;
 import corgitaco.betterweather.season.Season;
+import corgitaco.betterweather.season.client.BiomeColorCalculator;
 import net.minecraft.world.biome.Biome;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -16,7 +15,8 @@ import java.awt.*;
 @Mixin(Biome.class)
 public abstract class MixinBiomeClient {
 
-    @Shadow public abstract Biome.Category getCategory();
+    @Shadow
+    public abstract Biome.Category getCategory();
 
     @Inject(method = "getGrassColor", at = @At("RETURN"), cancellable = true)
     private void modifyGrassColor(double posX, double posZ, CallbackInfoReturnable<Integer> cir) {

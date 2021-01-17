@@ -9,15 +9,13 @@ public class OptifineCompat {
      * Tracks whether or not Optifine is installed.
      * Allows for better compatibility with Optifine.
      */
-    public static final LazyValue<Boolean> IS_OPTIFINE_PRESENT = new LazyValue<>( () -> {
+    public static final LazyValue<Boolean> IS_OPTIFINE_PRESENT = new LazyValue<>(() -> {
 
         try {
 
             final Class<?> clazz = Class.forName("net.optifine.Config");
             return clazz != null;
-        }
-
-        catch (final Exception e) {
+        } catch (final Exception e) {
 
             return false;
         }

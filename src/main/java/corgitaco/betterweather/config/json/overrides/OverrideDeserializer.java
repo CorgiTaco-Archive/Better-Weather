@@ -1,7 +1,6 @@
 package corgitaco.betterweather.config.json.overrides;
 
 import com.google.gson.*;
-import com.google.gson.internal.LinkedTreeMap;
 import com.mojang.datafixers.util.Pair;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.util.storage.OverrideStorage;
@@ -18,66 +17,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideStorageJsonStorage> {
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @Override
-    public BiomeToOverrideStorageJsonStorage deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        JsonObject object = json.getAsJsonObject();
-        StringBuilder errorBuilder = new StringBuilder();
-
-        Registry<Biome> biomeRegistry =  BetterWeather.biomeRegistryEarlyAccess == null ? Minecraft.getInstance().world.func_241828_r().getRegistry(Registry.BIOME_KEY) : BetterWeather.biomeRegistryEarlyAccess;
-
-        ObjectOpenHashSet<Pair<Object, JsonElement>> biomeObjects = new ObjectOpenHashSet<>();
-
-        Map uncastedCropOverrides = null;
-
-        Set<Map.Entry<String, JsonElement>> entrySet = object.entrySet();
-
-        for (Map.Entry<String, JsonElement> entry : entrySet) {
-            if (entry.getKey().equals("cropOverrides")) {
-                uncastedCropOverrides = new Gson().fromJson(new Gson().toJson(entry.getValue()), Map.class);
-                continue;
-            }
-
-
-            String key = entry.getKey();
-            Object value = extractKey(errorBuilder, key, biomeRegistry);
-
-            if (value == null)
-                continue;
-
-            biomeObjects.add(new Pair<>(value, entry.getValue()));
-
-        }
-
-        if (uncastedCropOverrides == null)
-            uncastedCropOverrides = new HashMap();
-
-        if (!errorBuilder.toString().isEmpty()) {
-           BetterWeather.LOGGER.error("Errors were found in your override file: " + errorBuilder.toString());
-           biomeObjects.removeIf(Objects::isNull);
-        }
-
-
-
-        IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage = processKeys(biomeObjects, biomeRegistry);
-        IdentityHashMap<Block, Double> cropToMultiplierMap = new IdentityHashMap<>();
-
-        if (!uncastedCropOverrides.isEmpty()) {
-            IdentityHashMap<String, Double> blockIDToMultiplierMap = new IdentityHashMap<>(uncastedCropOverrides);
-            blockIDToMultiplierMap.forEach((blockId, multiplier) -> {
-                Optional<Block> blockOptional = Registry.BLOCK.getOptional(new ResourceLocation(blockId));
-
-                if (blockOptional.isPresent())
-                    cropToMultiplierMap.put(blockOptional.get(), multiplier);
-                else
-                    BetterWeather.LOGGER.error("Block ID: \"" + blockId + "\" is not a valid block ID in the registry, the override will not be applied...");
-            });
-        }
-
-        return new BiomeToOverrideStorageJsonStorage(biomeToOverrideStorage, cropToMultiplierMap);
-    }
-
 
     public static IdentityHashMap<ResourceLocation, OverrideStorage> processKeys(ObjectOpenHashSet<Pair<Object, JsonElement>> oldMap, Registry<Biome> biomeRegistry) {
         IdentityHashMap<ResourceLocation, OverrideStorage> newMap = new IdentityHashMap<>();
@@ -114,7 +53,6 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
         }
         return newMap;
     }
-
 
     public static void updateOverrideStorageData(OverrideStorage storage, JsonElement element) {
         JsonObject jsonObject = element.getAsJsonObject();
@@ -175,6 +113,64 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
 
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Override
+    public BiomeToOverrideStorageJsonStorage deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        JsonObject object = json.getAsJsonObject();
+        StringBuilder errorBuilder = new StringBuilder();
+
+        Registry<Biome> biomeRegistry = BetterWeather.biomeRegistryEarlyAccess == null ? Minecraft.getInstance().world.func_241828_r().getRegistry(Registry.BIOME_KEY) : BetterWeather.biomeRegistryEarlyAccess;
+
+        ObjectOpenHashSet<Pair<Object, JsonElement>> biomeObjects = new ObjectOpenHashSet<>();
+
+        Map uncastedCropOverrides = null;
+
+        Set<Map.Entry<String, JsonElement>> entrySet = object.entrySet();
+
+        for (Map.Entry<String, JsonElement> entry : entrySet) {
+            if (entry.getKey().equals("cropOverrides")) {
+                uncastedCropOverrides = new Gson().fromJson(new Gson().toJson(entry.getValue()), Map.class);
+                continue;
+            }
+
+
+            String key = entry.getKey();
+            Object value = extractKey(errorBuilder, key, biomeRegistry);
+
+            if (value == null)
+                continue;
+
+            biomeObjects.add(new Pair<>(value, entry.getValue()));
+
+        }
+
+        if (uncastedCropOverrides == null)
+            uncastedCropOverrides = new HashMap();
+
+        if (!errorBuilder.toString().isEmpty()) {
+            BetterWeather.LOGGER.error("Errors were found in your override file: " + errorBuilder.toString());
+            biomeObjects.removeIf(Objects::isNull);
+        }
+
+
+        IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage = processKeys(biomeObjects, biomeRegistry);
+        IdentityHashMap<Block, Double> cropToMultiplierMap = new IdentityHashMap<>();
+
+        if (!uncastedCropOverrides.isEmpty()) {
+            IdentityHashMap<String, Double> blockIDToMultiplierMap = new IdentityHashMap<>(uncastedCropOverrides);
+            blockIDToMultiplierMap.forEach((blockId, multiplier) -> {
+                Optional<Block> blockOptional = Registry.BLOCK.getOptional(new ResourceLocation(blockId));
+
+                if (blockOptional.isPresent())
+                    cropToMultiplierMap.put(blockOptional.get(), multiplier);
+                else
+                    BetterWeather.LOGGER.error("Block ID: \"" + blockId + "\" is not a valid block ID in the registry, the override will not be applied...");
+            });
+        }
+
+        return new BiomeToOverrideStorageJsonStorage(biomeToOverrideStorage, cropToMultiplierMap);
+    }
+
     private Object extractKey(StringBuilder errorBuilder, String key, Registry<Biome> biomeRegistry) {
         String lowerCaseKey = key.toLowerCase();
         Object value;
@@ -185,24 +181,20 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
                 errorBuilder.append(key.substring("category/".length())).append(" is not a Biome Category Value!\n");
                 return null;
             }
-        }
-        else if (lowerCaseKey.startsWith("forge/")) {
+        } else if (lowerCaseKey.startsWith("forge/")) {
             value = BiomeDictionary.Type.getType(lowerCaseKey.substring("forge/".length()).toUpperCase());
-        }
-        else if (lowerCaseKey.startsWith("biome/")) {
+        } else if (lowerCaseKey.startsWith("biome/")) {
             value = biomeRegistry.getOptional(new ResourceLocation(lowerCaseKey.substring("biome/".length()))).orElse(null);
             if (value == null) {
                 errorBuilder.append(lowerCaseKey.substring("biome/".length())).append(" is not a biome in this world!\n");
                 return null;
             }
-        }
-        else {
+        } else {
             errorBuilder.append(key).append(" is not a Biome/Category/Forge identifier\n");
             return null;
         }
         return value;
     }
-
 
 
     public static class ObjectToOverrideStorageJsonStorageSerializer implements JsonSerializer<BiomeToOverrideStorageJsonStorage.ObjectToOverrideStorageJsonStorage> {

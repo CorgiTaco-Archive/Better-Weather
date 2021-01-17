@@ -25,7 +25,7 @@ public class ConfigReloadCommand {
 
         BetterWeather.loadSeasonConfigs();
 
-        source.getWorld().getPlayers().forEach(player ->NetworkHandler.sendTo(player, new RefreshRenderersPacket()));
+        source.getWorld().getPlayers().forEach(player -> NetworkHandler.sendTo(player, new RefreshRenderersPacket()));
 
 
         source.sendFeedback(new TranslationTextComponent("commands.bw.reload.success"), true);

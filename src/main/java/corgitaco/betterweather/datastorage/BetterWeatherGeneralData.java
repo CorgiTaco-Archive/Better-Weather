@@ -1,7 +1,6 @@
 package corgitaco.betterweather.datastorage;
 
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.season.SeasonSystem;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
@@ -22,6 +21,21 @@ public class BetterWeatherGeneralData extends WorldSavedData {
         super(s);
     }
 
+    public static BetterWeatherGeneralData get(IWorld world) {
+        if (!(world instanceof ServerWorld))
+            return new BetterWeatherGeneralData();
+        ServerWorld overWorld = ((ServerWorld) world).getWorld().getServer().getWorld(World.OVERWORLD);
+        DimensionSavedDataManager data = overWorld.getSavedData();
+        BetterWeatherGeneralData weatherData = data.getOrCreate(BetterWeatherGeneralData::new, DATA_NAME);
+
+        if (weatherData == null) {
+            weatherData = new BetterWeatherGeneralData();
+            data.set(weatherData);
+        }
+
+        return weatherData;
+    }
+
     @Override
     public void read(CompoundNBT nbt) {
         setUsingSeasons(nbt.getBoolean("usingseasons"));
@@ -40,20 +54,5 @@ public class BetterWeatherGeneralData extends WorldSavedData {
     public void setUsingSeasons(boolean seasonTime) {
         this.usingSeasons = seasonTime;
         markDirty();
-    }
-
-    public static BetterWeatherGeneralData get(IWorld world) {
-        if (!(world instanceof ServerWorld))
-            return new BetterWeatherGeneralData();
-        ServerWorld overWorld = ((ServerWorld) world).getWorld().getServer().getWorld(World.OVERWORLD);
-        DimensionSavedDataManager data = overWorld.getSavedData();
-        BetterWeatherGeneralData weatherData = data.getOrCreate(BetterWeatherGeneralData::new, DATA_NAME);
-
-        if (weatherData == null) {
-            weatherData = new BetterWeatherGeneralData();
-            data.set(weatherData);
-        }
-
-        return weatherData;
     }
 }

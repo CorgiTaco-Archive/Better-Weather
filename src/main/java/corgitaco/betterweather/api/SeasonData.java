@@ -7,15 +7,17 @@ import javax.annotation.Nullable;
  */
 public class SeasonData {
 
-    @Nullable public static SubSeasonVal currentSubSeason = SeasonData.SubSeasonVal.SPRING_START;
-    @Nullable public static SeasonVal currentSeason = SeasonData.SeasonVal.SPRING;
+    @Nullable
+    public static SubSeasonVal currentSubSeason = SeasonData.SubSeasonVal.SPRING_START;
+    @Nullable
+    public static SeasonVal currentSeason = SeasonData.SeasonVal.SPRING;
 
 
     public enum SeasonVal {
         SPRING,
         SUMMER,
         AUTUMN,
-        WINTER;
+        WINTER
     }
 
     public enum SubSeasonVal {
@@ -33,6 +35,6 @@ public class SeasonData {
 
         WINTER_START,
         WINTER_MID,
-        WINTER_END;
+        WINTER_END
     }
 }

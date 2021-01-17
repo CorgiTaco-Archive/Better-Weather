@@ -1,7 +1,6 @@
 package corgitaco.betterweather.datastorage.network.packet;
 
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.BetterWeatherUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;

@@ -7,7 +7,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 
 public class TornadoRenderer extends MobRenderer<TornadoEntity, TornadoModel<TornadoEntity>> {
-    private static final ResourceLocation TORNADO_TEXTURES = new ResourceLocation(BetterWeather.MOD_ID,"textures/environment/tornado.png");
+    private static final ResourceLocation TORNADO_TEXTURES = new ResourceLocation(BetterWeather.MOD_ID, "textures/environment/tornado.png");
 
     public TornadoRenderer(EntityRendererManager renderManagerIn) {
         super(renderManagerIn, new TornadoModel<>(), 1.5F);

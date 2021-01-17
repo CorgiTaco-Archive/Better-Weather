@@ -43,7 +43,7 @@ public abstract class MixinClientWorld {
 
     @Inject(method = "getCloudColor", at = @At("RETURN"), cancellable = true)
     private void modifyCloudColor(float partialTicks, CallbackInfoReturnable<Vector3d> cir) {
-        if (BetterWeatherUtil.isOverworld(((ClientWorld)(Object) this).getDimensionKey())) {
+        if (BetterWeatherUtil.isOverworld(((ClientWorld) (Object) this).getDimensionKey())) {
             int rgbColor = WeatherData.currentWeatherEvent.modifyCloudColor(BetterWeatherUtil.transformFloatColor(cir.getReturnValue()), ((ClientWorld) (Object) this).getRainStrength(partialTicks)).getRGB();
             float r = (float) (rgbColor >> 16 & 255) / 255.0F;
             float g = (float) (rgbColor >> 8 & 255) / 255.0F;

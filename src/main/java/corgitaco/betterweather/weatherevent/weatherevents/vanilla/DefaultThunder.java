@@ -75,7 +75,6 @@ public class DefaultThunder extends WeatherEvent {
     }
 
 
-
     protected BlockPos adjustPosToNearbyEntity(BlockPos pos, ServerWorld world) {
         BlockPos blockpos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, pos);
         AxisAlignedBB axisalignedbb = (new AxisAlignedBB(blockpos, new BlockPos(blockpos.getX(), world.getHeight(), blockpos.getZ()))).grow(3.0D);

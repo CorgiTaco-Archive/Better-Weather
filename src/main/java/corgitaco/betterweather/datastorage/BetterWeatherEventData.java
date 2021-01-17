@@ -26,6 +26,21 @@ public class BetterWeatherEventData extends WorldSavedData {
         super(s);
     }
 
+    public static BetterWeatherEventData get(IWorld world) {
+        if (!(world instanceof ServerWorld))
+            return new BetterWeatherEventData();
+        ServerWorld overWorld = ((ServerWorld) world).getWorld().getServer().getWorld(World.OVERWORLD);
+        DimensionSavedDataManager data = overWorld.getSavedData();
+        BetterWeatherEventData weatherData = data.getOrCreate(BetterWeatherEventData::new, DATA_NAME);
+
+        if (weatherData == null) {
+            weatherData = new BetterWeatherEventData();
+            data.set(weatherData);
+        }
+
+        return weatherData;
+    }
+
     @Override
     public void read(CompoundNBT nbt) {
         setEvent(nbt.getString("Event"));
@@ -81,20 +96,5 @@ public class BetterWeatherEventData extends WorldSavedData {
     public void setModified(boolean modified) {
         this.modified = modified;
         markDirty();
-    }
-
-    public static BetterWeatherEventData get(IWorld world) {
-        if (!(world instanceof ServerWorld))
-            return new BetterWeatherEventData();
-        ServerWorld overWorld = ((ServerWorld) world).getWorld().getServer().getWorld(World.OVERWORLD);
-        DimensionSavedDataManager data = overWorld.getSavedData();
-        BetterWeatherEventData weatherData = data.getOrCreate(BetterWeatherEventData::new, DATA_NAME);
-
-        if (weatherData == null) {
-            weatherData = new BetterWeatherEventData();
-            data.set(weatherData);
-        }
-
-        return weatherData;
     }
 }

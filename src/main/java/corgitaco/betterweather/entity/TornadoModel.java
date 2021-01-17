@@ -20,7 +20,7 @@ public class TornadoModel<T extends Entity> extends SegmentedModel<T> {
     public TornadoModel() {
         this.tornadoObjects = new ModelRenderer[7680];
 
-        for(int i = 0; i < this.tornadoObjects.length; ++i) {
+        for (int i = 0; i < this.tornadoObjects.length; ++i) {
             this.tornadoObjects[i] = new ModelRenderer(this, 0, 16);
             this.tornadoObjects[i].addBox(0.0F, 0.0F, 0.0F, 2.0F, 8.0F, 2.0F, 5, 5F, 5F);
         }

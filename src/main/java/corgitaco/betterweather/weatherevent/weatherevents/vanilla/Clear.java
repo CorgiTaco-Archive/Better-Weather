@@ -27,27 +27,6 @@ public class Clear extends WeatherEvent {
         super(WeatherEventSystem.CLEAR, 0);
     }
 
-    @Override
-    public void worldTick(ServerWorld world, int tickSpeed, long worldTime) {
-    }
-
-    @Override
-    public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc) {
-        if (WorldRenderer.RAIN_TEXTURES != AcidRain.RAIN_TEXTURE)
-            WorldRenderer.RAIN_TEXTURES = AcidRain.RAIN_TEXTURE;
-    }
-
-    @Override
-    public boolean renderWeather(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z) {
-        return false;
-    }
-
-    @Override
-    public void tickLiveChunks(Chunk chunk, ServerWorld world) {
-        if (SeasonData.currentSeason != SeasonData.SeasonVal.WINTER)
-            doesIceAndSnowDecayFaster(chunk, world, world.getWorldInfo().getGameTime());
-    }
-
     private static void doesIceAndSnowDecayFaster(Chunk chunk, World world, long worldTime) {
         ChunkPos chunkpos = chunk.getPos();
         int chunkXStart = chunkpos.getXStart();
@@ -73,5 +52,26 @@ public class Clear extends WeatherEvent {
             }
         }
         iprofiler.endSection();
+    }
+
+    @Override
+    public void worldTick(ServerWorld world, int tickSpeed, long worldTime) {
+    }
+
+    @Override
+    public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc) {
+        if (WorldRenderer.RAIN_TEXTURES != AcidRain.RAIN_TEXTURE)
+            WorldRenderer.RAIN_TEXTURES = AcidRain.RAIN_TEXTURE;
+    }
+
+    @Override
+    public boolean renderWeather(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z) {
+        return false;
+    }
+
+    @Override
+    public void tickLiveChunks(Chunk chunk, ServerWorld world) {
+        if (SeasonData.currentSeason != SeasonData.SeasonVal.WINTER)
+            doesIceAndSnowDecayFaster(chunk, world, world.getWorldInfo().getGameTime());
     }
 }

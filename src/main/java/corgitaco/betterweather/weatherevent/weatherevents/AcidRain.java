@@ -46,16 +46,12 @@ import static corgitaco.betterweather.config.BetterWeatherConfig.*;
 
 public class AcidRain extends WeatherEvent {
     public static final ForgeRegistry<Block> blockRegistry = ((ForgeRegistry<Block>) ForgeRegistries.BLOCKS);
-    static Block block = blockRegistry.getRaw(new ResourceLocation(blockToChangeFromGrass.get()));
     public static final ResourceLocation RAIN_TEXTURE = new ResourceLocation("textures/environment/rain.png");
     public static final ResourceLocation ACID_RAIN_TEXTURE = new ResourceLocation(BetterWeather.MOD_ID, "textures/environment/acid_rain.png");
+    static Block block = blockRegistry.getRaw(new ResourceLocation(blockToChangeFromGrass.get()));
 
     public AcidRain() {
         super(new BetterWeatherID(BetterWeather.MOD_ID, "ACID_RAIN"), 0.25);
-    }
-
-    @Override
-    public void worldTick(ServerWorld world, int tickSpeed, long worldTime) {
     }
 
     public static void addAcidRainParticles(ActiveRenderInfo activeRenderInfoIn, Minecraft mc, WorldRenderer worldRenderer) {
@@ -100,6 +96,44 @@ public class AcidRain extends WeatherEvent {
                 }
             }
         }
+    }
+
+    public static void acidRainEvent(Chunk chunk, ServerWorld world, long worldTime) {
+        ChunkPos chunkpos = chunk.getPos();
+        int chunkXStart = chunkpos.getXStart();
+        int chunkZStart = chunkpos.getZStart();
+        IProfiler iprofiler = world.getProfiler();
+        iprofiler.startSection("acidrain");
+        BlockPos blockpos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
+        if (world.isAreaLoaded(blockpos, 1)) {
+            if (world.getWorldInfo().isRaining() && worldTime % tickBlockDestroySpeed.get() == 0 && destroyBlocks.get() && world.getBiome(blockpos).getPrecipitation() == Biome.RainType.RAIN) {
+                if (destroyGrass) {
+                    if (block == null) {
+                        BetterWeather.LOGGER.error("The block replacing grass, registry location was incorrect. You put: " + blockToChangeFromGrass.get() + "\n Reverting to dirt!");
+                        block = Blocks.DIRT;
+                    }
+                    if (world.getBlockState(blockpos.down()).getBlock() == Blocks.GRASS_BLOCK)
+                        world.setBlockState(blockpos.down(), block.getDefaultState());
+                }
+                if (destroyPlants) {
+                    if (world.getBlockState(blockpos).getMaterial() == Material.PLANTS || world.getBlockState(blockpos).getMaterial() == Material.TALL_PLANTS && !blocksToNotDestroyList.contains(world.getBlockState(blockpos).getBlock()))
+                        world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
+                }
+                if (destroyLeaves) {
+                    if (world.getBlockState(blockpos.down()).getBlock().isIn(BlockTags.LEAVES) && !blocksToNotDestroyList.contains(world.getBlockState(blockpos.down()).getBlock()))
+                        world.setBlockState(blockpos.down(), Blocks.AIR.getDefaultState());
+                }
+                if (destroyCrops) {
+                    if (world.getBlockState(blockpos).getBlock().isIn(BlockTags.CROPS) && !blocksToNotDestroyList.contains(world.getBlockState(blockpos).getBlock()))
+                        world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
+                }
+            }
+        }
+        iprofiler.endSection();
+    }
+
+    @Override
+    public void worldTick(ServerWorld world, int tickSpeed, long worldTime) {
     }
 
     @Override
@@ -184,39 +218,5 @@ public class AcidRain extends WeatherEvent {
     @Override
     public void tickLiveChunks(Chunk chunk, ServerWorld world) {
         acidRainEvent(chunk, world, world.getWorldInfo().getGameTime());
-    }
-
-    public static void acidRainEvent(Chunk chunk, ServerWorld world, long worldTime) {
-        ChunkPos chunkpos = chunk.getPos();
-        int chunkXStart = chunkpos.getXStart();
-        int chunkZStart = chunkpos.getZStart();
-        IProfiler iprofiler = world.getProfiler();
-        iprofiler.startSection("acidrain");
-        BlockPos blockpos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
-        if (world.isAreaLoaded(blockpos, 1)) {
-            if (world.getWorldInfo().isRaining() && worldTime % tickBlockDestroySpeed.get() == 0 && destroyBlocks.get() && world.getBiome(blockpos).getPrecipitation() == Biome.RainType.RAIN) {
-                if (destroyGrass) {
-                    if (block == null) {
-                        BetterWeather.LOGGER.error("The block replacing grass, registry location was incorrect. You put: " + blockToChangeFromGrass.get() + "\n Reverting to dirt!");
-                        block = Blocks.DIRT;
-                    }
-                    if (world.getBlockState(blockpos.down()).getBlock() == Blocks.GRASS_BLOCK)
-                        world.setBlockState(blockpos.down(), block.getDefaultState());
-                }
-                if (destroyPlants) {
-                    if (world.getBlockState(blockpos).getMaterial() == Material.PLANTS || world.getBlockState(blockpos).getMaterial() == Material.TALL_PLANTS && !blocksToNotDestroyList.contains(world.getBlockState(blockpos).getBlock()))
-                        world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
-                }
-                if (destroyLeaves) {
-                    if (world.getBlockState(blockpos.down()).getBlock().isIn(BlockTags.LEAVES) && !blocksToNotDestroyList.contains(world.getBlockState(blockpos.down()).getBlock()))
-                        world.setBlockState(blockpos.down(), Blocks.AIR.getDefaultState());
-                }
-                if (destroyCrops) {
-                    if (world.getBlockState(blockpos).getBlock().isIn(BlockTags.CROPS) && !blocksToNotDestroyList.contains(world.getBlockState(blockpos).getBlock()))
-                        world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
-                }
-            }
-        }
-        iprofiler.endSection();
     }
 }

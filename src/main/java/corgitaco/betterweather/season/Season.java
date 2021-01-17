@@ -48,7 +48,16 @@ public class Season {
         map.put(SeasonData.SubSeasonVal.WINTER_MID.toString(), SEASON_MAP.get(SeasonData.SeasonVal.WINTER.toString()).getMid());
         map.put(SeasonData.SubSeasonVal.WINTER_END.toString(), SEASON_MAP.get(SeasonData.SeasonVal.WINTER.toString()).getEnd());
     });
-
+    private final SubSeason start;
+    private final SubSeason mid;
+    private final SubSeason end;
+    private final transient Set<SubSeason> subSeasons;
+    public Season(SubSeason start, SubSeason mid, SubSeason end) {
+        this.start = start;
+        this.mid = mid;
+        this.end = end;
+        subSeasons = Sets.newHashSet(start, mid, end);
+    }
 
     public static Season getSeasonFromEnum(SeasonData.SeasonVal season) {
         return SEASON_MAP.get(season.toString());
@@ -56,20 +65,6 @@ public class Season {
 
     public static SubSeason getSubSeasonFromEnum(SeasonData.SubSeasonVal season) {
         return SUB_SEASON_MAP.get(season.toString());
-    }
-
-
-    private final SubSeason start;
-    private final SubSeason mid;
-    private final SubSeason end;
-
-    private final transient Set<SubSeason> subSeasons;
-
-    public Season(SubSeason start, SubSeason mid, SubSeason end) {
-        this.start = start;
-        this.mid = mid;
-        this.end = end;
-        subSeasons = Sets.newHashSet(start, mid, end);
     }
 
     public SubSeason getStart() {
@@ -109,6 +104,23 @@ public class Season {
         public static final HashMap<String, Double> WINTER_START_WEATHER_EVENT_CONTROLLER = new HashMap<>();
         public static final HashMap<String, Double> WINTER_MID_WEATHER_EVENT_CONTROLLER = new HashMap<>();
         public static final HashMap<String, Double> WINTER_END_WEATHER_EVENT_CONTROLLER = new HashMap<>();
+        public static final SubSeason SPRING_START = new SubSeason(-0.15, 0.5, 1.5, 1.3, SPRING_START_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5));
+        public static final SubSeason SPRING_MID = new SubSeason(0.1, 0.5, 2.0, 2.0, SPRING_MID_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5));
+        public static final SubSeason SPRING_END = new SubSeason(0.25, 0.4, 1.5, 1.7, SPRING_END_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5));
+        public static final SubSeason SUMMER_START = new SubSeason(0.35, -0.1, 0.75, 1.15, SUMMER_START_WEATHER_EVENT_CONTROLLER, new SeasonClient());
+        public static final SubSeason SUMMER_MID = new SubSeason(0.5, -0.3, 0.2, 1.0, SUMMER_MID_WEATHER_EVENT_CONTROLLER, new SeasonClient());
+        public static final SubSeason SUMMER_END = new SubSeason(0.15, -0.1, 0.5, 1.0, SUMMER_END_WEATHER_EVENT_CONTROLLER, new SeasonClient());
+        public static final SubSeason AUTUMN_START = new SubSeason(-0.1, 0, 0.7, 0.8, AUTUMN_START_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
+        public static final SubSeason AUTUMN_MID = new SubSeason(-0.2, 0, 0.7, 0.75, AUTUMN_MID_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
+        public static final SubSeason AUTUMN_END = new SubSeason(-0.3, 0.1, 0.75, 0.65, AUTUMN_END_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
+        public static final SubSeason WINTER_START = new SubSeason(-0.4, 0.2, 1.0, 0.6, WINTER_START_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
+        public static final SubSeason WINTER_MID = new SubSeason(-0.5, 0.2, 1.0, 0.5, WINTER_MID_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
+        public static final SubSeason WINTER_END = new SubSeason(-0.35, 0.2, 1.25, 0.75, WINTER_END_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
+        public static final IdentityHashMap<Object, OverrideStorage> WINTER_OVERRIDE = Util.make((new IdentityHashMap<>()), (map) -> {
+            OverrideStorage overrideStorage = new OverrideStorage();
+            overrideStorage.getClientStorage().setTargetFoliageHexColor("#964B00").setTargetGrassHexColor("#964B00"); //Target brown instead of red.
+            map.put(Biome.Category.SWAMP, overrideStorage);
+        });
 
         static {
             for (WeatherEvent weatherEvent : BetterWeatherEntryPoint.WEATHER_EVENTS) {
@@ -132,30 +144,6 @@ public class Season {
                 }
             }
         }
-
-
-        public static final SubSeason SPRING_START = new SubSeason(-0.15, 0.5, 1.5, 1.3, SPRING_START_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5));
-        public static final SubSeason SPRING_MID = new SubSeason(0.1, 0.5, 2.0, 2.0, SPRING_MID_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5));
-        public static final SubSeason SPRING_END = new SubSeason(0.25, 0.4, 1.5, 1.7, SPRING_END_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5));
-
-        public static final SubSeason SUMMER_START = new SubSeason(0.35, -0.1, 0.75, 1.15, SUMMER_START_WEATHER_EVENT_CONTROLLER, new SeasonClient());
-        public static final SubSeason SUMMER_MID = new SubSeason(0.5, -0.3, 0.2, 1.0, SUMMER_MID_WEATHER_EVENT_CONTROLLER, new SeasonClient());
-        public static final SubSeason SUMMER_END = new SubSeason(0.15, -0.1, 0.5, 1.0, SUMMER_END_WEATHER_EVENT_CONTROLLER, new SeasonClient());
-
-        public static final SubSeason AUTUMN_START = new SubSeason(-0.1, 0, 0.7, 0.8, AUTUMN_START_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
-        public static final SubSeason AUTUMN_MID = new SubSeason(-0.2, 0, 0.7, 0.75, AUTUMN_MID_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
-        public static final SubSeason AUTUMN_END = new SubSeason(-0.3, 0.1, 0.75, 0.65, AUTUMN_END_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5, Integer.toHexString(new Color(155, 103, 60).getRGB()), 0.5));
-
-        public static final SubSeason WINTER_START = new SubSeason(-0.4, 0.2, 1.0, 0.6, WINTER_START_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
-        public static final SubSeason WINTER_MID = new SubSeason(-0.5, 0.2, 1.0, 0.5, WINTER_MID_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
-        public static final SubSeason WINTER_END = new SubSeason(-0.35, 0.2, 1.25, 0.75, WINTER_END_WEATHER_EVENT_CONTROLLER, new SeasonClient(Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5, Integer.toHexString(new Color(165, 42, 42).getRGB()), 0.5));
-
-
-        public static final IdentityHashMap<Object, OverrideStorage> WINTER_OVERRIDE = Util.make((new IdentityHashMap<>()), (map) -> {
-            OverrideStorage overrideStorage = new OverrideStorage();
-            overrideStorage.getClientStorage().setTargetFoliageHexColor("#964B00").setTargetGrassHexColor("#964B00"); //Target brown instead of red.
-            map.put(Biome.Category.SWAMP, overrideStorage);
-        });
 
         private final double tempModifier;
         private final double humidityModifier;
@@ -213,15 +201,14 @@ public class Season {
             return cropToMultiplierStorage;
         }
 
+        public void setCropToMultiplierStorage(IdentityHashMap<Block, Double> cropToMultiplierStorage) {
+            this.cropToMultiplierStorage = cropToMultiplierStorage;
+        }
 
         public IdentityHashMap<ResourceLocation, OverrideStorage> getBiomeToOverrideStorage() {
             if (biomeToOverrideStorage == null)
                 biomeToOverrideStorage = new IdentityHashMap<>();
             return biomeToOverrideStorage;
-        }
-
-        public void setCropToMultiplierStorage(IdentityHashMap<Block, Double> cropToMultiplierStorage) {
-            this.cropToMultiplierStorage = cropToMultiplierStorage;
         }
 
         public void setBiomeToOverrideStorage(IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage) {
@@ -433,6 +420,10 @@ public class Season {
         }
 
         public static class SeasonClient {
+            public static int stopSpamIDXFoliage;
+            public static int stopSpamIDXGrass;
+            public static int stopSpamIDXSky;
+            public static int stopSpamIDXFog;
             private final String targetFoliageHexColor;
             private final double foliageColorBlendStrength;
             private final String targetGrassHexColor;
@@ -446,15 +437,12 @@ public class Season {
             private transient int parsedSkyHexColor;
             private transient int parsedFogHexColor;
 
-
             public SeasonClient() {
                 this("", 0, "", 0);
             }
-
             public SeasonClient(String targetFoliageHexColor, double foliageColorBlendStrength, String targetGrassColor, double grassColorBlendStrength) {
                 this(targetFoliageHexColor, foliageColorBlendStrength, targetGrassColor, grassColorBlendStrength, targetGrassColor, 0, targetGrassColor, 0);
             }
-
             public SeasonClient(String targetFoliageHexColor, double foliageColorBlendStrength, String targetGrassColor, double grassColorBlendStrength, String targetSkyHexColor, double skyColorBlendStrength, String targetFogHexColor, double fogColorBlendStrength) {
                 this.targetFoliageHexColor = targetFoliageHexColor;
                 this.foliageColorBlendStrength = foliageColorBlendStrength;
@@ -472,11 +460,6 @@ public class Season {
                 parsedSkyHexColor = BetterWeatherUtil.parseHexColor(targetSkyHexColor);
                 parsedFogHexColor = BetterWeatherUtil.parseHexColor(targetFogHexColor);
             }
-
-            public static int stopSpamIDXFoliage;
-            public static int stopSpamIDXGrass;
-            public static int stopSpamIDXSky;
-            public static int stopSpamIDXFog;
         }
     }
 }

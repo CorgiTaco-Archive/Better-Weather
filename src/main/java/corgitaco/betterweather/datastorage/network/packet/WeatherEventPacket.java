@@ -1,9 +1,9 @@
 package corgitaco.betterweather.datastorage.network.packet;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.helper.ViewFrustumGetter;
 import corgitaco.betterweather.helper.WeatherViewFrustum;
-import corgitaco.betterweather.api.weatherevent.WeatherData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 
 public class WeatherEventPacket {
     private final String event;
+
     public WeatherEventPacket(String event) {
         this.event = event;
     }

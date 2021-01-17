@@ -21,14 +21,14 @@ public class TornadoEntity extends AnimalEntity {
         super(type, worldIn);
     }
 
+    //func_233666_p_ ---> registerAttributes()
+    public static AttributeModifierMap.MutableAttribute setCustomAttributes() {
+        return MonsterEntity.func_234295_eP_().createMutableAttribute(Attributes.ATTACK_DAMAGE, 6.0D).createMutableAttribute(Attributes.MOVEMENT_SPEED, 0.23F).createMutableAttribute(Attributes.FOLLOW_RANGE, 48.0D);
+    }
+
     @Override
     protected SoundEvent getAmbientSound() {
         return super.getAmbientSound();
-    }
-
-    //func_233666_p_ ---> registerAttributes()
-    public static AttributeModifierMap.MutableAttribute setCustomAttributes() {
-        return MonsterEntity.func_234295_eP_().createMutableAttribute(Attributes.ATTACK_DAMAGE, 6.0D).createMutableAttribute(Attributes.MOVEMENT_SPEED, (double)0.23F).createMutableAttribute(Attributes.FOLLOW_RANGE, 48.0D);
     }
 
     @Override

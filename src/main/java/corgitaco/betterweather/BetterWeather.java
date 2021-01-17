@@ -5,7 +5,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import corgitaco.betterweather.api.SeasonData;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
-import corgitaco.betterweather.api.weatherevent.WeatherEvent;
 import corgitaco.betterweather.compat.OptifineCompat;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
@@ -60,17 +59,17 @@ import java.util.List;
 
 @Mod("betterweather")
 public class BetterWeather {
-    public static Logger LOGGER = LogManager.getLogger();
     public static final String MOD_ID = "betterweather";
+    public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
+    public static Logger LOGGER = LogManager.getLogger();
     public static int SEASON_LENGTH = 240000;
     public static int SEASON_CYCLE_LENGTH = SEASON_LENGTH * 4;
     public static boolean useSeasons = true;
     public static boolean usingOptifine;
-
-    public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
-
     public static Registry<Biome> biomeRegistryEarlyAccess;
-
+    public static BetterWeatherSeasonData seasonData = null;
+    public static BetterWeatherEventData weatherData = null;
+    public static BetterWeatherGeneralData generalData = null;
     public BetterWeather() {
         File dir = new File(CONFIG_PATH.toString());
         if (!dir.exists())
@@ -81,28 +80,6 @@ public class BetterWeather {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::lateSetup);
         BetterWeatherConfig.loadConfig(CONFIG_PATH.resolve(MOD_ID + "-common.toml"));
         BetterWeatherConfigClient.loadConfig(CONFIG_PATH.resolve(MOD_ID + "-client.toml"));
-    }
-
-    public static BetterWeatherSeasonData seasonData = null;
-    public static BetterWeatherEventData weatherData = null;
-    public static BetterWeatherGeneralData generalData = null;
-
-
-    public void commonSetup(FMLCommonSetupEvent event) {
-//        GlobalEntityTypeAttributes.put(BWEntityRegistry.TORNADO, TornadoEntity.setCustomAttributes().create());
-        BetterWeatherConfig.handleCommonConfig();
-        WeatherEventSystem.addDefaultWeatherEvents();
-        NetworkHandler.init();
-    }
-
-    public void lateSetup(FMLLoadCompleteEvent event) {
-        WeatherEventSystem.fillWeatherEventsMapAndWeatherEventController();
-    }
-
-
-    public void clientSetup(FMLClientSetupEvent event) {
-        usingOptifine = OptifineCompat.IS_OPTIFINE_PRESENT.getValue();
-//        RenderingRegistry.registerEntityRenderingHandler(BWEntityRegistry.TORNADO, TornadoRenderer::new);
     }
 
     public static void loadClientConfigs() {
@@ -121,6 +98,52 @@ public class BetterWeather {
                     BiomeOverrideJsonHandler.handleOverrideJsonConfigs(overrideFilePath, new IdentityHashMap<>(), subSeason);
             });
         }
+    }
+
+    public static void register(CommandDispatcher<CommandSource> dispatcher) {
+        LOGGER.debug("Registering Better Weather commands...");
+        LiteralArgumentBuilder<CommandSource> requires = Commands.literal(MOD_ID).requires(commandSource -> commandSource.hasPermissionLevel(3));
+        if (useSeasons)
+            requires.then(SetSeasonCommand.register(dispatcher));
+
+        LiteralCommandNode<CommandSource> source = dispatcher.register(requires.then(SetWeatherCommand.register(dispatcher)).then(ConfigReloadCommand.register(dispatcher)));
+
+
+        dispatcher.register(Commands.literal(MOD_ID).redirect(source));
+        LOGGER.debug("Registered Better Weather Commands!");
+    }
+
+    public static void setSeasonData(IWorld world) {
+        if (useSeasons) {
+            if (seasonData == null)
+                seasonData = BetterWeatherSeasonData.get(world);
+        }
+    }
+
+    public static void setWeatherData(IWorld world) {
+        if (weatherData == null)
+            weatherData = BetterWeatherEventData.get(world);
+    }
+
+    public static void setGeneralData(IWorld world) {
+        if (generalData == null)
+            generalData = BetterWeatherGeneralData.get(world);
+    }
+
+    public void commonSetup(FMLCommonSetupEvent event) {
+//        GlobalEntityTypeAttributes.put(BWEntityRegistry.TORNADO, TornadoEntity.setCustomAttributes().create());
+        BetterWeatherConfig.handleCommonConfig();
+        WeatherEventSystem.addDefaultWeatherEvents();
+        NetworkHandler.init();
+    }
+
+    public void lateSetup(FMLLoadCompleteEvent event) {
+        WeatherEventSystem.fillWeatherEventsMapAndWeatherEventController();
+    }
+
+    public void clientSetup(FMLClientSetupEvent event) {
+        usingOptifine = OptifineCompat.IS_OPTIFINE_PRESENT.getValue();
+//        RenderingRegistry.registerEntityRenderingHandler(BWEntityRegistry.TORNADO, TornadoRenderer::new);
     }
 
     @Mod.EventBusSubscriber(modid = BetterWeather.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -208,39 +231,6 @@ public class BetterWeather {
             BetterWeather.LOGGER.info("BW: \"Server Starting\" Event Complete!");
         }
     }
-
-
-    public static void register(CommandDispatcher<CommandSource> dispatcher) {
-        LOGGER.debug("Registering Better Weather commands...");
-        LiteralArgumentBuilder<CommandSource> requires = Commands.literal(MOD_ID).requires(commandSource -> commandSource.hasPermissionLevel(3));
-        if (useSeasons)
-            requires.then(SetSeasonCommand.register(dispatcher));
-
-        LiteralCommandNode<CommandSource> source = dispatcher.register(requires.then(SetWeatherCommand.register(dispatcher)).then(ConfigReloadCommand.register(dispatcher)));
-
-
-
-        dispatcher.register(Commands.literal(MOD_ID).redirect(source));
-        LOGGER.debug("Registered Better Weather Commands!");
-    }
-
-    public static void setSeasonData(IWorld world) {
-        if (useSeasons) {
-            if (seasonData == null)
-                seasonData = BetterWeatherSeasonData.get(world);
-        }
-    }
-
-    public static void setWeatherData(IWorld world) {
-        if (weatherData == null)
-            weatherData = BetterWeatherEventData.get(world);
-    }
-
-    public static void setGeneralData(IWorld world) {
-        if (generalData == null)
-            generalData = BetterWeatherGeneralData.get(world);
-    }
-
 
     @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class BetterWeatherClient {
