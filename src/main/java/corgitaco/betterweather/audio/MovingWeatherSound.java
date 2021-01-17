@@ -67,7 +67,8 @@ public class MovingWeatherSound extends TickableSound {
         private IsInsideAudioHelper(BlockPos playerLivePos, Minecraft mc, float originalVolume) {
             this.originalVolume = originalVolume;
             int lightLevel = mc.world.getLightFor(LightType.SKY, playerLivePos);
-            this.finalVolume = lightLevel * 0.02F;
+            float multiplier = originalVolume / 15.0F;
+            this.finalVolume = lightLevel * multiplier;
 
         }
 

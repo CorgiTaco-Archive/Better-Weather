@@ -11,7 +11,7 @@ import corgitaco.betterweather.datastorage.network.packet.util.RefreshRenderersP
 import corgitaco.betterweather.datastorage.network.packet.WeatherEventPacket;
 import corgitaco.betterweather.weatherevent.weatherevents.AcidRain;
 import corgitaco.betterweather.weatherevent.weatherevents.Blizzard;
-import corgitaco.betterweather.weatherevent.weatherevents.Clear;
+import corgitaco.betterweather.weatherevent.weatherevents.vanilla.Clear;
 import corgitaco.betterweather.weatherevent.weatherevents.Clouded;
 import corgitaco.betterweather.weatherevent.weatherevents.vanilla.DefaultRain;
 import corgitaco.betterweather.weatherevent.weatherevents.vanilla.DefaultThunder;

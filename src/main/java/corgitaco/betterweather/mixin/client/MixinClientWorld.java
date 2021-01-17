@@ -3,7 +3,7 @@ package corgitaco.betterweather.mixin.client;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
-import corgitaco.betterweather.weatherevent.weatherevents.Clear;
+import corgitaco.betterweather.weatherevent.weatherevents.vanilla.Clear;
 import net.minecraft.client.network.play.ClientPlayNetHandler;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.world.ClientWorld;

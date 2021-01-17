@@ -1,9 +1,10 @@
-package corgitaco.betterweather.weatherevent.weatherevents;
+package corgitaco.betterweather.weatherevent.weatherevents.vanilla;
 
 import corgitaco.betterweather.api.SeasonData;
 import corgitaco.betterweather.api.weatherevent.WeatherEvent;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
+import corgitaco.betterweather.weatherevent.weatherevents.AcidRain;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;

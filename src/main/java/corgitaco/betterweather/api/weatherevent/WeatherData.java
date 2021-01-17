@@ -1,7 +1,7 @@
 package corgitaco.betterweather.api.weatherevent;
 
 
-import corgitaco.betterweather.weatherevent.weatherevents.Clear;
+import corgitaco.betterweather.weatherevent.weatherevents.vanilla.Clear;
 
 public class WeatherData {
 
