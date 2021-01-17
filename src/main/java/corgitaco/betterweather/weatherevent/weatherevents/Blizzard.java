@@ -279,7 +279,7 @@ public class Blizzard extends WeatherEvent {
     @Override
     public void livingEntityUpdate(Entity entity) {
         if (entity instanceof LivingEntity) {
-            if (BetterWeatherConfig.doBlizzardsSlowPlayers.get())
+            if (BetterWeatherConfig.doBlizzardsSlowPlayers.get() && entity.getPosition().getY() < entity.world.getHeight(Heightmap.Type.MOTION_BLOCKING, entity.getPosition().getX(), entity.getPosition().getZ())) //TODO: Get a good algorithm to determine whether or not a player/entity is indoors.
                 ((LivingEntity) entity).addPotionEffect(new EffectInstance(Effects.SLOWNESS, 5, BetterWeatherConfig.blizzardSlownessAmplifier.get(), true, false));
         }
     }

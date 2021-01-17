@@ -70,6 +70,7 @@ public class BetterWeather {
     public static BetterWeatherSeasonData seasonData = null;
     public static BetterWeatherEventData weatherData = null;
     public static BetterWeatherGeneralData generalData = null;
+
     public BetterWeather() {
         File dir = new File(CONFIG_PATH.toString());
         if (!dir.exists())
