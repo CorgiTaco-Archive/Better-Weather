@@ -130,7 +130,7 @@ public class Blizzard extends WeatherEvent {
                 double rainSizeZ = (double) this.rainSizeZ[rainSizeIdx] * 0.5D;
                 blockPos.setPos(graphicQualityX, 0, graphicQualityZ);
                 Biome biome = world.getBiome(blockPos);
-                int topPosY = mc.world.getHeight(Heightmap.Type.MOTION_BLOCKING, blockPos.getX(), blockPos.getY()) - 2;
+                int topPosY = mc.world.getHeight(Heightmap.Type.MOTION_BLOCKING, blockPos.getX(), blockPos.getZ());
                 int floorYMinusGraphicsQuality = floorY - graphicsQuality;
                 int floorYPlusGraphicsQuality = floorY + graphicsQuality;
                 if (floorYMinusGraphicsQuality < topPosY) {
