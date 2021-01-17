@@ -10,6 +10,7 @@ import corgitaco.betterweather.audio.MovingWeatherSound;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
@@ -31,6 +32,8 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.IWorldReader;
+import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
@@ -127,7 +130,7 @@ public class Blizzard extends WeatherEvent {
                 double rainSizeZ = (double) this.rainSizeZ[rainSizeIdx] * 0.5D;
                 blockPos.setPos(graphicQualityX, 0, graphicQualityZ);
                 Biome biome = world.getBiome(blockPos);
-                int topPosY = mc.world.getHeight(Heightmap.Type.MOTION_BLOCKING, blockPos.getX(), blockPos.getY());
+                int topPosY = mc.world.getHeight(Heightmap.Type.MOTION_BLOCKING, blockPos.getX(), blockPos.getY()) - 2;
                 int floorYMinusGraphicsQuality = floorY - graphicsQuality;
                 int floorYPlusGraphicsQuality = floorY + graphicsQuality;
                 if (floorYMinusGraphicsQuality < topPosY) {
@@ -216,16 +219,6 @@ public class Blizzard extends WeatherEvent {
         public int getReplayRate() {
            return this.replayRate;
         }
-
-        public SoundEvent[] soundRegistries = {
-                SoundRegistry.BLIZZARD_LOOP1,
-                SoundRegistry.BLIZZARD_LOOP2,
-                SoundRegistry.BLIZZARD_LOOP3,
-                SoundRegistry.BLIZZARD_LOOP4,
-                SoundRegistry.BLIZZARD_LOOP5,
-                SoundRegistry.BLIZZARD_LOOP6,
-                SoundRegistry.BLIZZARD_LOOP7
-        };
     }
 
     @Override
@@ -310,27 +303,21 @@ public class Blizzard extends WeatherEvent {
             if (world.getWorldInfo().isRaining() && worldTime % BetterWeatherConfig.tickSnowAndIcePlaceSpeed.get() == 0 && biome.getCategory() != Biome.Category.NETHER && biome.getCategory() != Biome.Category.THEEND && biome.getCategory() != Biome.Category.NONE && doBlizzardsAffectDeserts(biome) && BetterWeatherConfig.spawnSnowAndIce.get()) {
                 if (world.getBlockState(blockpos.down()).getBlock() == Blocks.WATER && world.getBlockState(blockpos.down()).getFluidState().getLevel() == 8) {
                     world.setBlockState(blockpos.down(), Blocks.ICE.getDefaultState());
+                    return;
                 }
-                if (world.getBlockState(blockpos.down()).getMaterial() != Material.WATER && world.getBlockState(blockpos.down()).getMaterial() != Material.LAVA && world.getBlockState(blockpos.down()).getMaterial() != Material.ICE && world.getBlockState(blockpos.down()).getMaterial() != Material.CACTUS && doBlizzardsDestroyPlants(world.getBlockState(blockpos).getMaterial())) {
-                    if (world.getBlockState(blockpos).getBlock() != Blocks.SNOW)
+                BlockState blockState = world.getBlockState(blockpos);
+                if (doesSnowGenerate(world, blockpos) || doBlizzardsDestroyPlants(blockState.getMaterial()) || world.getBlockState(blockpos.down()).getBlock() == Blocks.SNOW) {
+                    if (blockState.getBlock() != Blocks.SNOW)
                         world.setBlockState(blockpos, Blocks.SNOW.getDefaultState());
 
-                    Block block = world.getBlockState(blockpos).getBlock();
+                    Block block = blockState.getBlock();
 
-                    if (block == Blocks.SNOW && world.getBlockState(blockpos).get(BlockStateProperties.LAYERS_1_8) == 1 && world.rand.nextInt(5) == 2)
-                        world.setBlockState(blockpos, block.getDefaultState().with(BlockStateProperties.LAYERS_1_8, 2));
-                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).get(BlockStateProperties.LAYERS_1_8) == 2 && world.rand.nextInt(5) == 3)
-                        world.setBlockState(blockpos, block.getDefaultState().with(BlockStateProperties.LAYERS_1_8, 3));
-                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).get(BlockStateProperties.LAYERS_1_8) == 3 && world.rand.nextInt(5) == 0)
-                        world.setBlockState(blockpos, block.getDefaultState().with(BlockStateProperties.LAYERS_1_8, 4));
-                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).get(BlockStateProperties.LAYERS_1_8) == 4 && world.rand.nextInt(5) == 4)
-                        world.setBlockState(blockpos, block.getDefaultState().with(BlockStateProperties.LAYERS_1_8, 5));
-                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).get(BlockStateProperties.LAYERS_1_8) == 5 && world.rand.nextInt(5) == 0)
-                        world.setBlockState(blockpos, block.getDefaultState().with(BlockStateProperties.LAYERS_1_8, 6));
-                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).get(BlockStateProperties.LAYERS_1_8) == 6 && world.rand.nextInt(5) == 1)
-                        world.setBlockState(blockpos, block.getDefaultState().with(BlockStateProperties.LAYERS_1_8, 7));
-                    else if (block == Blocks.SNOW && world.getBlockState(blockpos).get(BlockStateProperties.LAYERS_1_8) == 7 && world.rand.nextInt(5) == 0)
-                        world.setBlockState(blockpos, Blocks.SNOW_BLOCK.getDefaultState());
+                    if (block == Blocks.SNOW && blockState.hasProperty(BlockStateProperties.LAYERS_1_8)) {
+                        int snowLayerHeight = blockState.get(BlockStateProperties.LAYERS_1_8);
+
+                        if (snowLayerHeight < 8)
+                            world.setBlockState(blockpos, block.getDefaultState().with(BlockStateProperties.LAYERS_1_8, snowLayerHeight + 1));
+                    }
                 }
             }
         }
@@ -347,5 +334,13 @@ public class Blizzard extends WeatherEvent {
         return true;
     }
 
+    public static boolean doesSnowGenerate(IWorldReader worldIn, BlockPos pos) {
+        if (worldIn.getLightFor(LightType.BLOCK, pos) < 10) {
+            BlockState blockstate = worldIn.getBlockState(pos);
+            return blockstate.isAir(worldIn, pos) && Blocks.SNOW.getDefaultState().isValidPosition(worldIn, pos);
+        }
+        else
+            return false;
+    }
 
 }
