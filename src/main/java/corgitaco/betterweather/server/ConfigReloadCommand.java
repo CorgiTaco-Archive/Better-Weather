@@ -3,6 +3,7 @@ package corgitaco.betterweather.server;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.json.WeatherEventControllerConfig;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
@@ -23,7 +24,7 @@ public class ConfigReloadCommand {
         if (!BetterWeather.useSeasons)
             WeatherEventControllerConfig.handleConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-weather-controller.json"));
 
-        BetterWeather.loadSeasonConfigs(false, source);
+        BetterWeatherUtil.loadSeasonConfigsServer(source);
 
         source.getWorld().getPlayers().forEach(player -> NetworkHandler.sendToClient(player, new RefreshRenderersPacket()));
 

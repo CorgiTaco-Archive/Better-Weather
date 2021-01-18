@@ -1,6 +1,6 @@
 package corgitaco.betterweather.mixin.client;
 
-import corgitaco.betterweather.BetterWeatherUtil;
+import corgitaco.betterweather.BetterWeatherClientUtil;
 import net.minecraft.client.KeyboardListener;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,6 +13,6 @@ public abstract class MixinKeyboardListener {
 
     @Inject(method = "onKeyEvent", at = @At("RETURN"))
     private void addConfigReloadKeybind(long windowPointer, int key, int scanCode, int action, int modifiers, CallbackInfo ci) {
-        BetterWeatherUtil.configReloadKeybind(key);
+        BetterWeatherClientUtil.configReloadKeybind(key);
     }
 }

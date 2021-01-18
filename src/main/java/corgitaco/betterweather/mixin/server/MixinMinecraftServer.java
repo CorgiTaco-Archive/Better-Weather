@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.datafixers.DataFixer;
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.config.json.WeatherEventControllerConfig;
 import corgitaco.betterweather.datastorage.BetterWeatherEventData;
 import corgitaco.betterweather.datastorage.BetterWeatherGeneralData;
@@ -41,7 +42,7 @@ public abstract class MixinMinecraftServer {
         if (!BetterWeather.useSeasons)
             WeatherEventControllerConfig.handleConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-weather-controller.json"));
 
-        BetterWeather.loadSeasonConfigs(false, null);
+        BetterWeatherUtil.loadSeasonConfigsServer(null);
     }
 
     @Inject(method = "func_240787_a_", at = @At("TAIL"))

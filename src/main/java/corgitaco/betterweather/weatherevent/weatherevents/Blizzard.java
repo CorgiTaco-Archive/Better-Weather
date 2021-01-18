@@ -2,6 +2,7 @@ package corgitaco.betterweather.weatherevent.weatherevents;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.BetterWeatherClientUtil;
 import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.SoundRegistry;
 import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
@@ -39,7 +40,9 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import javax.annotation.Nullable;
 import java.awt.*;
@@ -47,7 +50,7 @@ import java.util.Random;
 
 public class Blizzard extends WeatherEvent {
 
-    public static MovingWeatherSound BLIZZARD_SOUND = new MovingWeatherSound(SoundRegistry.BLIZZARD_LOOP1, BetterWeatherConfigClient.blizzardLoopEnumValue.get().getReplayRate(), SoundCategory.WEATHER, Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getBlockPos(), BetterWeatherConfigClient.blizzardVolume.get().floatValue(), BetterWeatherConfigClient.blizzardPitch.get().floatValue());
+    public static MovingWeatherSound BLIZZARD_SOUND = null;
     public static final Color SKY_COLOR = new Color(155, 155, 155);
 
     static int idx2 = 0;
@@ -65,6 +68,8 @@ public class Blizzard extends WeatherEvent {
                 this.rainSizeZ[i << 5 | j] = f / f2;
             }
         }
+        if (FMLEnvironment.dist == Dist.CLIENT)
+            BLIZZARD_SOUND = new MovingWeatherSound(SoundRegistry.BLIZZARD_LOOP1, BetterWeatherConfigClient.blizzardLoopEnumValue.get().getReplayRate(), SoundCategory.WEATHER, Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getBlockPos(), BetterWeatherConfigClient.blizzardVolume.get().floatValue(), BetterWeatherConfigClient.blizzardPitch.get().floatValue());
     }
 
     @Override
@@ -165,9 +170,9 @@ public class Blizzard extends WeatherEvent {
         else {
             if (worldTime % 20 == 0) {
                 if (doBlizzardsAffectDeserts(world.getBiome(mc.player.getPosition())))
-                    BetterWeatherUtil.refreshViewFrustum(mc, forcedRenderDistance());
+                    BetterWeatherClientUtil.refreshViewFrustum(mc, forcedRenderDistance());
                 else
-                    BetterWeatherUtil.refreshViewFrustum(mc, mc.gameSettings.renderDistanceChunks);
+                    BetterWeatherClientUtil.refreshViewFrustum(mc, mc.gameSettings.renderDistanceChunks);
             }
         }
     }

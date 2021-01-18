@@ -94,67 +94,7 @@ public class BetterWeather {
 
     public static void loadClientConfigs() {
         BetterWeatherConfigClient.loadConfig(CONFIG_PATH.resolve(MOD_ID + "-client.toml"));
-        loadSeasonConfigs(true, null);
-    }
-
-    public static void loadSeasonConfigs(boolean isClientSide, @Nullable CommandSource source) {
-        if (useSeasons) {
-            Path seasonConfig = BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-seasons.json");
-            try {
-                SeasonConfig.handleBWSeasonsConfig(seasonConfig);
-            } catch (Exception e) {
-                CrashReport crashReport = CrashReport.makeCrashReport(e, "Reading Season Config");
-                if (isClientSide && source == null) {
-                    BetterWeatherUtil.printDebugWarning("bw.reload.season.config.fail", seasonConfig.getFileName(), crashReport.getCrashCause().toString());
-                }
-
-                if (source != null)
-                    source.sendFeedback(new TranslationTextComponent("bw.reload.season.config.fail", seasonConfig.getFileName(), crashReport.getCrashCause().toString()), true);
-
-                BetterWeather.LOGGER.error("\"" + seasonConfig.getFileName() + "\" failed to load because of the following error(s): " + crashReport.getCompleteReport() + "\n Using shipped default..." );
-                Season.SUB_SEASON_MAP = Season.FALLBACK_MAP;
-            }
-
-
-            Season.SUB_SEASON_MAP.forEach((subSeasonName, subSeason) -> {
-                Path overrideFilePath = CONFIG_PATH.resolve("overrides").resolve(subSeasonName + "-override.json");
-                if (subSeason.getParentSeason() == SeasonData.SeasonVal.WINTER) {
-                    try {
-                        BiomeOverrideJsonHandler.handleOverrideJsonConfigs(overrideFilePath, Season.SubSeason.WINTER_OVERRIDE, subSeason);
-                    } catch (Exception e) {
-                        CrashReport crashReport = CrashReport.makeCrashReport(e, "Reading Subseason Override Config");
-
-
-                        if (isClientSide && source == null)
-                            BetterWeatherUtil.printDebugWarning("bw.reload.seasonoverride.config.fail", overrideFilePath.getFileName(), crashReport.getCrashCause().toString());
-
-                        if (source != null)
-                            source.sendFeedback(new TranslationTextComponent("bw.reload.seasonoverride.config.fail", overrideFilePath.getFileName(), crashReport.getCrashCause().toString()), true);
-
-                        BetterWeather.LOGGER.error("Override Config: \"" + overrideFilePath.getFileName() + "\" failed to load because of the following error(s): " + crashReport.getCompleteReport() + "\n Doing nothing..." );
-
-                        subSeason.setCropToMultiplierStorage(new IdentityHashMap<>());
-                        subSeason.setBiomeToOverrideStorage(new IdentityHashMap<>());
-                    }
-                }
-                else {
-                    try {
-                        BiomeOverrideJsonHandler.handleOverrideJsonConfigs(overrideFilePath, new IdentityHashMap<>(), subSeason);
-                    } catch (Exception e) {
-                        if (isClientSide && source == null)
-                            BetterWeatherUtil.printDebugWarning("bw.reloadconfig.fail", overrideFilePath.getFileName(), e.toString());
-
-                        if (source != null)
-                            source.sendFeedback(new TranslationTextComponent("bw.reloadconfig.fail", overrideFilePath.getFileName(), e.toString()), true);
-
-                        BetterWeather.LOGGER.error("Override Config: \"" + overrideFilePath.getFileName() + "\" failed to load! Doing nothing..." );
-
-                        subSeason.setCropToMultiplierStorage(new IdentityHashMap<>());
-                        subSeason.setBiomeToOverrideStorage(new IdentityHashMap<>());
-                    }
-                }
-            });
-        }
+        BetterWeatherClientUtil.loadSeasonConfigsClient();
     }
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
