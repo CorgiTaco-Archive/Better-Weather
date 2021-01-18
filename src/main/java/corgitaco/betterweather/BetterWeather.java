@@ -24,6 +24,7 @@ import corgitaco.betterweather.server.SetWeatherCommand;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import corgitaco.betterweather.weatherevent.weatherevents.vanilla.Clear;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -53,6 +54,7 @@ import org.apache.commons.lang3.text.WordUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -69,8 +71,11 @@ public class BetterWeather {
     public static boolean useSeasons = true;
     public static boolean usingOptifine;
     public static Registry<Biome> biomeRegistryEarlyAccess;
+    @Nullable
     public static BetterWeatherSeasonData seasonData = null;
+    @Nullable
     public static BetterWeatherEventData weatherData = null;
+    @Nullable
     public static BetterWeatherGeneralData generalData = null;
 
     public BetterWeather() {
@@ -116,6 +121,27 @@ public class BetterWeather {
         LOGGER.debug("Registered Better Weather Commands!");
     }
 
+    public void commonSetup(FMLCommonSetupEvent event) {
+//        GlobalEntityTypeAttributes.put(BWEntityRegistry.TORNADO, TornadoEntity.setCustomAttributes().create());
+        BetterWeatherConfig.handleCommonConfig();
+        WeatherEventSystem.addDefaultWeatherEvents();
+        NetworkHandler.init();
+        BetterWeatherGameRules.init();
+    }
+
+    public static final Clear DUMMY_CLEAR = new Clear();
+
+
+    public void lateSetup(FMLLoadCompleteEvent event) {
+        WeatherEventSystem.fillWeatherEventsMapAndWeatherEventController();
+        WeatherData.currentWeatherEvent = DUMMY_CLEAR;
+    }
+
+    public void clientSetup(FMLClientSetupEvent event) {
+        usingOptifine = OptifineCompat.IS_OPTIFINE_PRESENT.getValue();
+//        RenderingRegistry.registerEntityRenderingHandler(BWEntityRegistry.TORNADO, TornadoRenderer::new);
+    }
+
     public static void setSeasonData(IWorld world) {
         if (useSeasons) {
             if (seasonData == null)
@@ -133,31 +159,10 @@ public class BetterWeather {
             generalData = BetterWeatherGeneralData.get(world);
     }
 
-    public void commonSetup(FMLCommonSetupEvent event) {
-//        GlobalEntityTypeAttributes.put(BWEntityRegistry.TORNADO, TornadoEntity.setCustomAttributes().create());
-        BetterWeatherConfig.handleCommonConfig();
-        WeatherEventSystem.addDefaultWeatherEvents();
-        NetworkHandler.init();
-        BetterWeatherGameRules.init();
-    }
-
-    public void lateSetup(FMLLoadCompleteEvent event) {
-        WeatherEventSystem.fillWeatherEventsMapAndWeatherEventController();
-        WeatherData.currentWeatherEvent = new Clear();
-    }
-
-    public void clientSetup(FMLClientSetupEvent event) {
-        usingOptifine = OptifineCompat.IS_OPTIFINE_PRESENT.getValue();
-//        RenderingRegistry.registerEntityRenderingHandler(BWEntityRegistry.TORNADO, TornadoRenderer::new);
-    }
-
     @Mod.EventBusSubscriber(modid = BetterWeather.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class BetterWeatherEvents {
         @SubscribeEvent
         public static void worldTick(TickEvent.WorldTickEvent event) {
-            setWeatherData(event.world);
-            setSeasonData(event.world);
-
             if (event.phase == TickEvent.Phase.END) {
                 if (event.side.isServer()) {
                     ServerWorld serverWorld = (ServerWorld) event.world;
@@ -187,7 +192,6 @@ public class BetterWeather {
 
         @SubscribeEvent
         public static void playerTickEvent(TickEvent.PlayerTickEvent event) {
-            setWeatherData(event.player.world);
         }
 
         @SubscribeEvent
@@ -197,15 +201,13 @@ public class BetterWeather {
 
         @SubscribeEvent
         public static void onPlayerJoined(PlayerEvent.PlayerLoggedInEvent event) {
-            updateGeneralDataPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world);
+            updateGeneralDataPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()));
             if (useSeasons)
                 SeasonSystem.updateSeasonPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world, true);
-            WeatherEventSystem.updateWeatherEventPacketOnPlayerJoin(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world);
+            WeatherEventSystem.updateWeatherEventPacketOnPlayerJoin(Collections.singletonList((ServerPlayerEntity) event.getPlayer()));
         }
 
-        public static void updateGeneralDataPacket(List<ServerPlayerEntity> players, World world) {
-            setGeneralData(world);
-
+        public static void updateGeneralDataPacket(List<ServerPlayerEntity> players) {
             players.forEach(player -> {
                 NetworkHandler.sendTo(player, new GeneralPacket(useSeasons));
             });

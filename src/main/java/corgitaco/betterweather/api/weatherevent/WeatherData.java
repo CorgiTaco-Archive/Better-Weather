@@ -5,5 +5,4 @@ public class WeatherData {
 
     public static WeatherEvent currentWeatherEvent;
 
-
 }

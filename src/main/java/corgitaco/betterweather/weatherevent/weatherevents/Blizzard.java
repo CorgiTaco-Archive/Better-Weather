@@ -78,7 +78,6 @@ public class Blizzard extends WeatherEvent {
     }
 
     public static void addSnowAndIce(Chunk chunk, World world, long worldTime) {
-        BetterWeather.setWeatherData(world);
         ChunkPos chunkpos = chunk.getPos();
         int chunkXStart = chunkpos.getXStart();
         int chunkZStart = chunkpos.getZStart();
@@ -296,7 +295,7 @@ public class Blizzard extends WeatherEvent {
 
     @Override
     public int forcedRenderDistance() {
-        return 3;
+        return BetterWeatherConfigClient.forcedRenderDistanceDuringBlizzards.get();
     }
 
     @Override

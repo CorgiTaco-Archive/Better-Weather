@@ -29,12 +29,13 @@ public class WeatherEventPacket {
         if (ctx.get().getDirection().getReceptionSide().isClient()) {
             ctx.get().enqueueWork(() -> {
                 Minecraft minecraft = Minecraft.getInstance();
-
                 if (minecraft.world != null && minecraft.player != null) {
                     BetterWeather.setWeatherData(minecraft.world);
-                    BetterWeather.weatherData.setEvent(message.event);
-                    if (!BetterWeather.usingOptifine)
-                        ((WeatherViewFrustum) ((ViewFrustumGetter) minecraft.worldRenderer).getViewFrustum()).forceRenderDistance(WeatherData.currentWeatherEvent.forcedRenderDistance(), minecraft.player.getPosX(), minecraft.player.getPosY(), minecraft.player.getPosZ());
+                    if (BetterWeather.weatherData != null) {
+                        BetterWeather.weatherData.setEvent(message.event);
+                        if (!BetterWeather.usingOptifine)
+                            ((WeatherViewFrustum) ((ViewFrustumGetter) minecraft.worldRenderer).getViewFrustum()).forceRenderDistance(WeatherData.currentWeatherEvent.forcedRenderDistance(), minecraft.player.getPosX(), minecraft.player.getPosY(), minecraft.player.getPosZ());
+                    }
                 }
             });
         }

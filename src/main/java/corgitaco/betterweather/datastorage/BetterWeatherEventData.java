@@ -3,6 +3,7 @@ package corgitaco.betterweather.datastorage;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
+import corgitaco.betterweather.api.weatherevent.WeatherEvent;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.IWorld;
@@ -70,8 +71,12 @@ public class BetterWeatherEventData extends WorldSavedData {
         return event.toString();
     }
 
-    public BetterWeatherID getEvent() {
+    public BetterWeatherID getEventID() {
         return event;
+    }
+
+    public WeatherEvent getEvent() {
+        return WeatherEventSystem.WEATHER_EVENTS.get(this.event);
     }
 
     public void setEvent(String event) {

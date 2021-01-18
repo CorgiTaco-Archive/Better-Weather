@@ -55,10 +55,8 @@ public class WeatherEventSystem {
         BetterWeatherEntryPoint.WEATHER_EVENTS.add(new Clouded());
     }
 
-    public static void updateWeatherEventPacketOnPlayerJoin(List<ServerPlayerEntity> players, World world) {
-        BetterWeather.setWeatherData(world);
-
-        BetterWeatherID currentEvent = BetterWeather.weatherData.getEvent();
+    public static void updateWeatherEventPacketOnPlayerJoin(List<ServerPlayerEntity> players) {
+        BetterWeatherID currentEvent = BetterWeather.weatherData.getEventID();
         players.forEach(player -> {
             NetworkHandler.sendTo(player, new WeatherEventPacket(currentEvent.toString()));
         });

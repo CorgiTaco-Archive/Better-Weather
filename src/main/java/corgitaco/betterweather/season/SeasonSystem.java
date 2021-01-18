@@ -54,7 +54,6 @@ public class SeasonSystem {
         if (!BetterWeather.useSeasons)
             throw new UnsupportedOperationException("Seasons are disabled in this instance!");
 
-        BetterWeather.setSeasonData(world);
         int currentSeasonTime = BetterWeather.seasonData.getSeasonTime();
 
         SeasonData.SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, BetterWeather.seasonData.getSeasonCycleLength()).getSubSeasonVal();

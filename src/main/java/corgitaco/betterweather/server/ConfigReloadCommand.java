@@ -18,7 +18,7 @@ public class ConfigReloadCommand {
 
     public static int reloadCommand(CommandSource source) {
         BetterWeatherConfig.loadConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-common.toml"));
-        BetterWeather.BetterWeatherEvents.updateGeneralDataPacket(source.getWorld().getPlayers(), source.getWorld());
+        BetterWeather.BetterWeatherEvents.updateGeneralDataPacket(source.getWorld().getPlayers());
 
         if (!BetterWeather.useSeasons)
             WeatherEventControllerConfig.handleConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-weather-controller.json"));

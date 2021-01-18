@@ -60,7 +60,7 @@ public abstract class MixinWorldRenderer implements ViewFrustumGetter {
                 if (Blizzard.doBlizzardsAffectDeserts(mc.world.getBiome(mc.player.getPosition()))) {
                     int renderDistance = WeatherData.currentWeatherEvent.forcedRenderDistance();
                     if (renderDistance != mc.gameSettings.renderDistanceChunks)
-                        ((WeatherViewFrustum) this.viewFrustum).forceRenderDistance(renderDistance, player.getPosY(), player.getPosY(), player.getPosZ());
+                        ((WeatherViewFrustum) this.viewFrustum).forceRenderDistance(renderDistance, player.getPosX(), player.getPosY(), player.getPosZ());
                 }
 
             }

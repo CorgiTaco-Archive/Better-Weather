@@ -32,8 +32,10 @@ public class SeasonPacket {
 
                 if (minecraft.world != null && minecraft.player != null) {
                     BetterWeather.setSeasonData(minecraft.world);
-                    BetterWeather.seasonData.setSeasonTime(message.seasonTime);
-                    BetterWeather.seasonData.setSeasonCycleLength(message.seasonCycleLength);
+                    if (BetterWeather.seasonData != null) {
+                        BetterWeather.seasonData.setSeasonTime(message.seasonTime);
+                        BetterWeather.seasonData.setSeasonCycleLength(message.seasonCycleLength);
+                    }
                 }
             });
         }

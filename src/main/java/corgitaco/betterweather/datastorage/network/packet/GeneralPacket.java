@@ -28,8 +28,10 @@ public class GeneralPacket {
                 Minecraft minecraft = Minecraft.getInstance();
                 if (minecraft.world != null && minecraft.player != null) {
                     BetterWeather.setGeneralData(minecraft.world);
-                    BetterWeather.generalData.setUsingSeasons(message.usingSeasons);
-                    BetterWeather.useSeasons = BetterWeather.generalData.isUsingSeasons();
+                    if (BetterWeather.generalData != null) {
+                        BetterWeather.generalData.setUsingSeasons(message.usingSeasons);
+                        BetterWeather.useSeasons = BetterWeather.generalData.isUsingSeasons();
+                    }
                 }
             });
         }

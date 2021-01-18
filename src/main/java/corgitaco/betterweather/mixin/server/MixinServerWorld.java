@@ -17,7 +17,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Random;
-import java.util.function.BooleanSupplier;
 
 
 @Mixin(ServerWorld.class)
@@ -26,19 +25,9 @@ public abstract class MixinServerWorld {
     @Shadow
     public IServerWorldInfo field_241103_E_;
 
-    @Inject(method = "tick", at = @At("HEAD"))
-    private void setWeatherData(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
-        if (BetterWeatherUtil.isOverworld(((ServerWorld) (Object) this).getDimensionKey())) {
-            BetterWeather.setWeatherData(((ServerWorld) (Object) this));
-            if (BetterWeather.useSeasons)
-                BetterWeather.setSeasonData(((ServerWorld) (Object) this));
-        }
-    }
-
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z", ordinal = 0))
     private boolean rollBetterWeatherEvent(GameRules gameRules, GameRules.RuleKey<GameRules.BooleanValue> key) {
         if (BetterWeatherUtil.isOverworld(((ServerWorld) (Object) this).getDimensionKey())) {
-
             WeatherEventUtil.doWeatherAndRollWeatherEventChance(this.field_241103_E_, (ServerWorld) (Object) this);
             return false;
         } else

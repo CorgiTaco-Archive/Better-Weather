@@ -50,7 +50,7 @@ public class BetterWeatherSeasonData extends WorldSavedData {
     @Override
     public CompoundNBT write(CompoundNBT compound) {
         compound.putInt("seasontime", seasonTime);
-        compound.putInt("seasoncyclelength", seasonTime);
+        compound.putInt("seasoncyclelength", seasonCycleLength);
         return compound;
     }
 

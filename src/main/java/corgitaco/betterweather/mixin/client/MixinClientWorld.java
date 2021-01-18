@@ -3,7 +3,11 @@ package corgitaco.betterweather.mixin.client;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
+import corgitaco.betterweather.datastorage.BetterWeatherEventData;
+import corgitaco.betterweather.datastorage.BetterWeatherGeneralData;
+import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
 import corgitaco.betterweather.weatherevent.weatherevents.vanilla.Clear;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.play.ClientPlayNetHandler;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.world.ClientWorld;
@@ -12,7 +16,9 @@ import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -24,11 +30,15 @@ import java.util.function.Supplier;
 @Mixin(ClientWorld.class)
 public abstract class MixinClientWorld {
 
+    @Shadow @Final private Minecraft mc;
+
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void setupClientGameData(ClientPlayNetHandler handler, ClientWorld.ClientWorldInfo info, RegistryKey<World> key, DimensionType dimtype, int i, Supplier<IProfiler> profiler, WorldRenderer renderer, boolean b1, long b2, CallbackInfo ci) {
-        BetterWeather.setWeatherData((ClientWorld) (Object) this);
-        BetterWeather.setSeasonData((ClientWorld) (Object) this);
-        WeatherData.currentWeatherEvent = new Clear();
+    private void setupClientBetterWeatherData(ClientPlayNetHandler handler, ClientWorld.ClientWorldInfo info, RegistryKey<World> key, DimensionType dimtype, int i, Supplier<IProfiler> profiler, WorldRenderer renderer, boolean b1, long b2, CallbackInfo ci) {
+
+        WeatherData.currentWeatherEvent = BetterWeather.DUMMY_CLEAR;
+
+//        if (mc.worldRenderer != null && ((ViewFrustumGetter) mc.worldRenderer).getViewFrustum() != null)
+//            BetterWeatherUtil.refreshViewFrustum(this.mc, mc.gameSettings.renderDistanceChunks);
     }
 
     @Redirect(method = "getSkyColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
