@@ -93,7 +93,7 @@ public class Blizzard extends WeatherEvent {
                 }
                 BlockState blockState = world.getBlockState(blockpos);
                 if (doesSnowGenerate(world, blockpos) || doBlizzardsDestroyPlants(blockState.getMaterial()) || world.getBlockState(blockpos.down()).getBlock() == Blocks.SNOW) {
-                    if (blockState.getBlock() != Blocks.SNOW)
+                    if (blockState.getBlock() != Blocks.SNOW && blockState.getMaterial() != Material.ICE)
                         world.setBlockState(blockpos, Blocks.SNOW.getDefaultState());
 
                     Block block = blockState.getBlock();
