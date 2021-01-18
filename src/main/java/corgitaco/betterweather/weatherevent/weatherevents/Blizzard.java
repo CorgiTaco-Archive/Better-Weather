@@ -3,7 +3,6 @@ package corgitaco.betterweather.weatherevent.weatherevents;
 import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherClientUtil;
-import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.SoundRegistry;
 import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
 import corgitaco.betterweather.api.weatherevent.WeatherEvent;
@@ -50,7 +49,6 @@ import java.util.Random;
 
 public class Blizzard extends WeatherEvent {
 
-    public static MovingWeatherSound BLIZZARD_SOUND = null;
     public static final Color SKY_COLOR = new Color(155, 155, 155);
 
     static int idx2 = 0;
@@ -68,8 +66,6 @@ public class Blizzard extends WeatherEvent {
                 this.rainSizeZ[i << 5 | j] = f / f2;
             }
         }
-        if (FMLEnvironment.dist == Dist.CLIENT)
-            BLIZZARD_SOUND = new MovingWeatherSound(SoundRegistry.BLIZZARD_LOOP1, BetterWeatherConfigClient.blizzardLoopEnumValue.get().getReplayRate(), SoundCategory.WEATHER, Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getBlockPos(), BetterWeatherConfigClient.blizzardVolume.get().floatValue(), BetterWeatherConfigClient.blizzardPitch.get().floatValue());
     }
 
     @Override
@@ -154,28 +150,9 @@ public class Blizzard extends WeatherEvent {
 
     @Override
     public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc) {
-        SoundHandler soundHandler = mc.getSoundHandler();
-        if (!soundHandler.isPlaying(BLIZZARD_SOUND) && doBlizzardsAffectDeserts(mc.world.getBiome(mc.gameRenderer.getActiveRenderInfo().getBlockPos()))) {
-            MovingWeatherSound blizzardSound = new MovingWeatherSound(BetterWeatherConfigClient.blizzardLoopEnumValue.get().getSoundEvent(), BetterWeatherConfigClient.blizzardLoopEnumValue.get().getReplayRate(), SoundCategory.WEATHER, Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getBlockPos(), BetterWeatherConfigClient.blizzardVolume.get().floatValue(), BetterWeatherConfigClient.blizzardPitch.get().floatValue());
-            soundHandler.play(blizzardSound);
-            BLIZZARD_SOUND = blizzardSound;
-        }
-
-        if (!BLIZZARD_SOUND.isDonePlaying() && !doBlizzardsAffectDeserts(mc.world.getBiome(mc.gameRenderer.getActiveRenderInfo().getBlockPos()))) {
-            BLIZZARD_SOUND.finishPlaying();
-        }
-
-        if (BetterWeather.usingOptifine)
-            mc.worldRenderer.renderDistanceChunks = forcedRenderDistance();
-        else {
-            if (worldTime % 20 == 0) {
-                if (doBlizzardsAffectDeserts(world.getBiome(mc.player.getPosition())))
-                    BetterWeatherClientUtil.refreshViewFrustum(mc, forcedRenderDistance());
-                else
-                    BetterWeatherClientUtil.refreshViewFrustum(mc, mc.gameSettings.renderDistanceChunks);
-            }
-        }
+        BlizzardClient.blizzardClient(world, worldTime, mc, forcedRenderDistance());
     }
+
 
     @Override
     public boolean renderWeather(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z) {
@@ -280,7 +257,7 @@ public class Blizzard extends WeatherEvent {
 
     @Override
     public void onCommandWeatherChange() {
-        BLIZZARD_SOUND.finishPlaying();
+        BlizzardClient.stopPlaying();
     }
 
     @Override
@@ -369,4 +346,37 @@ public class Blizzard extends WeatherEvent {
         }
     }
 
+
+    public static class BlizzardClient {
+        public static MovingWeatherSound BLIZZARD_SOUND = new MovingWeatherSound(SoundRegistry.BLIZZARD_LOOP1, BetterWeatherConfigClient.blizzardLoopEnumValue.get().getReplayRate(), SoundCategory.WEATHER, Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getBlockPos(), BetterWeatherConfigClient.blizzardVolume.get().floatValue(), BetterWeatherConfigClient.blizzardPitch.get().floatValue());
+
+
+        public static void blizzardClient(ClientWorld world, long worldTime, Minecraft mc, int forcedRenderDistance) {
+            SoundHandler soundHandler = mc.getSoundHandler();
+            if (!soundHandler.isPlaying(BLIZZARD_SOUND) && doBlizzardsAffectDeserts(mc.world.getBiome(mc.gameRenderer.getActiveRenderInfo().getBlockPos()))) {
+                MovingWeatherSound blizzardSound = new MovingWeatherSound(BetterWeatherConfigClient.blizzardLoopEnumValue.get().getSoundEvent(), BetterWeatherConfigClient.blizzardLoopEnumValue.get().getReplayRate(), SoundCategory.WEATHER, Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getBlockPos(), BetterWeatherConfigClient.blizzardVolume.get().floatValue(), BetterWeatherConfigClient.blizzardPitch.get().floatValue());
+                soundHandler.play(blizzardSound);
+                BLIZZARD_SOUND = blizzardSound;
+            }
+
+            if (!BLIZZARD_SOUND.isDonePlaying() && !doBlizzardsAffectDeserts(mc.world.getBiome(mc.gameRenderer.getActiveRenderInfo().getBlockPos()))) {
+                BLIZZARD_SOUND.finishPlaying();
+            }
+
+            if (BetterWeather.usingOptifine)
+                mc.worldRenderer.renderDistanceChunks = forcedRenderDistance;
+            else {
+                if (worldTime % 20 == 0) {
+                    if (doBlizzardsAffectDeserts(world.getBiome(mc.player.getPosition())))
+                        BetterWeatherClientUtil.refreshViewFrustum(mc, forcedRenderDistance);
+                    else
+                        BetterWeatherClientUtil.refreshViewFrustum(mc, mc.gameSettings.renderDistanceChunks);
+                }
+            }
+        }
+
+        public static void stopPlaying() {
+            BLIZZARD_SOUND.finishPlaying();
+        }
+    }
 }
