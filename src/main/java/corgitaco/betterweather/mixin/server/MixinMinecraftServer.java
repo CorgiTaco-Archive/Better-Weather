@@ -41,7 +41,7 @@ public abstract class MixinMinecraftServer {
         if (!BetterWeather.useSeasons)
             WeatherEventControllerConfig.handleConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-weather-controller.json"));
 
-        BetterWeather.loadSeasonConfigs();
+        BetterWeather.loadSeasonConfigs(false, null);
     }
 
     @Inject(method = "func_240787_a_", at = @At("TAIL"))

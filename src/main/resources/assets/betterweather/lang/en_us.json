@@ -18,5 +18,10 @@
   "commands.bw.setweather.failed": "BW: Could not Set the weather to %s",
   "commands.bw.setweather.success.acidrain": "BW: Set the weather to acid rain.",
   "commands.bw.setweather.success.blizzard": "BW: Set the weather to blizzard.",
-  "commands.bw.setweather.success.clear": "BW: Set the weather to clear."
+  "commands.bw.setweather.success.clear": "BW: Set the weather to clear.",
+  "commands.bw.vanillaweather.fail": "BW: Use the command \"/betterweather setweather\" instead!",
+  "bw.reload.seasonoverride.config.fail": "BW: Could not read Config Override: \"%s\"!\nError: %s \nSee latest.log for full error details!",
+  "bw.reload.season.config.fail": "BW: Could not read Season Config: \"%s\", doing nothing!\nError: %s \nSee latest.log for full error details!"
+
+
 }

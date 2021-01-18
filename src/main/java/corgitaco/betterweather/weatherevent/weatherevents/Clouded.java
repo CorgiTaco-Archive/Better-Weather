@@ -54,7 +54,7 @@ public class Clouded extends WeatherEvent {
     }
 
     @Override
-    public float daylightBrightness() {
+    public float dayLightDarkness() {
         return 2.5F;
     }
 }

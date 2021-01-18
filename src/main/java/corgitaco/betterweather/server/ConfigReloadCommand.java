@@ -23,7 +23,7 @@ public class ConfigReloadCommand {
         if (!BetterWeather.useSeasons)
             WeatherEventControllerConfig.handleConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-weather-controller.json"));
 
-        BetterWeather.loadSeasonConfigs();
+        BetterWeather.loadSeasonConfigs(false, source);
 
         source.getWorld().getPlayers().forEach(player -> NetworkHandler.sendToClient(player, new RefreshRenderersPacket()));
 

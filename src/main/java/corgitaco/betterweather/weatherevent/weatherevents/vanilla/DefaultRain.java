@@ -60,4 +60,14 @@ public class DefaultRain extends WeatherEvent {
     public boolean spawnSnowInFreezingClimates() {
         return true;
     }
+
+    @Override
+    public boolean drippingLeaves() {
+        return true;
+    }
+
+    @Override
+    public float dayLightDarkness() {
+        return 2.0F;
+    }
 }

@@ -41,7 +41,7 @@ public class BetterWeatherUtil {
             try {
                 return (int) Long.parseLong(targetHexColor.replace("#", "").replace("0x", ""), 16);
             } catch (Exception e) {
-                BetterWeather.LOGGER.error("\"" + targetHexColor + "\" was not a hex color value! | Using Defaults...");
+               throw new IllegalArgumentException(e);
             }
         }
         return Integer.MAX_VALUE;
@@ -84,7 +84,7 @@ public class BetterWeatherUtil {
     }
 
     @OnlyIn(Dist.CLIENT)
-    private static void printDebugWarning(String message, Object... args) {
+    public static void printDebugWarning(String message, Object... args) {
         Minecraft.getInstance().ingameGUI.getChatGUI().printChatMessage((new StringTextComponent("")).append((new TranslationTextComponent("debug.prefix")).mergeStyle(TextFormatting.RED, TextFormatting.BOLD)).appendString(" ").append(new TranslationTextComponent(message, args)));
     }
 

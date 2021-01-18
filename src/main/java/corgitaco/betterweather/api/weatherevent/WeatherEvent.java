@@ -121,7 +121,7 @@ public abstract class WeatherEvent {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public float daylightBrightness() {
+    public float dayLightDarkness() {
         return 1.0F;
     }
 

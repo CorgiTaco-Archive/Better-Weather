@@ -15,6 +15,7 @@ import net.minecraft.util.Util;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 
+import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,6 +49,9 @@ public class Season {
         map.put(SeasonData.SubSeasonVal.WINTER_MID.toString(), SEASON_MAP.get(SeasonData.SeasonVal.WINTER.toString()).getMid());
         map.put(SeasonData.SubSeasonVal.WINTER_END.toString(), SEASON_MAP.get(SeasonData.SeasonVal.WINTER.toString()).getEnd());
     });
+
+    public static final Map<String, SubSeason> FALLBACK_MAP = SUB_SEASON_MAP;
+
     private final SubSeason start;
     private final SubSeason mid;
     private final SubSeason end;
@@ -151,6 +155,7 @@ public class Season {
         private final double cropGrowthChanceMultiplier; //Final Fallback
         private final HashMap<String, Double> weatherEventController;
         private final SeasonClient client;
+        @Nullable
         private final Set<String> entityBreedingBlacklist;
 
 
@@ -176,7 +181,8 @@ public class Season {
         }
 
         public void processInfo() {
-            entityTypeBreedingBlacklist = new ObjectOpenHashSet<>(entityBreedingBlacklist.stream().map(ResourceLocation::new).filter((resourceLocation) -> (BetterWeatherUtil.filterRegistryID(resourceLocation, Registry.ENTITY_TYPE, "Entity"))).map(Registry.ENTITY_TYPE::getOptional).map(Optional::get).collect(Collectors.toSet()));
+            if (entityBreedingBlacklist != null && !entityBreedingBlacklist.isEmpty())
+                entityTypeBreedingBlacklist = new ObjectOpenHashSet<>(entityBreedingBlacklist.stream().map(ResourceLocation::new).filter((resourceLocation) -> (BetterWeatherUtil.filterRegistryID(resourceLocation, Registry.ENTITY_TYPE, "Entity"))).map(Registry.ENTITY_TYPE::getOptional).map(Optional::get).collect(Collectors.toSet()));
         }
 
         public SeasonData.SubSeasonVal getSubSeasonVal() {

@@ -50,6 +50,9 @@ public abstract class MixinClientWorld {
     @Redirect(method = "getSunBrightness", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
     private float sunBrightness(ClientWorld world, float delta) {
         float rainStrength = ((ClientWorld) (Object) this).getRainStrength(delta);
-        return BetterWeatherUtil.isOverworld(world.getDimensionKey()) ? rainStrength * WeatherData.currentWeatherEvent.daylightBrightness() : rainStrength;
+        if (BetterWeatherUtil.isOverworld(((ClientWorld) (Object) this).getDimensionKey())) {
+            return BetterWeatherUtil.isOverworld(world.getDimensionKey()) ? rainStrength * WeatherData.currentWeatherEvent.dayLightDarkness() : rainStrength;
+        } else
+            return rainStrength;
     }
 }

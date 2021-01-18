@@ -41,11 +41,15 @@ import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 
+import javax.annotation.Nullable;
+import java.awt.*;
 import java.util.Random;
 
 public class Blizzard extends WeatherEvent {
 
     public static MovingWeatherSound BLIZZARD_SOUND = new MovingWeatherSound(SoundRegistry.BLIZZARD_LOOP1, BetterWeatherConfigClient.blizzardLoopEnumValue.get().getReplayRate(), SoundCategory.WEATHER, Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getBlockPos(), BetterWeatherConfigClient.blizzardVolume.get().floatValue(), BetterWeatherConfigClient.blizzardPitch.get().floatValue());
+    public static final Color SKY_COLOR = new Color(155, 155, 155);
+
     static int idx2 = 0;
     private final float[] rainSizeX = new float[1024];
     private final float[] rainSizeZ = new float[1024];
@@ -61,6 +65,26 @@ public class Blizzard extends WeatherEvent {
                 this.rainSizeZ[i << 5 | j] = f / f2;
             }
         }
+    }
+
+    @Override
+    public Color modifySkyColor(Color biomeColor, Color returnColor, @Nullable Color seasonTargetColor, float rainStrength) {
+        return SKY_COLOR;
+    }
+
+    @Override
+    public Color modifyFogColor(Color biomeColor, Color returnColor, @Nullable Color seasonTargetColor, float rainStrength) {
+        return SKY_COLOR;
+    }
+
+    @Override
+    public Color modifyCloudColor(Color returnColor, float rainStrength) {
+        return SKY_COLOR;
+    }
+
+    @Override
+    public float dayLightDarkness() {
+        return 2.0F;
     }
 
     public static boolean doBlizzardsAffectDeserts(Biome biome) {
@@ -87,13 +111,14 @@ public class Blizzard extends WeatherEvent {
         Biome biome = world.getBiome(blockpos);
         if (world.isAreaLoaded(blockpos, 1)) {
             if (world.getWorldInfo().isRaining() && worldTime % BetterWeatherConfig.tickSnowAndIcePlaceSpeed.get() == 0 && biome.getCategory() != Biome.Category.NETHER && biome.getCategory() != Biome.Category.THEEND && biome.getCategory() != Biome.Category.NONE && doBlizzardsAffectDeserts(biome) && BetterWeatherConfig.spawnSnowAndIce.get()) {
-                if (world.getBlockState(blockpos.down()).getBlock() == Blocks.WATER && world.getBlockState(blockpos.down()).getFluidState().getLevel() == 8) {
+                BlockState blockStateDown = world.getBlockState(blockpos.down());
+                if (blockStateDown.getBlock() == Blocks.WATER && blockStateDown.getFluidState().getLevel() == 8) {
                     world.setBlockState(blockpos.down(), Blocks.ICE.getDefaultState());
                     return;
                 }
                 BlockState blockState = world.getBlockState(blockpos);
-                if (doesSnowGenerate(world, blockpos) || doBlizzardsDestroyPlants(blockState.getMaterial()) || world.getBlockState(blockpos.down()).getBlock() == Blocks.SNOW) {
-                    if (blockState.getBlock() != Blocks.SNOW && blockState.getMaterial() != Material.ICE)
+                if (doesSnowGenerate(world, blockpos) || doBlizzardsDestroyPlants(blockState.getMaterial()) || blockStateDown.getBlock() == Blocks.SNOW) {
+                    if (blockState.getBlock() != Blocks.SNOW && blockStateDown.getMaterial() != Material.ICE)
                         world.setBlockState(blockpos, Blocks.SNOW.getDefaultState());
 
                     Block block = blockState.getBlock();

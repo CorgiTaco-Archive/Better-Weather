@@ -123,4 +123,14 @@ public class DefaultThunder extends WeatherEvent {
     public boolean weatherParticlesAndSound(ActiveRenderInfo renderInfo, Minecraft mc) {
         return false;
     }
+
+    @Override
+    public boolean drippingLeaves() {
+        return true;
+    }
+
+    @Override
+    public float dayLightDarkness() {
+        return 2.5F;
+    }
 }

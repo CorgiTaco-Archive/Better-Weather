@@ -148,8 +148,7 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
             uncastedCropOverrides = new HashMap();
 
         if (!errorBuilder.toString().isEmpty()) {
-            BetterWeather.LOGGER.error("Errors were found in your override file: " + errorBuilder.toString());
-            biomeObjects.removeIf(Objects::isNull);
+            throw new IllegalArgumentException("Errors were found in your override file: " + errorBuilder.toString());
         }
 
 

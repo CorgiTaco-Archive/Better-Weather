@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SeasonSystem {
 
     private static SeasonData.SubSeasonVal privateSubSeasonVal;
-    private static boolean isFadingOut = true;
+    private static boolean isFadingOut = false;
 
     public static void updateSeasonTime(World world) {
         if (!BetterWeather.useSeasons)
