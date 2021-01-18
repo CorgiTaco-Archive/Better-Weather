@@ -9,6 +9,7 @@ import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
 import corgitaco.betterweather.datastorage.network.packet.WeatherEventPacket;
 import corgitaco.betterweather.datastorage.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.helper.IsWeatherForced;
+import corgitaco.betterweather.server.BetterWeatherGameRules;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -32,15 +33,17 @@ public class SeasonSystem {
     private static SeasonData.SubSeasonVal privateSubSeasonVal;
     private static boolean isFadingOut = true;
 
-    public static void updateSeasonTime() {
+    public static void updateSeasonTime(World world) {
         if (!BetterWeather.useSeasons)
             throw new UnsupportedOperationException("Seasons are disabled in this instance!");
 
         int currentSeasonTime = BetterWeather.seasonData.getSeasonTime();
-        if (currentSeasonTime > BetterWeather.SEASON_CYCLE_LENGTH)
-            BetterWeather.seasonData.setSeasonTime(0);
-        else
-            BetterWeather.seasonData.setSeasonTime(currentSeasonTime + 1);
+        if (world.getGameRules().getBoolean(BetterWeatherGameRules.DO_SEASON_CYCLE)) {
+            if (currentSeasonTime > BetterWeather.SEASON_CYCLE_LENGTH)
+                BetterWeather.seasonData.setSeasonTime(0);
+            else
+                BetterWeather.seasonData.setSeasonTime(currentSeasonTime + 1);
+        }
 
         if (BetterWeather.seasonData.getSeasonCycleLength() != BetterWeather.SEASON_CYCLE_LENGTH)
             BetterWeather.seasonData.setSeasonCycleLength(BetterWeather.SEASON_CYCLE_LENGTH);

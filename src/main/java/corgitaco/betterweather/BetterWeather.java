@@ -17,6 +17,7 @@ import corgitaco.betterweather.datastorage.network.NetworkHandler;
 import corgitaco.betterweather.datastorage.network.packet.GeneralPacket;
 import corgitaco.betterweather.season.Season;
 import corgitaco.betterweather.season.SeasonSystem;
+import corgitaco.betterweather.server.BetterWeatherGameRules;
 import corgitaco.betterweather.server.ConfigReloadCommand;
 import corgitaco.betterweather.server.SetSeasonCommand;
 import corgitaco.betterweather.server.SetWeatherCommand;
@@ -136,6 +137,7 @@ public class BetterWeather {
         BetterWeatherConfig.handleCommonConfig();
         WeatherEventSystem.addDefaultWeatherEvents();
         NetworkHandler.init();
+        BetterWeatherGameRules.init();
     }
 
     public void lateSetup(FMLLoadCompleteEvent event) {
@@ -162,7 +164,7 @@ public class BetterWeather {
                         int tickSpeed = world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
                         long worldTime = world.getWorldInfo().getGameTime();
                         if (useSeasons) {
-                            SeasonSystem.updateSeasonTime();
+                            SeasonSystem.updateSeasonTime(event.world);
                             SeasonSystem.updateSeasonPacket(serverWorld.getPlayers(), world, false);
                         }
 
