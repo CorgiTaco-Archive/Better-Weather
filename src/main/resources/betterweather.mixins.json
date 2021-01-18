@@ -4,12 +4,8 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "betterweather.refmap.json",
   "mixins": [
-    "MixinWorld",
     "biome.MixinBiome",
     "block.MixinAbstractBlockstate",
-    "client.MixinFogRenderer",
-    "client.MixinLightTexture",
-    "client.MixinViewFrustum",
     "entity.MixinBreedGoal",
     "server.MixinDerivedWorldInfo",
     "server.MixinMinecraftServer",
@@ -18,12 +14,17 @@
     "server.MixinWeatherCommand"
   ],
   "client": [
-    "MixinKeyboardListener",
+    "client.MixinKeyboardListener",
     "client.MixinBiomeClient",
     "client.MixinClientWorld",
     "client.MixinDimensionRenderInfo",
     "client.MixinLeavesBlock",
-    "client.MixinWorldRenderer"
+    "client.MixinWorldRenderer",
+    "client.MixinFogRenderer",
+    "client.MixinLightTexture",
+    "client.MixinViewFrustum",
+    "MixinWorld"
+
   ],
   "injectors": {
     "defaultRequire": 1

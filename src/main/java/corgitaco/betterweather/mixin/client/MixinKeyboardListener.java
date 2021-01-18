@@ -1,4 +1,4 @@
-package corgitaco.betterweather.mixin;
+package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.BetterWeatherUtil;
 import net.minecraft.client.KeyboardListener;

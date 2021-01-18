@@ -45,6 +45,7 @@ public abstract class WeatherEvent {
 
     public abstract void worldTick(ServerWorld world, int tickSpeed, long worldTime);
 
+    @OnlyIn(Dist.CLIENT)
     public abstract void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc);
 
     public float modifyTemperature(float biomeTemp, float modifiedBiomeTemp, double seasonModifier) {
