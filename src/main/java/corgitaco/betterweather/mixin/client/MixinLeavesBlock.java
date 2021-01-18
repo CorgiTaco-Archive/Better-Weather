@@ -18,7 +18,7 @@ public abstract class MixinLeavesBlock {
 
     @Inject(at = @At("HEAD"), method = "animateTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Ljava/util/Random;)V", cancellable = true)
     private void cancelRainDrippingEffect(BlockState stateIn, World world, BlockPos pos, Random rand, CallbackInfo ci) {
-        if (WeatherData.currentWeatherEvent.drippingLeaves() && (BetterWeatherUtil.isOverworld(world.getDimensionKey())))
+        if (BetterWeatherUtil.isOverworld(world.getDimensionKey()) && WeatherData.currentWeatherEvent.drippingLeaves())
             ci.cancel();
     }
 }

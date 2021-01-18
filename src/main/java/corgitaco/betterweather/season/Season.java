@@ -422,6 +422,8 @@ public class Season {
         }
 
         public ObjectOpenHashSet<EntityType<?>> getEntityTypeBreedingBlacklist() {
+            if (entityTypeBreedingBlacklist == null)
+                entityTypeBreedingBlacklist = new ObjectOpenHashSet<>();
             return entityTypeBreedingBlacklist;
         }
 
