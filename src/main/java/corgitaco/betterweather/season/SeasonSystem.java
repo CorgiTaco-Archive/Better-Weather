@@ -63,7 +63,7 @@ public class SeasonSystem {
         }
 
         if (BetterWeather.seasonData.getSeasonTime() % 1200 == 0 || BetterWeather.seasonData.isForced() || justJoined) {
-            players.forEach(player -> NetworkHandler.sendTo(player, new SeasonPacket(BetterWeather.seasonData.getSeasonTime(), BetterWeather.SEASON_CYCLE_LENGTH)));
+            players.forEach(player -> NetworkHandler.sendToClient(player, new SeasonPacket(BetterWeather.seasonData.getSeasonTime(), BetterWeather.SEASON_CYCLE_LENGTH)));
 
             if (BetterWeather.seasonData.isForced())
                 BetterWeather.seasonData.setForced(false);
@@ -197,9 +197,9 @@ public class SeasonSystem {
                         BetterWeather.weatherData.setEvent(WeatherEventSystem.DEFAULT.toString());
 
                     players.forEach(player -> {
-                        NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString()));
+                        NetworkHandler.sendToClient(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString()));
                         if (WeatherData.currentWeatherEvent.refreshPlayerRenderer())
-                            NetworkHandler.sendTo(player, new RefreshRenderersPacket());
+                            NetworkHandler.sendToClient(player, new RefreshRenderersPacket());
                     });
                 }
             }
@@ -213,9 +213,9 @@ public class SeasonSystem {
                     ((IsWeatherForced) worldInfo).setWeatherForced(false);
                     BetterWeather.weatherData.setWeatherForced(((IsWeatherForced) worldInfo).isWeatherForced());
                     players.forEach(player -> {
-                        NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString()));
+                        NetworkHandler.sendToClient(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString()));
                         if (refreshRenderersPost)
-                            NetworkHandler.sendTo(player, new RefreshRenderersPacket());
+                            NetworkHandler.sendToClient(player, new RefreshRenderersPacket());
                     });
 
                     isFadingOut = false;

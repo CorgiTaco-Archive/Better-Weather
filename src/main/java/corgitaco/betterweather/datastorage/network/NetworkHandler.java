@@ -29,7 +29,11 @@ public class NetworkHandler {
         SIMPLE_CHANNEL.registerMessage(4, OnCommandWeatherChangePacket.class, OnCommandWeatherChangePacket::writeToPacket, OnCommandWeatherChangePacket::readFromPacket, OnCommandWeatherChangePacket::handle);
     }
 
-    public static void sendTo(ServerPlayerEntity playerEntity, Object objectToSend) {
+    public static void sendToClient(ServerPlayerEntity playerEntity, Object objectToSend) {
         SIMPLE_CHANNEL.sendTo(objectToSend, playerEntity.connection.getNetworkManager(), NetworkDirection.PLAY_TO_CLIENT);
+    }
+
+    public static void sendToServer(Object objectToSend) {
+        SIMPLE_CHANNEL.sendToServer(objectToSend);
     }
 }

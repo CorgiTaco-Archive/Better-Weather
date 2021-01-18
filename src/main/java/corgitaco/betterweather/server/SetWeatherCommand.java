@@ -38,9 +38,9 @@ public class SetWeatherCommand {
             world.func_241113_a_(0, 6000, weatherEvent.getID() != WeatherEventSystem.CLEAR, false);
 
             source.getWorld().getPlayers().forEach(player -> {
-                NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString()));
+                NetworkHandler.sendToClient(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString()));
                 if (previousWeatherEvent != WeatherData.currentWeatherEvent)
-                    NetworkHandler.sendTo(player, new OnCommandWeatherChangePacket(previousWeatherEvent.getID().toString()));
+                    NetworkHandler.sendToClient(player, new OnCommandWeatherChangePacket(previousWeatherEvent.getID().toString()));
             });
 
             source.sendFeedback(weatherEvent.successTranslationTextComponent(), true);

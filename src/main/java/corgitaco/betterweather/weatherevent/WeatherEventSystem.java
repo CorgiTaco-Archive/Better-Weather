@@ -55,12 +55,20 @@ public class WeatherEventSystem {
         BetterWeatherEntryPoint.WEATHER_EVENTS.add(new Clouded());
     }
 
-    public static void updateWeatherEventPacketOnPlayerJoin(List<ServerPlayerEntity> players) {
+    private static BetterWeatherID cachedEvent = CLEAR;
+
+    public static void updateWeatherEventPacket(List<ServerPlayerEntity> players, boolean justJoined) {
+
         BetterWeatherID currentEvent = BetterWeather.weatherData.getEventID();
-        players.forEach(player -> {
-            NetworkHandler.sendTo(player, new WeatherEventPacket(currentEvent.toString()));
-        });
+
+        if (!cachedEvent.equals(currentEvent) || justJoined) {
+            players.forEach(player -> {
+                NetworkHandler.sendToClient(player, new WeatherEventPacket(currentEvent.toString()));
+            });
+            cachedEvent = currentEvent;
+        }
     }
+
 
     public static void rollWeatherEventChance(Random random, ServerWorld world, boolean isRaining, ServerWorldInfo worldInfo, List<ServerPlayerEntity> players) {
         if (world.rainingStrength == 0.0F) {
@@ -80,9 +88,9 @@ public class WeatherEventSystem {
                         BetterWeather.weatherData.setEvent(WeatherEventSystem.DEFAULT.toString());
 
                     players.forEach(player -> {
-                        NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString()));
+                        NetworkHandler.sendToClient(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString()));
                         if (WeatherData.currentWeatherEvent.refreshPlayerRenderer())
-                            NetworkHandler.sendTo(player, new RefreshRenderersPacket());
+                            NetworkHandler.sendToClient(player, new RefreshRenderersPacket());
                     });
                 }
             }
@@ -96,9 +104,9 @@ public class WeatherEventSystem {
                     ((IsWeatherForced) worldInfo).setWeatherForced(false);
                     BetterWeather.weatherData.setWeatherForced(((IsWeatherForced) worldInfo).isWeatherForced());
                     players.forEach(player -> {
-                        NetworkHandler.sendTo(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString()));
+                        NetworkHandler.sendToClient(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString()));
                         if (refreshRenderersPost)
-                            NetworkHandler.sendTo(player, new RefreshRenderersPacket());
+                            NetworkHandler.sendToClient(player, new RefreshRenderersPacket());
                     });
                     isFadingOut = false;
                 }

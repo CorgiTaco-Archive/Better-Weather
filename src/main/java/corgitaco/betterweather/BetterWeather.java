@@ -175,6 +175,9 @@ public class BetterWeather {
                             SeasonSystem.updateSeasonPacket(serverWorld.getPlayers(), world, false);
                         }
 
+                        if (worldTime % 10 == 0)
+                            WeatherEventSystem.updateWeatherEventPacket(serverWorld.getPlayers(), false);
+
                         WeatherData.currentWeatherEvent.worldTick(serverWorld, tickSpeed, worldTime);
                     }
                 }
@@ -204,12 +207,13 @@ public class BetterWeather {
             updateGeneralDataPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()));
             if (useSeasons)
                 SeasonSystem.updateSeasonPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world, true);
-            WeatherEventSystem.updateWeatherEventPacketOnPlayerJoin(Collections.singletonList((ServerPlayerEntity) event.getPlayer()));
+
+            WeatherEventSystem.updateWeatherEventPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), true);
         }
 
         public static void updateGeneralDataPacket(List<ServerPlayerEntity> players) {
             players.forEach(player -> {
-                NetworkHandler.sendTo(player, new GeneralPacket(useSeasons));
+                NetworkHandler.sendToClient(player, new GeneralPacket(useSeasons));
             });
         }
 
@@ -231,6 +235,9 @@ public class BetterWeather {
             }
         }
 
+
+
+
         @SubscribeEvent
         public static void commandRegisterEvent(FMLServerStartingEvent event) {
             BetterWeather.LOGGER.debug("BW: \"Server Starting\" Event Starting...");
@@ -245,7 +252,11 @@ public class BetterWeather {
         @SubscribeEvent
         public static void renderFogEvent(EntityViewRenderEvent.FogDensity event) {
             Minecraft minecraft = Minecraft.getInstance();
-            WeatherData.currentWeatherEvent.handleFogDensity(event, minecraft);
+            ClientWorld world = minecraft.world;
+            if (world != null) {
+                if (BetterWeatherUtil.isOverworld(world.getDimensionKey()))
+                    WeatherData.currentWeatherEvent.handleFogDensity(event, minecraft);
+            }
         }
 
         @SubscribeEvent
