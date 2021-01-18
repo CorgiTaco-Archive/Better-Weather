@@ -1,11 +1,9 @@
 package corgitaco.betterweather.api.weatherevent;
 
 
-import corgitaco.betterweather.weatherevent.weatherevents.vanilla.Clear;
-
 public class WeatherData {
 
-    public static WeatherEvent currentWeatherEvent = new Clear();
+    public static WeatherEvent currentWeatherEvent;
 
 
 }

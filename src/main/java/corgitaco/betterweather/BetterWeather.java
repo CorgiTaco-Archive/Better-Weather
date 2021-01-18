@@ -22,6 +22,7 @@ import corgitaco.betterweather.server.ConfigReloadCommand;
 import corgitaco.betterweather.server.SetSeasonCommand;
 import corgitaco.betterweather.server.SetWeatherCommand;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
+import corgitaco.betterweather.weatherevent.weatherevents.vanilla.Clear;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
@@ -142,6 +143,7 @@ public class BetterWeather {
 
     public void lateSetup(FMLLoadCompleteEvent event) {
         WeatherEventSystem.fillWeatherEventsMapAndWeatherEventController();
+        WeatherData.currentWeatherEvent = new Clear();
     }
 
     public void clientSetup(FMLClientSetupEvent event) {
