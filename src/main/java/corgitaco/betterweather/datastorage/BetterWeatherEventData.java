@@ -76,13 +76,24 @@ public class BetterWeatherEventData extends WorldSavedData {
     }
 
     public WeatherEvent getEvent() {
-        return WeatherEventSystem.WEATHER_EVENTS.get(this.event);
+        WeatherEvent weatherEvent = WeatherEventSystem.WEATHER_EVENTS.get(this.event);
+        if (weatherEvent == null) {
+            weatherEvent = WeatherEventSystem.WEATHER_EVENTS.get(WeatherEventSystem.CLEAR);
+            BetterWeather.LOGGER.error("Getting the current Weather Event saved data was null for this world, restoring data by defaulting to clear...");
+        }
+        return weatherEvent;
     }
 
     public void setEvent(String event) {
         this.event = new BetterWeatherID(event);
         markDirty();
-        WeatherData.currentWeatherEvent = WeatherEventSystem.WEATHER_EVENTS.get(this.event);
+        WeatherEvent currentWeatherEvent = WeatherEventSystem.WEATHER_EVENTS.get(this.event);
+        if (currentWeatherEvent == null) {
+            WeatherData.currentWeatherEvent = WeatherEventSystem.WEATHER_EVENTS.get(WeatherEventSystem.CLEAR);
+            BetterWeather.LOGGER.error("Setting the current Weather Event saved data was null for this world, restoring data by defaulting to clear...");
+        }
+        else
+            WeatherData.currentWeatherEvent = currentWeatherEvent;
     }
 
     public boolean isWeatherForced() {
