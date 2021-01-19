@@ -127,7 +127,7 @@ public class Blizzard extends WeatherEvent {
                     if (block == Blocks.SNOW && blockState.hasProperty(BlockStateProperties.LAYERS_1_8)) {
                         int snowLayerHeight = blockState.get(BlockStateProperties.LAYERS_1_8);
 
-                        if (snowLayerHeight < 8)
+                        if (snowLayerHeight < 7) //Never layer to 8 and turn into a snow block
                             world.setBlockState(blockpos, block.getDefaultState().with(BlockStateProperties.LAYERS_1_8, snowLayerHeight + 1));
                     }
                 }
