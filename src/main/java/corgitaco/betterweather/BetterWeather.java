@@ -115,7 +115,8 @@ public class BetterWeather {
         BetterWeatherConfig.handleCommonConfig();
         WeatherEventSystem.addDefaultWeatherEvents();
         NetworkHandler.init();
-        BetterWeatherGameRules.init();
+
+        event.enqueueWork(BetterWeatherGameRules::init);
     }
 
     public static final Clear DUMMY_CLEAR = new Clear();
