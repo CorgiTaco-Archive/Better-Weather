@@ -11,7 +11,9 @@
     "server.MixinMinecraftServer",
     "server.MixinServerWorld",
     "server.MixinServerWorldInfo",
-    "server.MixinWeatherCommand"
+    "server.MixinWeatherCommand",
+    "MixinWorld"
+
   ],
   "client": [
     "client.MixinKeyboardListener",
@@ -23,8 +25,6 @@
     "client.MixinFogRenderer",
     "client.MixinLightTexture",
     "client.MixinViewFrustum",
-    "MixinWorld"
-
   ],
   "injectors": {
     "defaultRequire": 1
