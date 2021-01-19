@@ -1,6 +1,7 @@
 package corgitaco.betterweather.season;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.BetterWeatherClientUtil;
 import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.api.SeasonData;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
@@ -78,7 +79,9 @@ public class SeasonSystem {
             throw new UnsupportedOperationException("Seasons are disabled in this instance!");
 
         if (BetterWeather.seasonData == null) {
-            BetterWeather.LOGGER.info("Season data was called to early, this should never happen...\nSetting season data to prevent further issues, bugs and client desync with the server is likely!!!");
+            BetterWeatherClientUtil.printDebugWarning("bw.warn.seasondata");
+
+            BetterWeather.LOGGER.error("Season data was called to early, this should never happen...\nSetting season data to prevent further issues, bugs and client desync with the server is possible!");
             BetterWeather.seasonData = BetterWeatherSeasonData.get(world);
         }
 
