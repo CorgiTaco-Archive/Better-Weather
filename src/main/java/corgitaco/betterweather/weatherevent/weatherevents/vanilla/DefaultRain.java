@@ -19,10 +19,6 @@ public class DefaultRain extends WeatherEvent {
         super(new BetterWeatherID(BetterWeather.MOD_ID, "DEFAULT"), 0.5);
     }
 
-    public DefaultRain(BetterWeatherID BWID, double defaultChance) {
-        super(BWID, defaultChance);
-    }
-
     @Override
     public void worldTick(ServerWorld world, int tickSpeed, long worldTime) {
     }
