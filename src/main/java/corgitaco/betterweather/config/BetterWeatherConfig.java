@@ -3,6 +3,7 @@ package corgitaco.betterweather.config;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.weatherevent.weatherevents.Misty;
 import net.minecraft.block.Block;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -34,6 +35,7 @@ public class BetterWeatherConfig {
 
     //Blizzard Configs
     public static ForgeConfigSpec.BooleanValue doBlizzardsOccurInDeserts;
+    public static ForgeConfigSpec.BooleanValue doesMistOccurInDeserts;
     public static ForgeConfigSpec.BooleanValue spawnSnowAndIce;
     public static ForgeConfigSpec.BooleanValue decaySnowAndIce;
     public static ForgeConfigSpec.BooleanValue doBlizzardsSlowPlayers;
@@ -85,6 +87,11 @@ public class BetterWeatherConfig {
         hurtEntityTickSpeed = COMMON_BUILDER.comment("How often are entities(including players) hurt?\nDefault: 150").defineInRange("EntityDamageTickSpeed", 150, 10, 100000);
         entityTypesToDamage = COMMON_BUILDER.comment("Allowed Values: PLAYER, MONSTER, ANIMAL.\nDefault: MONSTER,PLAYER").define("EntityTypes", "MONSTER,PLAYER");
         hurtEntityDamage = COMMON_BUILDER.comment("The amount of damage taken.\nDefault is 0.5").defineInRange("DamageStrength", 0.5, 0.0, 20.0);
+        COMMON_BUILDER.pop();
+        COMMON_BUILDER.pop();
+        COMMON_BUILDER.push("Misty_Settings").push("World_Settings").push("Mist_Occurance");
+        doesMistOccurInDeserts = COMMON_BUILDER.comment("Does misty weather appear in deserts?\nDefault: false.").define("MistyInDeserts", false);
+        COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
         COMMON_BUILDER.push("Blizzard_Settings").push("World_Settings").push("Snow_Generation");
