@@ -4,6 +4,7 @@ import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.api.SeasonData;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
+import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
 import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
 import corgitaco.betterweather.datastorage.network.packet.WeatherEventPacket;
@@ -14,6 +15,7 @@ import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.math.BlockPos;
@@ -71,9 +73,14 @@ public class SeasonSystem {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public static void clientSeason() {
+    public static void clientSeason(ClientWorld world) {
         if (!BetterWeather.useSeasons)
             throw new UnsupportedOperationException("Seasons are disabled in this instance!");
+
+        if (BetterWeather.seasonData == null) {
+            BetterWeather.LOGGER.info("Season data was called to early, this should never happen...\nSetting season data to prevent further issues, bugs and client desync with the server is likely!!!");
+            BetterWeather.seasonData = BetterWeatherSeasonData.get(world);
+        }
 
         int currentSeasonTime = BetterWeather.seasonData.getSeasonTime();
 

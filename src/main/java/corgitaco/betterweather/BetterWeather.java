@@ -216,7 +216,7 @@ public class BetterWeather {
                         int tickSpeed = minecraft.world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
                         if (useSeasons) {
                             if (minecraft.world.getWorldInfo().getGameTime() % 10 == 0) {
-                                SeasonSystem.clientSeason();
+                                SeasonSystem.clientSeason(minecraft.world);
                             }
                         }
                         WeatherData.currentWeatherEvent.clientTick(minecraft.world, tickSpeed, minecraft.world.getWorldInfo().getGameTime(), minecraft);
