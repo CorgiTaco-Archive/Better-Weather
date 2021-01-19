@@ -126,7 +126,6 @@ public abstract class WeatherEvent {
         return 1.0F;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public boolean refreshPlayerRenderer() {
         return false;
     }
