@@ -13,7 +13,6 @@
     "server.MixinServerWorldInfo",
     "server.MixinWeatherCommand",
     "MixinWorld"
-
   ],
   "client": [
     "client.MixinKeyboardListener",
@@ -24,7 +23,7 @@
     "client.MixinWorldRenderer",
     "client.MixinFogRenderer",
     "client.MixinLightTexture",
-    "client.MixinViewFrustum",
+    "client.MixinViewFrustum"
   ],
   "injectors": {
     "defaultRequire": 1

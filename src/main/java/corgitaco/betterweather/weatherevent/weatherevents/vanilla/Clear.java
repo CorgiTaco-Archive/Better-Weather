@@ -41,9 +41,9 @@ public class Clear extends WeatherEvent {
         if (world.isAreaLoaded(blockpos, 1)) {
             if (biome.getTemperature(blockpos) >= BetterWeatherConfig.snowDecayTemperatureThreshold.get()) {
                 if (!world.getWorldInfo().isRaining() && worldTime % BetterWeatherConfig.tickSnowAndIceDecaySpeed.get() == 0 && biome.getCategory() != Biome.Category.NETHER && biome.getCategory() != Biome.Category.THEEND && biome.getCategory() != Biome.Category.NONE && doBlizzardsAffectDeserts(biome)) {
-                    if (blockDown == Blocks.SNOW || blockDown == Blocks.SNOW_BLOCK)
+                    if (blockDown == Blocks.SNOW)
                         world.setBlockState(blockpos.down(), Blocks.AIR.getDefaultState());
-                    if (block == Blocks.SNOW || block == Blocks.SNOW_BLOCK)
+                    if (block == Blocks.SNOW)
                         world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
                     if (blockDown == Blocks.ICE)
                         world.setBlockState(blockpos.down(), Blocks.WATER.getDefaultState());
