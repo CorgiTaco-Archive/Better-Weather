@@ -36,7 +36,7 @@ public abstract class MixinAbstractBlockstate {
      * <p>
      * If you are viewing this and think you might have a better solution, please submit a PR as it would be very appreciated!
      */
-    @Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "randomTick", at = @At("RETURN"), cancellable = true)
     private void cropGrowthModifier(ServerWorld world, BlockPos posIn, Random randomIn, CallbackInfo ci) {
         if (BetterWeather.useSeasons && BetterWeatherUtil.isOverworld(world.getDimensionKey()))
             SeasonSystem.tickCropForBiomeBlockOrSeason(world, posIn, this.getBlock(), this.getSelf(), ci);

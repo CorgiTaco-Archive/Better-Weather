@@ -129,11 +129,11 @@ public class SeasonSystem {
 
         Season.SubSeason subSeason = Season.getSubSeasonFromEnum(SeasonData.currentSubSeason);
         if (subSeason.getBiomeToOverrideStorage().isEmpty() && subSeason.getCropToMultiplierStorage().isEmpty()) {
-            if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block)) {
+            if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block) || BlockTags.SAPLINGS.contains(block)) {
                 cropTicker(world, posIn, block, subSeason, true, self, ci);
             }
         } else {
-            if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block)) {
+            if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block) || BlockTags.SAPLINGS.contains(block)) {
                 cropTicker(world, posIn, block, subSeason, false, self, ci);
             }
         }
@@ -158,9 +158,8 @@ public class SeasonSystem {
         //Here we gather a random number of ticks that this block will tick for this given tick.
         //We do a random.nextDouble() to determine if we get the ceil or floor value for the given crop growth multiplier.
         else if (cropGrowthMultiplier > 1) {
-            ci.cancel();
             int numberOfTicks = world.getRandom().nextInt((world.getRandom().nextDouble() + (cropGrowthMultiplier - 1) < cropGrowthMultiplier) ? (int) Math.ceil(cropGrowthMultiplier) : (int) cropGrowthMultiplier) + 1;
-            for (int tick = 0; tick < numberOfTicks; tick++) {
+            for (int tick = 0; tick < numberOfTicks - 1; tick++) {
                 block.randomTick(self, world, posIn, world.getRandom());
             }
         }
