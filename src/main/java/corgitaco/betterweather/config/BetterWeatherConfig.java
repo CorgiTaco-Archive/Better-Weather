@@ -3,7 +3,6 @@ package corgitaco.betterweather.config;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.weatherevent.weatherevents.Misty;
 import net.minecraft.block.Block;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -35,7 +34,7 @@ public class BetterWeatherConfig {
 
     //Blizzard Configs
     public static ForgeConfigSpec.BooleanValue doBlizzardsOccurInDeserts;
-    public static ForgeConfigSpec.BooleanValue doesMistOccurInDeserts;
+    public static ForgeConfigSpec.BooleanValue doesLightRainOccurInDeserts;
     public static ForgeConfigSpec.BooleanValue spawnSnowAndIce;
     public static ForgeConfigSpec.BooleanValue decaySnowAndIce;
     public static ForgeConfigSpec.BooleanValue doBlizzardsSlowPlayers;
@@ -89,8 +88,8 @@ public class BetterWeatherConfig {
         hurtEntityDamage = COMMON_BUILDER.comment("The amount of damage taken.\nDefault is 0.5").defineInRange("DamageStrength", 0.5, 0.0, 20.0);
         COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
-        COMMON_BUILDER.push("Misty_Settings").push("World_Settings").push("Mist_Occurance");
-        doesMistOccurInDeserts = COMMON_BUILDER.comment("Does misty weather appear in deserts?\nDefault: false.").define("MistyInDeserts", false);
+        COMMON_BUILDER.push("Rain_Type_Settings").push("World_Settings").push("Light_Rain_Occurance");
+        doesLightRainOccurInDeserts = COMMON_BUILDER.comment("Does light rain weather appear in deserts?\nDefault: false.").define("LightRainInDeserts", false);
         COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
