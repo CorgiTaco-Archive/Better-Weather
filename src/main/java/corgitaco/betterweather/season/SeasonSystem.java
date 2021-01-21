@@ -150,16 +150,19 @@ public class SeasonSystem {
 
         //Pretty self explanatory, basically run a chance on whether or not the crop will tick for this tick
         if (cropGrowthMultiplier < 1) {
-            ci.cancel();
             if (world.getRandom().nextDouble() < cropGrowthMultiplier) {
                 block.randomTick(self, world, posIn, world.getRandom());
-            }
+            } else
+                ci.cancel();
         }
         //Here we gather a random number of ticks that this block will tick for this given tick.
         //We do a random.nextDouble() to determine if we get the ceil or floor value for the given crop growth multiplier.
         else if (cropGrowthMultiplier > 1) {
             int numberOfTicks = world.getRandom().nextInt((world.getRandom().nextDouble() + (cropGrowthMultiplier - 1) < cropGrowthMultiplier) ? (int) Math.ceil(cropGrowthMultiplier) : (int) cropGrowthMultiplier) + 1;
             for (int tick = 0; tick < numberOfTicks - 1; tick++) {
+                if (tick > 0)
+                    self = world.getBlockState(posIn);
+
                 block.randomTick(self, world, posIn, world.getRandom());
             }
         }
