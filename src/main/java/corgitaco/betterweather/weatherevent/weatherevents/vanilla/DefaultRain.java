@@ -13,6 +13,7 @@ import net.minecraft.world.server.ServerWorld;
 import javax.annotation.Nullable;
 import java.awt.*;
 
+
 public class DefaultRain extends WeatherEvent {
     public DefaultRain() {
         super(new BetterWeatherID(BetterWeather.MOD_ID, "DEFAULT"), 0.5);

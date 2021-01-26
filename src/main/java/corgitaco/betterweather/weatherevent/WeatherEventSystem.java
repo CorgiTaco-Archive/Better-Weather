@@ -12,6 +12,7 @@ import corgitaco.betterweather.helper.IsWeatherForced;
 import corgitaco.betterweather.weatherevent.weatherevents.AcidRain;
 import corgitaco.betterweather.weatherevent.weatherevents.Blizzard;
 import corgitaco.betterweather.weatherevent.weatherevents.Clouded;
+import corgitaco.betterweather.weatherevent.weatherevents.LightRain;
 import corgitaco.betterweather.weatherevent.weatherevents.vanilla.Clear;
 import corgitaco.betterweather.weatherevent.weatherevents.vanilla.DefaultRain;
 import corgitaco.betterweather.weatherevent.weatherevents.vanilla.DefaultThunder;
@@ -31,6 +32,7 @@ public class WeatherEventSystem {
     public static final BetterWeatherID BLIZZARD = new BetterWeatherID(BetterWeather.MOD_ID, "BLIZZARD");
     public static final BetterWeatherID CLEAR = new BetterWeatherID(BetterWeather.MOD_ID, "CLEAR");
     public static final BetterWeatherID CLOUDED = new BetterWeatherID(BetterWeather.MOD_ID, "CLOUDED");
+    public static final BetterWeatherID LIGHT_RAIN = new BetterWeatherID(BetterWeather.MOD_ID, "LIGHT_RAIN");
     public static final BetterWeatherID DEFAULT = new BetterWeatherID(BetterWeather.MOD_ID, "DEFAULT");
     public static final BetterWeatherID DEFAULT_THUNDER = new BetterWeatherID(BetterWeather.MOD_ID, "DEFAULT_THUNDER");
 
@@ -53,6 +55,7 @@ public class WeatherEventSystem {
         BetterWeatherEntryPoint.WEATHER_EVENTS.add(new DefaultThunder());
         BetterWeatherEntryPoint.WEATHER_EVENTS.add(new Clear());
         BetterWeatherEntryPoint.WEATHER_EVENTS.add(new Clouded());
+        BetterWeatherEntryPoint.WEATHER_EVENTS.add(new LightRain());
     }
 
     private static BetterWeatherID cachedEvent = CLEAR;
