@@ -47,9 +47,8 @@ public abstract class MixinMinecraftServer {
 
     @Inject(method = "func_240787_a_", at = @At("TAIL"))
     private void assignWorldData(IChunkStatusListener p_240787_1_, CallbackInfo ci) {
-        BetterWeather.generalData = BetterWeatherGeneralData.get(getWorld(World.OVERWORLD));
-        BetterWeather.weatherData = BetterWeatherEventData.get(getWorld(World.OVERWORLD));
-        if (BetterWeather.useSeasons)
-            BetterWeather.seasonData = BetterWeatherSeasonData.get(getWorld(World.OVERWORLD));
+        BetterWeatherGeneralData.get(getWorld(World.OVERWORLD));
+        BetterWeatherEventData.get(getWorld(World.OVERWORLD));
+        BetterWeatherSeasonData.get(getWorld(World.OVERWORLD));
     }
 }

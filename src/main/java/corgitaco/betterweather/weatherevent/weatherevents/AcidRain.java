@@ -5,6 +5,7 @@ import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
 import corgitaco.betterweather.api.weatherevent.WeatherEvent;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
+import corgitaco.betterweather.datastorage.BetterWeatherEventData;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -41,7 +42,6 @@ import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.Random;
 
-import static corgitaco.betterweather.BetterWeather.weatherData;
 import static corgitaco.betterweather.config.BetterWeatherConfig.*;
 
 public class AcidRain extends WeatherEvent {
@@ -170,7 +170,7 @@ public class AcidRain extends WeatherEvent {
                 World world = entity.world;
                 BlockPos entityPos = new BlockPos(entity.getPositionVec());
 
-                if (world.canSeeSky(entityPos) && weatherData.isAcidRain() && world.getWorldInfo().isRaining() && world.getGameTime() % hurtEntityTickSpeed.get() == 0) {
+                if (world.canSeeSky(entityPos) && BetterWeatherEventData.get(world).isAcidRain() && world.getWorldInfo().isRaining() && world.getGameTime() % hurtEntityTickSpeed.get() == 0) {
                     entity.attackEntityFrom(DamageSource.GENERIC, 0.5F);
                 }
             }

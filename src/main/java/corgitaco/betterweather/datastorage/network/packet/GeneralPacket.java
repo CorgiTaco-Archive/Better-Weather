@@ -1,6 +1,7 @@
 package corgitaco.betterweather.datastorage.network.packet;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.datastorage.BetterWeatherGeneralData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -27,11 +28,8 @@ public class GeneralPacket {
             ctx.get().enqueueWork(() -> {
                 Minecraft minecraft = Minecraft.getInstance();
                 if (minecraft.world != null && minecraft.player != null) {
-                    BetterWeather.setGeneralData(minecraft.world);
-                    if (BetterWeather.generalData != null) {
-                        BetterWeather.generalData.setUsingSeasons(message.usingSeasons);
-                        BetterWeather.useSeasons = BetterWeather.generalData.isUsingSeasons();
-                    }
+                    BetterWeatherGeneralData.get(minecraft.world).setUsingSeasons(message.usingSeasons);
+                    BetterWeather.useSeasons = BetterWeatherGeneralData.get(minecraft.world).isUsingSeasons();
                 }
             });
         }

@@ -73,12 +73,6 @@ public class BetterWeather {
     public static boolean useSeasons = true;
     public static boolean usingOptifine;
     public static Registry<Biome> biomeRegistryEarlyAccess;
-    @Nullable
-    public static BetterWeatherSeasonData seasonData = null;
-    @Nullable
-    public static BetterWeatherEventData weatherData = null;
-    @Nullable
-    public static BetterWeatherGeneralData generalData = null;
 
     public BetterWeather() {
         File dir = new File(CONFIG_PATH.toString());
@@ -132,23 +126,6 @@ public class BetterWeather {
 //        RenderingRegistry.registerEntityRenderingHandler(BWEntityRegistry.TORNADO, TornadoRenderer::new);
     }
 
-    public static void setSeasonData(IWorld world) {
-        if (useSeasons) {
-            if (seasonData == null)
-                seasonData = BetterWeatherSeasonData.get(world);
-        }
-    }
-
-    public static void setWeatherData(IWorld world) {
-        if (weatherData == null)
-            weatherData = BetterWeatherEventData.get(world);
-    }
-
-    public static void setGeneralData(IWorld world) {
-        if (generalData == null)
-            generalData = BetterWeatherGeneralData.get(world);
-    }
-
     @Mod.EventBusSubscriber(modid = BetterWeather.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class BetterWeatherEvents {
         @SubscribeEvent
@@ -166,7 +143,7 @@ public class BetterWeather {
                         }
 
                         if (worldTime % 10 == 0)
-                            WeatherEventSystem.updateWeatherEventPacket(serverWorld.getPlayers(), false);
+                            WeatherEventSystem.updateWeatherEventPacket(serverWorld, serverWorld.getPlayers(), false);
 
                         WeatherData.currentWeatherEvent.worldTick(serverWorld, tickSpeed, worldTime);
                     }
@@ -198,7 +175,7 @@ public class BetterWeather {
             if (useSeasons)
                 SeasonSystem.updateSeasonPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world, true);
 
-            WeatherEventSystem.updateWeatherEventPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), true);
+            WeatherEventSystem.updateWeatherEventPacket(((ServerPlayerEntity) event.getPlayer()).getServerWorld(), Collections.singletonList((ServerPlayerEntity) event.getPlayer()), true);
         }
 
         public static void updateGeneralDataPacket(List<ServerPlayerEntity> players) {

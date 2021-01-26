@@ -5,6 +5,7 @@ import corgitaco.betterweather.BetterWeatherClientUtil;
 import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.api.SeasonData;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
+import corgitaco.betterweather.datastorage.BetterWeatherEventData;
 import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
 import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
@@ -40,16 +41,16 @@ public class SeasonSystem {
         if (!BetterWeather.useSeasons)
             throw new UnsupportedOperationException("Seasons are disabled in this instance!");
 
-        int currentSeasonTime = BetterWeather.seasonData.getSeasonTime();
+        int currentSeasonTime = BetterWeatherSeasonData.get(world).getSeasonTime();
         if (world.getGameRules().getBoolean(BetterWeatherGameRules.DO_SEASON_CYCLE)) {
             if (currentSeasonTime > BetterWeather.SEASON_CYCLE_LENGTH)
-                BetterWeather.seasonData.setSeasonTime(0);
+                BetterWeatherSeasonData.get(world).setSeasonTime(0);
             else
-                BetterWeather.seasonData.setSeasonTime(currentSeasonTime + 1);
+                BetterWeatherSeasonData.get(world).setSeasonTime(currentSeasonTime + 1);
         }
 
-        if (BetterWeather.seasonData.getSeasonCycleLength() != BetterWeather.SEASON_CYCLE_LENGTH)
-            BetterWeather.seasonData.setSeasonCycleLength(BetterWeather.SEASON_CYCLE_LENGTH);
+        if (BetterWeatherSeasonData.get(world).getSeasonCycleLength() != BetterWeather.SEASON_CYCLE_LENGTH)
+            BetterWeatherSeasonData.get(world).setSeasonCycleLength(BetterWeather.SEASON_CYCLE_LENGTH);
 
     }
 
@@ -57,19 +58,19 @@ public class SeasonSystem {
         if (!BetterWeather.useSeasons)
             throw new UnsupportedOperationException("Seasons are disabled in this instance!");
 
-        int currentSeasonTime = BetterWeather.seasonData.getSeasonTime();
+        int currentSeasonTime = BetterWeatherSeasonData.get(world).getSeasonTime();
 
-        SeasonData.SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, BetterWeather.seasonData.getSeasonCycleLength()).getSubSeasonVal();
+        SeasonData.SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, world, BetterWeatherSeasonData.get(world).getSeasonCycleLength()).getSubSeasonVal();
 
-        if (SeasonData.currentSubSeason != subSeason || BetterWeather.seasonData.isForced() || justJoined) {
-            BetterWeather.seasonData.setSubseason(subSeason.toString());
+        if (SeasonData.currentSubSeason != subSeason || BetterWeatherSeasonData.get(world).isForced() || justJoined) {
+            BetterWeatherSeasonData.get(world).setSubseason(subSeason.toString());
         }
 
-        if (BetterWeather.seasonData.getSeasonTime() % 1200 == 0 || BetterWeather.seasonData.isForced() || justJoined) {
-            players.forEach(player -> NetworkHandler.sendToClient(player, new SeasonPacket(BetterWeather.seasonData.getSeasonTime(), BetterWeather.SEASON_CYCLE_LENGTH)));
+        if (BetterWeatherSeasonData.get(world).getSeasonTime() % 1200 == 0 || BetterWeatherSeasonData.get(world).isForced() || justJoined) {
+            players.forEach(player -> NetworkHandler.sendToClient(player, new SeasonPacket(BetterWeatherSeasonData.get(world).getSeasonTime(), BetterWeather.SEASON_CYCLE_LENGTH)));
 
-            if (BetterWeather.seasonData.isForced())
-                BetterWeather.seasonData.setForced(false);
+            if (BetterWeatherSeasonData.get(world).isForced())
+                BetterWeatherSeasonData.get(world).setForced(false);
         }
     }
 
@@ -78,27 +79,26 @@ public class SeasonSystem {
         if (!BetterWeather.useSeasons)
             throw new UnsupportedOperationException("Seasons are disabled in this instance!");
 
-        if (BetterWeather.seasonData == null) {
-            BetterWeatherClientUtil.printDebugWarning("bw.warn.seasondata");
+//        if (BetterWeatherSeasonData.get(world) == null) {
+//            BetterWeatherClientUtil.printDebugWarning("bw.warn.seasondata");
+//
+//            BetterWeather.LOGGER.error("Season data was called to early, this should never happen...\nSetting season data to prevent further issues, bugs and client desync with the server is possible!");
+//        }
 
-            BetterWeather.LOGGER.error("Season data was called to early, this should never happen...\nSetting season data to prevent further issues, bugs and client desync with the server is possible!");
-            BetterWeather.seasonData = BetterWeatherSeasonData.get(world);
-        }
+        int currentSeasonTime = BetterWeatherSeasonData.get(world).getSeasonTime();
 
-        int currentSeasonTime = BetterWeather.seasonData.getSeasonTime();
-
-        SeasonData.SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, BetterWeather.seasonData.getSeasonCycleLength()).getSubSeasonVal();
+        SeasonData.SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, world, BetterWeatherSeasonData.get(world).getSeasonCycleLength()).getSubSeasonVal();
 
 
         if (SeasonData.currentSubSeason != subSeason) {
-            BetterWeather.seasonData.setSubseason(subSeason.toString());
+            BetterWeatherSeasonData.get(world).setSubseason(subSeason.toString());
             Minecraft minecraft = Minecraft.getInstance();
             SeasonData.currentSubSeason = subSeason;
             minecraft.worldRenderer.loadRenderers();
         }
     }
 
-    public static Season.SubSeason getSubSeasonFromTime(int seasonTime, int seasonCycleLength) {
+    public static Season.SubSeason getSubSeasonFromTime(int seasonTime, World world, int seasonCycleLength) {
         if (!BetterWeather.useSeasons)
             throw new UnsupportedOperationException("Seasons are disabled in this instance!");
 
@@ -106,7 +106,7 @@ public class SeasonSystem {
 
         SeasonData.SeasonVal seasonVal = getSeasonFromTime(seasonTime, seasonCycleLength);
         if (SeasonData.currentSeason != seasonVal) {
-            BetterWeather.seasonData.setSeason(seasonVal.toString());
+            BetterWeatherSeasonData.get(world).setSeason(seasonVal.toString());
             SeasonData.currentSeason = seasonVal;
         }
 
@@ -182,34 +182,34 @@ public class SeasonSystem {
         boolean privateSeasonIsNotCacheSeasonFlag = privateSubSeasonVal != SeasonData.currentSubSeason;
 
         if (!isRainActive) {
-            if (!BetterWeather.weatherData.isModified() || privateSeasonIsNotCacheSeasonFlag) {
+            if (!BetterWeatherEventData.get(world).isModified() || privateSeasonIsNotCacheSeasonFlag) {
                 worldInfo.setRainTime(BetterWeatherUtil.transformRainOrThunderTimeToCurrentSeason(worldInfo.getRainTime(), Season.getSubSeasonFromEnum(privateSubSeasonVal), subSeason));
                 worldInfo.setThunderTime(BetterWeatherUtil.transformRainOrThunderTimeToCurrentSeason(worldInfo.getThunderTime(), Season.getSubSeasonFromEnum(privateSubSeasonVal), subSeason));
-                BetterWeather.weatherData.setModified(true);
+                BetterWeatherEventData.get(world).setModified(true);
             }
         } else {
-            if (BetterWeather.weatherData.isModified())
-                BetterWeather.weatherData.setModified(false);
+            if (BetterWeatherEventData.get(world).isModified())
+                BetterWeatherEventData.get(world).setModified(false);
         }
 
 
         if (world.rainingStrength == 0.0F) {
             if (isRainActive) {
                 AtomicBoolean weatherEventWasSet = new AtomicBoolean(false);
-                if (!BetterWeather.weatherData.isWeatherForced()) { //If weather isn't forced, roll chance
+                if (!BetterWeatherEventData.get(world).isWeatherForced()) { //If weather isn't forced, roll chance
                     subSeason.getWeatherEventController().forEach((event, chance) -> {
                         if (!event.equals(WeatherEventSystem.CLEAR.toString())) {
                             if (random.nextDouble() < chance) {
                                 weatherEventWasSet.set(true);
-                                BetterWeather.weatherData.setEvent(event);
+                                BetterWeatherEventData.get(world).setEvent(event);
                             }
                         }
                     });
                     if (!weatherEventWasSet.get())
-                        BetterWeather.weatherData.setEvent(WeatherEventSystem.DEFAULT.toString());
+                        BetterWeatherEventData.get(world).setEvent(WeatherEventSystem.DEFAULT.toString());
 
                     players.forEach(player -> {
-                        NetworkHandler.sendToClient(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString()));
+                        NetworkHandler.sendToClient(player, new WeatherEventPacket(BetterWeatherEventData.get(world).getEventString()));
                         if (WeatherData.currentWeatherEvent.refreshPlayerRenderer())
                             NetworkHandler.sendToClient(player, new RefreshRenderersPacket());
                     });
@@ -221,11 +221,11 @@ public class SeasonSystem {
                     isFadingOut = true;
                 } else if (world.rainingStrength <= 0.011F && isFadingOut) {
                     boolean refreshRenderersPost = WeatherData.currentWeatherEvent.refreshPlayerRenderer();
-                    BetterWeather.weatherData.setEvent(WeatherEventSystem.CLEAR.toString());
+                    BetterWeatherEventData.get(world).setEvent(WeatherEventSystem.CLEAR.toString());
                     ((IsWeatherForced) worldInfo).setWeatherForced(false);
-                    BetterWeather.weatherData.setWeatherForced(((IsWeatherForced) worldInfo).isWeatherForced());
+                    BetterWeatherEventData.get(world).setWeatherForced(((IsWeatherForced) worldInfo).isWeatherForced());
                     players.forEach(player -> {
-                        NetworkHandler.sendToClient(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString()));
+                        NetworkHandler.sendToClient(player, new WeatherEventPacket(BetterWeatherEventData.get(world).getEventString()));
                         if (refreshRenderersPost)
                             NetworkHandler.sendToClient(player, new RefreshRenderersPacket());
                     });

@@ -1,6 +1,8 @@
 package corgitaco.betterweather.datastorage.network.packet;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.datastorage.BetterWeatherGeneralData;
+import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -31,11 +33,8 @@ public class SeasonPacket {
                 Minecraft minecraft = Minecraft.getInstance();
 
                 if (minecraft.world != null && minecraft.player != null) {
-                    BetterWeather.setSeasonData(minecraft.world);
-                    if (BetterWeather.seasonData != null) {
-                        BetterWeather.seasonData.setSeasonTime(message.seasonTime);
-                        BetterWeather.seasonData.setSeasonCycleLength(message.seasonCycleLength);
-                    }
+                    BetterWeatherSeasonData.get(minecraft.world).setSeasonTime(message.seasonTime);
+                    BetterWeatherSeasonData.get(minecraft.world).setSeasonCycleLength(message.seasonCycleLength);
                 }
             });
         }

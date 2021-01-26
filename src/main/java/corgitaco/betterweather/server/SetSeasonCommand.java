@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.SeasonData;
+import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
 import corgitaco.betterweather.season.SeasonSystem;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
@@ -70,8 +71,8 @@ public class SetSeasonCommand {
                 break;
         }
         if (!failedFlag) {
-            BetterWeather.seasonData.setForced(true);
-            BetterWeather.seasonData.setSeasonTime(SeasonSystem.getTimeInCycleForSubSeason(subSeason, BetterWeather.SEASON_CYCLE_LENGTH));
+            BetterWeatherSeasonData.get(source.getWorld()).setForced(true);
+            BetterWeatherSeasonData.get(source.getWorld()).setSeasonTime(SeasonSystem.getTimeInCycleForSubSeason(subSeason, BetterWeather.SEASON_CYCLE_LENGTH));
         }
         return 1;
     }

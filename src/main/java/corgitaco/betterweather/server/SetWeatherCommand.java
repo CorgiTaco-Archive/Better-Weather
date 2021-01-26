@@ -8,6 +8,8 @@ import corgitaco.betterweather.api.BetterWeatherEntryPoint;
 import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.api.weatherevent.WeatherEvent;
+import corgitaco.betterweather.datastorage.BetterWeatherEventData;
+import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
 import corgitaco.betterweather.datastorage.network.packet.OnCommandWeatherChangePacket;
 import corgitaco.betterweather.datastorage.network.packet.WeatherEventPacket;
@@ -34,11 +36,11 @@ public class SetWeatherCommand {
         WeatherEvent weatherEvent = WeatherEventSystem.WEATHER_EVENTS.get(new BetterWeatherID(weatherType));
         WeatherEvent previousWeatherEvent = WeatherData.currentWeatherEvent;
         if (weatherEvent != null) {
-            BetterWeather.weatherData.setEvent(weatherEvent.getID().toString());
+            BetterWeatherEventData.get(world).setEvent(weatherEvent.getID().toString());
             world.func_241113_a_(0, 6000, weatherEvent.getID() != WeatherEventSystem.CLEAR, false);
 
             source.getWorld().getPlayers().forEach(player -> {
-                NetworkHandler.sendToClient(player, new WeatherEventPacket(BetterWeather.weatherData.getEventString()));
+                NetworkHandler.sendToClient(player, new WeatherEventPacket(BetterWeatherEventData.get(world).getEventString()));
                 if (previousWeatherEvent != WeatherData.currentWeatherEvent)
                     NetworkHandler.sendToClient(player, new OnCommandWeatherChangePacket(previousWeatherEvent.getID().toString()));
             });

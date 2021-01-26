@@ -3,6 +3,7 @@ package corgitaco.betterweather.mixin.server;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
+import corgitaco.betterweather.datastorage.BetterWeatherEventData;
 import corgitaco.betterweather.helper.IsWeatherForced;
 import corgitaco.betterweather.weatherevent.weatherevents.WeatherEventUtil;
 import net.minecraft.world.GameRules;
@@ -28,7 +29,8 @@ public abstract class MixinServerWorld {
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z", ordinal = 0))
     private boolean rollBetterWeatherEvent(GameRules gameRules, GameRules.RuleKey<GameRules.BooleanValue> key) {
         if (BetterWeatherUtil.isOverworld(((ServerWorld) (Object) this).getDimensionKey())) {
-            WeatherEventUtil.doWeatherAndRollWeatherEventChance(this.field_241103_E_, (ServerWorld) (Object) this);
+            if (gameRules.getBoolean(GameRules.DO_WEATHER_CYCLE))
+                WeatherEventUtil.doWeatherAndRollWeatherEventChance(this.field_241103_E_, (ServerWorld) (Object) this);
             return false;
         } else
             return gameRules.getBoolean(GameRules.DO_WEATHER_CYCLE);
@@ -38,7 +40,7 @@ public abstract class MixinServerWorld {
     private void setWeatherForced(int clearWeatherTime, int weatherTime, boolean rain, boolean thunder, CallbackInfo ci) {
         if (BetterWeatherUtil.isOverworld(((ServerWorld) (Object) this).getDimensionKey())) {
             ((IsWeatherForced) this.field_241103_E_).setWeatherForced(true);
-            BetterWeather.weatherData.setWeatherForced(true);
+            BetterWeatherEventData.get((ServerWorld)(Object)this).setWeatherForced(true);
         }
     }
 
