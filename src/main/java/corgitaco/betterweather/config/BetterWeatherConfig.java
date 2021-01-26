@@ -34,6 +34,7 @@ public class BetterWeatherConfig {
 
     //Blizzard Configs
     public static ForgeConfigSpec.BooleanValue doBlizzardsOccurInDeserts;
+    public static ForgeConfigSpec.BooleanValue doesLightRainOccurInDeserts;
     public static ForgeConfigSpec.BooleanValue spawnSnowAndIce;
     public static ForgeConfigSpec.BooleanValue decaySnowAndIce;
     public static ForgeConfigSpec.BooleanValue doBlizzardsSlowPlayers;
@@ -85,6 +86,11 @@ public class BetterWeatherConfig {
         hurtEntityTickSpeed = COMMON_BUILDER.comment("How often are entities(including players) hurt?\nDefault: 150").defineInRange("EntityDamageTickSpeed", 150, 10, 100000);
         entityTypesToDamage = COMMON_BUILDER.comment("Allowed Values: PLAYER, MONSTER, ANIMAL.\nDefault: MONSTER,PLAYER").define("EntityTypes", "MONSTER,PLAYER");
         hurtEntityDamage = COMMON_BUILDER.comment("The amount of damage taken.\nDefault is 0.5").defineInRange("DamageStrength", 0.5, 0.0, 20.0);
+        COMMON_BUILDER.pop();
+        COMMON_BUILDER.pop();
+        COMMON_BUILDER.push("Rain_Type_Settings").push("World_Settings").push("Light_Rain_Occurance");
+        doesLightRainOccurInDeserts = COMMON_BUILDER.comment("Does light rain weather appear in deserts?\nDefault: false.").define("LightRainInDeserts", false);
+        COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
         COMMON_BUILDER.push("Blizzard_Settings").push("World_Settings").push("Snow_Generation");
