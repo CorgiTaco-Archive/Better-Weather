@@ -39,9 +39,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import javax.annotation.Nullable;
 import java.awt.*;
@@ -96,10 +94,10 @@ public class Blizzard extends WeatherEvent {
     }
 
     public static boolean doBlizzardsDestroyPlants(Material material) {
-        if (!BetterWeatherConfig.doBlizzardsDestroyPlants.get())
-            return material != Material.PLANTS && material != Material.TALL_PLANTS && material != Material.OCEAN_PLANT;
+        if (BetterWeatherConfig.doBlizzardsDestroyPlants.get())
+            return material == Material.PLANTS && material == Material.TALL_PLANTS && material == Material.OCEAN_PLANT;
         else
-            return true;
+            return false;
     }
 
     public static void addSnowAndIce(Chunk chunk, World world, long worldTime) {
@@ -118,9 +116,8 @@ public class Blizzard extends WeatherEvent {
                     return;
                 }
                 BlockState blockState = world.getBlockState(blockpos);
-                if (doesSnowGenerate(world, blockpos) || doBlizzardsDestroyPlants(blockState.getMaterial()) || blockStateDown.getBlock() == Blocks.SNOW) {
-                    if (blockState.getBlock() != Blocks.SNOW && blockStateDown.getMaterial() != Material.ICE && blockStateDown.getFluidState().getLevel() == 0)
-                        world.setBlockState(blockpos, Blocks.SNOW.getDefaultState());
+                if (doesSnowGenerate(world, blockpos) || doBlizzardsDestroyPlants(blockState.getMaterial())) {
+                    world.setBlockState(blockpos, Blocks.SNOW.getDefaultState());
 
                     Block block = blockState.getBlock();
 
