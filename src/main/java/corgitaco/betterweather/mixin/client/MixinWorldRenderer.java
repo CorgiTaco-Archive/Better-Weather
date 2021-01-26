@@ -54,15 +54,17 @@ public abstract class MixinWorldRenderer implements ViewFrustumGetter {
 
     @Inject(at = @At("TAIL"), method = "loadRenderers()V", cancellable = true)
     private void forceWeatherEventRenderDistance(CallbackInfo ci) {
-        if (!BetterWeather.usingOptifine && BetterWeatherUtil.isOverworld(world.getDimensionKey())) {
-            ClientPlayerEntity player = mc.player;
-            if (mc.world != null && player != null) {
-                if (Blizzard.doBlizzardsAffectDeserts(mc.world.getBiome(mc.player.getPosition()))) {
-                    int renderDistance = WeatherData.currentWeatherEvent.forcedRenderDistance();
-                    if (renderDistance != mc.gameSettings.renderDistanceChunks)
-                        ((WeatherViewFrustum) this.viewFrustum).forceRenderDistance(renderDistance, player.getPosX(), player.getPosY(), player.getPosZ());
-                }
+        if(world != null) {
+            if (!BetterWeather.usingOptifine && BetterWeatherUtil.isOverworld(world.getDimensionKey())) {
+                ClientPlayerEntity player = mc.player;
+                if (player != null) {
+                    if (Blizzard.doBlizzardsAffectDeserts(world.getBiome(mc.player.getPosition()))) {
+                        int renderDistance = WeatherData.currentWeatherEvent.forcedRenderDistance();
+                        if (renderDistance != mc.gameSettings.renderDistanceChunks)
+                            ((WeatherViewFrustum) this.viewFrustum).forceRenderDistance(renderDistance, player.getPosX(), player.getPosY(), player.getPosZ());
+                    }
 
+                }
             }
         }
     }
