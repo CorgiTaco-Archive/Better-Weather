@@ -2,6 +2,7 @@ package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
+import corgitaco.betterweather.datastorage.BetterWeatherEventData;
 import net.minecraft.client.network.play.ClientPlayNetHandler;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.world.ClientWorld;
@@ -24,6 +25,7 @@ public abstract class MixinClientWorld {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void setupClientBetterWeatherData(ClientPlayNetHandler handler, ClientWorld.ClientWorldInfo info, RegistryKey<World> key, DimensionType dimtype, int i, Supplier<IProfiler> profiler, WorldRenderer renderer, boolean b1, long b2, CallbackInfo ci) {
+        WeatherData.currentWeatherEvent = BetterWeatherEventData.get((ClientWorld) (Object) this).getEvent();
     }
 
     @Redirect(method = "getSkyColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))

@@ -43,11 +43,25 @@ public abstract class MixinWorldRenderer implements ViewFrustumGetter {
         }
     }
 
+    private static boolean comingFromOtherDimension = false; //Used for optifine
+
     @Inject(at = @At("HEAD"), method = "loadRenderers()V", cancellable = true)
     private void handleOptifineCompat(CallbackInfo ci) {
-        if (BetterWeather.usingOptifine && BetterWeatherUtil.isOverworld(world.getDimensionKey())) {
-            if (WeatherData.currentWeatherEvent.preventChunkRendererRefreshingWhenOptifineIsPresent())
-                ci.cancel();
+        if (BetterWeather.usingOptifine) {
+            if (world != null && WeatherData.currentWeatherEvent != null) {
+                if (BetterWeatherUtil.isOverworld(world.getDimensionKey())) {
+                    if (!comingFromOtherDimension) {
+                        if (WeatherData.currentWeatherEvent.preventChunkRendererRefreshingWhenOptifineIsPresent()) {
+                            ci.cancel();
+                        }
+                    }
+                    if (comingFromOtherDimension)
+                        comingFromOtherDimension = false;
+                } else {
+                    if (!comingFromOtherDimension)
+                        comingFromOtherDimension = true;
+                }
+            }
         }
     }
 
