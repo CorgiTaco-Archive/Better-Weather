@@ -159,9 +159,11 @@ public class SeasonSystem {
         //We do a random.nextDouble() to determine if we get the ceil or floor value for the given crop growth multiplier.
         else if (cropGrowthMultiplier > 1) {
             int numberOfTicks = world.getRandom().nextInt((world.getRandom().nextDouble() + (cropGrowthMultiplier - 1) < cropGrowthMultiplier) ? (int) Math.ceil(cropGrowthMultiplier) : (int) cropGrowthMultiplier) + 1;
-            for (int tick = 0; tick < numberOfTicks - 1; tick++) {
-                if (tick > 0)
+            for (int tick = 0; tick < numberOfTicks; tick++) {
+                if (tick > 0) {
                     self = world.getBlockState(posIn);
+                    block = self.getBlock();
+                }
 
                 block.randomTick(self, world, posIn, world.getRandom());
             }
