@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
+import corgitaco.betterweather.api.weatherevent.WeatherEvent;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 
 import java.io.File;
@@ -13,6 +14,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Map;
 
 public class WeatherEventControllerConfig {
 
@@ -29,9 +31,12 @@ public class WeatherEventControllerConfig {
             createJson(path);
         }
         try (Reader reader = new FileReader(path.toString())) {
-            HashMap<BetterWeatherID, Double> hashMap = gson.fromJson(reader, HashMap.class);
+            HashMap<String, Double> hashMap = gson.fromJson(reader, HashMap.class);
             if (hashMap != null) {
-                WeatherEventSystem.WEATHER_EVENT_CONTROLLER = hashMap;
+                HashMap<BetterWeatherID, Double> new_weather_event_controller = new HashMap<>();
+                hashMap.forEach((string, chance) -> new_weather_event_controller.put(new BetterWeatherID(string), chance));
+
+                WeatherEventSystem.WEATHER_EVENT_CONTROLLER = new_weather_event_controller;
             } else
                 BetterWeather.LOGGER.info(path.getFileName().toString() + " failed to load!");
 
