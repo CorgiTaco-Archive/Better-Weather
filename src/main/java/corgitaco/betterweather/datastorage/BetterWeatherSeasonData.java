@@ -11,7 +11,7 @@ import net.minecraft.world.storage.WorldSavedData;
 
 public class BetterWeatherSeasonData extends WorldSavedData {
     public static String DATA_NAME = BetterWeather.MOD_ID + ":season_data";
-
+    private static final BetterWeatherSeasonData CLIENT_CACHE = new BetterWeatherSeasonData();
     private int seasonTime;
     private int seasonCycleLength;
     private String season = SeasonData.SeasonVal.SPRING.toString();
@@ -27,8 +27,9 @@ public class BetterWeatherSeasonData extends WorldSavedData {
     }
 
     public static BetterWeatherSeasonData get(IWorld world) {
-        if (!(world instanceof ServerWorld))
-            return new BetterWeatherSeasonData();
+        if (!(world instanceof ServerWorld)) {
+            return CLIENT_CACHE;
+        }
         ServerWorld overWorld = ((ServerWorld) world).getWorld().getServer().getWorld(World.OVERWORLD);
         DimensionSavedDataManager data = overWorld.getSavedData();
         BetterWeatherSeasonData weatherData = data.getOrCreate(BetterWeatherSeasonData::new, DATA_NAME);

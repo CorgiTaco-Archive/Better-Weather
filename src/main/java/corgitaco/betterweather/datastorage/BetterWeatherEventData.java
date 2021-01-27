@@ -14,7 +14,7 @@ import net.minecraft.world.storage.WorldSavedData;
 
 public class BetterWeatherEventData extends WorldSavedData {
     public static String DATA_NAME = BetterWeather.MOD_ID + ":weather_event_data";
-
+    private static final BetterWeatherEventData CLIENT_CACHE = new BetterWeatherEventData();
     private BetterWeatherID event = WeatherEventSystem.CLEAR;
     private boolean isWeatherForced;
     private boolean modified;
@@ -29,7 +29,7 @@ public class BetterWeatherEventData extends WorldSavedData {
 
     public static BetterWeatherEventData get(IWorld world) {
         if (!(world instanceof ServerWorld))
-            return new BetterWeatherEventData();
+            return CLIENT_CACHE;
         ServerWorld overWorld = ((ServerWorld) world).getWorld().getServer().getWorld(World.OVERWORLD);
         DimensionSavedDataManager data = overWorld.getSavedData();
         BetterWeatherEventData weatherData = data.getOrCreate(BetterWeatherEventData::new, DATA_NAME);

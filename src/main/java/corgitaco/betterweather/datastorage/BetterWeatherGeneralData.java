@@ -10,7 +10,7 @@ import net.minecraft.world.storage.WorldSavedData;
 
 public class BetterWeatherGeneralData extends WorldSavedData {
     public static String DATA_NAME = BetterWeather.MOD_ID + ":data";
-
+    private static BetterWeatherGeneralData CLIENT_CACHE = new BetterWeatherGeneralData();
     private boolean usingSeasons;
 
     public BetterWeatherGeneralData() {
@@ -22,8 +22,9 @@ public class BetterWeatherGeneralData extends WorldSavedData {
     }
 
     public static BetterWeatherGeneralData get(IWorld world) {
-        if (!(world instanceof ServerWorld))
-            return new BetterWeatherGeneralData();
+        if (!(world instanceof ServerWorld)) {
+            return CLIENT_CACHE;
+        }
         ServerWorld overWorld = ((ServerWorld) world).getWorld().getServer().getWorld(World.OVERWORLD);
         DimensionSavedDataManager data = overWorld.getSavedData();
         BetterWeatherGeneralData weatherData = data.getOrCreate(BetterWeatherGeneralData::new, DATA_NAME);
