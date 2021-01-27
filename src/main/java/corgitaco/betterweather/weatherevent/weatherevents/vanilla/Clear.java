@@ -6,12 +6,14 @@ import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import corgitaco.betterweather.weatherevent.weatherevents.AcidRain;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.profiler.IProfiler;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
@@ -36,15 +38,23 @@ public class Clear extends WeatherEvent {
         BlockPos blockpos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(chunkXStart, 0, chunkZStart, 15));
         Biome biome = world.getBiome(blockpos);
         Block blockDown = world.getBlockState(blockpos.down()).getBlock();
-        Block block = world.getBlockState(blockpos).getBlock();
+        BlockState blockState = world.getBlockState(blockpos);
 
         if (world.isAreaLoaded(blockpos, 1)) {
             if (biome.getTemperature(blockpos) >= BetterWeatherConfig.snowDecayTemperatureThreshold.get()) {
-                if (!world.getWorldInfo().isRaining() && worldTime % BetterWeatherConfig.tickSnowAndIceDecaySpeed.get() == 0 && biome.getCategory() != Biome.Category.NETHER && biome.getCategory() != Biome.Category.THEEND && biome.getCategory() != Biome.Category.NONE && doBlizzardsAffectDeserts(biome)) {
-                    if (blockDown == Blocks.SNOW)
-                        world.setBlockState(blockpos.down(), Blocks.AIR.getDefaultState());
-                    if (block == Blocks.SNOW)
-                        world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
+                if (worldTime % BetterWeatherConfig.tickSnowAndIceDecaySpeed.get() == 0 && biome.getCategory() != Biome.Category.NETHER && biome.getCategory() != Biome.Category.THEEND && biome.getCategory() != Biome.Category.NONE && doBlizzardsAffectDeserts(biome)) {
+                    if (blockState.getBlock() == Blocks.SNOW && blockState.hasProperty(BlockStateProperties.LAYERS_1_8)) {
+                        int snowLayerHeight = blockState.get(BlockStateProperties.LAYERS_1_8);
+
+                        if (snowLayerHeight > 1) {
+                            world.setBlockState(blockpos, blockState.with(BlockStateProperties.LAYERS_1_8, snowLayerHeight - 1));
+                            return;
+                        }
+
+                        if (snowLayerHeight == 1)
+                            world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
+                    }
+
                     if (blockDown == Blocks.ICE)
                         world.setBlockState(blockpos.down(), Blocks.WATER.getDefaultState());
 

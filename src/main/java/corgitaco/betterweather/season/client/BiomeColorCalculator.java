@@ -23,14 +23,14 @@ public class BiomeColorCalculator {
         Color fallbackColor = modifyColorForWeatherEvent(colorType, originalColorValue, originalColorValue, null);
         Minecraft mc = Minecraft.getInstance();
 
+        if (!BetterWeatherUtil.isOverworld(mc.world.getDimensionKey()))
+            return originalColorValue;
+
         if (!BetterWeather.useSeasons)
             return fallbackColor;
 
         if (mc.world == null)
             return fallbackColor;
-
-        if (!BetterWeatherUtil.isOverworld(mc.world.getDimensionKey()))
-            return originalColorValue;
 
         int red = originalColorValue.getRed();
         int green = originalColorValue.getGreen();

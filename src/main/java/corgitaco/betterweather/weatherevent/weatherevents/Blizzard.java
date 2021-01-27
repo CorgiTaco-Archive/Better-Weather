@@ -3,6 +3,7 @@ package corgitaco.betterweather.weatherevent.weatherevents;
 import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherClientUtil;
+import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.SoundRegistry;
 import corgitaco.betterweather.api.weatherevent.BetterWeatherID;
 import corgitaco.betterweather.api.weatherevent.WeatherEvent;
@@ -118,7 +119,8 @@ public class Blizzard extends WeatherEvent {
                 BlockState blockState = world.getBlockState(blockpos);
                 if (doesSnowGenerate(world, blockpos) || doBlizzardsDestroyPlants(blockState.getMaterial())) {
                     world.setBlockState(blockpos, Blocks.SNOW.getDefaultState());
-
+                    return;
+                }
                     Block block = blockState.getBlock();
 
                     if (block == Blocks.SNOW && blockState.hasProperty(BlockStateProperties.LAYERS_1_8)) {
@@ -129,7 +131,6 @@ public class Blizzard extends WeatherEvent {
                     }
                 }
             }
-        }
         iprofiler.endSection();
     }
 
@@ -261,18 +262,20 @@ public class Blizzard extends WeatherEvent {
     public void handleFogDensity(EntityViewRenderEvent.FogDensity event, Minecraft mc) {
         if (BetterWeatherConfigClient.blizzardFog.get()) {
             if (mc.world != null && mc.player != null) {
-                BlockPos playerPos = new BlockPos(mc.player.getPositionVec());
-                if (Blizzard.doBlizzardsAffectDeserts(mc.world.getBiome(playerPos))) {
-                    float partialTicks = mc.isGamePaused() ? mc.renderPartialTicksPaused : mc.timer.renderPartialTicks;
-                    float fade = mc.world.getRainStrength(partialTicks);
-                    event.setDensity(fade * 0.1F);
-                    event.setCanceled(true);
-                    if (idx2 != 0)
-                        idx2 = 0;
-                } else {
-                    if (idx2 == 0) {
-                        event.setCanceled(false);
-                        idx2++;
+                if (BetterWeatherUtil.isOverworld(mc.world.getDimensionKey())) {
+                    BlockPos playerPos = new BlockPos(mc.player.getPositionVec());
+                    if (Blizzard.doBlizzardsAffectDeserts(mc.world.getBiome(playerPos))) {
+                        float partialTicks = mc.isGamePaused() ? mc.renderPartialTicksPaused : mc.timer.renderPartialTicks;
+                        float fade = mc.world.getRainStrength(partialTicks);
+                        event.setDensity(fade * 0.1F);
+                        event.setCanceled(true);
+                        if (idx2 != 0)
+                            idx2 = 0;
+                    } else {
+                        if (idx2 == 0) {
+                            event.setCanceled(false);
+                            idx2++;
+                        }
                     }
                 }
             }
@@ -281,9 +284,11 @@ public class Blizzard extends WeatherEvent {
 
     @Override
     public void livingEntityUpdate(Entity entity) {
-        if (entity instanceof LivingEntity) {
-            if (BetterWeatherConfig.doBlizzardsSlowPlayers.get() && entity.getPosition().getY() < entity.world.getHeight(Heightmap.Type.MOTION_BLOCKING, entity.getPosition().getX(), entity.getPosition().getZ())) //TODO: Get a good algorithm to determine whether or not a player/entity is indoors.
-                ((LivingEntity) entity).addPotionEffect(new EffectInstance(Effects.SLOWNESS, 5, BetterWeatherConfig.blizzardSlownessAmplifier.get(), true, false));
+        if (BetterWeatherUtil.isOverworld(entity.world.getDimensionKey())) {
+            if (entity instanceof LivingEntity) {
+                if (BetterWeatherConfig.doBlizzardsSlowPlayers.get() && entity.getPosition().getY() < entity.world.getHeight(Heightmap.Type.MOTION_BLOCKING, entity.getPosition().getX(), entity.getPosition().getZ())) //TODO: Get a good algorithm to determine whether or not a player/entity is indoors.
+                    ((LivingEntity) entity).addPotionEffect(new EffectInstance(Effects.SLOWNESS, 5, BetterWeatherConfig.blizzardSlownessAmplifier.get(), true, false));
+            }
         }
     }
 
