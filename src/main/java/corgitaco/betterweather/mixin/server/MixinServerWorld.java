@@ -1,27 +1,76 @@
 package corgitaco.betterweather.mixin.server;
 
-import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
+import corgitaco.betterweather.api.SeasonData;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.datastorage.BetterWeatherEventData;
 import corgitaco.betterweather.helper.IsWeatherForced;
+import corgitaco.betterweather.helpers.IBiomeModifier;
+import corgitaco.betterweather.helpers.IBiomeUpdate;
+import corgitaco.betterweather.season.Season;
 import corgitaco.betterweather.weatherevent.weatherevents.WeatherEventUtil;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.util.registry.DynamicRegistries;
+import net.minecraft.util.registry.MutableRegistry;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.GameRules;
+import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.listener.IChunkStatusListener;
+import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.spawner.ISpecialSpawner;
 import net.minecraft.world.storage.IServerWorldInfo;
+import net.minecraft.world.storage.SaveFormat;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.Executor;
 
 
 @Mixin(ServerWorld.class)
-public abstract class MixinServerWorld {
+public abstract class MixinServerWorld implements IBiomeUpdate {
+
+
+    DynamicRegistries registry;
+
+
+    @SuppressWarnings("ALL")
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void storeUpgradableRegistry(MinecraftServer server, Executor executor, SaveFormat.LevelSave save, IServerWorldInfo worldInfo, RegistryKey<World> key, DimensionType dimensionType, IChunkStatusListener statusListener, ChunkGenerator generator, boolean b, long seed, List<ISpecialSpawner> specialSpawners, boolean b1, CallbackInfo ci) {
+        DynamicRegistries registry = server.func_244267_aX();
+
+        MutableRegistry<Biome> biomeRegistry = registry.getRegistry(Registry.BIOME_KEY);
+        for (Map.Entry<RegistryKey<Biome>, Biome> entry : biomeRegistry.getEntries()) {
+            Biome biome = (Biome) entry.getValue();
+            double seasonTempModifier = SeasonData.currentSubSeason != null ? Season.getSubSeasonFromEnum(SeasonData.currentSubSeason).getTempModifier(biomeRegistry.getKey(biome), false) : 0;
+            double seasonHumidityModifier = SeasonData.currentSubSeason != null ? Season.getSubSeasonFromEnum(SeasonData.currentSubSeason).getHumidityModifier(biomeRegistry.getKey(biome), false) : 0;
+
+            ((IBiomeModifier) (Object) biome).setHumidityModifier((float) seasonHumidityModifier);
+            ((IBiomeModifier) (Object) biome).setTempModifier((float) seasonTempModifier);
+
+        }
+
+        this.registry = registry;
+
+    }
+
+
+    @Inject(method = "func_241828_r", at = @At("HEAD"), cancellable = true)
+    private void dynamicRegistryWrapper(CallbackInfoReturnable<DynamicRegistries> cir) {
+        cir.setReturnValue(this.registry);
+    }
 
     @Shadow
     public IServerWorldInfo field_241103_E_;
@@ -40,7 +89,7 @@ public abstract class MixinServerWorld {
     private void setWeatherForced(int clearWeatherTime, int weatherTime, boolean rain, boolean thunder, CallbackInfo ci) {
         if (BetterWeatherUtil.isOverworld(((ServerWorld) (Object) this).getDimensionKey())) {
             ((IsWeatherForced) this.field_241103_E_).setWeatherForced(true);
-            BetterWeatherEventData.get((ServerWorld)(Object)this).setWeatherForced(true);
+            BetterWeatherEventData.get((ServerWorld) (Object) this).setWeatherForced(true);
         }
     }
 
@@ -62,4 +111,15 @@ public abstract class MixinServerWorld {
     }
 
 
+    @Override
+    public void updateBiomeData() {
+        for (Map.Entry<RegistryKey<Biome>, Biome> entry : registry.getRegistry(Registry.BIOME_KEY).getEntries()) {
+            Biome biome = entry.getValue();
+            double seasonTempModifier = SeasonData.currentSubSeason != null ? Season.getSubSeasonFromEnum(SeasonData.currentSubSeason).getTempModifier(registry.getRegistry(Registry.BIOME_KEY).getKey(biome), false) : 0;
+            double seasonHumidityModifier = SeasonData.currentSubSeason != null ? Season.getSubSeasonFromEnum(SeasonData.currentSubSeason).getHumidityModifier(registry.getRegistry(Registry.BIOME_KEY).getKey(biome), false) : 0;
+
+            ((IBiomeModifier) (Object) biome).setHumidityModifier((float) seasonHumidityModifier);
+            ((IBiomeModifier) (Object) biome).setTempModifier((float) seasonTempModifier);
+        }
+    }
 }

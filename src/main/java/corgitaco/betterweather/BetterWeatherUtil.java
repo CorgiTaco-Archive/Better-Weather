@@ -49,6 +49,11 @@ public class BetterWeatherUtil {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public static <I, O> O unsafeCast(I obj) {
+        return (O) obj;
+    }
+
     public static int transformRainOrThunderTimeToCurrentSeason(int rainOrThunderTime, Season.SubSeason previous, Season.SubSeason current) {
         double previousMultiplier = previous.getWeatherEventChanceMultiplier();
         double currentMultiplier = current.getWeatherEventChanceMultiplier();

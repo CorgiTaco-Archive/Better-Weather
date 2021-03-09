@@ -12,6 +12,7 @@ import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
 import corgitaco.betterweather.datastorage.network.packet.WeatherEventPacket;
 import corgitaco.betterweather.datastorage.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.helper.IsWeatherForced;
+import corgitaco.betterweather.helpers.IBiomeUpdate;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import net.minecraft.block.Block;
@@ -64,6 +65,8 @@ public class SeasonSystem {
 
         if (SeasonData.currentSubSeason != subSeason || BetterWeatherSeasonData.get(world).isForced() || justJoined) {
             BetterWeatherSeasonData.get(world).setSubseason(subSeason.toString());
+            ((IBiomeUpdate) ((ServerWorld) world)).updateBiomeData();
+
         }
 
         if (BetterWeatherSeasonData.get(world).getSeasonTime() % 1200 == 0 || BetterWeatherSeasonData.get(world).isForced() || justJoined) {
