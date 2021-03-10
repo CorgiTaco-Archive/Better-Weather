@@ -42,10 +42,7 @@ import java.util.concurrent.Executor;
 
 @Mixin(ServerWorld.class)
 public abstract class MixinServerWorld implements IBiomeUpdate {
-
-
     DynamicRegistries registry;
-
 
     @SuppressWarnings("ALL")
     @Inject(method = "<init>", at = @At("RETURN"))

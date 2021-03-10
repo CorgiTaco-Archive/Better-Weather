@@ -5,7 +5,6 @@ import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.DimensionType;
-import net.minecraft.world.biome.Biome;
 
 import java.util.Optional;
 
@@ -28,8 +27,8 @@ public class WorldDynamicRegistry extends DynamicRegistries.Impl {
     @SuppressWarnings("unchecked")
     @Override
     public <E> Optional<MutableRegistry<E>> func_230521_a_(RegistryKey<? extends Registry<E>> key) {
-        if (key == Registry.BIOME_KEY) {
-            return Optional.of((MutableRegistry<E>)commonKeyMutableRegistry);
+        if (key.getLocation().toString().equals("minecraft:worldgen/biome")) {
+            return Optional.of((MutableRegistry<E>) commonKeyMutableRegistry);
         }
 
         return serverRegistry.func_230521_a_(key);
@@ -37,7 +36,7 @@ public class WorldDynamicRegistry extends DynamicRegistries.Impl {
 
     @Override
     public <E> MutableRegistry<E> getRegistry(RegistryKey<? extends Registry<E>> key) {
-        if (key == Registry.BIOME_KEY) {
+        if (key.getLocation().toString().equals("minecraft:worldgen/biome")) {
             return this.func_230521_a_(key).orElseThrow(() -> {
                 return new IllegalStateException("Missing registry: " + key);
             });
