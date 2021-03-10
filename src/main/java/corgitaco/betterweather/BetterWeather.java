@@ -135,6 +135,11 @@ public class BetterWeather {
                             WeatherEventSystem.updateWeatherEventPacket(serverWorld, serverWorld.getPlayers(), false);
 
                         WeatherData.currentWeatherEvent.worldTick(serverWorld, tickSpeed, worldTime);
+                    } else {
+                        String s = "";
+
+
+
                     }
                 }
             }

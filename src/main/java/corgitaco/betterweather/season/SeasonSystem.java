@@ -65,7 +65,7 @@ public class SeasonSystem {
 
         if (SeasonData.currentSubSeason != subSeason || BetterWeatherSeasonData.get(world).isForced() || justJoined) {
             BetterWeatherSeasonData.get(world).setSubseason(subSeason.toString());
-            ((IBiomeUpdate) ((ServerWorld) world)).updateBiomeData();
+//            ((IBiomeUpdate) ((ServerWorld) world)).updateBiomeData();
 
         }
 
