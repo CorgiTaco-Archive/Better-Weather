@@ -13,7 +13,7 @@ import java.util.*;
 
 
 /**
- * Used to allow either server or world specific biome objects to function to return the same common object for the given world
+ * Used to allow either server or world specific biome objects to function as keys to return the same common biome for the given world since each world contains a unique biome registry.
  */
 public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
 
@@ -35,7 +35,6 @@ public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
             worldBiome.setRegistryName(registryName);
             this.serverBiomeToWorldBiome.put(serverBiome, worldBiome);
         }
-        String s = "";
     }
 
     @Nullable

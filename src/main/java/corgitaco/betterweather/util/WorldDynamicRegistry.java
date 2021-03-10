@@ -10,7 +10,7 @@ import java.util.Optional;
 
 
 /**
- * Used to allow either server or world specific biome objects to function as key to return the same common biome object
+ * Used to redirect calls/obtainers of the biome registry to a per world biome registry instead.
  */
 public class WorldDynamicRegistry extends DynamicRegistries.Impl {
 
