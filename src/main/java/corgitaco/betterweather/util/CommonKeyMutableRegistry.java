@@ -41,7 +41,7 @@ public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
     @Override
     public ResourceLocation getKey(Biome value) {
         if (this.serverBiomeToWorldBiome.containsKey(value)) {
-            return super.getKey(this.serverBiomeToWorldBiome.get(value));
+            return super.getKey(value);
         }
 
         return super.getKey(value);
@@ -50,7 +50,7 @@ public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
     @Override
     public Optional<RegistryKey<Biome>> getOptionalKey(Biome value) {
         if (this.serverBiomeToWorldBiome.containsKey(value)) {
-            return super.getOptionalKey(this.serverBiomeToWorldBiome.get(value));
+            return super.getOptionalKey(value);
         }
 
         return super.getOptionalKey(value);
@@ -59,7 +59,7 @@ public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
     @Override
     public int getId(@Nullable Biome value) {
         if (this.serverBiomeToWorldBiome.containsKey(value)) {
-            return super.getId(this.serverBiomeToWorldBiome.get(value));
+            return super.getId(value);
         }
         return super.getId(value);
     }
@@ -86,7 +86,7 @@ public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
     @Override
     public Lifecycle getLifecycleByRegistry(Biome object) {
         if (this.serverBiomeToWorldBiome.containsKey(object)) {
-            return super.getLifecycleByRegistry(this.serverBiomeToWorldBiome.get(object));
+            return super.getLifecycleByRegistry(object);
         }
         return super.getLifecycleByRegistry(object);
     }

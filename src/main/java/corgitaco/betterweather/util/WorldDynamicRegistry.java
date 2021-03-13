@@ -23,7 +23,6 @@ public class WorldDynamicRegistry extends DynamicRegistries.Impl {
         this.commonKeyMutableRegistry = new CommonKeyMutableRegistry(serverRegistry.getRegistry(Registry.BIOME_KEY));
     }
 
-
     @SuppressWarnings("unchecked")
     @Override
     public <E> Optional<MutableRegistry<E>> func_230521_a_(RegistryKey<? extends Registry<E>> key) {
