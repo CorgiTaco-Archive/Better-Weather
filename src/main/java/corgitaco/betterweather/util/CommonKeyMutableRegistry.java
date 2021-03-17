@@ -1,6 +1,7 @@
 package corgitaco.betterweather.util;
 
 import com.mojang.serialization.Lifecycle;
+import corgitaco.betterweather.mixin.access.BiomeAccess;
 import corgitaco.betterweather.mixin.access.RegistryAccess;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
@@ -13,7 +14,7 @@ import java.util.*;
 
 
 /**
- * Used to allow either server or world specific biome objects to function as keys to return the same common biome for the given world since each world contains a unique biome registry.
+ * Used to allow either server or world specific biome objects to function as keys to return the same common biome for the given world since each world can contain a unique biome registry.
  */
 public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
 
@@ -29,11 +30,11 @@ public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
     @SuppressWarnings({"unchecked", "ConstantConditions"})
     private void fillWorldRegistry(MutableRegistry<Biome> serverRegistry) {
         for (Map.Entry<RegistryKey<Biome>, Biome> entry : serverRegistry.getEntries()) {
-            Biome serverBiome = entry.getValue();
-            Biome worldBiome = new BiomeRegistryContext(this.register(serverRegistry.getId(serverBiome), entry.getKey(), serverBiome, ((RegistryAccess<Biome>) serverRegistry).invokeGetLifecycleByRegistry(serverBiome))).getNewBiome();
-            @Nullable ResourceLocation registryName = serverBiome.getRegistryName();
+            Biome biome = entry.getValue();
+            Biome worldBiome = this.register(serverRegistry.getId(biome), entry.getKey(), new Biome(((BiomeAccess)(Object) biome).getClimate(), biome.getCategory(), biome.getDepth(), biome.getScale(), biome.getAmbience(), biome.getGenerationSettings(), biome.getMobSpawnInfo()), ((RegistryAccess<Biome>) serverRegistry).invokeGetLifecycleByRegistry(biome));
+            @Nullable ResourceLocation registryName = biome.getRegistryName();
             worldBiome.setRegistryName(registryName);
-            this.serverBiomeToWorldBiome.put(serverBiome, worldBiome);
+            this.serverBiomeToWorldBiome.put(biome, worldBiome);
         }
     }
 
@@ -41,7 +42,7 @@ public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
     @Override
     public ResourceLocation getKey(Biome value) {
         if (this.serverBiomeToWorldBiome.containsKey(value)) {
-            return super.getKey(value);
+            return super.getKey(this.serverBiomeToWorldBiome.get(value));
         }
 
         return super.getKey(value);
@@ -50,7 +51,7 @@ public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
     @Override
     public Optional<RegistryKey<Biome>> getOptionalKey(Biome value) {
         if (this.serverBiomeToWorldBiome.containsKey(value)) {
-            return super.getOptionalKey(value);
+            return super.getOptionalKey(this.serverBiomeToWorldBiome.get(value));
         }
 
         return super.getOptionalKey(value);
@@ -59,7 +60,7 @@ public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
     @Override
     public int getId(@Nullable Biome value) {
         if (this.serverBiomeToWorldBiome.containsKey(value)) {
-            return super.getId(value);
+            return super.getId(this.serverBiomeToWorldBiome.get(value));
         }
         return super.getId(value);
     }
@@ -84,11 +85,11 @@ public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
 
     @SuppressWarnings({"unchecked", "NullableProblems"})
     @Override
-    public Lifecycle getLifecycleByRegistry(Biome object) {
-        if (this.serverBiomeToWorldBiome.containsKey(object)) {
-            return super.getLifecycleByRegistry(object);
+    public Lifecycle getLifecycleByRegistry(Biome value) {
+        if (this.serverBiomeToWorldBiome.containsKey(value)) {
+            return super.getLifecycleByRegistry(this.serverBiomeToWorldBiome.get(value));
         }
-        return super.getLifecycleByRegistry(object);
+        return super.getLifecycleByRegistry(value);
     }
 
     @Override
