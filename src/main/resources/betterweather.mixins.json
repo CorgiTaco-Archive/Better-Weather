@@ -6,6 +6,7 @@
   "mixins": [
     "MixinWorld",
     "access.BiomeAccess",
+    "access.BiomeGenerationSettingsAccess",
     "access.DynamicRegistryImplAccess",
     "access.RegistryAccess",
     "access.SimpleRegistryAccess",

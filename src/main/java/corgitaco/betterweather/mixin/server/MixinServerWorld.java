@@ -47,28 +47,14 @@ public abstract class MixinServerWorld implements IBiomeUpdate {
     @SuppressWarnings("ALL")
     @Inject(method = "<init>", at = @At("RETURN"))
     private void storeUpgradablePerWorldRegistry(MinecraftServer server, Executor executor, SaveFormat.LevelSave save, IServerWorldInfo worldInfo, RegistryKey<World> key, DimensionType dimensionType, IChunkStatusListener statusListener, ChunkGenerator generator, boolean b, long seed, List<ISpecialSpawner> specialSpawners, boolean b1, CallbackInfo ci) {
-        DynamicRegistries registry = new WorldDynamicRegistry((DynamicRegistries.Impl) server.func_244267_aX());
-        MutableRegistry<Biome> biomeRegistry = registry.getRegistry(Registry.BIOME_KEY);
-
-        for (Map.Entry<RegistryKey<Biome>, Biome> entry : biomeRegistry.getEntries()) {
-            Biome biome = (Biome) entry.getValue();
-            double seasonTempModifier = SeasonData.currentSubSeason != null ? Season.getSubSeasonFromEnum(SeasonData.currentSubSeason).getTempModifier(biomeRegistry.getKey(biome), false) : 0;
-            double seasonHumidityModifier = SeasonData.currentSubSeason != null ? Season.getSubSeasonFromEnum(SeasonData.currentSubSeason).getHumidityModifier(biomeRegistry.getKey(biome), false) : 0;
-
-            ((IBiomeModifier) (Object) biome).setHumidityModifier((float) uniqueTemp());
-            ((IBiomeModifier) (Object) biome).setTempModifier((float) uniqueTemp());
-        }
-
-        this.registry = registry;
-
+        this.registry = new WorldDynamicRegistry((DynamicRegistries.Impl) server.func_244267_aX());
+        updateBiomeData();
     }
 
     @Override
     public void updateBiomeData() {
         for (Map.Entry<RegistryKey<Biome>, Biome> entry : registry.getRegistry(Registry.BIOME_KEY).getEntries()) {
             Biome biome = entry.getValue();
-            double seasonTempModifier = SeasonData.currentSubSeason != null ? Season.getSubSeasonFromEnum(SeasonData.currentSubSeason).getTempModifier(registry.getRegistry(Registry.BIOME_KEY).getKey(biome), false) : 0;
-            double seasonHumidityModifier = SeasonData.currentSubSeason != null ? Season.getSubSeasonFromEnum(SeasonData.currentSubSeason).getHumidityModifier(registry.getRegistry(Registry.BIOME_KEY).getKey(biome), false) : 0;
 
             ((IBiomeModifier) (Object) biome).setHumidityModifier((float) uniqueTemp());
             ((IBiomeModifier) (Object) biome).setTempModifier((float) uniqueTemp());
@@ -78,7 +64,7 @@ public abstract class MixinServerWorld implements IBiomeUpdate {
     private float uniqueTemp() {
         RegistryKey<World> dimensionKey = ((ServerWorld) (Object) this).getDimensionKey();
         if (dimensionKey == World.THE_NETHER || dimensionKey == World.THE_END) {
-            return -2.0F;
+            return -5.0F;
         } else {
             return 1.0F;
         }
