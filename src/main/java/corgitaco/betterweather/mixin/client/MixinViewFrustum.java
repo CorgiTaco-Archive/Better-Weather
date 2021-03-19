@@ -2,6 +2,7 @@ package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
+import corgitaco.betterweather.api.BetterWeatherWorldData;
 import corgitaco.betterweather.helper.WeatherViewFrustum;
 import net.minecraft.client.renderer.ViewFrustum;
 import net.minecraft.world.World;
@@ -29,7 +30,7 @@ public abstract class MixinViewFrustum implements WeatherViewFrustum {
      */
     @Override
     public void forceRenderDistance(int renderDistance, double x, double y, double z) {
-        if (!BetterWeather.usingOptifine && BetterWeatherUtil.isOverworld(this.world.getDimensionKey())) {
+        if (!BetterWeather.usingOptifine && ((BetterWeatherWorldData) world).getSeasonContext() != null) {
             this.setCountChunksXYZ(renderDistance);
             this.updateChunkPositions(x, z);
         }

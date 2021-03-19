@@ -1,4 +1,4 @@
-package corgitaco.betterweather.config.json.overrides;
+package corgitaco.betterweather.config.season.overrides;
 
 import com.google.gson.*;
 import com.mojang.datafixers.util.Pair;

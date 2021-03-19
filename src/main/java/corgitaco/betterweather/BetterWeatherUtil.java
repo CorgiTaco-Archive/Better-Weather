@@ -1,9 +1,8 @@
 package corgitaco.betterweather;
 
 import corgitaco.betterweather.api.SeasonData;
-import corgitaco.betterweather.config.json.SeasonConfig;
-import corgitaco.betterweather.config.json.overrides.BiomeOverrideJsonHandler;
-import corgitaco.betterweather.season.Season;
+import corgitaco.betterweather.config.season.overrides.BiomeOverrideJsonHandler;
+import corgitaco.betterweather.season.SubSeasonSettings;
 import net.minecraft.command.CommandSource;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.RegistryKey;
@@ -54,7 +53,7 @@ public class BetterWeatherUtil {
         return (O) obj;
     }
 
-    public static int transformRainOrThunderTimeToCurrentSeason(int rainOrThunderTime, Season.SubSeason previous, Season.SubSeason current) {
+    public static int transformRainOrThunderTimeToCurrentSeason(int rainOrThunderTime, SubSeasonSettings previous, SubSeasonSettings current) {
         double previousMultiplier = previous.getWeatherEventChanceMultiplier();
         double currentMultiplier = current.getWeatherEventChanceMultiplier();
         double normalTime = rainOrThunderTime * previousMultiplier;
@@ -77,62 +76,21 @@ public class BetterWeatherUtil {
         return new Color((int) (floatColor.getX() * 255), (int) (floatColor.getY() * 255), (int) (floatColor.getZ() * 255));
     }
 
+    public static SeasonData.SeasonKey getSeasonFromTime(int seasonTimeInCycle, int seasonCycleLength) {
+        int seasonLength = seasonCycleLength / 4;
 
-    public static boolean isOverworld(RegistryKey<World> worldKey) {
-        return worldKey == World.OVERWORLD;
+        if (seasonTimeInCycle < seasonLength) {
+            return SeasonData.SeasonKey.SPRING;
+        } else if (seasonTimeInCycle < seasonLength * 2) {
+            return SeasonData.SeasonKey.SUMMER;
+        } else if (seasonTimeInCycle < seasonLength * 3) {
+            return SeasonData.SeasonKey.AUTUMN;
+        } else
+            return SeasonData.SeasonKey.WINTER;
     }
 
-    public static void loadSeasonConfigsServer(@Nullable CommandSource source) {
-        if (BetterWeather.useSeasons) {
-            Path seasonConfig = BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-seasons.json");
-            try {
-                SeasonConfig.handleBWSeasonsConfig(seasonConfig);
-            } catch (Exception e) {
-                CrashReport crashReport = CrashReport.makeCrashReport(e, "Reading Season Config");
-                if (source == null) {
-                    BetterWeatherClientUtil.printDebugWarning("bw.reload.season.config.fail", seasonConfig.getFileName(), crashReport.getCrashCause().toString());
-                }
-
-                if (source != null)
-                    source.sendFeedback(new TranslationTextComponent("bw.reload.season.config.fail", seasonConfig.getFileName(), crashReport.getCrashCause().toString()), true);
-
-                BetterWeather.LOGGER.error("\"" + seasonConfig.getFileName() + "\" failed to load because of the following error(s): " + crashReport.getCompleteReport() + "\n Using shipped default...");
-                Season.SUB_SEASON_MAP = Season.FALLBACK_MAP;
-            }
-
-
-            Season.SUB_SEASON_MAP.forEach((subSeasonName, subSeason) -> {
-                Path overrideFilePath = BetterWeather.CONFIG_PATH.resolve("overrides").resolve(subSeasonName + "-override.json");
-                if (subSeason.getParentSeason() == SeasonData.SeasonVal.WINTER) {
-                    try {
-                        BiomeOverrideJsonHandler.handleOverrideJsonConfigs(overrideFilePath, Season.SubSeason.WINTER_OVERRIDE, subSeason);
-                    } catch (Exception e) {
-                        CrashReport crashReport = CrashReport.makeCrashReport(e, "Reading Subseason Override Config");
-                        if (source != null)
-                            source.sendFeedback(new TranslationTextComponent("bw.reload.seasonoverride.config.fail", overrideFilePath.getFileName(), crashReport.getCrashCause().toString()), true);
-
-                        BetterWeather.LOGGER.error("Override Config: \"" + overrideFilePath.getFileName() + "\" failed to load because of the following error(s): " + crashReport.getCompleteReport() + "\n Doing nothing...");
-
-                        subSeason.setCropToMultiplierStorage(new IdentityHashMap<>());
-                        subSeason.setBiomeToOverrideStorage(new IdentityHashMap<>());
-                    }
-                } else {
-                    try {
-                        BiomeOverrideJsonHandler.handleOverrideJsonConfigs(overrideFilePath, new IdentityHashMap<>(), subSeason);
-                    } catch (Exception e) {
-                        if (source == null)
-                            BetterWeatherClientUtil.printDebugWarning("bw.reloadconfig.fail", overrideFilePath.getFileName(), e.toString());
-
-                        if (source != null)
-                            source.sendFeedback(new TranslationTextComponent("bw.reloadconfig.fail", overrideFilePath.getFileName(), e.toString()), true);
-
-                        BetterWeather.LOGGER.error("Override Config: \"" + overrideFilePath.getFileName() + "\" failed to load! Doing nothing...");
-
-                        subSeason.setCropToMultiplierStorage(new IdentityHashMap<>());
-                        subSeason.setBiomeToOverrideStorage(new IdentityHashMap<>());
-                    }
-                }
-            });
-        }
+    public static int getTimeInCycleForSeason(SeasonData.SeasonKey subSeasonVal, int seasonCycleLength) {
+        int perSubSeasonLength = seasonCycleLength / (SeasonData.SeasonKey.values().length);
+        return perSubSeasonLength * subSeasonVal.ordinal();
     }
 }

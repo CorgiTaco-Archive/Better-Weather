@@ -1,9 +1,7 @@
 package corgitaco.betterweather.mixin.entity;
 
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.BetterWeatherUtil;
-import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
-import corgitaco.betterweather.season.SeasonSystem;
+import corgitaco.betterweather.api.BetterWeatherWorldData;
 import net.minecraft.entity.ai.goal.BreedGoal;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.world.World;
@@ -28,8 +26,8 @@ public abstract class MixinBreedGoal {
 
     @Inject(method = "shouldExecute", at = @At("HEAD"), cancellable = true)
     private void seasonBreeding(CallbackInfoReturnable<Boolean> cir) {
-        if (BetterWeather.useSeasons && BetterWeatherUtil.isOverworld(this.world.getDimensionKey())) {
-            if (SeasonSystem.getSubSeasonFromTime(BetterWeatherSeasonData.get(this.world).getSeasonTime(), this.world, BetterWeatherSeasonData.get(this.world).getSeasonCycleLength()).getEntityTypeBreedingBlacklist().contains(this.animal.getType()))
+        if (BetterWeather.useSeasons && ((BetterWeatherWorldData) world).getSeasonContext() != null) {
+            if (((BetterWeatherWorldData) world).getSeasonContext().getCurrentSubSeasonSettings().getEntityTypeBreedingBlacklist().contains(this.animal.getType()))
                 cir.setReturnValue(false);
         }
     }

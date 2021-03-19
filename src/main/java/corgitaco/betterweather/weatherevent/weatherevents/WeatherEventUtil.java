@@ -1,8 +1,9 @@
 package corgitaco.betterweather.weatherevent.weatherevents;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.api.BetterWeatherWorldData;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
-import corgitaco.betterweather.season.SeasonSystem;
+import corgitaco.betterweather.season.SeasonContext;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -61,10 +62,12 @@ public class WeatherEventUtil {
 
     public static void doWeatherAndRollWeatherEventChance(IServerWorldInfo worldInfo, ServerWorld world) {
         doWeather(worldInfo, world);
-        if (BetterWeather.useSeasons)
-            SeasonSystem.rollWeatherEventChanceForSeason(world.rand, world, worldInfo.isRaining(), worldInfo.isThundering(), (ServerWorldInfo) worldInfo, world.getPlayers());
-        else
-            WeatherEventSystem.rollWeatherEventChance(world.rand, world, worldInfo.isRaining(), (ServerWorldInfo) worldInfo, world.getPlayers());
+
+        SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
+        if (seasonContext != null) {
+            seasonContext.rollWeatherEventChanceForSeason(world.rand, world, worldInfo.isRaining(), worldInfo.isThundering(), (ServerWorldInfo) worldInfo, world.getPlayers());
+        }
+        WeatherEventSystem.rollWeatherEventChance(world.rand, world, worldInfo.isRaining(), (ServerWorldInfo) worldInfo, world.getPlayers());
 
     }
 

@@ -2,9 +2,11 @@ package corgitaco.betterweather.season.client;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
+import corgitaco.betterweather.api.BetterWeatherWorldData;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
-import corgitaco.betterweather.season.Season;
+import corgitaco.betterweather.season.SubSeasonSettings;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.DynamicRegistries;
@@ -19,17 +21,18 @@ import java.awt.*;
 @OnlyIn(Dist.CLIENT)
 public class BiomeColorCalculator {
 
-    public static Color modifyBiomeColor(ColorType colorType, Color originalColorValue, Season.SubSeason subSeason, Biome biome) {
+    public static Color modifyBiomeColor(ColorType colorType, Color originalColorValue, Biome biome) {
         Color fallbackColor = modifyColorForWeatherEvent(colorType, originalColorValue, originalColorValue, null);
         Minecraft mc = Minecraft.getInstance();
 
-        if (!BetterWeatherUtil.isOverworld(mc.world.getDimensionKey()))
-            return originalColorValue;
+        ClientWorld world = mc.world;
+
+        SubSeasonSettings subSeasonSettings = ((BetterWeatherWorldData) mc.world).getSeasonContext().getCurrentSubSeasonSettings();
 
         if (!BetterWeather.useSeasons)
             return fallbackColor;
 
-        if (mc.world == null)
+        if (world == null)
             return fallbackColor;
 
         int red = originalColorValue.getRed();
@@ -38,47 +41,47 @@ public class BiomeColorCalculator {
 
         Color target;
         double blendStrength;
-        DynamicRegistries dynamicRegistries = mc.world.func_241828_r();
+        DynamicRegistries dynamicRegistries = world.func_241828_r();
         ResourceLocation biomeKey = dynamicRegistries.getRegistry(Registry.BIOME_KEY).getKey(biome);
         if (biomeKey == null)
             return fallbackColor;
 
         switch (colorType) {
             case GRASS:
-                int targetGrassColor = subSeason.getTargetGrassColor(biomeKey, false);
+                int targetGrassColor = subSeasonSettings.getTargetGrassColor(biomeKey, false);
 
                 if (targetGrassColor == Integer.MAX_VALUE)
                     return fallbackColor;
 
                 target = new Color(targetGrassColor);
-                blendStrength = subSeason.getGrassColorBlendStrength(biomeKey, false);
+                blendStrength = subSeasonSettings.getGrassColorBlendStrength(biomeKey, false);
                 break;
             case FOLIAGE:
-                int targetFoliageColor = subSeason.getTargetFoliageColor(biomeKey, false);
+                int targetFoliageColor = subSeasonSettings.getTargetFoliageColor(biomeKey, false);
 
                 if (targetFoliageColor == Integer.MAX_VALUE)
                     return fallbackColor;
 
                 target = new Color(targetFoliageColor);
-                blendStrength = subSeason.getFoliageColorBlendStrength(biomeKey, false);
+                blendStrength = subSeasonSettings.getFoliageColorBlendStrength(biomeKey, false);
                 break;
             case FOG:
-                int targetFogColor = subSeason.getTargetFogColor(biomeKey, false);
+                int targetFogColor = subSeasonSettings.getTargetFogColor(biomeKey, false);
 
                 if (targetFogColor == Integer.MAX_VALUE)
                     return fallbackColor;
 
                 target = new Color(targetFogColor);
-                blendStrength = subSeason.getFogColorBlendStrength(biomeKey, false);
+                blendStrength = subSeasonSettings.getFogColorBlendStrength(biomeKey, false);
                 break;
             default:
-                int targetSkyColor = subSeason.getTargetSkyColor(biomeKey, false);
+                int targetSkyColor = subSeasonSettings.getTargetSkyColor(biomeKey, false);
 
                 if (targetSkyColor == Integer.MAX_VALUE)
                     return fallbackColor;
 
                 target = new Color(targetSkyColor);
-                blendStrength = subSeason.getSkyColorBlendStrength(biomeKey, false);
+                blendStrength = subSeasonSettings.getSkyColorBlendStrength(biomeKey, false);
                 break;
         }
 

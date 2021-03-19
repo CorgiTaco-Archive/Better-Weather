@@ -1,7 +1,5 @@
 package corgitaco.betterweather.mixin.client;
 
-import corgitaco.betterweather.api.SeasonData;
-import corgitaco.betterweather.season.Season;
 import corgitaco.betterweather.season.client.BiomeColorCalculator;
 import net.minecraft.world.biome.Biome;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,7 +19,7 @@ public abstract class MixinBiomeClient {
     @Inject(method = "getGrassColor", at = @At("RETURN"), cancellable = true)
     private void modifyGrassColor(double posX, double posZ, CallbackInfoReturnable<Integer> cir) {
         if (this.getCategory() != Biome.Category.NETHER || this.getCategory() != Biome.Category.THEEND || this.getCategory() != Biome.Category.NONE) {
-            cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.GRASS, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(SeasonData.currentSubSeason), (Biome) (Object) this).getRGB());
+            cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.GRASS, new Color(cir.getReturnValue()), (Biome) (Object) this).getRGB());
 
         }
     }
@@ -29,7 +27,7 @@ public abstract class MixinBiomeClient {
     @Inject(method = "getFoliageColor", at = @At("RETURN"), cancellable = true)
     private void modifyFoliageColor(CallbackInfoReturnable<Integer> cir) {
         if (this.getCategory() != Biome.Category.NETHER || this.getCategory() != Biome.Category.THEEND || this.getCategory() != Biome.Category.NONE) {
-            cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.FOLIAGE, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(SeasonData.currentSubSeason), (Biome) (Object) this).getRGB());
+            cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.FOLIAGE, new Color(cir.getReturnValue()), (Biome) (Object) this).getRGB());
 
         }
     }
@@ -37,14 +35,14 @@ public abstract class MixinBiomeClient {
     @Inject(method = "getSkyColor", at = @At("RETURN"), cancellable = true)
     private void modifySkyColor(CallbackInfoReturnable<Integer> cir) {
         if (this.getCategory() != Biome.Category.NETHER || this.getCategory() != Biome.Category.THEEND || this.getCategory() != Biome.Category.NONE) {
-            cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.SKY, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(SeasonData.currentSubSeason), (Biome) (Object) this).getRGB());
+            cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.SKY, new Color(cir.getReturnValue()), (Biome) (Object) this).getRGB());
         }
     }
 
     @Inject(method = "getFogColor", at = @At("RETURN"), cancellable = true)
     private void modifyFogColor(CallbackInfoReturnable<Integer> cir) {
         if (this.getCategory() != Biome.Category.NETHER || this.getCategory() != Biome.Category.THEEND || this.getCategory() != Biome.Category.NONE) {
-            cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.FOG, new Color(cir.getReturnValue()), Season.getSubSeasonFromEnum(SeasonData.currentSubSeason), (Biome) (Object) this).getRGB());
+            cir.setReturnValue(BiomeColorCalculator.modifyBiomeColor(BiomeColorCalculator.ColorType.FOG, new Color(cir.getReturnValue()), (Biome) (Object) this).getRGB());
         }
     }
 }

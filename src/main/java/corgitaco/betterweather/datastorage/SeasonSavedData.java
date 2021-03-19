@@ -2,40 +2,45 @@ package corgitaco.betterweather.datastorage;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.SeasonData;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.DimensionSavedDataManager;
 import net.minecraft.world.storage.WorldSavedData;
 
-public class BetterWeatherSeasonData extends WorldSavedData {
+public class SeasonSavedData extends WorldSavedData {
     public static String DATA_NAME = BetterWeather.MOD_ID + ":season_data";
-    private static final BetterWeatherSeasonData CLIENT_CACHE = new BetterWeatherSeasonData();
+    private static SeasonSavedData CLIENT_CACHE = new SeasonSavedData();
     private int seasonTime;
     private int seasonCycleLength;
-    private String season = SeasonData.SeasonVal.SPRING.toString();
-    private String subseason;
+    private String season = SeasonData.SeasonKey.SPRING.toString();
     private boolean isForced;
 
-    public BetterWeatherSeasonData() {
+    public SeasonSavedData() {
         super(DATA_NAME);
     }
 
-    public BetterWeatherSeasonData(String s) {
+    public SeasonSavedData(String s) {
         super(s);
     }
 
-    public static BetterWeatherSeasonData get(IWorld world) {
+    private static ClientWorld worldCache = null;
+
+    public static SeasonSavedData get(IWorld world) {
         if (!(world instanceof ServerWorld)) {
+            if (worldCache != world) {
+                worldCache = (ClientWorld) world;
+                CLIENT_CACHE = new SeasonSavedData();
+            }
             return CLIENT_CACHE;
         }
-        ServerWorld overWorld = ((ServerWorld) world).getWorld().getServer().getWorld(World.OVERWORLD);
+        ServerWorld overWorld = ((ServerWorld) world).getWorld().getServer().getWorld(((ServerWorld) world).getDimensionKey());
         DimensionSavedDataManager data = overWorld.getSavedData();
-        BetterWeatherSeasonData weatherData = data.getOrCreate(BetterWeatherSeasonData::new, DATA_NAME);
+        SeasonSavedData weatherData = data.getOrCreate(SeasonSavedData::new, DATA_NAME);
 
         if (weatherData == null) {
-            weatherData = new BetterWeatherSeasonData();
+            weatherData = new SeasonSavedData();
             data.set(weatherData);
         }
 
@@ -64,13 +69,8 @@ public class BetterWeatherSeasonData extends WorldSavedData {
         markDirty();
     }
 
-    public SeasonData.SeasonVal getSeason() {
-        return SeasonData.SeasonVal.valueOf(season);
-    }
-
-    public void setSeason(String season) {
-        this.season = season;
-        markDirty();
+    public SeasonData.SeasonKey getSeason() {
+        return SeasonData.SeasonKey.valueOf(season);
     }
 
     public int getSeasonCycleLength() {
@@ -79,10 +79,6 @@ public class BetterWeatherSeasonData extends WorldSavedData {
 
     public void setSeasonCycleLength(int seasonCycleLength) {
         this.seasonCycleLength = seasonCycleLength;
-    }
-
-    public void setSubseason(String subseason) {
-        this.subseason = subseason;
     }
 
     public boolean isForced() {

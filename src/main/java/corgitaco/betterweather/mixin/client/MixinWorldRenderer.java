@@ -2,6 +2,7 @@ package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
+import corgitaco.betterweather.api.BetterWeatherWorldData;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.helper.ViewFrustumGetter;
 import corgitaco.betterweather.helper.WeatherViewFrustum;
@@ -37,7 +38,7 @@ public abstract class MixinWorldRenderer implements ViewFrustumGetter {
 
     @Inject(at = @At("HEAD"), method = "renderRainSnow(Lnet/minecraft/client/renderer/LightTexture;FDDD)V", cancellable = true)
     private void renderWeather(LightTexture lightmapIn, float partialTicks, double x, double y, double z, CallbackInfo ci) {
-        if (BetterWeatherUtil.isOverworld((mc.world.getDimensionKey()))) {
+        if (((BetterWeatherWorldData) world).getSeasonContext() != null) {
             if (WeatherData.currentWeatherEvent.renderWeather(mc, this.world, lightmapIn, ticks, partialTicks, x, y, z))
                 ci.cancel();
         }
@@ -49,7 +50,7 @@ public abstract class MixinWorldRenderer implements ViewFrustumGetter {
     private void handleOptifineCompat(CallbackInfo ci) {
         if (BetterWeather.usingOptifine) {
             if (world != null && WeatherData.currentWeatherEvent != null) {
-                if (BetterWeatherUtil.isOverworld(world.getDimensionKey())) {
+                if (((BetterWeatherWorldData) world).getSeasonContext() != null) {
                     if (!comingFromOtherDimension) {
                         if (WeatherData.currentWeatherEvent.preventChunkRendererRefreshingWhenOptifineIsPresent()) {
                             ci.cancel();
@@ -69,7 +70,7 @@ public abstract class MixinWorldRenderer implements ViewFrustumGetter {
     @Inject(at = @At("TAIL"), method = "loadRenderers()V", cancellable = true)
     private void forceWeatherEventRenderDistance(CallbackInfo ci) {
         if(world != null) {
-            if (!BetterWeather.usingOptifine && BetterWeatherUtil.isOverworld(world.getDimensionKey())) {
+            if (!BetterWeather.usingOptifine && ((BetterWeatherWorldData) world).getSeasonContext() != null) {
                 ClientPlayerEntity player = mc.player;
                 if (player != null) {
                     if (Blizzard.doBlizzardsAffectDeserts(world.getBiome(mc.player.getPosition()))) {

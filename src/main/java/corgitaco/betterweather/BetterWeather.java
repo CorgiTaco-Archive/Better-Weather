@@ -3,6 +3,7 @@ package corgitaco.betterweather;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import corgitaco.betterweather.api.BetterWeatherWorldData;
 import corgitaco.betterweather.api.SeasonData;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.compat.OptifineCompat;
@@ -10,7 +11,6 @@ import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.config.BetterWeatherConfigClient;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
 import corgitaco.betterweather.datastorage.network.packet.GeneralPacket;
-import corgitaco.betterweather.season.SeasonSystem;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import corgitaco.betterweather.server.ConfigReloadCommand;
 import corgitaco.betterweather.server.SetSeasonCommand;
@@ -77,7 +77,6 @@ public class BetterWeather {
 
     public static void loadClientConfigs() {
         BetterWeatherConfigClient.loadConfig(CONFIG_PATH.resolve(MOD_ID + "-client.toml"));
-        BetterWeatherClientUtil.loadSeasonConfigsClient();
     }
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
@@ -117,33 +116,6 @@ public class BetterWeather {
 
     @Mod.EventBusSubscriber(modid = BetterWeather.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class BetterWeatherEvents {
-        @SubscribeEvent
-        public static void worldTick(TickEvent.WorldTickEvent event) {
-            if (event.phase == TickEvent.Phase.END) {
-                if (event.side.isServer()) {
-                    ServerWorld serverWorld = (ServerWorld) event.world;
-                    if (BetterWeatherUtil.isOverworld(serverWorld.getDimensionKey())) {
-                        World world = event.world;
-                        int tickSpeed = world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
-                        long worldTime = world.getWorldInfo().getGameTime();
-                        if (useSeasons) {
-                            SeasonSystem.updateSeasonTime(event.world);
-                            SeasonSystem.updateSeasonPacket(serverWorld.getPlayers(), world, false);
-                        }
-
-                        if (worldTime % 10 == 0)
-                            WeatherEventSystem.updateWeatherEventPacket(serverWorld, serverWorld.getPlayers(), false);
-
-                        WeatherData.currentWeatherEvent.worldTick(serverWorld, tickSpeed, worldTime);
-                    } else {
-                        String s = "";
-
-
-
-                    }
-                }
-            }
-        }
 
         @SubscribeEvent
         public static void renderTickEvent(TickEvent.RenderTickEvent event) {
@@ -165,11 +137,11 @@ public class BetterWeather {
 
         @SubscribeEvent
         public static void onPlayerJoined(PlayerEvent.PlayerLoggedInEvent event) {
-            updateGeneralDataPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()));
-            if (useSeasons)
-                SeasonSystem.updateSeasonPacket(Collections.singletonList((ServerPlayerEntity) event.getPlayer()), event.getPlayer().world, true);
-
-            WeatherEventSystem.updateWeatherEventPacket(((ServerPlayerEntity) event.getPlayer()).getServerWorld(), Collections.singletonList((ServerPlayerEntity) event.getPlayer()), true);
+            List<ServerPlayerEntity> players = Collections.singletonList((ServerPlayerEntity) event.getPlayer());
+            updateGeneralDataPacket(players);
+            ServerWorld serverWorld = ((ServerPlayerEntity) event.getPlayer()).getServerWorld();
+            ((BetterWeatherWorldData) serverWorld).getSeasonContext().updatePacket(players, serverWorld, true);
+            WeatherEventSystem.updateWeatherEventPacket(serverWorld, players, true);
         }
 
         public static void updateGeneralDataPacket(List<ServerPlayerEntity> players) {
@@ -177,27 +149,6 @@ public class BetterWeather {
                 NetworkHandler.sendToClient(player, new GeneralPacket(useSeasons));
             });
         }
-
-        @SubscribeEvent
-        public static void clientTickEvent(TickEvent.ClientTickEvent event) {
-            Minecraft minecraft = Minecraft.getInstance();
-            if (event.phase == TickEvent.Phase.START) {
-                if (minecraft.world != null && minecraft.player != null) {
-                    if (BetterWeatherUtil.isOverworld(minecraft.world.getDimensionKey())) {
-                        int tickSpeed = minecraft.world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
-                        if (useSeasons) {
-                            if (minecraft.world.getWorldInfo().getGameTime() % 10 == 0) {
-                                SeasonSystem.clientSeason(minecraft.world);
-                            }
-                        }
-                        WeatherData.currentWeatherEvent.clientTick(minecraft.world, tickSpeed, minecraft.world.getWorldInfo().getGameTime(), minecraft);
-                    }
-                }
-            }
-        }
-
-
-
 
         @SubscribeEvent
         public static void commandRegisterEvent(FMLServerStartingEvent event) {
@@ -214,17 +165,15 @@ public class BetterWeather {
         public static void renderFogEvent(EntityViewRenderEvent.FogDensity event) {
             Minecraft minecraft = Minecraft.getInstance();
             ClientWorld world = minecraft.world;
-            if (world != null) {
-                if (BetterWeatherUtil.isOverworld(world.getDimensionKey()))
-                    WeatherData.currentWeatherEvent.handleFogDensity(event, minecraft);
-            }
+            if (world != null)
+                WeatherData.currentWeatherEvent.handleFogDensity(event, minecraft);
         }
 
         @SubscribeEvent
         public static void renderGameOverlayEventText(RenderGameOverlayEvent.Text event) {
             if (useSeasons) {
                 if (Minecraft.getInstance().gameSettings.showDebugInfo) {
-                    event.getLeft().add("Season: " + WordUtils.capitalize(SeasonData.currentSeason.toString().toLowerCase()) + " | " + WordUtils.capitalize(SeasonData.currentSubSeason.toString().replace("_", "").replace(SeasonData.currentSeason.toString(), "").toLowerCase()));
+//                    event.getLeft().add("Season: " + WordUtils.capitalize(SeasonData.currentSeason.toString().toLowerCase()) + " | " + WordUtils.capitalize(SeasonData.currentSubSeason.toString().replace("_", "").replace(SeasonData.currentSeason.toString(), "").toLowerCase()));
                 }
             }
         }

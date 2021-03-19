@@ -1,136 +1,121 @@
 package corgitaco.betterweather.season;
 
+import com.google.gson.*;
+import com.mojang.serialization.JsonOps;
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.BetterWeatherClientUtil;
 import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.api.SeasonData;
 import corgitaco.betterweather.api.weatherevent.WeatherData;
+import corgitaco.betterweather.config.season.SeasonConfigHolder;
 import corgitaco.betterweather.datastorage.BetterWeatherEventData;
-import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
+import corgitaco.betterweather.datastorage.SeasonSavedData;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
-import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
 import corgitaco.betterweather.datastorage.network.packet.WeatherEventPacket;
 import corgitaco.betterweather.datastorage.network.packet.util.RefreshRenderersPacket;
-import corgitaco.betterweather.helper.IsWeatherForced;
-import corgitaco.betterweather.helpers.IBiomeUpdate;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.ServerWorldInfo;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.loading.FMLPaths;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class SeasonSystem {
+public class SeasonContext {
+    public static final String CONFIG_NAME = "seasons.json";
 
-    private static SeasonData.SubSeasonVal privateSubSeasonVal;
-    private static boolean isFadingOut = false;
+    private Season currentSeason;
+    private int currentSeasonTime;
 
-    public static void updateSeasonTime(World world) {
-        if (!BetterWeather.useSeasons)
-            throw new UnsupportedOperationException("Seasons are disabled in this instance!");
+    private int seasonCycleLength;
+    private final File seasonConfigFile;
 
-        int currentSeasonTime = BetterWeatherSeasonData.get(world).getSeasonTime();
-        if (world.getGameRules().getBoolean(BetterWeatherGameRules.DO_SEASON_CYCLE)) {
-            if (currentSeasonTime > BetterWeather.SEASON_CYCLE_LENGTH)
-                BetterWeatherSeasonData.get(world).setSeasonTime(0);
-            else
-                BetterWeatherSeasonData.get(world).setSeasonTime(currentSeasonTime + 1);
-        }
+    private IdentityHashMap<SeasonData.SeasonKey, Season> seasons;
 
-        if (BetterWeatherSeasonData.get(world).getSeasonCycleLength() != BetterWeather.SEASON_CYCLE_LENGTH)
-            BetterWeatherSeasonData.get(world).setSeasonCycleLength(BetterWeather.SEASON_CYCLE_LENGTH);
-
+    public SeasonContext(SeasonSavedData seasonData, RegistryKey<World> worldKey) {
+        this.currentSeasonTime = seasonData.getSeasonTime();
+        this.seasonCycleLength = seasonData.getSeasonCycleLength();
+        this.seasonConfigFile = FMLPaths.CONFIGDIR.get().resolve(BetterWeather.MOD_ID).resolve(CONFIG_NAME.replace(".json", "")).resolve(worldKey.getLocation().toString().replace(":", "-") + "-" + CONFIG_NAME).toFile();
+        this.handleConfig();
+        this.currentSeason = seasons.get(BetterWeatherUtil.getSeasonFromTime(currentSeasonTime, seasonCycleLength));
     }
 
-    public static void updateSeasonPacket(List<ServerPlayerEntity> players, World world, boolean justJoined) {
-        if (!BetterWeather.useSeasons)
-            throw new UnsupportedOperationException("Seasons are disabled in this instance!");
-
-        int currentSeasonTime = BetterWeatherSeasonData.get(world).getSeasonTime();
-
-        SeasonData.SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, world, BetterWeatherSeasonData.get(world).getSeasonCycleLength()).getSubSeasonVal();
-
-        if (SeasonData.currentSubSeason != subSeason || BetterWeatherSeasonData.get(world).isForced() || justJoined) {
-            BetterWeatherSeasonData.get(world).setSubseason(subSeason.toString());
-//            ((IBiomeUpdate) ((ServerWorld) world)).updateBiomeData();
-
+    public void handleConfig() {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.setPrettyPrinting();
+        gsonBuilder.disableHtmlEscaping();
+        Gson gson = gsonBuilder.create();
+        if (!seasonConfigFile.exists()) {
+            create(gson);
         }
-
-        if (BetterWeatherSeasonData.get(world).getSeasonTime() % 1200 == 0 || BetterWeatherSeasonData.get(world).isForced() || justJoined) {
-            players.forEach(player -> NetworkHandler.sendToClient(player, new SeasonPacket(BetterWeatherSeasonData.get(world).getSeasonTime(), BetterWeather.SEASON_CYCLE_LENGTH)));
-
-            if (BetterWeatherSeasonData.get(world).isForced())
-                BetterWeatherSeasonData.get(world).setForced(false);
+        if (seasonConfigFile.exists()) {
+            read();
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
-    public static void clientSeason(ClientWorld world) {
-        if (!BetterWeather.useSeasons)
-            throw new UnsupportedOperationException("Seasons are disabled in this instance!");
+    public void setSeason(List<ServerPlayerEntity> players, SeasonData.SeasonKey newSeason, SeasonData.Phase phase) {
+        this.currentSeasonTime = BetterWeatherUtil.getTimeInCycleForSeason(newSeason, this.seasonCycleLength);
+        this.currentSeason = seasons.get(newSeason);
 
-//        if (BetterWeatherSeasonData.get(world) == null) {
-//            BetterWeatherClientUtil.printDebugWarning("bw.warn.seasondata");
-//
-//            BetterWeather.LOGGER.error("Season data was called to early, this should never happen...\nSetting season data to prevent further issues, bugs and client desync with the server is possible!");
-//        }
+        this.updatePacket(players, false);
 
-        int currentSeasonTime = BetterWeatherSeasonData.get(world).getSeasonTime();
+    }
 
-        SeasonData.SubSeasonVal subSeason = getSubSeasonFromTime(currentSeasonTime, world, BetterWeatherSeasonData.get(world).getSeasonCycleLength()).getSubSeasonVal();
+    private void create(Gson gson) {
+        JsonElement jsonElement = SeasonConfigHolder.CODEC.encode(SeasonConfigHolder.DEFAULT_CONFIG_HOLDER, JsonOps.INSTANCE, new JsonObject()).get().left().get();
+        String toJson = gson.toJson(jsonElement);
 
+        try {
+            Files.createDirectories(seasonConfigFile.toPath().getParent());
+            Files.write(seasonConfigFile.toPath(), toJson.getBytes());
+        } catch (IOException e) {
 
-        if (SeasonData.currentSubSeason != subSeason) {
-            BetterWeatherSeasonData.get(world).setSubseason(subSeason.toString());
-            Minecraft minecraft = Minecraft.getInstance();
-            SeasonData.currentSubSeason = subSeason;
-            minecraft.worldRenderer.loadRenderers();
         }
     }
 
-    public static Season.SubSeason getSubSeasonFromTime(int seasonTime, World world, int seasonCycleLength) {
-        if (!BetterWeather.useSeasons)
-            throw new UnsupportedOperationException("Seasons are disabled in this instance!");
+    private void read() {
+        try (Reader reader = new FileReader(seasonConfigFile)) {
+            JsonObject jsonObject = new JsonParser().parse(reader).getAsJsonObject();
+            Optional<SeasonConfigHolder> configHolder = SeasonConfigHolder.CODEC.parse(JsonOps.INSTANCE, jsonObject).resultOrPartial(BetterWeather.LOGGER::error);
+            if (configHolder.isPresent()) {
+                this.seasons = configHolder.get().getSeasonKeySeasonMap();
+                this.seasonCycleLength = configHolder.get().getSeasonCycleLength();
+            } else {
+                this.seasons = SeasonConfigHolder.DEFAULT_CONFIG_HOLDER.getSeasonKeySeasonMap();
+                this.seasonCycleLength = SeasonConfigHolder.DEFAULT_CONFIG_HOLDER.getSeasonCycleLength();
+            }
+        } catch (IOException e) {
 
-        int perSeasonTime = seasonCycleLength / 4;
-
-        SeasonData.SeasonVal seasonVal = getSeasonFromTime(seasonTime, seasonCycleLength);
-        if (SeasonData.currentSeason != seasonVal) {
-            BetterWeatherSeasonData.get(world).setSeason(seasonVal.toString());
-            SeasonData.currentSeason = seasonVal;
-        }
-
-        int perSeasonTime3rd = perSeasonTime / 3;
-
-        int seasonOffset = perSeasonTime * seasonVal.ordinal();
-
-        if (seasonTime < seasonOffset + perSeasonTime3rd)
-            return Season.getSeasonFromEnum(seasonVal).getStart();
-        else if (seasonTime < seasonOffset + (perSeasonTime3rd * 2))
-            return Season.getSeasonFromEnum(seasonVal).getMid();
-        else {
-            return Season.getSeasonFromEnum(seasonVal).getEnd();
         }
     }
 
-    public static void tickCropForBiomeBlockOrSeason(ServerWorld world, BlockPos posIn, Block block, BlockState self, CallbackInfo ci) {
+    public void tick(World world) {
+        this.tickSeasonTime(world);
+        this.currentSeason.tick(currentSeasonTime / 4, seasonCycleLength / 4); //TODO: Is this right?!?!
+
+        if (world instanceof ServerWorld) {
+
+        }
+    }
+
+    public void tickCrops(ServerWorld world, BlockPos posIn, Block block, BlockState self, CallbackInfo ci) {
         if (!BetterWeather.useSeasons)
             throw new UnsupportedOperationException("Seasons are disabled in this instance!");
 
-        Season.SubSeason subSeason = Season.getSubSeasonFromEnum(SeasonData.currentSubSeason);
+        SubSeasonSettings subSeason = this.getCurrentSubSeasonSettings();
         if (subSeason.getBiomeToOverrideStorage().isEmpty() && subSeason.getCropToMultiplierStorage().isEmpty()) {
             if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block) || BlockTags.SAPLINGS.contains(block)) {
                 cropTicker(world, posIn, block, subSeason, true, self, ci);
@@ -142,7 +127,7 @@ public class SeasonSystem {
         }
     }
 
-    private static void cropTicker(ServerWorld world, BlockPos posIn, Block block, Season.SubSeason subSeason, boolean useSeasonDefault, BlockState self, CallbackInfo ci) {
+    private static void cropTicker(ServerWorld world, BlockPos posIn, Block block, SubSeasonSettings subSeason, boolean useSeasonDefault, BlockState self, CallbackInfo ci) {
         if (!BetterWeather.useSeasons)
             throw new UnsupportedOperationException("Seasons are disabled in this instance!");
 
@@ -173,18 +158,12 @@ public class SeasonSystem {
         }
     }
 
-    public static void rollWeatherEventChanceForSeason(Random random, ServerWorld world, boolean isRaining, boolean isThundering, ServerWorldInfo worldInfo, List<ServerPlayerEntity> players) {
+    public void rollWeatherEventChanceForSeason(Random random, ServerWorld world, boolean isRaining, boolean isThundering, ServerWorldInfo worldInfo, List<ServerPlayerEntity> players) {
         if (!BetterWeather.useSeasons)
             throw new UnsupportedOperationException("Seasons are disabled in this instance!");
 
-        Season.SubSeason subSeason = Season.getSubSeasonFromEnum(SeasonData.currentSubSeason);
+        SubSeasonSettings subSeason = this.getCurrentSubSeasonSettings();
         boolean isRainActive = isRaining || isThundering;
-
-        if (privateSubSeasonVal == null) {
-            privateSubSeasonVal = SeasonData.currentSubSeason;
-        }
-
-        boolean privateSeasonIsNotCacheSeasonFlag = privateSubSeasonVal != SeasonData.currentSubSeason;
 
         if (!isRainActive) {
             if (!BetterWeatherEventData.get(world).isModified() || privateSeasonIsNotCacheSeasonFlag) {
@@ -245,27 +224,34 @@ public class SeasonSystem {
         }
     }
 
-    public static int getTimeInCycleForSubSeason(SeasonData.SubSeasonVal subSeasonVal, int seasonCycleLength) {
-        if (!BetterWeather.useSeasons)
-            throw new UnsupportedOperationException("Seasons are disabled in this instance!");
 
-        int perSubSeasonLength = seasonCycleLength / (SeasonData.SubSeasonVal.values().length);
-        return perSubSeasonLength * subSeasonVal.ordinal();
+    public void updatePacket(List<ServerPlayerEntity> players, boolean justJoined) {
+
     }
 
-    public static SeasonData.SeasonVal getSeasonFromTime(int seasonTime, int seasonCycleLength) {
-        if (!BetterWeather.useSeasons)
-            throw new UnsupportedOperationException("Seasons are disabled in this instance!");
+    private void tickSeasonTime(World world) {
+        if (world.getGameRules().getBoolean(BetterWeatherGameRules.DO_SEASON_CYCLE)) {
+            this.currentSeasonTime = currentSeasonTime > this.seasonCycleLength ? 0 : (currentSeasonTime + 1);
 
-        int perSeasonTime = seasonCycleLength / 4;
+            if (world.getWorldInfo().getGameTime() % 50 == 0) {
+                save(world);
+            }
+        }
+    }
 
-        if (seasonTime < perSeasonTime) {
-            return SeasonData.SeasonVal.SPRING;
-        } else if (seasonTime < perSeasonTime * 2) {
-            return SeasonData.SeasonVal.SUMMER;
-        } else if (seasonTime < perSeasonTime * 3) {
-            return SeasonData.SeasonVal.AUTUMN;
-        } else
-            return SeasonData.SeasonVal.WINTER;
+    private void save(World world) {
+        SeasonSavedData.get(world).setSeasonTime(this.currentSeasonTime);
+    }
+
+    public Season getCurrentSeason() {
+        return currentSeason;
+    }
+
+    public SubSeasonSettings getCurrentSubSeasonSettings() {
+        return this.currentSeason.getCurrentSettings();
+    }
+
+    public int getSeasonCycleLength() {
+        return seasonCycleLength;
     }
 }

@@ -1,40 +1,66 @@
 package corgitaco.betterweather.api;
 
+import com.google.common.collect.Maps;
+import com.mojang.serialization.Codec;
+import net.minecraft.util.IStringSerializable;
+import net.minecraft.util.Util;
+
 import javax.annotation.Nullable;
+import java.util.Map;
 
 /**
  * Contains information in regards to the current subseason & season
  */
 public class SeasonData {
 
-    @Nullable
-    public static SubSeasonVal currentSubSeason = SeasonData.SubSeasonVal.SPRING_START;
-    @Nullable
-    public static SeasonVal currentSeason = SeasonData.SeasonVal.SPRING;
-
-
-    public enum SeasonVal {
+    public enum SeasonKey implements IStringSerializable {
         SPRING,
         SUMMER,
         AUTUMN,
-        WINTER
+        WINTER;
+        public static final Codec<SeasonKey> CODEC = IStringSerializable.createEnumCodec(SeasonKey::values, SeasonKey::getTypeFromId);
+
+
+
+        private static final Map<String, SeasonKey> BY_ID = Util.make(Maps.newHashMap(), (nameToTypeMap) -> {
+            for(SeasonKey seasonKey : values()) {
+                nameToTypeMap.put(seasonKey.name(), seasonKey);
+            }
+        });
+
+
+        @Nullable
+        public static SeasonKey getTypeFromId(String idIn) {
+            return BY_ID.get(idIn);
+        }
+
+        @Override
+        public String getString() {
+            return this.name();
+        }
     }
 
-    public enum SubSeasonVal {
-        SPRING_START,
-        SPRING_MID,
-        SPRING_END,
+    public enum Phase implements IStringSerializable {
+        START,
+        MID,
+        END;
 
-        SUMMER_START,
-        SUMMER_MID,
-        SUMMER_END,
+        public static final Codec<Phase> CODEC = IStringSerializable.createEnumCodec(Phase::values, Phase::getTypeFromId);
 
-        AUTUMN_START,
-        AUTUMN_MID,
-        AUTUMN_END,
+        private static final Map<String, Phase> BY_ID = Util.make(Maps.newHashMap(), (nameToTypeMap) -> {
+            for(Phase phase : values()) {
+                nameToTypeMap.put(phase.name(), phase);
+            }
+        });
 
-        WINTER_START,
-        WINTER_MID,
-        WINTER_END
+        @Nullable
+        public static Phase getTypeFromId(String idIn) {
+            return BY_ID.get(idIn);
+        }
+
+        @Override
+        public String getString() {
+            return this.name();
+        }
     }
 }

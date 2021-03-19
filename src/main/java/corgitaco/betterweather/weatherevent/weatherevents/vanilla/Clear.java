@@ -1,5 +1,6 @@
 package corgitaco.betterweather.weatherevent.weatherevents.vanilla;
 
+import corgitaco.betterweather.api.BetterWeatherWorldData;
 import corgitaco.betterweather.api.SeasonData;
 import corgitaco.betterweather.api.weatherevent.WeatherEvent;
 import corgitaco.betterweather.config.BetterWeatherConfig;
@@ -81,7 +82,7 @@ public class Clear extends WeatherEvent {
 
     @Override
     public void tickLiveChunks(Chunk chunk, ServerWorld world) {
-        if (SeasonData.currentSeason != SeasonData.SeasonVal.WINTER)
+        if (((BetterWeatherWorldData) world).getSeasonContext().getCurrentSeason().getSeasonKey() != SeasonData.SeasonKey.WINTER)
             doesIceAndSnowDecayFaster(chunk, world, world.getWorldInfo().getGameTime());
     }
 }

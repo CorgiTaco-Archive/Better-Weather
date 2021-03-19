@@ -8,7 +8,7 @@ import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.config.json.WeatherEventControllerConfig;
 import corgitaco.betterweather.datastorage.BetterWeatherEventData;
 import corgitaco.betterweather.datastorage.BetterWeatherGeneralData;
-import corgitaco.betterweather.datastorage.BetterWeatherSeasonData;
+import corgitaco.betterweather.datastorage.SeasonSavedData;
 import net.minecraft.resources.DataPackRegistries;
 import net.minecraft.resources.ResourcePackList;
 import net.minecraft.server.MinecraftServer;
@@ -41,14 +41,12 @@ public abstract class MixinMinecraftServer {
         BetterWeather.biomeRegistryEarlyAccess = registries.getRegistry(Registry.BIOME_KEY);
         if (!BetterWeather.useSeasons)
             WeatherEventControllerConfig.handleConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-weather-controller.json"));
-
-        BetterWeatherUtil.loadSeasonConfigsServer(null);
     }
 
     @Inject(method = "func_240787_a_", at = @At("TAIL"))
     private void assignWorldData(IChunkStatusListener p_240787_1_, CallbackInfo ci) {
         BetterWeatherGeneralData.get(getWorld(World.OVERWORLD));
         BetterWeatherEventData.get(getWorld(World.OVERWORLD));
-        BetterWeatherSeasonData.get(getWorld(World.OVERWORLD));
+        SeasonSavedData.get(getWorld(World.OVERWORLD));
     }
 }

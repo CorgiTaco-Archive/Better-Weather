@@ -1,9 +1,9 @@
-package corgitaco.betterweather.config.json.overrides;
+package corgitaco.betterweather.config.season.overrides;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.season.Season;
+import corgitaco.betterweather.season.SubSeasonSettings;
 import corgitaco.betterweather.util.storage.OverrideStorage;
 
 import java.io.File;
@@ -17,7 +17,7 @@ import java.util.IdentityHashMap;
 public class BiomeOverrideJsonHandler {
 
 
-    public static void handleOverrideJsonConfigs(Path path, IdentityHashMap<Object, OverrideStorage> objectToOverrideStorageDefault, Season.SubSeason subSeason) {
+    public static void handleOverrideJsonConfigs(Path path, IdentityHashMap<Object, OverrideStorage> objectToOverrideStorageDefault, SubSeasonSettings subSeasonSettings) {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(BiomeToOverrideStorageJsonStorage.class, new OverrideDeserializer());
         gsonBuilder.setPrettyPrinting();
@@ -34,8 +34,8 @@ public class BiomeOverrideJsonHandler {
             try (Reader reader = new FileReader(path.toString())) {
                 BiomeToOverrideStorageJsonStorage biomeToOverrideStorageJsonStorage = gson.fromJson(reader, BiomeToOverrideStorageJsonStorage.class);
                 if (biomeToOverrideStorageJsonStorage != null) {
-                    subSeason.setBiomeToOverrideStorage(biomeToOverrideStorageJsonStorage.getBiomeToOverrideStorage());
-                    subSeason.setCropToMultiplierStorage(biomeToOverrideStorageJsonStorage.getSeasonCropOverrides());
+                    subSeasonSettings.setBiomeToOverrideStorage(biomeToOverrideStorageJsonStorage.getBiomeToOverrideStorage());
+                    subSeasonSettings.setCropToMultiplierStorage(biomeToOverrideStorageJsonStorage.getSeasonCropOverrides());
 
                 } else
                     BetterWeather.LOGGER.error(BetterWeather.MOD_ID + "-biomes.json could not be read");
