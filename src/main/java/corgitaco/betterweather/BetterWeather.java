@@ -1,5 +1,6 @@
 package corgitaco.betterweather;
 
+import corgitaco.betterweather.datastorage.network.NetworkHandler;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
@@ -36,6 +37,7 @@ public class BetterWeather {
 
     private void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(BetterWeatherGameRules::init);
+        NetworkHandler.init();
     }
 
     private void clientSetup(FMLClientSetupEvent event) {
