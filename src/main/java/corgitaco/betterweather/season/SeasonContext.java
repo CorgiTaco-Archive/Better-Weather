@@ -1,6 +1,9 @@
 package corgitaco.betterweather.season;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
@@ -8,6 +11,10 @@ import corgitaco.betterweather.api.SeasonData;
 import corgitaco.betterweather.config.season.SeasonConfigHolder;
 import corgitaco.betterweather.config.season.overrides.BiomeOverrideJsonHandler;
 import corgitaco.betterweather.datastorage.SeasonSavedData;
+import corgitaco.betterweather.datastorage.network.NetworkHandler;
+import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
+import corgitaco.betterweather.datastorage.network.packet.util.RefreshRenderersPacket;
+import corgitaco.betterweather.helpers.IBiomeUpdate;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -19,6 +26,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.io.File;
@@ -37,8 +46,8 @@ public class SeasonContext {
 
     private Season currentSeason;
     private int currentSeasonTime;
-
     private int seasonCycleLength;
+
     private final File seasonConfigFile;
     private final Path seasonOverridesPath;
 
@@ -54,7 +63,7 @@ public class SeasonContext {
         this.seasonOverridesPath = seasonsFolderPath.resolve("overrides");
 
         this.handleConfig();
-        this.currentSeason = seasons.get(BetterWeatherUtil.getSeasonFromTime(currentSeasonTime, seasonCycleLength));
+        this.currentSeason = seasons.get(BetterWeatherUtil.getSeasonFromTime(currentSeasonTime, seasonCycleLength)).setPhaseForTime(this.currentSeasonTime / 4, this.seasonCycleLength / 4);
     }
 
     public void handleConfig() {
@@ -79,16 +88,14 @@ public class SeasonContext {
     }
 
     public void setSeason(List<ServerPlayerEntity> players, SeasonData.SeasonKey newSeason, SeasonData.Phase phase) {
-        this.currentSeasonTime = BetterWeatherUtil.getTimeInCycleForSeason(newSeason, this.seasonCycleLength);
+        this.currentSeasonTime = BetterWeatherUtil.getTimeInCycleForSeasonAndPhase(newSeason, phase, this.seasonCycleLength);
         this.currentSeason = seasons.get(newSeason);
-
-        this.updatePacket(players, false);
-
+        this.currentSeason.setPhaseForTime(currentSeasonTime / 4, seasonCycleLength / 4);
+        this.updatePacket(players);
     }
 
     private void create(Gson gson) {
-        JsonElement jsonElement = SeasonConfigHolder.CODEC.encodeStart(JsonOps.INSTANCE, SeasonConfigHolder.DEFAULT_CONFIG_HOLDER).result().get();
-        String toJson = gson.toJson(jsonElement);
+        String toJson = gson.toJson(SeasonConfigHolder.CODEC.encodeStart(JsonOps.INSTANCE, SeasonConfigHolder.DEFAULT_CONFIG_HOLDER).result().get());
 
         try {
             Files.createDirectories(seasonConfigFile.toPath().getParent());
@@ -115,11 +122,18 @@ public class SeasonContext {
     }
 
     public void tick(World world) {
+        Season prevSeason = this.currentSeason;
         this.tickSeasonTime(world);
+
+        SeasonData.Phase prevPhase = this.currentSeason.getCurrentPhase();
         this.currentSeason.tick(currentSeasonTime / 4, seasonCycleLength / 4); //TODO: Is this right?!?!
 
-        if (world instanceof ServerWorld) {
+        if (prevSeason != this.currentSeason || prevPhase != this.currentSeason.getCurrentPhase()) {
+            ((IBiomeUpdate) world).updateBiomeData(this.getCurrentSubSeasonSettings());
+            if (!world.isRemote) {
+                updatePacket(((ServerWorld) world).getPlayers());
 
+            }
         }
     }
 
@@ -165,13 +179,17 @@ public class SeasonContext {
         }
     }
 
-    public void updatePacket(List<ServerPlayerEntity> players, boolean justJoined) {
-
+    public void updatePacket(List<ServerPlayerEntity> players) {
+        for (ServerPlayerEntity player : players) {
+            NetworkHandler.sendToClient(player, new SeasonPacket(this.currentSeasonTime, this.seasonCycleLength));
+            NetworkHandler.sendToClient(player, new RefreshRenderersPacket());
+        }
     }
 
     private void tickSeasonTime(World world) {
         if (world.getGameRules().getBoolean(BetterWeatherGameRules.DO_SEASON_CYCLE)) {
             this.currentSeasonTime = currentSeasonTime > this.seasonCycleLength ? 0 : (currentSeasonTime + 1);
+            this.currentSeason = this.seasons.get(BetterWeatherUtil.getSeasonFromTime(this.currentSeasonTime, this.seasonCycleLength)).setPhaseForTime(this.currentSeasonTime / 4, this.seasonCycleLength / 4);
 
             if (world.getWorldInfo().getGameTime() % 50 == 0) {
                 save(world);
@@ -181,6 +199,7 @@ public class SeasonContext {
 
     private void save(World world) {
         SeasonSavedData.get(world).setSeasonTime(this.currentSeasonTime);
+        SeasonSavedData.get(world).setSeasonCycleLength(this.seasonCycleLength);
     }
 
     public Season getCurrentSeason() {
@@ -193,5 +212,19 @@ public class SeasonContext {
 
     public int getSeasonCycleLength() {
         return seasonCycleLength;
+    }
+
+    public int getCurrentSeasonTime() {
+        return currentSeasonTime;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public void setCurrentSeasonTime(int currentSeasonTime) {
+        this.currentSeasonTime = currentSeasonTime;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public void setSeasonCycleLength(int seasonCycleLength) {
+        this.seasonCycleLength = seasonCycleLength;
     }
 }

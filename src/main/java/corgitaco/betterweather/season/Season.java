@@ -83,7 +83,7 @@ public final class Season {
         setPhaseForTime(currentSeasonTime, seasonLength);
     }
 
-    private void setPhaseForTime(int currentSeasonTime, int seasonLength) {
+    public Season setPhaseForTime(int currentSeasonTime, int seasonLength) {
         int perSeasonTime3rd = seasonLength / 3;
         int seasonOffset = seasonLength * seasonKey.ordinal();
 
@@ -94,5 +94,6 @@ public final class Season {
         else {
             this.currentPhase = SeasonData.Phase.END;
         }
+        return this;
     }
 }

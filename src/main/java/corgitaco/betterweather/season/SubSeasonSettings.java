@@ -83,7 +83,7 @@ public class SubSeasonSettings {
     //These are not to be serialized by GSON.
     private transient SeasonData.SeasonKey parentSeason;
     private transient IdentityHashMap<Block, Double> cropToMultiplierStorage;
-    private transient IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage;
+    private transient HashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage;
     private transient ObjectOpenHashSet<EntityType<?>> entityTypeBreedingBlacklist;
 
     public SubSeasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, SeasonClientSettings client) {
@@ -123,13 +123,13 @@ public class SubSeasonSettings {
         this.cropToMultiplierStorage = cropToMultiplierStorage;
     }
 
-    public IdentityHashMap<ResourceLocation, OverrideStorage> getBiomeToOverrideStorage() {
+    public HashMap<ResourceLocation, OverrideStorage> getBiomeToOverrideStorage() {
         if (biomeToOverrideStorage == null)
-            biomeToOverrideStorage = new IdentityHashMap<>();
+            biomeToOverrideStorage = new HashMap<>();
         return biomeToOverrideStorage;
     }
 
-    public void setBiomeToOverrideStorage(IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage) {
+    public void setBiomeToOverrideStorage(HashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage) {
         this.biomeToOverrideStorage = biomeToOverrideStorage;
     }
 

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 
 public class BiomeOverrideJsonHandler {
@@ -34,7 +35,7 @@ public class BiomeOverrideJsonHandler {
             try (Reader reader = new FileReader(path.toString())) {
                 BiomeToOverrideStorageJsonStorage biomeToOverrideStorageJsonStorage = gson.fromJson(reader, BiomeToOverrideStorageJsonStorage.class);
                 if (biomeToOverrideStorageJsonStorage != null) {
-                    subSeasonSettings.setBiomeToOverrideStorage(biomeToOverrideStorageJsonStorage.getBiomeToOverrideStorage());
+                    subSeasonSettings.setBiomeToOverrideStorage(new HashMap<>(biomeToOverrideStorageJsonStorage.getBiomeToOverrideStorage()));
                     subSeasonSettings.setCropToMultiplierStorage(biomeToOverrideStorageJsonStorage.getSeasonCropOverrides());
 
                 } else

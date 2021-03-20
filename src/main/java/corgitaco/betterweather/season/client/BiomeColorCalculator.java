@@ -1,6 +1,7 @@
 package corgitaco.betterweather.season.client;
 
 import corgitaco.betterweather.api.BetterWeatherWorldData;
+import corgitaco.betterweather.season.SeasonContext;
 import corgitaco.betterweather.season.SubSeasonSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;
@@ -26,10 +27,11 @@ public class BiomeColorCalculator {
         if (world == null)
             return fallbackColor;
 
-        SubSeasonSettings subSeasonSettings = ((BetterWeatherWorldData) mc.world).getSeasonContext().getCurrentSubSeasonSettings();
-
-        if (subSeasonSettings == null)
+        SeasonContext seasonContext = ((BetterWeatherWorldData) mc.world).getSeasonContext();
+        if (seasonContext == null)
             return fallbackColor;
+
+        SubSeasonSettings subSeasonSettings = seasonContext.getCurrentSubSeasonSettings();
 
         int red = originalColorValue.getRed();
         int green = originalColorValue.getGreen();

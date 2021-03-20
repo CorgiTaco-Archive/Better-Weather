@@ -1,7 +1,6 @@
 package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.api.BetterWeatherWorldData;
 import corgitaco.betterweather.helper.WeatherViewFrustum;
 import net.minecraft.client.renderer.ViewFrustum;
@@ -19,7 +18,9 @@ public abstract class MixinViewFrustum implements WeatherViewFrustum {
     @Shadow
     public abstract void updateChunkPositions(double viewEntityX, double viewEntityZ);
 
-    @Shadow @Final protected World world;
+    @Shadow
+    @Final
+    protected World world;
 
     /**
      * @param renderDistance Forced Render distance specified by the current weather event.

@@ -5,11 +5,13 @@ import corgitaco.betterweather.datastorage.SeasonSavedData;
 import corgitaco.betterweather.helpers.IBiomeModifier;
 import corgitaco.betterweather.helpers.IBiomeUpdate;
 import corgitaco.betterweather.season.SeasonContext;
+import corgitaco.betterweather.season.SubSeasonSettings;
 import corgitaco.betterweather.util.WorldDynamicRegistry;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.WorldSettingsImport;
@@ -60,26 +62,18 @@ public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWor
         ChunkGenerator dimensionChunkGenerator = dimension.getChunkGenerator();
         this.field_241102_C_/*Server Chunk Provider*/.generator = dimensionChunkGenerator; // Some modded generators do weird stuff so we'll just reset the field.
         this.field_241102_C_/*Server Chunk Provider*/.chunkManager.generator = dimensionChunkGenerator; // Some modded generators do weird stuff so we'll just reset the field.
-        updateBiomeData();
-
         this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key);
+        updateBiomeData(seasonContext.getCurrentSubSeasonSettings());
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
-    public void updateBiomeData() {
+    public void updateBiomeData(SubSeasonSettings subSeasonSettings) {
         for (Map.Entry<RegistryKey<Biome>, Biome> entry : registry.getRegistry(Registry.BIOME_KEY).getEntries()) {
             Biome biome = entry.getValue();
-            ((IBiomeModifier) (Object) biome).setHumidityModifier(uniqueTemp());
-            ((IBiomeModifier) (Object) biome).setTempModifier(uniqueTemp());
-        }
-    }
-
-    private float uniqueTemp() {
-        RegistryKey<World> dimensionKey = ((ServerWorld) (Object) this).getDimensionKey();
-        if (dimensionKey == World.THE_NETHER || dimensionKey == World.THE_END) {
-            return -5.0F;
-        } else {
-            return 1.0F;
+            ResourceLocation biomeLocation = entry.getKey().getLocation();
+            ((IBiomeModifier) (Object) biome).setHumidityModifier((float) subSeasonSettings.getHumidityModifier(biomeLocation, false));
+            ((IBiomeModifier) (Object) biome).setTempModifier((float) subSeasonSettings.getTempModifier(biomeLocation, false));
         }
     }
 

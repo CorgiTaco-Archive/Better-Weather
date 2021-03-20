@@ -1,7 +1,7 @@
 package corgitaco.betterweather.mixin.entity;
 
-import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.BetterWeatherWorldData;
+import corgitaco.betterweather.season.SeasonContext;
 import net.minecraft.entity.ai.goal.BreedGoal;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.world.World;
@@ -15,7 +15,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(BreedGoal.class)
 public abstract class MixinBreedGoal {
 
-
     @Shadow
     @Final
     protected AnimalEntity animal;
@@ -26,8 +25,9 @@ public abstract class MixinBreedGoal {
 
     @Inject(method = "shouldExecute", at = @At("HEAD"), cancellable = true)
     private void seasonBreeding(CallbackInfoReturnable<Boolean> cir) {
-        if (((BetterWeatherWorldData) world).getSeasonContext() != null) {
-            if (((BetterWeatherWorldData) world).getSeasonContext().getCurrentSubSeasonSettings().getEntityTypeBreedingBlacklist().contains(this.animal.getType()))
+        SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
+        if (seasonContext != null) {
+            if (seasonContext.getCurrentSubSeasonSettings().getEntityTypeBreedingBlacklist().contains(this.animal.getType()))
                 cir.setReturnValue(false);
         }
     }

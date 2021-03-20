@@ -1,7 +1,9 @@
 package corgitaco.betterweather.helpers;
 
+import corgitaco.betterweather.season.SubSeasonSettings;
+
 public interface IBiomeUpdate {
 
 
-    void updateBiomeData();
+    void updateBiomeData(SubSeasonSettings subSeasonSettings);
 }

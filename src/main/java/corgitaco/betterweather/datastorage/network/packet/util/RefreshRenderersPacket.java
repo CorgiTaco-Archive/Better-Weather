@@ -9,7 +9,6 @@ import java.util.function.Supplier;
 @SuppressWarnings("InstantiationOfUtilityClass")
 public class RefreshRenderersPacket {
 
-
     public static void writeToPacket(RefreshRenderersPacket packet, PacketBuffer buf) {
     }
 

@@ -1,22 +1,13 @@
 package corgitaco.betterweather;
 
 import corgitaco.betterweather.api.SeasonData;
-import corgitaco.betterweather.config.season.overrides.BiomeOverrideJsonHandler;
 import corgitaco.betterweather.season.SubSeasonSettings;
-import net.minecraft.command.CommandSource;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
 import java.awt.*;
-import java.nio.file.Path;
-import java.util.IdentityHashMap;
 
 public class BetterWeatherUtil {
 
@@ -33,7 +24,7 @@ public class BetterWeatherUtil {
             try {
                 return (int) Long.parseLong(targetHexColor.replace("#", "").replace("0x", ""), 16);
             } catch (Exception e) {
-               throw new IllegalArgumentException(e);
+                throw new IllegalArgumentException(e);
             }
         }
         return Integer.MAX_VALUE;
@@ -90,7 +81,17 @@ public class BetterWeatherUtil {
     }
 
     public static int getTimeInCycleForSeason(SeasonData.SeasonKey subSeasonVal, int seasonCycleLength) {
-        int perSubSeasonLength = seasonCycleLength / (SeasonData.SeasonKey.values().length);
+        int perSubSeasonLength = getSubSeasonLength(seasonCycleLength);
         return perSubSeasonLength * subSeasonVal.ordinal();
+    }
+
+    private static int getSubSeasonLength(int seasonCycleLength) {
+        return seasonCycleLength / (SeasonData.SeasonKey.values().length);
+    }
+
+    public static int getTimeInCycleForSeasonAndPhase(SeasonData.SeasonKey subSeasonVal, SeasonData.Phase phase, int seasonCycleLength) {
+        int timeInCycleForSeason = getTimeInCycleForSeason(subSeasonVal, seasonCycleLength);
+        int phaseTime = getSubSeasonLength(seasonCycleLength) / SeasonData.Phase.values().length;
+        return timeInCycleForSeason + (phaseTime * phase.ordinal());
     }
 }

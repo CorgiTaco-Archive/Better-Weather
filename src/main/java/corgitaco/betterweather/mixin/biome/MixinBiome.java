@@ -15,7 +15,9 @@ import java.util.function.Supplier;
 @Mixin(Biome.class)
 public class MixinBiome implements IBiomeModifier {
 
-    @Shadow @Final private Biome.Climate climate;
+    @Shadow
+    @Final
+    private Biome.Climate climate;
     private Supplier<Float> tempModifier = null;
     private Supplier<Float> humidityModifier = null;
 

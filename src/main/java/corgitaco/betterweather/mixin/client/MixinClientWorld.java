@@ -1,17 +1,19 @@
 package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.api.BetterWeatherWorldData;
-import corgitaco.betterweather.datastorage.SeasonSavedData;
+import corgitaco.betterweather.helpers.IBiomeModifier;
+import corgitaco.betterweather.helpers.IBiomeUpdate;
 import corgitaco.betterweather.season.SeasonContext;
-import net.minecraft.client.network.play.ClientPlayNetHandler;
-import net.minecraft.client.renderer.WorldRenderer;
+import corgitaco.betterweather.season.SubSeasonSettings;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.profiler.IProfiler;
 import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.World;
+import net.minecraft.util.registry.DynamicRegistries;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.biome.Biome;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -19,19 +21,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 
 @Mixin(ClientWorld.class)
-public abstract class MixinClientWorld implements BetterWeatherWorldData {
+public abstract class MixinClientWorld implements BetterWeatherWorldData, IBiomeUpdate {
+
+    @Shadow
+    public abstract DynamicRegistries func_241828_r();
 
     @Nullable
     SeasonContext seasonContext;
-
-    @Inject(method = "<init>", at = @At("RETURN"))
-    private void setupClientBetterWeatherData(ClientPlayNetHandler handler, ClientWorld.ClientWorldInfo info, RegistryKey<World> key, DimensionType dimtype, int i, Supplier<IProfiler> profiler, WorldRenderer renderer, boolean b1, long b2, CallbackInfo ci) {
-        this.seasonContext = new SeasonContext(SeasonSavedData.get((ClientWorld) (Object) this), key);
-    }
 
     @Redirect(method = "getSkyColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
     private float doNotDarkenSkyWithRainStrength(ClientWorld world, float delta) {
@@ -73,7 +73,20 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData {
     private void tick(BooleanSupplier hasTicksLeft, CallbackInfo ci) {
         long gameTime = ((ClientWorld) (Object) this).getWorldInfo().getGameTime();
         if (gameTime % 10 == 0) {
-            this.seasonContext.tick((ClientWorld) (Object) this);
+            if (this.seasonContext != null) {
+                this.seasonContext.tick((ClientWorld) (Object) this);
+            }
+        }
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Override
+    public void updateBiomeData(SubSeasonSettings subSeasonSettings) {
+        for (Map.Entry<RegistryKey<Biome>, Biome> entry : this.func_241828_r().getRegistry(Registry.BIOME_KEY).getEntries()) {
+            Biome biome = entry.getValue();
+            ResourceLocation biomeLocation = entry.getKey().getLocation();
+            ((IBiomeModifier) (Object) biome).setHumidityModifier((float) subSeasonSettings.getHumidityModifier(biomeLocation, false));
+            ((IBiomeModifier) (Object) biome).setTempModifier((float) subSeasonSettings.getTempModifier(biomeLocation, false));
         }
     }
 }

@@ -21,9 +21,8 @@ public class SeasonData {
         public static final Codec<SeasonKey> CODEC = IStringSerializable.createEnumCodec(SeasonKey::values, SeasonKey::getTypeFromId);
 
 
-
         private static final Map<String, SeasonKey> BY_ID = Util.make(Maps.newHashMap(), (nameToTypeMap) -> {
-            for(SeasonKey seasonKey : values()) {
+            for (SeasonKey seasonKey : values()) {
                 nameToTypeMap.put(seasonKey.name(), seasonKey);
             }
         });
@@ -32,6 +31,10 @@ public class SeasonData {
         @Nullable
         public static SeasonKey getTypeFromId(String idIn) {
             return BY_ID.get(idIn);
+        }
+
+        public static boolean hasType(String value) {
+            return BY_ID.containsKey(value);
         }
 
         @Override
@@ -48,7 +51,7 @@ public class SeasonData {
         public static final Codec<Phase> CODEC = IStringSerializable.createEnumCodec(Phase::values, Phase::getTypeFromId);
 
         private static final Map<String, Phase> BY_ID = Util.make(Maps.newHashMap(), (nameToTypeMap) -> {
-            for(Phase phase : values()) {
+            for (Phase phase : values()) {
                 nameToTypeMap.put(phase.name(), phase);
             }
         });
@@ -57,6 +60,11 @@ public class SeasonData {
         public static Phase getTypeFromId(String idIn) {
             return BY_ID.get(idIn);
         }
+
+        public static boolean hasType(String value) {
+            return BY_ID.containsKey(value);
+        }
+
 
         @Override
         public String getString() {

@@ -20,6 +20,6 @@ public class BetterWeatherGameRules {
         }
     }
 
-    public static void init(){
+    public static void init() {
     }
 }

@@ -1,6 +1,10 @@
 package corgitaco.betterweather.mixin.network;
 
 import com.mojang.authlib.GameProfile;
+import corgitaco.betterweather.api.BetterWeatherWorldData;
+import corgitaco.betterweather.datastorage.network.NetworkHandler;
+import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
+import corgitaco.betterweather.season.SeasonContext;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
@@ -25,10 +29,21 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 public class MixinPlayerList {
 
     @Mutable
-    @Shadow @Final private DynamicRegistries.Impl field_232639_s_;
+    @Shadow
+    @Final
+    private DynamicRegistries.Impl field_232639_s_;
 
     @Inject(method = "initializeConnectionToPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z", ordinal = 0, shift = At.Shift.BEFORE), locals = LocalCapture.CAPTURE_FAILEXCEPTION)
     private void useWorldRegistry(NetworkManager netManager, ServerPlayerEntity playerIn, CallbackInfo ci, GameProfile gameprofile, PlayerProfileCache playerprofilecache, GameProfile gameprofile1, String s, CompoundNBT compoundnbt, RegistryKey registrykey, ServerWorld serverworld, ServerWorld serverworld1, String s1, IWorldInfo iworldinfo, ServerPlayNetHandler serverplaynethandler, GameRules gamerules) {
         this.field_232639_s_ = (DynamicRegistries.Impl) serverworld1.func_241828_r();
+    }
+
+
+    @Inject(method = "sendWorldInfo", at = @At(value = "HEAD"))
+    private void sendSeasonContext(ServerPlayerEntity playerIn, ServerWorld worldIn, CallbackInfo ci) {
+        SeasonContext seasonContext = ((BetterWeatherWorldData) worldIn).getSeasonContext();
+        if (seasonContext != null) {
+            NetworkHandler.sendToClient(playerIn, new SeasonPacket(seasonContext.getCurrentSeasonTime(), seasonContext.getSeasonCycleLength()));
+        }
     }
 }
