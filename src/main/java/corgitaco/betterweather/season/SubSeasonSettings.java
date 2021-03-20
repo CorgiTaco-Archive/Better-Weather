@@ -402,7 +402,7 @@ public class SubSeasonSettings {
             }
 
             try {
-                result = Integer.parseInt(input);
+                result = (int) Long.parseLong(input.replace("#", "").replace("0x", ""), 16);
             } catch (NumberFormatException e) {
                 BetterWeather.LOGGER.info(e.toString());
             }

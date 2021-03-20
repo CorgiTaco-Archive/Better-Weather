@@ -4,6 +4,7 @@ import corgitaco.betterweather.datastorage.network.NetworkHandler;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -30,9 +31,10 @@ public class BetterWeather {
         if (!dir.exists())
             dir.mkdir();
 
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::lateSetup);
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        bus.addListener(this::commonSetup);
+        bus.addListener(this::clientSetup);
+        bus.addListener(this::lateSetup);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
