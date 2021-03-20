@@ -38,10 +38,10 @@ public class BiomeOverrideJsonHandler {
                     subSeasonSettings.setCropToMultiplierStorage(biomeToOverrideStorageJsonStorage.getSeasonCropOverrides());
 
                 } else
-                    BetterWeather.LOGGER.error(BetterWeather.MOD_ID + "-biomes.json could not be read");
+                    BetterWeather.LOGGER.error("\"" + path.toString() + "\" could not be read...");
 
             } catch (IOException e) {
-                BetterWeather.LOGGER.error(BetterWeather.MOD_ID + "-biomes.json could not be read");
+                BetterWeather.LOGGER.error("\"" + path.toString() + "\" could not be read..." + e.toString());
             }
         }
     }
@@ -61,7 +61,7 @@ public class BiomeOverrideJsonHandler {
             Files.createDirectories(path.getParent());
             Files.write(path, jsonString.getBytes());
         } catch (IOException e) {
-            BetterWeather.LOGGER.error(BetterWeather.MOD_ID + "-biomes.json could not be created");
+            BetterWeather.LOGGER.error("\"" + path.toString() + "\" could not be created..." + e.toString());
         }
     }
 }

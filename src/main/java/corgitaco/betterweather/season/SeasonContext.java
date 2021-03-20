@@ -6,6 +6,7 @@ import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.api.SeasonData;
 import corgitaco.betterweather.config.season.SeasonConfigHolder;
+import corgitaco.betterweather.config.season.overrides.BiomeOverrideJsonHandler;
 import corgitaco.betterweather.datastorage.SeasonSavedData;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import net.minecraft.block.Block;
@@ -13,11 +14,11 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.loading.FMLPaths;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.io.File;
@@ -25,39 +26,55 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class SeasonContext {
-    public static final String CONFIG_NAME = "seasons.json";
+    public static final String CONFIG_NAME = "season-settings.json";
 
     private Season currentSeason;
     private int currentSeasonTime;
 
     private int seasonCycleLength;
     private final File seasonConfigFile;
+    private final Path seasonOverridesPath;
 
     private IdentityHashMap<SeasonData.SeasonKey, Season> seasons;
 
     public SeasonContext(SeasonSavedData seasonData, RegistryKey<World> worldKey) {
         this.currentSeasonTime = seasonData.getSeasonTime();
         this.seasonCycleLength = seasonData.getSeasonCycleLength();
-        this.seasonConfigFile = FMLPaths.CONFIGDIR.get().resolve(BetterWeather.MOD_ID).resolve(CONFIG_NAME.replace(".json", "")).resolve(worldKey.getLocation().toString().replace(":", "-") + "-" + CONFIG_NAME).toFile();
+
+        ResourceLocation dimensionLocation = worldKey.getLocation();
+        Path seasonsFolderPath = BetterWeather.CONFIG_PATH.resolve(dimensionLocation.getNamespace()).resolve(dimensionLocation.getPath()).resolve("seasons");
+        this.seasonConfigFile = seasonsFolderPath.resolve(CONFIG_NAME).toFile();
+        this.seasonOverridesPath = seasonsFolderPath.resolve("overrides");
+
         this.handleConfig();
         this.currentSeason = seasons.get(BetterWeatherUtil.getSeasonFromTime(currentSeasonTime, seasonCycleLength));
     }
 
     public void handleConfig() {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.setPrettyPrinting();
-        gsonBuilder.disableHtmlEscaping();
-        Gson gson = gsonBuilder.create();
+        Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
         if (!seasonConfigFile.exists()) {
             create(gson);
         }
         if (seasonConfigFile.exists()) {
             read();
+        }
+
+        fillSubSeasonOverrideStorage();
+    }
+
+    private void fillSubSeasonOverrideStorage() {
+        for (Map.Entry<SeasonData.SeasonKey, Season> seasonKeySeasonEntry : this.seasons.entrySet()) {
+            IdentityHashMap<SeasonData.Phase, SubSeasonSettings> phaseSettings = seasonKeySeasonEntry.getValue().getPhaseSettings();
+            for (Map.Entry<SeasonData.Phase, SubSeasonSettings> phaseSubSeasonSettingsEntry : phaseSettings.entrySet()) {
+                BiomeOverrideJsonHandler.handleOverrideJsonConfigs(this.seasonOverridesPath.resolve(seasonKeySeasonEntry.getKey().toString() + "-" + phaseSubSeasonSettingsEntry.getKey() + ".json"), seasonKeySeasonEntry.getKey() == SeasonData.SeasonKey.WINTER ? SubSeasonSettings.WINTER_OVERRIDE : new IdentityHashMap<>(), phaseSubSeasonSettingsEntry.getValue());
+            }
         }
     }
 
