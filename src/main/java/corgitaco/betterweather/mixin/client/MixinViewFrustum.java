@@ -1,7 +1,7 @@
 package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.api.BetterWeatherWorldData;
+import corgitaco.betterweather.helper.BetterWeatherWorldData;
 import corgitaco.betterweather.helper.WeatherViewFrustum;
 import net.minecraft.client.renderer.ViewFrustum;
 import net.minecraft.world.World;

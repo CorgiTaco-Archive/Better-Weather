@@ -6,7 +6,7 @@ import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.util.storage.OverrideStorage;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
@@ -18,8 +18,16 @@ import java.util.stream.Collectors;
 
 public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideStorageJsonStorage> {
 
-    public static IdentityHashMap<ResourceLocation, OverrideStorage> processKeys(ObjectOpenHashSet<Pair<Object, JsonElement>> oldMap, Registry<Biome> biomeRegistry) {
-        IdentityHashMap<ResourceLocation, OverrideStorage> newMap = new IdentityHashMap<>();
+
+    private final Registry<Biome> biomeRegistry;
+
+    public OverrideDeserializer(Registry<Biome> biomeRegistry) {
+        this.biomeRegistry = biomeRegistry;
+    }
+
+
+    public static IdentityHashMap<RegistryKey<Biome>, OverrideStorage> processKeys(ObjectOpenHashSet<Pair<Object, JsonElement>> oldMap, Registry<Biome> biomeRegistry) {
+        IdentityHashMap<RegistryKey<Biome>, OverrideStorage> newMap = new IdentityHashMap<>();
 
         Map<Biome.Category, List<Biome>> categoryListMap = biomeRegistry.getEntries().stream().map(Map.Entry::getValue).collect(Collectors.groupingBy(Biome::getCategory));
         Map<BiomeDictionary.Type, List<Biome>> biomeDictionaryMap = biomeRegistry.getEntries().stream()
@@ -31,24 +39,34 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
             Object object = pair.getFirst();
             if (object instanceof BiomeDictionary.Type) {
                 for (Biome biome : biomeDictionaryMap.get(object)) {
-                    ResourceLocation biomeKey = biomeRegistry.getKey(biome);
-                    OverrideStorage overrideStorage = newMap.getOrDefault(biomeKey, new OverrideStorage());
-                    updateOverrideStorageData(overrideStorage, pair.getSecond());
-                    newMap.put(biomeKey, overrideStorage);
+                    ResourceLocation biomeID = biomeRegistry.getKey(biome);
+                    if (biomeID != null) {
+                        RegistryKey<Biome> biomeKey = RegistryKey.getOrCreateKey(Registry.BIOME_KEY, biomeID);
+                        OverrideStorage overrideStorage = newMap.getOrDefault(biomeKey, new OverrideStorage());
+                        updateOverrideStorageData(overrideStorage, pair.getSecond());
+                        newMap.put(biomeKey, overrideStorage);
+                    }
+
                 }
             } else if (object instanceof Biome.Category) {
                 for (Biome biome : categoryListMap.get(object)) {
-                    ResourceLocation biomeKey = biomeRegistry.getKey(biome);
+                    ResourceLocation biomeID = biomeRegistry.getKey(biome);
+                    if (biomeID != null) {
+                        RegistryKey<Biome> biomeKey = RegistryKey.getOrCreateKey(Registry.BIOME_KEY, biomeID);
+                        OverrideStorage overrideStorage = newMap.getOrDefault(biomeKey, new OverrideStorage());
+                        updateOverrideStorageData(overrideStorage, pair.getSecond());
+                        newMap.put(biomeKey, overrideStorage);
+                    }
+                }
+            } else if (object instanceof Biome) {
+                Biome biome = (Biome) object;
+                ResourceLocation biomeID = biomeRegistry.getKey(biome);
+                if (biomeID != null) {
+                    RegistryKey<Biome> biomeKey = RegistryKey.getOrCreateKey(Registry.BIOME_KEY, biomeID);
                     OverrideStorage overrideStorage = newMap.getOrDefault(biomeKey, new OverrideStorage());
                     updateOverrideStorageData(overrideStorage, pair.getSecond());
                     newMap.put(biomeKey, overrideStorage);
                 }
-            } else if (object instanceof Biome) {
-                Biome biome = (Biome) object;
-                ResourceLocation biomeKey = biomeRegistry.getKey(biome);
-                OverrideStorage overrideStorage = newMap.getOrDefault(biomeKey, new OverrideStorage());
-                updateOverrideStorageData(overrideStorage, pair.getSecond());
-                newMap.put(biomeKey, overrideStorage);
             }
         }
         return newMap;
@@ -119,8 +137,6 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
         JsonObject object = json.getAsJsonObject();
         StringBuilder errorBuilder = new StringBuilder();
 
-        Registry<Biome> biomeRegistry = BetterWeather.biomeRegistryEarlyAccess == null ? Minecraft.getInstance().world.func_241828_r().getRegistry(Registry.BIOME_KEY) : BetterWeather.biomeRegistryEarlyAccess;
-
         ObjectOpenHashSet<Pair<Object, JsonElement>> biomeObjects = new ObjectOpenHashSet<>();
 
         Map uncastedCropOverrides = null;
@@ -152,7 +168,7 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
         }
 
 
-        IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage = processKeys(biomeObjects, biomeRegistry);
+        IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage = processKeys(biomeObjects, biomeRegistry);
         IdentityHashMap<Block, Double> cropToMultiplierMap = new IdentityHashMap<>();
 
         if (!uncastedCropOverrides.isEmpty()) {

@@ -6,8 +6,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.BetterWeatherUtil;
-import corgitaco.betterweather.api.SeasonData;
+import corgitaco.betterweather.api.season.Season;
+import corgitaco.betterweather.api.season.Settings;
 import corgitaco.betterweather.config.season.SeasonConfigHolder;
 import corgitaco.betterweather.config.season.overrides.BiomeOverrideJsonHandler;
 import corgitaco.betterweather.datastorage.SeasonSavedData;
@@ -16,6 +16,7 @@ import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
 import corgitaco.betterweather.datastorage.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.helpers.IBiomeUpdate;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
+import corgitaco.betterweather.util.SeasonUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -25,6 +26,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -41,21 +43,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class SeasonContext {
+public class SeasonContext implements Season {
     public static final String CONFIG_NAME = "season-settings.json";
 
-    private Season currentSeason;
-    private int currentSeasonTime;
-    private int seasonCycleLength;
+    private BWSeason currentSeason;
+    private int currentYearTime;
+    private int yearLength;
+    private final Registry<Biome> biomeRegistry;
 
     private final File seasonConfigFile;
     private final Path seasonOverridesPath;
 
-    private IdentityHashMap<SeasonData.SeasonKey, Season> seasons;
+    private IdentityHashMap<Season.Key, BWSeason> seasons;
 
-    public SeasonContext(SeasonSavedData seasonData, RegistryKey<World> worldKey) {
-        this.currentSeasonTime = seasonData.getSeasonTime();
-        this.seasonCycleLength = seasonData.getSeasonCycleLength();
+    public SeasonContext(SeasonSavedData seasonData, RegistryKey<World> worldKey, Registry<Biome> biomeRegistry) {
+        this.currentYearTime = seasonData.getCurrentYearTime();
+        this.yearLength = seasonData.getYearLength();
+        this.biomeRegistry = biomeRegistry;
 
         ResourceLocation dimensionLocation = worldKey.getLocation();
         Path seasonsFolderPath = BetterWeather.CONFIG_PATH.resolve(dimensionLocation.getNamespace()).resolve(dimensionLocation.getPath()).resolve("seasons");
@@ -63,7 +67,7 @@ public class SeasonContext {
         this.seasonOverridesPath = seasonsFolderPath.resolve("overrides");
 
         this.handleConfig();
-        this.currentSeason = seasons.get(BetterWeatherUtil.getSeasonFromTime(currentSeasonTime, seasonCycleLength)).setPhaseForTime(this.currentSeasonTime / 4, this.seasonCycleLength / 4);
+        this.currentSeason = seasons.get(SeasonUtils.getSeasonFromTime(currentYearTime, yearLength)).setPhaseForTime(this.currentYearTime, this.yearLength);
     }
 
     public void handleConfig() {
@@ -79,18 +83,18 @@ public class SeasonContext {
     }
 
     private void fillSubSeasonOverrideStorage() {
-        for (Map.Entry<SeasonData.SeasonKey, Season> seasonKeySeasonEntry : this.seasons.entrySet()) {
-            IdentityHashMap<SeasonData.Phase, SubSeasonSettings> phaseSettings = seasonKeySeasonEntry.getValue().getPhaseSettings();
-            for (Map.Entry<SeasonData.Phase, SubSeasonSettings> phaseSubSeasonSettingsEntry : phaseSettings.entrySet()) {
-                BiomeOverrideJsonHandler.handleOverrideJsonConfigs(this.seasonOverridesPath.resolve(seasonKeySeasonEntry.getKey().toString() + "-" + phaseSubSeasonSettingsEntry.getKey() + ".json"), seasonKeySeasonEntry.getKey() == SeasonData.SeasonKey.WINTER ? SubSeasonSettings.WINTER_OVERRIDE : new IdentityHashMap<>(), phaseSubSeasonSettingsEntry.getValue());
+        for (Map.Entry<Season.Key, BWSeason> seasonKeySeasonEntry : this.seasons.entrySet()) {
+            IdentityHashMap<Season.Phase, SubSeasonSettings> phaseSettings = seasonKeySeasonEntry.getValue().getPhaseSettings();
+            for (Map.Entry<Season.Phase, SubSeasonSettings> phaseSubSeasonSettingsEntry : phaseSettings.entrySet()) {
+                BiomeOverrideJsonHandler.handleOverrideJsonConfigs(this.seasonOverridesPath.resolve(seasonKeySeasonEntry.getKey().toString() + "-" + phaseSubSeasonSettingsEntry.getKey() + ".json"), seasonKeySeasonEntry.getKey() == Season.Key.WINTER ? SubSeasonSettings.WINTER_OVERRIDE : new IdentityHashMap<>(), phaseSubSeasonSettingsEntry.getValue(), this.biomeRegistry);
             }
         }
     }
 
-    public void setSeason(List<ServerPlayerEntity> players, SeasonData.SeasonKey newSeason, SeasonData.Phase phase) {
-        this.currentSeasonTime = BetterWeatherUtil.getTimeInCycleForSeasonAndPhase(newSeason, phase, this.seasonCycleLength);
+    public void setSeason(List<ServerPlayerEntity> players, Season.Key newSeason, Season.Phase phase) {
+        this.currentYearTime = SeasonUtils.getTimeInCycleForSeasonAndPhase(newSeason, phase, this.yearLength);
         this.currentSeason = seasons.get(newSeason);
-        this.currentSeason.setPhaseForTime(currentSeasonTime / 4, seasonCycleLength / 4);
+        this.currentSeason.setPhaseForTime(currentYearTime, yearLength);
         this.updatePacket(players);
     }
 
@@ -111,10 +115,10 @@ public class SeasonContext {
             Optional<SeasonConfigHolder> configHolder = SeasonConfigHolder.CODEC.parse(JsonOps.INSTANCE, jsonObject).resultOrPartial(BetterWeather.LOGGER::error);
             if (configHolder.isPresent()) {
                 this.seasons = configHolder.get().getSeasonKeySeasonMap();
-                this.seasonCycleLength = configHolder.get().getSeasonCycleLength();
+                this.yearLength = configHolder.get().getSeasonCycleLength();
             } else {
                 this.seasons = SeasonConfigHolder.DEFAULT_CONFIG_HOLDER.getSeasonKeySeasonMap();
-                this.seasonCycleLength = SeasonConfigHolder.DEFAULT_CONFIG_HOLDER.getSeasonCycleLength();
+                this.yearLength = SeasonConfigHolder.DEFAULT_CONFIG_HOLDER.getSeasonCycleLength();
             }
         } catch (IOException e) {
 
@@ -122,11 +126,11 @@ public class SeasonContext {
     }
 
     public void tick(World world) {
-        Season prevSeason = this.currentSeason;
+        BWSeason prevSeason = this.currentSeason;
         this.tickSeasonTime(world);
 
-        SeasonData.Phase prevPhase = this.currentSeason.getCurrentPhase();
-        this.currentSeason.tick(currentSeasonTime / 4, seasonCycleLength / 4); //TODO: Is this right?!?!
+        Season.Phase prevPhase = this.currentSeason.getCurrentPhase();
+        this.currentSeason.tick(currentYearTime, yearLength);
 
         if (prevSeason != this.currentSeason || prevPhase != this.currentSeason.getCurrentPhase()) {
             ((IBiomeUpdate) world).updateBiomeData(this.getCurrentSubSeasonSettings());
@@ -181,15 +185,15 @@ public class SeasonContext {
 
     public void updatePacket(List<ServerPlayerEntity> players) {
         for (ServerPlayerEntity player : players) {
-            NetworkHandler.sendToClient(player, new SeasonPacket(this.currentSeasonTime, this.seasonCycleLength));
+            NetworkHandler.sendToClient(player, new SeasonPacket(this.currentYearTime, this.yearLength));
             NetworkHandler.sendToClient(player, new RefreshRenderersPacket());
         }
     }
 
     private void tickSeasonTime(World world) {
         if (world.getGameRules().getBoolean(BetterWeatherGameRules.DO_SEASON_CYCLE)) {
-            this.currentSeasonTime = currentSeasonTime > this.seasonCycleLength ? 0 : (currentSeasonTime + 1);
-            this.currentSeason = this.seasons.get(BetterWeatherUtil.getSeasonFromTime(this.currentSeasonTime, this.seasonCycleLength)).setPhaseForTime(this.currentSeasonTime / 4, this.seasonCycleLength / 4);
+            this.currentYearTime = currentYearTime > this.yearLength ? 0 : (currentYearTime + 1);
+            this.currentSeason = this.seasons.get(SeasonUtils.getSeasonFromTime(this.currentYearTime, this.yearLength)).setPhaseForTime(this.currentYearTime, this.yearLength);
 
             if (world.getWorldInfo().getGameTime() % 50 == 0) {
                 save(world);
@@ -198,11 +202,11 @@ public class SeasonContext {
     }
 
     private void save(World world) {
-        SeasonSavedData.get(world).setSeasonTime(this.currentSeasonTime);
-        SeasonSavedData.get(world).setSeasonCycleLength(this.seasonCycleLength);
+        SeasonSavedData.get(world).setCurrentYearTime(this.currentYearTime);
+        SeasonSavedData.get(world).setYearLength(this.yearLength);
     }
 
-    public Season getCurrentSeason() {
+    public BWSeason getCurrentSeason() {
         return currentSeason;
     }
 
@@ -210,21 +214,39 @@ public class SeasonContext {
         return this.currentSeason.getCurrentSettings();
     }
 
-    public int getSeasonCycleLength() {
-        return seasonCycleLength;
+
+    @Override
+    public Key getKey() {
+        return this.currentSeason.getSeasonKey();
     }
 
-    public int getCurrentSeasonTime() {
-        return currentSeasonTime;
+    @Override
+    public int getYearLength() {
+        return yearLength;
+    }
+
+    @Override
+    public int getCurrentYearTime() {
+        return currentYearTime;
+    }
+
+    @Override
+    public Phase getPhase() {
+        return this.currentSeason.getCurrentPhase();
+    }
+
+    @Override
+    public Settings getSettings() {
+        return this.currentSeason.getCurrentSettings();
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void setCurrentSeasonTime(int currentSeasonTime) {
-        this.currentSeasonTime = currentSeasonTime;
+    public void setCurrentYearTime(int currentYearTime) {
+        this.currentYearTime = currentYearTime;
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void setSeasonCycleLength(int seasonCycleLength) {
-        this.seasonCycleLength = seasonCycleLength;
+    public void setYearLength(int yearLength) {
+        this.yearLength = yearLength;
     }
 }

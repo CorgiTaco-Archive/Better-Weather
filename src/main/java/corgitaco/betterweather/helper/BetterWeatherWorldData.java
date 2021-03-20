@@ -1,4 +1,4 @@
-package corgitaco.betterweather.api;
+package corgitaco.betterweather.helper;
 
 import corgitaco.betterweather.season.SeasonContext;
 

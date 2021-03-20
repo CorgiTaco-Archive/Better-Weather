@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.season.SubSeasonSettings;
 import corgitaco.betterweather.util.storage.OverrideStorage;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.biome.Biome;
 
 import java.io.File;
 import java.io.FileReader;
@@ -12,15 +14,14 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 
 public class BiomeOverrideJsonHandler {
 
 
-    public static void handleOverrideJsonConfigs(Path path, IdentityHashMap<Object, OverrideStorage> objectToOverrideStorageDefault, SubSeasonSettings subSeasonSettings) {
+    public static void handleOverrideJsonConfigs(Path path, IdentityHashMap<Object, OverrideStorage> objectToOverrideStorageDefault, SubSeasonSettings subSeasonSettings, Registry<Biome> biomeRegistry) {
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(BiomeToOverrideStorageJsonStorage.class, new OverrideDeserializer());
+        gsonBuilder.registerTypeAdapter(BiomeToOverrideStorageJsonStorage.class, new OverrideDeserializer(biomeRegistry));
         gsonBuilder.setPrettyPrinting();
         gsonBuilder.disableHtmlEscaping();
         Gson gson = gsonBuilder.create();
@@ -35,7 +36,7 @@ public class BiomeOverrideJsonHandler {
             try (Reader reader = new FileReader(path.toString())) {
                 BiomeToOverrideStorageJsonStorage biomeToOverrideStorageJsonStorage = gson.fromJson(reader, BiomeToOverrideStorageJsonStorage.class);
                 if (biomeToOverrideStorageJsonStorage != null) {
-                    subSeasonSettings.setBiomeToOverrideStorage(new HashMap<>(biomeToOverrideStorageJsonStorage.getBiomeToOverrideStorage()));
+                    subSeasonSettings.setBiomeToOverrideStorage(biomeToOverrideStorageJsonStorage.getBiomeToOverrideStorage());
                     subSeasonSettings.setCropToMultiplierStorage(biomeToOverrideStorageJsonStorage.getSeasonCropOverrides());
 
                 } else

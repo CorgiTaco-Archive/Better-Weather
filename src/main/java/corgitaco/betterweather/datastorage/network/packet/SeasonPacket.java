@@ -1,26 +1,27 @@
 package corgitaco.betterweather.datastorage.network.packet;
 
-import corgitaco.betterweather.api.BetterWeatherWorldData;
 import corgitaco.betterweather.datastorage.SeasonSavedData;
+import corgitaco.betterweather.helper.BetterWeatherWorldData;
 import corgitaco.betterweather.season.SeasonContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.registry.Registry;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
 public class SeasonPacket {
-    private final int seasonTime;
-    private final int seasonCycleLength;
+    private final int currentYearTime;
+    private final int yearLength;
 
-    public SeasonPacket(int seasonTime, int seasonCycleLength) {
-        this.seasonTime = seasonTime;
-        this.seasonCycleLength = seasonCycleLength;
+    public SeasonPacket(int currentYearTime, int yearLength) {
+        this.currentYearTime = currentYearTime;
+        this.yearLength = yearLength;
     }
 
     public static void writeToPacket(SeasonPacket packet, PacketBuffer buf) {
-        buf.writeInt(packet.seasonTime);
-        buf.writeInt(packet.seasonCycleLength);
+        buf.writeInt(packet.currentYearTime);
+        buf.writeInt(packet.yearLength);
     }
 
     public static SeasonPacket readFromPacket(PacketBuffer buf) {
@@ -35,13 +36,13 @@ public class SeasonPacket {
                 if (minecraft.world != null && minecraft.player != null) {
                     SeasonContext seasonContext = ((BetterWeatherWorldData) minecraft.world).getSeasonContext();
                     if (seasonContext == null) {
-                        SeasonSavedData.get(minecraft.world).setSeasonTime(message.seasonTime);
-                        SeasonSavedData.get(minecraft.world).setSeasonCycleLength(message.seasonCycleLength);
-                        ((BetterWeatherWorldData) minecraft.world).setSeasonContext(new SeasonContext(SeasonSavedData.get(minecraft.world), minecraft.world.getDimensionKey()));
+                        SeasonSavedData.get(minecraft.world).setCurrentYearTime(message.currentYearTime);
+                        SeasonSavedData.get(minecraft.world).setYearLength(message.yearLength);
+                        ((BetterWeatherWorldData) minecraft.world).setSeasonContext(new SeasonContext(SeasonSavedData.get(minecraft.world), minecraft.world.getDimensionKey(), minecraft.world.func_241828_r().getRegistry(Registry.BIOME_KEY)));
                     }
 
-                    ((BetterWeatherWorldData) minecraft.world).getSeasonContext().setCurrentSeasonTime(message.seasonTime);
-                    ((BetterWeatherWorldData) minecraft.world).getSeasonContext().setSeasonCycleLength(message.seasonCycleLength);
+                    ((BetterWeatherWorldData) minecraft.world).getSeasonContext().setCurrentYearTime(message.currentYearTime);
+                    ((BetterWeatherWorldData) minecraft.world).getSeasonContext().setYearLength(message.yearLength);
                 }
             });
         }

@@ -1,7 +1,7 @@
 package corgitaco.betterweather.mixin.server;
 
-import corgitaco.betterweather.api.BetterWeatherWorldData;
 import corgitaco.betterweather.datastorage.SeasonSavedData;
+import corgitaco.betterweather.helper.BetterWeatherWorldData;
 import corgitaco.betterweather.helpers.IBiomeModifier;
 import corgitaco.betterweather.helpers.IBiomeUpdate;
 import corgitaco.betterweather.season.SeasonContext;
@@ -11,7 +11,6 @@ import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.WorldSettingsImport;
@@ -62,7 +61,7 @@ public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWor
         ChunkGenerator dimensionChunkGenerator = dimension.getChunkGenerator();
         this.field_241102_C_/*Server Chunk Provider*/.generator = dimensionChunkGenerator; // Some modded generators do weird stuff so we'll just reset the field.
         this.field_241102_C_/*Server Chunk Provider*/.chunkManager.generator = dimensionChunkGenerator; // Some modded generators do weird stuff so we'll just reset the field.
-        this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key);
+        this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));
         updateBiomeData(seasonContext.getCurrentSubSeasonSettings());
     }
 
@@ -71,9 +70,9 @@ public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWor
     public void updateBiomeData(SubSeasonSettings subSeasonSettings) {
         for (Map.Entry<RegistryKey<Biome>, Biome> entry : registry.getRegistry(Registry.BIOME_KEY).getEntries()) {
             Biome biome = entry.getValue();
-            ResourceLocation biomeLocation = entry.getKey().getLocation();
-            ((IBiomeModifier) (Object) biome).setHumidityModifier((float) subSeasonSettings.getHumidityModifier(biomeLocation, false));
-            ((IBiomeModifier) (Object) biome).setTempModifier((float) subSeasonSettings.getTempModifier(biomeLocation, false));
+            RegistryKey<Biome> biomeKey = entry.getKey();
+            ((IBiomeModifier) (Object) biome).setHumidityModifier((float) subSeasonSettings.getHumidityModifier(biomeKey));
+            ((IBiomeModifier) (Object) biome).setTempModifier((float) subSeasonSettings.getTemperatureModifier(biomeKey));
         }
     }
 

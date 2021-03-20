@@ -1,6 +1,5 @@
 package corgitaco.betterweather;
 
-import corgitaco.betterweather.api.SeasonData;
 import corgitaco.betterweather.season.SubSeasonSettings;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
@@ -65,33 +64,5 @@ public class BetterWeatherUtil {
 
     public static Color transformFloatColor(Vector3d floatColor) {
         return new Color((int) (floatColor.getX() * 255), (int) (floatColor.getY() * 255), (int) (floatColor.getZ() * 255));
-    }
-
-    public static SeasonData.SeasonKey getSeasonFromTime(int seasonTimeInCycle, int seasonCycleLength) {
-        int seasonLength = seasonCycleLength / 4;
-
-        if (seasonTimeInCycle < seasonLength) {
-            return SeasonData.SeasonKey.SPRING;
-        } else if (seasonTimeInCycle < seasonLength * 2) {
-            return SeasonData.SeasonKey.SUMMER;
-        } else if (seasonTimeInCycle < seasonLength * 3) {
-            return SeasonData.SeasonKey.AUTUMN;
-        } else
-            return SeasonData.SeasonKey.WINTER;
-    }
-
-    public static int getTimeInCycleForSeason(SeasonData.SeasonKey subSeasonVal, int seasonCycleLength) {
-        int perSubSeasonLength = getSubSeasonLength(seasonCycleLength);
-        return perSubSeasonLength * subSeasonVal.ordinal();
-    }
-
-    private static int getSubSeasonLength(int seasonCycleLength) {
-        return seasonCycleLength / (SeasonData.SeasonKey.values().length);
-    }
-
-    public static int getTimeInCycleForSeasonAndPhase(SeasonData.SeasonKey subSeasonVal, SeasonData.Phase phase, int seasonCycleLength) {
-        int timeInCycleForSeason = getTimeInCycleForSeason(subSeasonVal, seasonCycleLength);
-        int phaseTime = getSubSeasonLength(seasonCycleLength) / SeasonData.Phase.values().length;
-        return timeInCycleForSeason + (phaseTime * phase.ordinal());
     }
 }

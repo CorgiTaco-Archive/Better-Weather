@@ -2,20 +2,21 @@ package corgitaco.betterweather.config.season.overrides;
 
 import corgitaco.betterweather.util.storage.OverrideStorage;
 import net.minecraft.block.Block;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.world.biome.Biome;
 
 import java.util.IdentityHashMap;
 
 public class BiomeToOverrideStorageJsonStorage {
-    private final IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage;
+    private final IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage;
     private final IdentityHashMap<Block, Double> seasonCropOverrides;
 
-    public BiomeToOverrideStorageJsonStorage(IdentityHashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage, IdentityHashMap<Block, Double> seasonCropOverrides) {
+    public BiomeToOverrideStorageJsonStorage(IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage, IdentityHashMap<Block, Double> seasonCropOverrides) {
         this.biomeToOverrideStorage = biomeToOverrideStorage;
         this.seasonCropOverrides = seasonCropOverrides;
     }
 
-    public IdentityHashMap<ResourceLocation, OverrideStorage> getBiomeToOverrideStorage() {
+    public IdentityHashMap<RegistryKey<Biome>, OverrideStorage> getBiomeToOverrideStorage() {
         return biomeToOverrideStorage;
     }
 

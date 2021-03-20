@@ -1,6 +1,8 @@
 package corgitaco.betterweather.mixin.client;
 
-import corgitaco.betterweather.api.BetterWeatherWorldData;
+import corgitaco.betterweather.helper.BetterWeatherWorldData;
+import corgitaco.betterweather.api.Climate;
+import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.helpers.IBiomeModifier;
 import corgitaco.betterweather.helpers.IBiomeUpdate;
 import corgitaco.betterweather.season.SeasonContext;
@@ -25,7 +27,7 @@ import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 @Mixin(ClientWorld.class)
-public abstract class MixinClientWorld implements BetterWeatherWorldData, IBiomeUpdate {
+public abstract class MixinClientWorld implements BetterWeatherWorldData, IBiomeUpdate, Climate {
 
     @Shadow
     public abstract DynamicRegistries func_241828_r();
@@ -84,9 +86,14 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, IBiome
     public void updateBiomeData(SubSeasonSettings subSeasonSettings) {
         for (Map.Entry<RegistryKey<Biome>, Biome> entry : this.func_241828_r().getRegistry(Registry.BIOME_KEY).getEntries()) {
             Biome biome = entry.getValue();
-            ResourceLocation biomeLocation = entry.getKey().getLocation();
-            ((IBiomeModifier) (Object) biome).setHumidityModifier((float) subSeasonSettings.getHumidityModifier(biomeLocation, false));
-            ((IBiomeModifier) (Object) biome).setTempModifier((float) subSeasonSettings.getTempModifier(biomeLocation, false));
+            RegistryKey<Biome> biomeKey = entry.getKey();
+            ((IBiomeModifier) (Object) biome).setHumidityModifier((float) subSeasonSettings.getHumidityModifier(biomeKey));
+            ((IBiomeModifier) (Object) biome).setTempModifier((float) subSeasonSettings.getTemperatureModifier(biomeKey));
         }
+    }
+
+    @Override
+    public Season getSeason() {
+        return this.seasonContext;
     }
 }

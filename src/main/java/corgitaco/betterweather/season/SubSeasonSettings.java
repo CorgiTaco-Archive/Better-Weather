@@ -4,23 +4,25 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
-import corgitaco.betterweather.api.SeasonData;
+import corgitaco.betterweather.api.season.Season;
+import corgitaco.betterweather.api.season.Settings;
 import corgitaco.betterweather.util.storage.OverrideStorage;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 
+import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class SubSeasonSettings {
-
+public class SubSeasonSettings implements Settings {
 
     public static Codec<SubSeasonSettings> CODEC = RecordCodecBuilder.create((subSeasonSettingsInstance -> {
         return subSeasonSettingsInstance.group(Codec.DOUBLE.optionalFieldOf("tempModifier", 0.0).forGetter((subSeasonSettings) -> {
@@ -81,9 +83,9 @@ public class SubSeasonSettings {
     private final SeasonClientSettings client;
 
     //These are not to be serialized by GSON.
-    private transient SeasonData.SeasonKey parentSeason;
+    private transient Season.Key parentSeason;
     private transient IdentityHashMap<Block, Double> cropToMultiplierStorage;
-    private transient HashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage;
+    private transient IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage;
     private transient ObjectOpenHashSet<EntityType<?>> entityTypeBreedingBlacklist;
 
     public SubSeasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, SeasonClientSettings client) {
@@ -105,11 +107,11 @@ public class SubSeasonSettings {
         entityTypeBreedingBlacklist = new ObjectOpenHashSet<>(entityBreedingBlacklist.stream().map(ResourceLocation::new).filter((resourceLocation) -> (BetterWeatherUtil.filterRegistryID(resourceLocation, Registry.ENTITY_TYPE, "Entity"))).map(Registry.ENTITY_TYPE::getOptional).map(Optional::get).collect(Collectors.toSet()));
     }
 
-    public SeasonData.SeasonKey getParent() {
+    public Season.Key getParent() {
         return parentSeason;
     }
 
-    public void setParentSeason(SeasonData.SeasonKey parentSeason) {
+    public void setParentSeason(Season.Key parentSeason) {
         this.parentSeason = parentSeason;
     }
 
@@ -123,19 +125,20 @@ public class SubSeasonSettings {
         this.cropToMultiplierStorage = cropToMultiplierStorage;
     }
 
-    public HashMap<ResourceLocation, OverrideStorage> getBiomeToOverrideStorage() {
+    public IdentityHashMap<RegistryKey<Biome>, OverrideStorage> getBiomeToOverrideStorage() {
         if (biomeToOverrideStorage == null)
-            biomeToOverrideStorage = new HashMap<>();
+            biomeToOverrideStorage = new IdentityHashMap<>();
         return biomeToOverrideStorage;
     }
 
-    public void setBiomeToOverrideStorage(HashMap<ResourceLocation, OverrideStorage> biomeToOverrideStorage) {
+    public void setBiomeToOverrideStorage(IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage) {
         this.biomeToOverrideStorage = biomeToOverrideStorage;
     }
 
-    public double getTempModifier(ResourceLocation biome, boolean useSeasonDefault) {
+    @Override
+    public double getTemperatureModifier(RegistryKey<Biome> biome) {
         double defaultValue = tempModifier;
-        if (useSeasonDefault) {
+        if (biome == null) {
             return defaultValue;
         }
 
@@ -150,9 +153,10 @@ public class SubSeasonSettings {
             return tempModifier;
     }
 
-    public double getHumidityModifier(ResourceLocation biome, boolean useSeasonDefault) {
+    @Override
+    public double getHumidityModifier(RegistryKey<Biome> biome) {
         double defaultValue = humidityModifier;
-        if (useSeasonDefault) {
+        if (biome == null) {
             return defaultValue;
         }
 

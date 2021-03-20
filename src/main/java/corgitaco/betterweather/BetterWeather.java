@@ -23,8 +23,6 @@ public class BetterWeather {
     public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
     public static Logger LOGGER = LogManager.getLogger();
     public static boolean usingOptifine;
-    public static Registry<Biome> biomeRegistryEarlyAccess;
-
 
     public BetterWeather() {
         File dir = new File(CONFIG_PATH.toString());
