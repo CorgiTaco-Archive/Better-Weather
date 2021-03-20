@@ -10,9 +10,4 @@ import java.util.function.Supplier;
 
 @Mixin(BiomeGenerationSettings.class)
 public interface BiomeGenerationSettingsAccess {
-
-
-    @Accessor
-    List<List<Supplier<ConfiguredFeature<?, ?>>>> getFeatures();
-
 }

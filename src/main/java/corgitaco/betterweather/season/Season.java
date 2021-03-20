@@ -11,27 +11,33 @@ import java.util.IdentityHashMap;
 public final class Season {
 
     public static final IdentityHashMap<SeasonData.Phase, SubSeasonSettings> DEFAULT_SPRING_PHASES = Util.make(new IdentityHashMap<>(), (map) -> {
-
+        map.put(SeasonData.Phase.START, SubSeasonSettings.DEFAULT_SPRING_START);
+        map.put(SeasonData.Phase.MID, SubSeasonSettings.DEFAULT_SPRING_END);
+        map.put(SeasonData.Phase.END, SubSeasonSettings.DEFAULT_SPRING_END);
     });
 
     public static final IdentityHashMap<SeasonData.Phase, SubSeasonSettings> DEFAULT_SUMMER_PHASES = Util.make(new IdentityHashMap<>(), (map) -> {
-
+        map.put(SeasonData.Phase.START, SubSeasonSettings.DEFAULT_SUMMER_START);
+        map.put(SeasonData.Phase.MID, SubSeasonSettings.DEFAULT_SUMMER_END);
+        map.put(SeasonData.Phase.END, SubSeasonSettings.DEFAULT_SUMMER_END);
     });
 
     public static final IdentityHashMap<SeasonData.Phase, SubSeasonSettings> DEFAULT_AUTUMN_PHASES = Util.make(new IdentityHashMap<>(), (map) -> {
-
+        map.put(SeasonData.Phase.START, SubSeasonSettings.DEFAULT_AUTUMN_START);
+        map.put(SeasonData.Phase.MID, SubSeasonSettings.DEFAULT_AUTUMN_END);
+        map.put(SeasonData.Phase.END, SubSeasonSettings.DEFAULT_AUTUMN_END);
     });
 
     public static final IdentityHashMap<SeasonData.Phase, SubSeasonSettings> DEFAULT_WINTER_PHASES = Util.make(new IdentityHashMap<>(), (map) -> {
-
+        map.put(SeasonData.Phase.START, SubSeasonSettings.DEFAULT_WINTER_START);
+        map.put(SeasonData.Phase.MID, SubSeasonSettings.DEFAULT_WINTER_END);
+        map.put(SeasonData.Phase.END, SubSeasonSettings.DEFAULT_WINTER_END);
     });
 
     public static final Season DEFAULT_SPRING = new Season(DEFAULT_SPRING_PHASES);
     public static final Season DEFAULT_SUMMER = new Season(DEFAULT_SUMMER_PHASES);
     public static final Season DEFAULT_AUTUMN = new Season(DEFAULT_AUTUMN_PHASES);
     public static final Season DEFAULT_WINTER = new Season(DEFAULT_WINTER_PHASES);
-
-
 
 
     private SeasonData.SeasonKey seasonKey;

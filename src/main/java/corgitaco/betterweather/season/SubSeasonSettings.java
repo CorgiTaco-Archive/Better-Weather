@@ -2,12 +2,10 @@ package corgitaco.betterweather.season;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
-import corgitaco.betterweather.api.BetterWeatherEntryPoint;
 import corgitaco.betterweather.api.SeasonData;
-import corgitaco.betterweather.api.weatherevent.WeatherEvent;
 import corgitaco.betterweather.util.storage.OverrideStorage;
-import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
@@ -16,10 +14,9 @@ import net.minecraft.util.Util;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 
-import javax.annotation.Nullable;
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SubSeasonSettings {
@@ -75,29 +72,6 @@ public class SubSeasonSettings {
         overrideStorage.getClientStorage().setTargetFoliageHexColor("#964B00").setTargetGrassHexColor("#964B00"); //Target brown instead of red.
         map.put(Biome.Category.SWAMP, overrideStorage);
     });
-
-    static {
-        for (WeatherEvent weatherEvent : BetterWeatherEntryPoint.WEATHER_EVENTS) {
-            String name = weatherEvent.getID().toString();
-            if (!name.equals(WeatherEventSystem.CLEAR.toString())) {
-                SPRING_START_WEATHER_EVENT_CONTROLLER.put(name, weatherEvent.getSeasonChance().getSpringStartWeight());
-                SPRING_MID_WEATHER_EVENT_CONTROLLER.put(name, weatherEvent.getSeasonChance().getSpringMidWeight());
-                SPRING_END_WEATHER_EVENT_CONTROLLER.put(name, weatherEvent.getSeasonChance().getSpringEndWeight());
-
-                SUMMER_START_WEATHER_EVENT_CONTROLLER.put(name, weatherEvent.getSeasonChance().getSummerStartWeight());
-                SUMMER_MID_WEATHER_EVENT_CONTROLLER.put(name, weatherEvent.getSeasonChance().getSummerMidWeight());
-                SUMMER_END_WEATHER_EVENT_CONTROLLER.put(name, weatherEvent.getSeasonChance().getSummerEndWeight());
-
-                AUTUMN_START_WEATHER_EVENT_CONTROLLER.put(name, weatherEvent.getSeasonChance().getAutumnStartWeight());
-                AUTUMN_MID_WEATHER_EVENT_CONTROLLER.put(name, weatherEvent.getSeasonChance().getAutumnMidWeight());
-                AUTUMN_END_WEATHER_EVENT_CONTROLLER.put(name, weatherEvent.getSeasonChance().getAutumnEndWeight());
-
-                WINTER_START_WEATHER_EVENT_CONTROLLER.put(name, weatherEvent.getSeasonChance().getWinterStartWeight());
-                WINTER_MID_WEATHER_EVENT_CONTROLLER.put(name, weatherEvent.getSeasonChance().getWinterMidWeight());
-                WINTER_END_WEATHER_EVENT_CONTROLLER.put(name, weatherEvent.getSeasonChance().getWinterEndWeight());
-            }
-        }
-    }
 
     private final double tempModifier;
     private final double humidityModifier;
@@ -369,20 +343,20 @@ public class SubSeasonSettings {
 
         public static final Codec<SeasonClientSettings> CODEC = RecordCodecBuilder.create(seasonClientSettingsInstance -> {
             return seasonClientSettingsInstance.group(Codec.STRING.optionalFieldOf("targetFoliageHexColor", "").forGetter((seasonClientSettings) -> {
-                return Integer.toHexString(seasonClientSettings.targetFoliageHexColor);
-            }), Codec.DOUBLE.optionalFieldOf("foliageColorBlendStrength", 0.0).forGetter((seasonClientSettings) -> {
+                return seasonClientSettings.targetFoliageHexColor == Integer.MIN_VALUE ? "" : Integer.toHexString(seasonClientSettings.targetFoliageHexColor);
+            }), Codec.DOUBLE.fieldOf("foliageColorBlendStrength").orElse(0.0).forGetter((seasonClientSettings) -> {
                 return seasonClientSettings.foliageColorBlendStrength;
-            }), Codec.STRING.optionalFieldOf("targetGrassHexColor", "").forGetter((seasonClientSettings) -> {
-                return Integer.toHexString(seasonClientSettings.targetGrassHexColor);
-            }), Codec.DOUBLE.optionalFieldOf("grassColorBlendStrength", 0.0).forGetter((seasonClientSettings) -> {
+            }), Codec.STRING.fieldOf("targetGrassHexColor").orElse("").forGetter((seasonClientSettings) -> {
+                return seasonClientSettings.targetGrassHexColor == Integer.MIN_VALUE ? "" : Integer.toHexString(seasonClientSettings.targetGrassHexColor);
+            }), Codec.DOUBLE.fieldOf("grassColorBlendStrength").orElse(0.0).forGetter((seasonClientSettings) -> {
                 return seasonClientSettings.foliageColorBlendStrength;
-            }), Codec.STRING.optionalFieldOf("targetSkyHexColor", "").forGetter((seasonClientSettings) -> {
-                return Integer.toHexString(seasonClientSettings.targetSkyHexColor);
-            }), Codec.DOUBLE.optionalFieldOf("skyColorBlendStrength", 0.0).forGetter((seasonClientSettings) -> {
+            }), Codec.STRING.fieldOf("targetSkyHexColor").orElse("").forGetter((seasonClientSettings) -> {
+                return seasonClientSettings.targetSkyHexColor == Integer.MIN_VALUE ? "" : Integer.toHexString(seasonClientSettings.targetSkyHexColor);
+            }), Codec.DOUBLE.fieldOf("skyColorBlendStrength").orElse(0.0).forGetter((seasonClientSettings) -> {
                 return seasonClientSettings.skyColorBlendStrength;
-            }), Codec.STRING.optionalFieldOf("targetFogHexColor", "").forGetter((seasonClientSettings) -> {
-                return Integer.toHexString(seasonClientSettings.targetFogHexColor);
-            }), Codec.DOUBLE.optionalFieldOf("fogColorBlendStrength", 0.0).forGetter((seasonClientSettings) -> {
+            }), Codec.STRING.fieldOf("targetFogHexColor").orElse("").forGetter((seasonClientSettings) -> {
+                return seasonClientSettings.targetFogHexColor == Integer.MIN_VALUE ? "" : Integer.toHexString(seasonClientSettings.targetFogHexColor);
+            }), Codec.DOUBLE.fieldOf("fogColorBlendStrength").orElse(0.0).forGetter((seasonClientSettings) -> {
                 return seasonClientSettings.fogColorBlendStrength;
             })).apply(seasonClientSettingsInstance, SeasonClientSettings::new);
         });
@@ -405,7 +379,7 @@ public class SubSeasonSettings {
         }
 
         public SeasonClientSettings(String targetFoliageHexColor, double foliageColorBlendStrength, String targetGrassColor, double grassColorBlendStrength, String targetSkyHexColor, double skyColorBlendStrength, String targetFogHexColor, double fogColorBlendStrength) {
-            this(Integer.parseInt(targetFoliageHexColor), foliageColorBlendStrength, Integer.parseInt(targetGrassColor), grassColorBlendStrength, Integer.parseInt(targetSkyHexColor), skyColorBlendStrength, Integer.parseInt(targetFogHexColor), fogColorBlendStrength);
+            this(tryParseColor(targetFoliageHexColor), foliageColorBlendStrength, tryParseColor(targetGrassColor), grassColorBlendStrength, tryParseColor(targetSkyHexColor), skyColorBlendStrength, tryParseColor(targetFogHexColor), fogColorBlendStrength);
         }
 
         public SeasonClientSettings(int targetFoliageHexColor, double foliageColorBlendStrength, int targetGrassColor, double grassColorBlendStrength, int targetSkyHexColor, double skyColorBlendStrength, int targetFogHexColor, double fogColorBlendStrength) {
@@ -419,5 +393,20 @@ public class SubSeasonSettings {
             this.skyColorBlendStrength = skyColorBlendStrength;
         }
 
+
+        public static int tryParseColor(String input) {
+            int result = Integer.MIN_VALUE;
+
+            if (input.isEmpty()) {
+                return result;
+            }
+
+            try {
+                result = Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                BetterWeather.LOGGER.info(e.toString());
+            }
+            return result;
+        }
     }
 }

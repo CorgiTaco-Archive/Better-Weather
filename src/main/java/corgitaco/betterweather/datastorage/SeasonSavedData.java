@@ -35,8 +35,7 @@ public class SeasonSavedData extends WorldSavedData {
             }
             return CLIENT_CACHE;
         }
-        ServerWorld overWorld = ((ServerWorld) world).getWorld().getServer().getWorld(((ServerWorld) world).getDimensionKey());
-        DimensionSavedDataManager data = overWorld.getSavedData();
+        DimensionSavedDataManager data = ((ServerWorld)world).getSavedData();
         SeasonSavedData weatherData = data.getOrCreate(SeasonSavedData::new, DATA_NAME);
 
         if (weatherData == null) {

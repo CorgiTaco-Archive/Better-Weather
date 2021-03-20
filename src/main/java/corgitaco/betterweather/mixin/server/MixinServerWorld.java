@@ -1,16 +1,11 @@
 package corgitaco.betterweather.mixin.server;
 
 import corgitaco.betterweather.api.BetterWeatherWorldData;
-import corgitaco.betterweather.api.weatherevent.WeatherData;
-import corgitaco.betterweather.datastorage.BetterWeatherEventData;
 import corgitaco.betterweather.datastorage.SeasonSavedData;
-import corgitaco.betterweather.helper.IsWeatherForced;
 import corgitaco.betterweather.helpers.IBiomeModifier;
 import corgitaco.betterweather.helpers.IBiomeUpdate;
 import corgitaco.betterweather.season.SeasonContext;
 import corgitaco.betterweather.util.WorldDynamicRegistry;
-import corgitaco.betterweather.weatherevent.WeatherEventSystem;
-import corgitaco.betterweather.weatherevent.weatherevents.WeatherEventUtil;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.server.MinecraftServer;
@@ -20,10 +15,8 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.WorldSettingsImport;
 import net.minecraft.world.Dimension;
 import net.minecraft.world.DimensionType;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.listener.IChunkStatusListener;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.server.ServerChunkProvider;
@@ -66,6 +59,7 @@ public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWor
         Dimension dimension = newServerConfiguration.getDimensionGeneratorSettings().func_236224_e_().getOptional(key.getLocation()).get();
         ChunkGenerator dimensionChunkGenerator = dimension.getChunkGenerator();
         this.field_241102_C_/*Server Chunk Provider*/.generator = dimensionChunkGenerator; // Some modded generators do weird stuff so we'll just reset the field.
+        this.field_241102_C_/*Server Chunk Provider*/.chunkManager.generator = dimensionChunkGenerator; // Some modded generators do weird stuff so we'll just reset the field.
         updateBiomeData();
 
         this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key);
@@ -93,9 +87,9 @@ public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWor
     private void tick(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
         this.seasonContext.tick((ServerWorld) (Object) this);
         long worldTime = ((ServerWorld) (Object) this).getWorldInfo().getGameTime();
-        WeatherData.currentWeatherEvent.worldTick((ServerWorld) (Object) this, ((ServerWorld) (Object) this).getGameRules().getInt(GameRules.RANDOM_TICK_SPEED), worldTime);
-        if (worldTime % 10 == 0)
-            WeatherEventSystem.updateWeatherEventPacket((ServerWorld) (Object) this, ((ServerWorld) (Object) this).getPlayers(), false);
+//        WeatherData.currentWeatherEvent.worldTick((ServerWorld) (Object) this, ((ServerWorld) (Object) this).getGameRules().getInt(GameRules.RANDOM_TICK_SPEED), worldTime);
+//        if (worldTime % 10 == 0)
+//            WeatherEventSystem.updateWeatherEventPacket((ServerWorld) (Object) this, ((ServerWorld) (Object) this).getPlayers(), false);
     }
 
 
@@ -111,30 +105,30 @@ public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWor
     @Final
     private ServerChunkProvider field_241102_C_;
 
-    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z", ordinal = 0))
-    private boolean rollBetterWeatherEvent(GameRules gameRules, GameRules.RuleKey<GameRules.BooleanValue> key) {
-        if (gameRules.getBoolean(GameRules.DO_WEATHER_CYCLE))
-            WeatherEventUtil.doWeatherAndRollWeatherEventChance(this.field_241103_E_, (ServerWorld) (Object) this);
-        return false;
-//        } else
-//            return gameRules.getBoolean(GameRules.DO_WEATHER_CYCLE);
-    }
-
-    @Inject(method = "func_241113_a_", at = @At("HEAD"))
-    private void setWeatherForced(int clearWeatherTime, int weatherTime, boolean rain, boolean thunder, CallbackInfo ci) {
-        ((IsWeatherForced) this.field_241103_E_).setWeatherForced(true);
-        BetterWeatherEventData.get((ServerWorld) (Object) this).setWeatherForced(true);
-    }
-
-    @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 1))
-    private int takeAdvantageOfExistingChunkIterator(Random random, int bound, Chunk chunk, int randomTickSpeed) {
-        if (((ServerWorld) (Object) this).rand.nextInt(16) == 0)
-            WeatherEventUtil.vanillaIceAndSnowChunkTicks(chunk, (ServerWorld) (Object) this);
-        WeatherData.currentWeatherEvent.tickLiveChunks(chunk, (ServerWorld) (Object) this);
-        return -1;
-//        } else
-//            return ((ServerWorld) (Object) this).rand.nextInt(16);
-    }
+//    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z", ordinal = 0))
+//    private boolean rollBetterWeatherEvent(GameRules gameRules, GameRules.RuleKey<GameRules.BooleanValue> key) {
+//        if (gameRules.getBoolean(GameRules.DO_WEATHER_CYCLE))
+//            WeatherEventUtil.doWeatherAndRollWeatherEventChance(this.field_241103_E_, (ServerWorld) (Object) this);
+//        return false;
+////        } else
+////            return gameRules.getBoolean(GameRules.DO_WEATHER_CYCLE);
+//    }
+//
+//    @Inject(method = "func_241113_a_", at = @At("HEAD"))
+//    private void setWeatherForced(int clearWeatherTime, int weatherTime, boolean rain, boolean thunder, CallbackInfo ci) {
+//        ((IsWeatherForced) this.field_241103_E_).setWeatherForced(true);
+//        BetterWeatherEventData.get((ServerWorld) (Object) this).setWeatherForced(true);
+//    }
+//
+//    @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 1))
+//    private int takeAdvantageOfExistingChunkIterator(Random random, int bound, Chunk chunk, int randomTickSpeed) {
+//        if (((ServerWorld) (Object) this).rand.nextInt(16) == 0)
+//            WeatherEventUtil.vanillaIceAndSnowChunkTicks(chunk, (ServerWorld) (Object) this);
+//        WeatherData.currentWeatherEvent.tickLiveChunks(chunk, (ServerWorld) (Object) this);
+//        return -1;
+////        } else
+////            return ((ServerWorld) (Object) this).rand.nextInt(16);
+//    }
 
 
     @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 0))

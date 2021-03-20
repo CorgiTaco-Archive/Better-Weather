@@ -5,34 +5,29 @@ import com.mojang.serialization.JsonOps;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.api.SeasonData;
-import corgitaco.betterweather.api.weatherevent.WeatherData;
 import corgitaco.betterweather.config.season.SeasonConfigHolder;
-import corgitaco.betterweather.datastorage.BetterWeatherEventData;
 import corgitaco.betterweather.datastorage.SeasonSavedData;
-import corgitaco.betterweather.datastorage.network.NetworkHandler;
-import corgitaco.betterweather.datastorage.network.packet.WeatherEventPacket;
-import corgitaco.betterweather.datastorage.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
-import corgitaco.betterweather.weatherevent.WeatherEventSystem;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.ServerWorldInfo;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.nio.file.Files;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SeasonContext {
     public static final String CONFIG_NAME = "seasons.json";
@@ -75,7 +70,7 @@ public class SeasonContext {
     }
 
     private void create(Gson gson) {
-        JsonElement jsonElement = SeasonConfigHolder.CODEC.encode(SeasonConfigHolder.DEFAULT_CONFIG_HOLDER, JsonOps.INSTANCE, new JsonObject()).get().left().get();
+        JsonElement jsonElement = SeasonConfigHolder.CODEC.encodeStart(JsonOps.INSTANCE, SeasonConfigHolder.DEFAULT_CONFIG_HOLDER).result().get();
         String toJson = gson.toJson(jsonElement);
 
         try {
@@ -112,9 +107,6 @@ public class SeasonContext {
     }
 
     public void tickCrops(ServerWorld world, BlockPos posIn, Block block, BlockState self, CallbackInfo ci) {
-        if (!BetterWeather.useSeasons)
-            throw new UnsupportedOperationException("Seasons are disabled in this instance!");
-
         SubSeasonSettings subSeason = this.getCurrentSubSeasonSettings();
         if (subSeason.getBiomeToOverrideStorage().isEmpty() && subSeason.getCropToMultiplierStorage().isEmpty()) {
             if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block) || BlockTags.SAPLINGS.contains(block)) {
@@ -128,11 +120,9 @@ public class SeasonContext {
     }
 
     private static void cropTicker(ServerWorld world, BlockPos posIn, Block block, SubSeasonSettings subSeason, boolean useSeasonDefault, BlockState self, CallbackInfo ci) {
-        if (!BetterWeather.useSeasons)
-            throw new UnsupportedOperationException("Seasons are disabled in this instance!");
 
         //Collect the crop multiplier for the given subseason.
-        double cropGrowthMultiplier = subSeason.getCropGrowthChanceMultiplier(BetterWeather.biomeRegistryEarlyAccess.getKey(world.getBiome(posIn)), block, useSeasonDefault);
+        double cropGrowthMultiplier = subSeason.getCropGrowthChanceMultiplier(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getKey(world.getBiome(posIn)), block, useSeasonDefault);
         if (cropGrowthMultiplier == 1)
             return;
 
@@ -157,73 +147,6 @@ public class SeasonContext {
             }
         }
     }
-
-    public void rollWeatherEventChanceForSeason(Random random, ServerWorld world, boolean isRaining, boolean isThundering, ServerWorldInfo worldInfo, List<ServerPlayerEntity> players) {
-        if (!BetterWeather.useSeasons)
-            throw new UnsupportedOperationException("Seasons are disabled in this instance!");
-
-        SubSeasonSettings subSeason = this.getCurrentSubSeasonSettings();
-        boolean isRainActive = isRaining || isThundering;
-
-        if (!isRainActive) {
-            if (!BetterWeatherEventData.get(world).isModified() || privateSeasonIsNotCacheSeasonFlag) {
-                worldInfo.setRainTime(BetterWeatherUtil.transformRainOrThunderTimeToCurrentSeason(worldInfo.getRainTime(), Season.getSubSeasonFromEnum(privateSubSeasonVal), subSeason));
-                worldInfo.setThunderTime(BetterWeatherUtil.transformRainOrThunderTimeToCurrentSeason(worldInfo.getThunderTime(), Season.getSubSeasonFromEnum(privateSubSeasonVal), subSeason));
-                BetterWeatherEventData.get(world).setModified(true);
-            }
-        } else {
-            if (BetterWeatherEventData.get(world).isModified())
-                BetterWeatherEventData.get(world).setModified(false);
-        }
-
-
-        if (world.rainingStrength == 0.0F) {
-            if (isRainActive) {
-                AtomicBoolean weatherEventWasSet = new AtomicBoolean(false);
-                if (!BetterWeatherEventData.get(world).isWeatherForced()) { //If weather isn't forced, roll chance
-                    subSeason.getWeatherEventController().forEach((event, chance) -> {
-                        if (!event.equals(WeatherEventSystem.CLEAR.toString())) {
-                            if (random.nextDouble() < chance) {
-                                weatherEventWasSet.set(true);
-                                BetterWeatherEventData.get(world).setEvent(event);
-                            }
-                        }
-                    });
-                    if (!weatherEventWasSet.get())
-                        BetterWeatherEventData.get(world).setEvent(WeatherEventSystem.DEFAULT.toString());
-
-                    players.forEach(player -> {
-                        NetworkHandler.sendToClient(player, new WeatherEventPacket(BetterWeatherEventData.get(world).getEventString()));
-                        if (WeatherData.currentWeatherEvent.refreshPlayerRenderer())
-                            NetworkHandler.sendToClient(player, new RefreshRenderersPacket());
-                    });
-                }
-            }
-        } else {
-            if (!isRainActive) {
-                if (world.rainingStrength == 1.0F) {
-                    isFadingOut = true;
-                } else if (world.rainingStrength <= 0.011F && isFadingOut) {
-                    boolean refreshRenderersPost = WeatherData.currentWeatherEvent.refreshPlayerRenderer();
-                    BetterWeatherEventData.get(world).setEvent(WeatherEventSystem.CLEAR.toString());
-                    ((IsWeatherForced) worldInfo).setWeatherForced(false);
-                    BetterWeatherEventData.get(world).setWeatherForced(((IsWeatherForced) worldInfo).isWeatherForced());
-                    players.forEach(player -> {
-                        NetworkHandler.sendToClient(player, new WeatherEventPacket(BetterWeatherEventData.get(world).getEventString()));
-                        if (refreshRenderersPost)
-                            NetworkHandler.sendToClient(player, new RefreshRenderersPacket());
-                    });
-
-                    isFadingOut = false;
-                }
-            }
-        }
-
-        if (privateSeasonIsNotCacheSeasonFlag) {
-            privateSubSeasonVal = SeasonData.currentSubSeason;
-        }
-    }
-
 
     public void updatePacket(List<ServerPlayerEntity> players, boolean justJoined) {
 

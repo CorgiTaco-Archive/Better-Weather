@@ -11,10 +11,4 @@ public interface BiomeAccess {
 
     @Accessor
     Biome.Climate getClimate();
-
-    @Accessor
-    BiomeGenerationSettings getBiomeGenerationSettings();
-
-    @Accessor
-    MobSpawnInfo getMobSpawnInfo();
 }

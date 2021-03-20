@@ -61,11 +61,6 @@ public class BetterWeatherConfig {
         CommentedFileConfig file = CommentedFileConfig.builder(path).sync().autosave().writingMode(WritingMode.REPLACE).build();
         file.load();
         COMMON_CONFIG.setConfig(file);
-        BetterWeather.useSeasons = seasons.get();
-        if (BetterWeather.useSeasons) {
-            BetterWeather.SEASON_LENGTH = seasonLength.get();
-            BetterWeather.SEASON_CYCLE_LENGTH = seasonLength.get() * 4;
-        }
     }
 
     private static void refreshConfig() {

@@ -1,6 +1,7 @@
 package corgitaco.betterweather.mixin.block;
 
 import corgitaco.betterweather.api.BetterWeatherWorldData;
+import corgitaco.betterweather.season.SeasonContext;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -14,7 +15,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Random;
 
-@SuppressWarnings("deprecation")
 @Mixin(AbstractBlock.AbstractBlockState.class)
 public abstract class MixinAbstractBlockstate {
 
@@ -36,7 +36,8 @@ public abstract class MixinAbstractBlockstate {
      */
     @Inject(method = "randomTick", at = @At("RETURN"), cancellable = true)
     private void cropGrowthModifier(ServerWorld world, BlockPos posIn, Random randomIn, CallbackInfo ci) {
-        if (((BetterWeatherWorldData) world).getSeasonContext() != null)
-            ((BetterWeatherWorldData) world).getSeasonContext().tickCrops(world, posIn, this.getBlock(), this.getSelf(), ci);
+        SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
+        if (seasonContext != null)
+            seasonContext.tickCrops(world, posIn, this.getBlock(), this.getSelf(), ci);
     }
 }

@@ -1,10 +1,7 @@
 package corgitaco.betterweather.datastorage.network;
 
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.datastorage.network.packet.GeneralPacket;
-import corgitaco.betterweather.datastorage.network.packet.OnCommandWeatherChangePacket;
 import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
-import corgitaco.betterweather.datastorage.network.packet.WeatherEventPacket;
 import corgitaco.betterweather.datastorage.network.packet.util.RefreshRenderersPacket;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
@@ -23,10 +20,7 @@ public class NetworkHandler {
 
     public static void init() {
         SIMPLE_CHANNEL.registerMessage(0, SeasonPacket.class, SeasonPacket::writeToPacket, SeasonPacket::readFromPacket, SeasonPacket::handle);
-        SIMPLE_CHANNEL.registerMessage(1, WeatherEventPacket.class, WeatherEventPacket::writeToPacket, WeatherEventPacket::readFromPacket, WeatherEventPacket::handle);
-        SIMPLE_CHANNEL.registerMessage(2, GeneralPacket.class, GeneralPacket::writeToPacket, GeneralPacket::readFromPacket, GeneralPacket::handle);
         SIMPLE_CHANNEL.registerMessage(3, RefreshRenderersPacket.class, RefreshRenderersPacket::writeToPacket, RefreshRenderersPacket::readFromPacket, RefreshRenderersPacket::handle);
-        SIMPLE_CHANNEL.registerMessage(4, OnCommandWeatherChangePacket.class, OnCommandWeatherChangePacket::writeToPacket, OnCommandWeatherChangePacket::readFromPacket, OnCommandWeatherChangePacket::handle);
     }
 
     public static void sendToClient(ServerPlayerEntity playerEntity, Object objectToSend) {

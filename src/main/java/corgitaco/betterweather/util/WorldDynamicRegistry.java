@@ -18,7 +18,7 @@ public class WorldDynamicRegistry extends DynamicRegistries.Impl {
 
     private final CommonKeyMutableRegistry commonKeyMutableRegistry;
 
-    public WorldDynamicRegistry(DynamicRegistries.Impl serverRegistry) {
+    public WorldDynamicRegistry(Impl serverRegistry) {
         this.serverRegistry = serverRegistry;
         this.commonKeyMutableRegistry = new CommonKeyMutableRegistry(serverRegistry.getRegistry(Registry.BIOME_KEY));
     }

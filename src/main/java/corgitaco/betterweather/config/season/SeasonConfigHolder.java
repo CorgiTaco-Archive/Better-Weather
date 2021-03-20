@@ -15,14 +15,17 @@ public class SeasonConfigHolder {
 
 
     public static final IdentityHashMap<SeasonData.SeasonKey, Season> DEFAULT_SEASONS = Util.make(new IdentityHashMap<>(), (map) -> {
-
+        map.put(SeasonData.SeasonKey.SPRING, Season.DEFAULT_SPRING);
+        map.put(SeasonData.SeasonKey.SUMMER, Season.DEFAULT_SUMMER);
+        map.put(SeasonData.SeasonKey.AUTUMN, Season.DEFAULT_AUTUMN);
+        map.put(SeasonData.SeasonKey.WINTER, Season.DEFAULT_WINTER);
     });
 
     public static final SeasonConfigHolder DEFAULT_CONFIG_HOLDER = new SeasonConfigHolder(240000, DEFAULT_SEASONS);
 
 
     public static final Codec<SeasonConfigHolder> CODEC = RecordCodecBuilder.create((builder) -> {
-        return builder.group(Codec.INT.optionalFieldOf("seasonCycleLength", 240000).forGetter((seasonConfigHolder) -> {
+        return builder.group(Codec.INT.fieldOf("seasonCycleLength").orElse(240000).forGetter((seasonConfigHolder) -> {
             return seasonConfigHolder.seasonCycleLength;
         }), Codec.simpleMap(SeasonData.SeasonKey.CODEC, Season.CODEC, IStringSerializable.createKeyable(SeasonData.SeasonKey.values())).fieldOf("seasons").forGetter((seasonConfigHolder) -> {
             return seasonConfigHolder.seasonKeySeasonMap;

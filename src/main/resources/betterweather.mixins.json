@@ -27,7 +27,6 @@
     "client.MixinFogRenderer",
     "client.MixinKeyboardListener",
     "client.MixinLeavesBlock",
-    "client.MixinLightTexture",
     "client.MixinViewFrustum",
     "client.MixinWorldRenderer"
   ],
