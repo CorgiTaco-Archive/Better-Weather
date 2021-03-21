@@ -20,6 +20,21 @@ public interface Season {
 
     Settings getSettings();
 
+
+    /**
+     * @return the start time for the given season.
+     */
+    default int getSeasonStartTimeForYear() {
+        return getSeasonStartTimeForYear(getKey(), getYearLength());
+    }
+
+    /**
+     * @return the start time of the given season's phase.
+     */
+    default int getSeasonAndPhaseStartTimeForYear() {
+        return getSeasonAndPhaseStartTimeForYear(getKey(), getPhase(), getYearLength());
+    }
+
     enum Key implements IStringSerializable {
         SPRING,
         SUMMER,
@@ -81,14 +96,14 @@ public interface Season {
 
 
     /**
-     * @return the total length of a given phase based off the given season length
+     * @return the total length of a given phase based off the given season length.
      */
     static int getPhaseLength(int seasonLength) {
         return seasonLength / Phase.values().length;
     }
 
     /**
-     * @return the total length of a given season based off the given year length
+     * @return the total length of a given season based off the given year length.
      */
     static int getSeasonLength(int yearLength) {
         return yearLength / (Key.values().length);
@@ -112,7 +127,7 @@ public interface Season {
     }
 
     /**
-     * @return the current season key as determined by the current year time and year length
+     * @return the current season key as determined by the current year time and year length.
      */
     static Key getSeasonFromTime(int currentYearTime, int yearLength) {
         int seasonLength = yearLength / Key.values().length;
