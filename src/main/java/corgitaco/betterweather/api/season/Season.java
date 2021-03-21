@@ -80,27 +80,40 @@ public interface Season {
     }
 
 
+    /**
+     * @return the total length of a given phase based off the given season length
+     */
     static int getPhaseLength(int seasonLength) {
         return seasonLength / Phase.values().length;
     }
 
-    static int getSubSeasonLength(int yearLength) {
+    /**
+     * @return the total length of a given season based off the given year length
+     */
+    static int getSeasonLength(int yearLength) {
         return yearLength / (Key.values().length);
     }
 
-    static int getTimeInCycleForSeason(Key seasonKey, int yearLength) {
-        int perSubSeasonLength = getSubSeasonLength(yearLength);
+    /**
+     * @return the start time for the given season.
+     */
+    static int getSeasonStartTimeForYear(Key seasonKey, int yearLength) {
+        int perSubSeasonLength = getSeasonLength(yearLength);
         return perSubSeasonLength * seasonKey.ordinal();
     }
 
-
-    static int getTimeInCycleForSeasonAndPhase(Key seasonKey, Phase phase, int yearLength) {
-        int timeInCycleForSeason = getTimeInCycleForSeason(seasonKey, yearLength);
-        int phaseTime = getSubSeasonLength(yearLength) / Phase.values().length;
+    /**
+     * @return the start time of the given season's phase.
+     */
+    static int getSeasonAndPhaseStartTimeForYear(Key seasonKey, Phase phase, int yearLength) {
+        int timeInCycleForSeason = getSeasonStartTimeForYear(seasonKey, yearLength);
+        int phaseTime = getSeasonLength(yearLength) / Phase.values().length;
         return timeInCycleForSeason + (phaseTime * phase.ordinal());
     }
 
-
+    /**
+     * @return the current season key as determined by the current year time and year length
+     */
     static Key getSeasonFromTime(int currentYearTime, int yearLength) {
         int seasonLength = yearLength / Key.values().length;
 

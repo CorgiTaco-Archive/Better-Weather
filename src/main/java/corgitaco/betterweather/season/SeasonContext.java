@@ -91,7 +91,7 @@ public class SeasonContext implements Season {
     }
 
     public void setSeason(List<ServerPlayerEntity> players, Season.Key newSeason, Season.Phase phase) {
-        this.currentYearTime = Season.getTimeInCycleForSeasonAndPhase(newSeason, phase, this.yearLength);
+        this.currentYearTime = Season.getSeasonAndPhaseStartTimeForYear(newSeason, phase, this.yearLength);
         this.currentSeason = seasons.get(newSeason);
         this.currentSeason.setPhaseForTime(currentYearTime, yearLength);
         this.updatePacket(players);
