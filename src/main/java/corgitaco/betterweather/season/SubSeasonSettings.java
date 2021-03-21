@@ -136,61 +136,42 @@ public class SubSeasonSettings implements Settings {
     }
 
     @Override
-    public double getTemperatureModifier(RegistryKey<Biome> biome) {
+    public double getTemperatureModifier(RegistryKey<Biome> biomeKey) {
         double defaultValue = tempModifier;
-        if (biome == null) {
+        if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
 
-        if (this.getBiomeToOverrideStorage().get(biome) == null) {
-            return defaultValue;
-        }
-        double tempModifier = this.biomeToOverrideStorage.get(biome).getTempModifier();
-
-        if (tempModifier == Double.MAX_VALUE)
-            return defaultValue;
-        else
-            return tempModifier;
+        double tempModifier = this.getBiomeToOverrideStorage().get(biomeKey).getTempModifier();
+        return tempModifier == Double.MAX_VALUE ? defaultValue : tempModifier;
     }
 
     @Override
-    public double getHumidityModifier(RegistryKey<Biome> biome) {
+    public double getHumidityModifier(RegistryKey<Biome> biomeKey) {
         double defaultValue = humidityModifier;
-        if (biome == null) {
+        if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
 
-        if (this.getBiomeToOverrideStorage().get(biome) == null) {
-            return defaultValue;
-        }
-        double humidityModifier = this.biomeToOverrideStorage.get(biome).getHumidityModifier();
-
-        if (humidityModifier == Double.MAX_VALUE)
-            return defaultValue;
-        else
-            return humidityModifier;
+        double humidityModifier = this.getBiomeToOverrideStorage().get(biomeKey).getHumidityModifier();
+        return humidityModifier == Double.MAX_VALUE ? defaultValue : humidityModifier;
     }
 
     public double getWeatherEventChanceMultiplier() {
         return weatherEventChanceMultiplier;
     }
 
-    public double getCropGrowthChanceMultiplier(ResourceLocation biome, Block block, boolean useSeasonDefault) {
-        if (useSeasonDefault)
-            return cropGrowthChanceMultiplier;
-
-
-        OverrideStorage overrideStorage = this.biomeToOverrideStorage.get(biome);
-        if (overrideStorage == null) {
+    @Override
+    public double getCropGrowthChanceMultiplier(@Nullable RegistryKey<Biome> biomeKey, Block block) {
+        IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage = this.getBiomeToOverrideStorage();
+        if (!biomeToOverrideStorage.containsKey(biomeKey)) {
             return getCropToMultiplierStorage().getOrDefault(block, cropGrowthChanceMultiplier);
         }
 
+        OverrideStorage overrideStorage = biomeToOverrideStorage.get(biomeKey);
         double fallBack = overrideStorage.getFallBack();
-        if (fallBack == Double.MAX_VALUE)
-            fallBack = cropGrowthChanceMultiplier;
 
-        IdentityHashMap<Block, Double> blockToCropGrowthMultiplierMap = overrideStorage.getBlockToCropGrowthMultiplierMap();
-        return blockToCropGrowthMultiplierMap.getOrDefault(block, fallBack);
+        return overrideStorage.getBlockToCropGrowthMultiplierMap().getOrDefault(block, fallBack == Double.MAX_VALUE ? cropGrowthChanceMultiplier : fallBack);
     }
 
     public HashMap<String, Double> getWeatherEventController() {
@@ -201,140 +182,84 @@ public class SubSeasonSettings implements Settings {
         return client;
     }
 
-    public int getTargetFoliageColor(ResourceLocation biome, boolean useSeasonDefault) {
+    public int getTargetFoliageColor(RegistryKey<Biome> biomeKey) {
         int defaultValue = client.targetFoliageHexColor;
-        if (useSeasonDefault) {
+        if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
 
-        if (this.getBiomeToOverrideStorage().get(biome) == null) {
-            return defaultValue;
-        }
-        int overrideTargetFoliageColor = this.biomeToOverrideStorage.get(biome).getClientStorage().getParsedFoliageHexColor();
-
-        if (overrideTargetFoliageColor == Integer.MAX_VALUE)
-            return defaultValue;
-        else
-            return overrideTargetFoliageColor;
+        int overrideTargetFoliageColor = this.biomeToOverrideStorage.get(biomeKey).getClientStorage().getParsedFoliageHexColor();
+        return overrideTargetFoliageColor == Integer.MAX_VALUE ? defaultValue : overrideTargetFoliageColor;
     }
 
-    public double getFoliageColorBlendStrength(ResourceLocation biome, boolean useSeasonDefault) {
+    public double getFoliageColorBlendStrength(RegistryKey<Biome> biomeKey) {
         double defaultValue = client.foliageColorBlendStrength;
-        if (useSeasonDefault) {
+        if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
 
-        if (this.getBiomeToOverrideStorage().get(biome) == null) {
-            return defaultValue;
-        }
-        double overrideTargetFoliageBlendStrength = this.biomeToOverrideStorage.get(biome).getClientStorage().getFoliageColorBlendStrength();
-
-        if (overrideTargetFoliageBlendStrength == Double.MAX_VALUE)
-            return defaultValue;
-        else
-            return overrideTargetFoliageBlendStrength;
+        double overrideTargetFoliageBlendStrength = this.biomeToOverrideStorage.get(biomeKey).getClientStorage().getFoliageColorBlendStrength();
+        return overrideTargetFoliageBlendStrength == Double.MAX_VALUE ? defaultValue : overrideTargetFoliageBlendStrength;
     }
 
-    public int getTargetGrassColor(ResourceLocation biome, boolean useSeasonDefault) {
+    public int getTargetGrassColor(RegistryKey<Biome> biomeKey) {
         int defaultValue = client.targetGrassHexColor;
-        if (useSeasonDefault) {
+        if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
 
-        if (this.getBiomeToOverrideStorage().get(biome) == null) {
-            return defaultValue;
-        }
-        int overrideTargetGrassColor = this.biomeToOverrideStorage.get(biome).getClientStorage().getParsedGrassHexColor();
-
-        if (overrideTargetGrassColor == Integer.MAX_VALUE)
-            return defaultValue;
-        else
-            return overrideTargetGrassColor;
+        int overrideTargetGrassColor = this.biomeToOverrideStorage.get(biomeKey).getClientStorage().getParsedGrassHexColor();
+        return overrideTargetGrassColor == Integer.MAX_VALUE ? defaultValue : overrideTargetGrassColor;
     }
 
-    public double getGrassColorBlendStrength(ResourceLocation biome, boolean useSeasonDefault) {
+    public double getGrassColorBlendStrength(RegistryKey<Biome> biomeKey) {
         double defaultValue = client.grassColorBlendStrength;
-        if (useSeasonDefault) {
+        if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
 
-        if (this.getBiomeToOverrideStorage().get(biome) == null) {
-            return defaultValue;
-        }
-        double overrideTargetGrassBlendStrength = this.biomeToOverrideStorage.get(biome).getClientStorage().getGrassColorBlendStrength();
-
-        if (overrideTargetGrassBlendStrength == Double.MAX_VALUE)
-            return defaultValue;
-        else
-            return overrideTargetGrassBlendStrength;
+        double overrideTargetGrassBlendStrength = this.biomeToOverrideStorage.get(biomeKey).getClientStorage().getGrassColorBlendStrength();
+        return overrideTargetGrassBlendStrength == Double.MAX_VALUE ? defaultValue : overrideTargetGrassBlendStrength;
     }
 
-    public int getTargetSkyColor(ResourceLocation biome, boolean useSeasonDefault) {
+    public int getTargetSkyColor(RegistryKey<Biome> biomeKey) {
         int defaultValue = client.targetSkyHexColor;
-        if (useSeasonDefault) {
+        if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
 
-        if (this.getBiomeToOverrideStorage().get(biome) == null) {
-            return defaultValue;
-        }
-        int overrideTargetSkyColor = this.biomeToOverrideStorage.get(biome).getClientStorage().getParsedSkyHexColor();
-
-        if (overrideTargetSkyColor == Integer.MAX_VALUE)
-            return defaultValue;
-        else
-            return overrideTargetSkyColor;
+        int overrideTargetSkyColor = this.biomeToOverrideStorage.get(biomeKey).getClientStorage().getParsedSkyHexColor();
+        return overrideTargetSkyColor == Integer.MAX_VALUE ? defaultValue : overrideTargetSkyColor;
     }
 
-    public double getSkyColorBlendStrength(ResourceLocation biome, boolean useSeasonDefault) {
+    public double getSkyColorBlendStrength(RegistryKey<Biome> biomeKey) {
         double defaultValue = client.skyColorBlendStrength;
-        if (useSeasonDefault) {
+        if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
 
-        if (this.getBiomeToOverrideStorage().get(biome) == null) {
-            return defaultValue;
-        }
-        double overrideTargetGrassBlendStrength = this.biomeToOverrideStorage.get(biome).getClientStorage().getSkyColorBlendStrength();
-
-        if (overrideTargetGrassBlendStrength == Double.MAX_VALUE)
-            return defaultValue;
-        else
-            return overrideTargetGrassBlendStrength;
+        double overrideTargetGrassBlendStrength = this.biomeToOverrideStorage.get(biomeKey).getClientStorage().getSkyColorBlendStrength();
+        return overrideTargetGrassBlendStrength == Double.MAX_VALUE ? defaultValue : overrideTargetGrassBlendStrength;
     }
 
-    public int getTargetFogColor(ResourceLocation biome, boolean useSeasonDefault) {
+    public int getTargetFogColor(RegistryKey<Biome> biomeKey) {
         int defaultValue = client.targetFogHexColor;
-        if (useSeasonDefault) {
+        if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
 
-        if (this.getBiomeToOverrideStorage().get(biome) == null) {
-            return defaultValue;
-        }
-        int overrideTargetFogColor = this.biomeToOverrideStorage.get(biome).getClientStorage().getParsedFogHexColor();
-
-        if (overrideTargetFogColor == Integer.MAX_VALUE)
-            return defaultValue;
-        else
-            return overrideTargetFogColor;
+        int overrideTargetFogColor = this.biomeToOverrideStorage.get(biomeKey).getClientStorage().getParsedFogHexColor();
+        return overrideTargetFogColor == Integer.MAX_VALUE ? defaultValue : overrideTargetFogColor;
     }
 
-    public double getFogColorBlendStrength(ResourceLocation biome, boolean useSeasonDefault) {
+    public double getFogColorBlendStrength(RegistryKey<Biome> biomeKey) {
         double defaultValue = client.fogColorBlendStrength;
-        if (useSeasonDefault) {
+        if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
 
-        if (this.getBiomeToOverrideStorage().get(biome) == null) {
-            return defaultValue;
-        }
-        double overrideFogColorBlendStrangth = this.biomeToOverrideStorage.get(biome).getClientStorage().getFogColorBlendStrength();
-
-        if (overrideFogColorBlendStrangth == Double.MAX_VALUE)
-            return defaultValue;
-        else
-            return overrideFogColorBlendStrangth;
+        double overrideFogColorBlendStrangth = this.biomeToOverrideStorage.get(biomeKey).getClientStorage().getFogColorBlendStrength();
+        return overrideFogColorBlendStrangth == Double.MAX_VALUE ? defaultValue : overrideFogColorBlendStrangth;
     }
 
     public ObjectOpenHashSet<EntityType<?>> getEntityTypeBreedingBlacklist() {
