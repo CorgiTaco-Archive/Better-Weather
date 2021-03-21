@@ -11,40 +11,40 @@ import java.util.Map;
 public interface Season {
 
     /**
-     * @return the total year length.
+     * @return total year length.
      */
     int getYearLength();
 
     /**
-     * @return the current year time.
+     * @return current year time.
      */
     int getCurrentYearTime();
 
     /**
-     * @return the current season's key.
+     * @return current season's key.
      */
     Key getKey();
 
     /**
-     * @return the current season's phase.
+     * @return current season's phase.
      */
     Phase getPhase();
 
     /**
-     * @return the current season's settings.
+     * @return current season's settings.
      */
     Settings getSettings();
 
 
     /**
-     * @return the start time for this season in the given year.
+     * @return start time for this season in the given year.
      */
     default int getSeasonStartTime() {
         return getSeasonStartTime(getKey(), getYearLength());
     }
 
     /**
-     * @return the start time for this season's phase in the given year.
+     * @return start time for this season's phase in the given year.
      */
     default int getSeasonAndPhaseStartTime() {
         return getSeasonAndPhaseStartTime(getKey(), getPhase(), getYearLength());
@@ -111,21 +111,21 @@ public interface Season {
 
 
     /**
-     * @return the total length of a given phase as determined by the given season length.
+     * @return total length of a given phase as determined by the given season length.
      */
     static int getPhaseLength(int seasonLength) {
         return seasonLength / Phase.values().length;
     }
 
     /**
-     * @return the total length of a given season as determined by the given year length.
+     * @return total length of a given season as determined by the given year length.
      */
     static int getSeasonLength(int yearLength) {
         return yearLength / (Key.values().length);
     }
 
     /**
-     * @return the start time for the given season & year length.
+     * @return start time for the given season & year length.
      */
     static int getSeasonStartTime(Key seasonKey, int yearLength) {
         int perSubSeasonLength = getSeasonLength(yearLength);
@@ -133,7 +133,7 @@ public interface Season {
     }
 
     /**
-     * @return the start time of the given season's phase for the given year length.
+     * @return start time of the given season's phase for the given year length.
      */
     static int getSeasonAndPhaseStartTime(Key seasonKey, Phase phase, int yearLength) {
         int timeInCycleForSeason = getSeasonStartTime(seasonKey, yearLength);
@@ -142,7 +142,7 @@ public interface Season {
     }
 
     /**
-     * @return the current season key determined by the year's current time and length.
+     * @return current season key determined by the year's current time and length.
      */
     static Key getSeasonFromTime(int currentYearTime, int yearLength) {
         int seasonLength = yearLength / Key.values().length;
