@@ -10,14 +10,29 @@ import java.util.Map;
 
 public interface Season {
 
+    /**
+     * @return the total year length.
+     */
     int getYearLength();
 
+    /**
+     * @return the current year time.
+     */
     int getCurrentYearTime();
 
+    /**
+     * @return the current season's key.
+     */
     Key getKey();
 
+    /**
+     * @return the current season's phase.
+     */
     Phase getPhase();
 
+    /**
+     * @return the current season's settings.
+     */
     Settings getSettings();
 
 
