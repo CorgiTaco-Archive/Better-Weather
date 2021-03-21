@@ -31,10 +31,9 @@ public interface Season {
     Phase getPhase();
 
     /**
-     * @return current sub season's settings.
+     * @return current subseason's settings.
      */
     SubseasonSettings getSettings();
-
 
     /**
      * @return start time for this season in the given year.
@@ -50,6 +49,9 @@ public interface Season {
         return getSeasonAndPhaseStartTime(getKey(), getPhase(), getYearLength());
     }
 
+    /**
+     * Represents the given season key or "name".
+     */
     enum Key implements IStringSerializable {
         SPRING,
         SUMMER,
@@ -81,6 +83,9 @@ public interface Season {
         }
     }
 
+    /**
+     * Represents the time within a given season.
+     */
     enum Phase implements IStringSerializable {
         START,
         MID,
