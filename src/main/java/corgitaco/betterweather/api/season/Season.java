@@ -142,7 +142,7 @@ public interface Season {
     }
 
     /**
-     * @return the current season key as determined by the current year time and year length.
+     * @return the current season key determined by the year's current time and length.
      */
     static Key getSeasonFromTime(int currentYearTime, int yearLength) {
         int seasonLength = yearLength / Key.values().length;
