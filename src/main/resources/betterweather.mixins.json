@@ -20,9 +20,7 @@
   "client": [
     "client.MixinBiomeClient",
     "client.MixinClientWorld",
-    "client.MixinDimensionRenderInfo",
     "client.MixinFogRenderer",
-    "client.MixinKeyboardListener",
     "client.MixinLeavesBlock"
   ],
   "injectors": {

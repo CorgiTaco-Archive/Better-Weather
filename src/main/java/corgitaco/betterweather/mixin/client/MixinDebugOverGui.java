@@ -17,7 +17,6 @@ import java.util.List;
 @Mixin(DebugOverlayGui.class)
 public class MixinDebugOverGui {
 
-
     @Shadow
     @Final
     private Minecraft mc;
