@@ -164,11 +164,11 @@ public class SubSeasonSettings implements Settings {
     @Override
     public double getCropGrowthChanceMultiplier(@Nullable RegistryKey<Biome> biomeKey, Block block) {
         IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage = this.getBiomeToOverrideStorage();
-        if (!biomeToOverrideStorage.containsKey(biomeKey)) {
+        if (!getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return getCropToMultiplierStorage().getOrDefault(block, cropGrowthChanceMultiplier);
         }
 
-        OverrideStorage overrideStorage = biomeToOverrideStorage.get(biomeKey);
+        OverrideStorage overrideStorage = getBiomeToOverrideStorage().get(biomeKey);
         double fallBack = overrideStorage.getFallBack();
 
         return overrideStorage.getBlockToCropGrowthMultiplierMap().getOrDefault(block, fallBack == Double.MAX_VALUE ? cropGrowthChanceMultiplier : fallBack);
@@ -188,7 +188,7 @@ public class SubSeasonSettings implements Settings {
             return defaultValue;
         }
 
-        int overrideTargetFoliageColor = this.biomeToOverrideStorage.get(biomeKey).getClientStorage().getParsedFoliageHexColor();
+        int overrideTargetFoliageColor = this.getBiomeToOverrideStorage().get(biomeKey).getClientStorage().getParsedFoliageHexColor();
         return overrideTargetFoliageColor == Integer.MAX_VALUE ? defaultValue : overrideTargetFoliageColor;
     }
 
@@ -198,7 +198,7 @@ public class SubSeasonSettings implements Settings {
             return defaultValue;
         }
 
-        double overrideTargetFoliageBlendStrength = this.biomeToOverrideStorage.get(biomeKey).getClientStorage().getFoliageColorBlendStrength();
+        double overrideTargetFoliageBlendStrength = this.getBiomeToOverrideStorage().get(biomeKey).getClientStorage().getFoliageColorBlendStrength();
         return overrideTargetFoliageBlendStrength == Double.MAX_VALUE ? defaultValue : overrideTargetFoliageBlendStrength;
     }
 
@@ -208,7 +208,7 @@ public class SubSeasonSettings implements Settings {
             return defaultValue;
         }
 
-        int overrideTargetGrassColor = this.biomeToOverrideStorage.get(biomeKey).getClientStorage().getParsedGrassHexColor();
+        int overrideTargetGrassColor = this.getBiomeToOverrideStorage().get(biomeKey).getClientStorage().getParsedGrassHexColor();
         return overrideTargetGrassColor == Integer.MAX_VALUE ? defaultValue : overrideTargetGrassColor;
     }
 
@@ -218,7 +218,7 @@ public class SubSeasonSettings implements Settings {
             return defaultValue;
         }
 
-        double overrideTargetGrassBlendStrength = this.biomeToOverrideStorage.get(biomeKey).getClientStorage().getGrassColorBlendStrength();
+        double overrideTargetGrassBlendStrength = this.getBiomeToOverrideStorage().get(biomeKey).getClientStorage().getGrassColorBlendStrength();
         return overrideTargetGrassBlendStrength == Double.MAX_VALUE ? defaultValue : overrideTargetGrassBlendStrength;
     }
 
@@ -228,7 +228,7 @@ public class SubSeasonSettings implements Settings {
             return defaultValue;
         }
 
-        int overrideTargetSkyColor = this.biomeToOverrideStorage.get(biomeKey).getClientStorage().getParsedSkyHexColor();
+        int overrideTargetSkyColor = this.getBiomeToOverrideStorage().get(biomeKey).getClientStorage().getParsedSkyHexColor();
         return overrideTargetSkyColor == Integer.MAX_VALUE ? defaultValue : overrideTargetSkyColor;
     }
 
@@ -238,7 +238,7 @@ public class SubSeasonSettings implements Settings {
             return defaultValue;
         }
 
-        double overrideTargetGrassBlendStrength = this.biomeToOverrideStorage.get(biomeKey).getClientStorage().getSkyColorBlendStrength();
+        double overrideTargetGrassBlendStrength = this.getBiomeToOverrideStorage().get(biomeKey).getClientStorage().getSkyColorBlendStrength();
         return overrideTargetGrassBlendStrength == Double.MAX_VALUE ? defaultValue : overrideTargetGrassBlendStrength;
     }
 
@@ -248,7 +248,7 @@ public class SubSeasonSettings implements Settings {
             return defaultValue;
         }
 
-        int overrideTargetFogColor = this.biomeToOverrideStorage.get(biomeKey).getClientStorage().getParsedFogHexColor();
+        int overrideTargetFogColor = this.getBiomeToOverrideStorage().get(biomeKey).getClientStorage().getParsedFogHexColor();
         return overrideTargetFogColor == Integer.MAX_VALUE ? defaultValue : overrideTargetFogColor;
     }
 
@@ -258,7 +258,7 @@ public class SubSeasonSettings implements Settings {
             return defaultValue;
         }
 
-        double overrideFogColorBlendStrangth = this.biomeToOverrideStorage.get(biomeKey).getClientStorage().getFogColorBlendStrength();
+        double overrideFogColorBlendStrangth = this.getBiomeToOverrideStorage().get(biomeKey).getClientStorage().getFogColorBlendStrength();
         return overrideFogColorBlendStrangth == Double.MAX_VALUE ? defaultValue : overrideFogColorBlendStrangth;
     }
 

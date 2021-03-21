@@ -145,19 +145,18 @@ public class SeasonContext implements Season {
         SubSeasonSettings subSeason = this.getCurrentSubSeasonSettings();
         if (subSeason.getBiomeToOverrideStorage().isEmpty() && subSeason.getCropToMultiplierStorage().isEmpty()) {
             if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block) || BlockTags.SAPLINGS.contains(block)) {
-                cropTicker(world, posIn, block, subSeason, true, self, ci);
+                cropTicker(world, posIn, block, subSeason, self, ci);
             }
         } else {
             if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block) || BlockTags.SAPLINGS.contains(block)) {
-                cropTicker(world, posIn, block, subSeason, false, self, ci);
+                cropTicker(world, posIn, block, subSeason, self, ci);
             }
         }
     }
 
-    private static void cropTicker(ServerWorld world, BlockPos posIn, Block block, SubSeasonSettings subSeason, boolean useSeasonDefault, BlockState self, CallbackInfo ci) {
-
+    private static void cropTicker(ServerWorld world, BlockPos posIn, Block block, SubSeasonSettings subSeason, BlockState self, CallbackInfo ci) {
         //Collect the crop multiplier for the given subseason.
-        double cropGrowthMultiplier = subSeason.getCropGrowthChanceMultiplier(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getKey(world.getBiome(posIn)), block, useSeasonDefault);
+        double cropGrowthMultiplier = subSeason.getCropGrowthChanceMultiplier(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(world.getBiome(posIn)).get(), block);
         if (cropGrowthMultiplier == 1)
             return;
 

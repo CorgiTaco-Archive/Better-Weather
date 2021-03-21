@@ -5,7 +5,7 @@ import corgitaco.betterweather.season.SeasonContext;
 import corgitaco.betterweather.season.SubSeasonSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.util.registry.Registry;
@@ -14,6 +14,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.awt.*;
+import java.util.Optional;
 
 @OnlyIn(Dist.CLIENT)
 public class BiomeColorCalculator {
@@ -28,8 +29,9 @@ public class BiomeColorCalculator {
             return fallbackColor;
 
         SeasonContext seasonContext = ((BetterWeatherWorldData) mc.world).getSeasonContext();
-        if (seasonContext == null)
+        if (seasonContext == null) {
             return fallbackColor;
+        }
 
         SubSeasonSettings subSeasonSettings = seasonContext.getCurrentSubSeasonSettings();
 
@@ -40,46 +42,50 @@ public class BiomeColorCalculator {
         Color target;
         double blendStrength;
         DynamicRegistries dynamicRegistries = world.func_241828_r();
-        ResourceLocation biomeKey = dynamicRegistries.getRegistry(Registry.BIOME_KEY).getKey(biome);
-        if (biomeKey == null)
+        Optional<RegistryKey<Biome>> optionalKey = dynamicRegistries.getRegistry(Registry.BIOME_KEY).getOptionalKey(biome);
+
+        if (!optionalKey.isPresent()) {
             return fallbackColor;
+        }
+
+        RegistryKey<Biome> biomeKey = optionalKey.get();
 
         switch (colorType) {
             case GRASS:
-                int targetGrassColor = subSeasonSettings.getTargetGrassColor(biomeKey, false);
+                int targetGrassColor = subSeasonSettings.getTargetGrassColor(biomeKey);
 
                 if (targetGrassColor == Integer.MAX_VALUE)
                     return fallbackColor;
 
                 target = new Color(targetGrassColor);
-                blendStrength = subSeasonSettings.getGrassColorBlendStrength(biomeKey, false);
+                blendStrength = subSeasonSettings.getGrassColorBlendStrength(biomeKey);
                 break;
             case FOLIAGE:
-                int targetFoliageColor = subSeasonSettings.getTargetFoliageColor(biomeKey, false);
+                int targetFoliageColor = subSeasonSettings.getTargetFoliageColor(biomeKey);
 
                 if (targetFoliageColor == Integer.MAX_VALUE)
                     return fallbackColor;
 
                 target = new Color(targetFoliageColor);
-                blendStrength = subSeasonSettings.getFoliageColorBlendStrength(biomeKey, false);
+                blendStrength = subSeasonSettings.getFoliageColorBlendStrength(biomeKey);
                 break;
             case FOG:
-                int targetFogColor = subSeasonSettings.getTargetFogColor(biomeKey, false);
+                int targetFogColor = subSeasonSettings.getTargetFogColor(biomeKey);
 
                 if (targetFogColor == Integer.MAX_VALUE)
                     return fallbackColor;
 
                 target = new Color(targetFogColor);
-                blendStrength = subSeasonSettings.getFogColorBlendStrength(biomeKey, false);
+                blendStrength = subSeasonSettings.getFogColorBlendStrength(biomeKey);
                 break;
             default:
-                int targetSkyColor = subSeasonSettings.getTargetSkyColor(biomeKey, false);
+                int targetSkyColor = subSeasonSettings.getTargetSkyColor(biomeKey);
 
                 if (targetSkyColor == Integer.MAX_VALUE)
                     return fallbackColor;
 
                 target = new Color(targetSkyColor);
-                blendStrength = subSeasonSettings.getSkyColorBlendStrength(biomeKey, false);
+                blendStrength = subSeasonSettings.getSkyColorBlendStrength(biomeKey);
                 break;
         }
 

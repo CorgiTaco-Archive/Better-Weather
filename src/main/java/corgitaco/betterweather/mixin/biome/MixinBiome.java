@@ -18,8 +18,8 @@ public class MixinBiome implements IBiomeModifier {
     @Shadow
     @Final
     private Biome.Climate climate;
-    private Supplier<Float> tempModifier = null;
-    private Supplier<Float> humidityModifier = null;
+    private Supplier<Float> tempModifier = () -> 0.0F;
+    private Supplier<Float> humidityModifier = () -> 0.0F;
 
     @Inject(method = "getDownfall", at = @At("RETURN"), cancellable = true)
     private void modifyDownfall(CallbackInfoReturnable<Float> cir) {
