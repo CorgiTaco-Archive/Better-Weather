@@ -82,7 +82,7 @@ public final class BWSeason {
     }
 
     public BWSeason setPhaseForTime(int currentYearTime, int yearLength) {
-        int seasonTimeOffset = Season.getSeasonStartTimeForYear(key, yearLength);
+        int seasonTimeOffset = Season.getSeasonStartTime(key, yearLength);
         int seasonLocalTime = currentYearTime - seasonTimeOffset;
         int seasonLength = yearLength / Season.Key.values().length;
         int phaseLength = Season.getPhaseLength(seasonLength);

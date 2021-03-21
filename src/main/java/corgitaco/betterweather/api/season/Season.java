@@ -37,17 +37,17 @@ public interface Season {
 
 
     /**
-     * @return the start time for the given season.
+     * @return the start time for this season in the given year.
      */
-    default int getSeasonStartTimeForYear() {
-        return getSeasonStartTimeForYear(getKey(), getYearLength());
+    default int getSeasonStartTime() {
+        return getSeasonStartTime(getKey(), getYearLength());
     }
 
     /**
-     * @return the start time of the given season's phase.
+     * @return the start time for this season's phase in the given year.
      */
-    default int getSeasonAndPhaseStartTimeForYear() {
-        return getSeasonAndPhaseStartTimeForYear(getKey(), getPhase(), getYearLength());
+    default int getSeasonAndPhaseStartTime() {
+        return getSeasonAndPhaseStartTime(getKey(), getPhase(), getYearLength());
     }
 
     enum Key implements IStringSerializable {
@@ -111,32 +111,32 @@ public interface Season {
 
 
     /**
-     * @return the total length of a given phase based off the given season length.
+     * @return the total length of a given phase as determined by the given season length.
      */
     static int getPhaseLength(int seasonLength) {
         return seasonLength / Phase.values().length;
     }
 
     /**
-     * @return the total length of a given season based off the given year length.
+     * @return the total length of a given season as determined by the given year length.
      */
     static int getSeasonLength(int yearLength) {
         return yearLength / (Key.values().length);
     }
 
     /**
-     * @return the start time for the given season.
+     * @return the start time for the given season & year length.
      */
-    static int getSeasonStartTimeForYear(Key seasonKey, int yearLength) {
+    static int getSeasonStartTime(Key seasonKey, int yearLength) {
         int perSubSeasonLength = getSeasonLength(yearLength);
         return perSubSeasonLength * seasonKey.ordinal();
     }
 
     /**
-     * @return the start time of the given season's phase.
+     * @return the start time of the given season's phase for the given year length.
      */
-    static int getSeasonAndPhaseStartTimeForYear(Key seasonKey, Phase phase, int yearLength) {
-        int timeInCycleForSeason = getSeasonStartTimeForYear(seasonKey, yearLength);
+    static int getSeasonAndPhaseStartTime(Key seasonKey, Phase phase, int yearLength) {
+        int timeInCycleForSeason = getSeasonStartTime(seasonKey, yearLength);
         int phaseTime = getSeasonLength(yearLength) / Phase.values().length;
         return timeInCycleForSeason + (phaseTime * phase.ordinal());
     }
