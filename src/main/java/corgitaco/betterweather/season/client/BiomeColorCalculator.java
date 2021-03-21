@@ -1,6 +1,6 @@
 package corgitaco.betterweather.season.client;
 
-import corgitaco.betterweather.helper.BetterWeatherWorldData;
+import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.season.SeasonContext;
 import corgitaco.betterweather.season.SubSeasonSettings;
 import net.minecraft.client.Minecraft;

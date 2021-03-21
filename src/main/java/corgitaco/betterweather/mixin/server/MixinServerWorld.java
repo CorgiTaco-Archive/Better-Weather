@@ -1,7 +1,7 @@
 package corgitaco.betterweather.mixin.server;
 
 import corgitaco.betterweather.datastorage.SeasonSavedData;
-import corgitaco.betterweather.helper.BetterWeatherWorldData;
+import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.helpers.IBiomeModifier;
 import corgitaco.betterweather.helpers.IBiomeUpdate;
 import corgitaco.betterweather.season.SeasonContext;

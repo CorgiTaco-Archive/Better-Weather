@@ -13,10 +13,8 @@
     "entity.MixinBreedGoal",
     "network.MixinPlayerList",
     "server.MixinCommands",
-    "server.MixinDerivedWorldInfo",
     "server.MixinMinecraftServer",
     "server.MixinServerWorld",
-    "server.MixinServerWorldInfo",
     "server.MixinWeatherCommand"
   ],
   "client": [
@@ -25,9 +23,7 @@
     "client.MixinDimensionRenderInfo",
     "client.MixinFogRenderer",
     "client.MixinKeyboardListener",
-    "client.MixinLeavesBlock",
-    "client.MixinViewFrustum",
-    "client.MixinWorldRenderer"
+    "client.MixinLeavesBlock"
   ],
   "injectors": {
     "defaultRequire": 1

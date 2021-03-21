@@ -2,8 +2,6 @@ package corgitaco.betterweather;
 
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.biome.Biome;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;

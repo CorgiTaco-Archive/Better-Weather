@@ -1,7 +1,7 @@
 package corgitaco.betterweather.datastorage.network.packet;
 
 import corgitaco.betterweather.datastorage.SeasonSavedData;
-import corgitaco.betterweather.helper.BetterWeatherWorldData;
+import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.season.SeasonContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.PacketBuffer;

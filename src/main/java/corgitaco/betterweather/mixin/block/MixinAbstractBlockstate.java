@@ -1,6 +1,6 @@
 package corgitaco.betterweather.mixin.block;
 
-import corgitaco.betterweather.helper.BetterWeatherWorldData;
+import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.season.SeasonContext;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
