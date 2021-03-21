@@ -10,9 +10,6 @@ import net.minecraft.util.Util;
 import java.util.IdentityHashMap;
 
 public class SeasonConfigHolder {
-    private final int seasonCycleLength;
-    private final IdentityHashMap<Season.Key, BWSeason> seasonKeySeasonMap;
-
 
     public static final IdentityHashMap<Season.Key, BWSeason> DEFAULT_SEASONS = Util.make(new IdentityHashMap<>(), (map) -> {
         map.put(Season.Key.SPRING, BWSeason.DEFAULT_SPRING);
@@ -23,7 +20,6 @@ public class SeasonConfigHolder {
 
     public static final SeasonConfigHolder DEFAULT_CONFIG_HOLDER = new SeasonConfigHolder(240000, DEFAULT_SEASONS);
 
-
     public static final Codec<SeasonConfigHolder> CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(Codec.INT.fieldOf("yearLength").orElse(240000).forGetter((seasonConfigHolder) -> {
             return seasonConfigHolder.seasonCycleLength;
@@ -31,6 +27,9 @@ public class SeasonConfigHolder {
             return seasonConfigHolder.seasonKeySeasonMap;
         })).apply(builder, ((cycleLength, seasons) -> new SeasonConfigHolder(cycleLength, new IdentityHashMap<>(seasons))));
     });
+
+    private final int seasonCycleLength;
+    private final IdentityHashMap<Season.Key, BWSeason> seasonKeySeasonMap;
 
     public SeasonConfigHolder(int seasonCycleLength, IdentityHashMap<Season.Key, BWSeason> seasonKeySeasonMap) {
         this.seasonCycleLength = seasonCycleLength;

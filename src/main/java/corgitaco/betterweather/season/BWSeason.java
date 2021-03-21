@@ -40,17 +40,15 @@ public final class BWSeason {
     public static final BWSeason DEFAULT_AUTUMN = new BWSeason(DEFAULT_AUTUMN_PHASES);
     public static final BWSeason DEFAULT_WINTER = new BWSeason(DEFAULT_WINTER_PHASES);
 
-
-    private Season.Key key;
-    private Season.Phase currentPhase;
-    private final IdentityHashMap<Season.Phase, SubSeasonSettings> phaseSettings;
-
-
     public static final Codec<BWSeason> CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(Codec.simpleMap(Season.Phase.CODEC, SubSeasonSettings.CODEC, IStringSerializable.createKeyable(Season.Phase.values())).fieldOf("phases").forGetter((seasons) -> {
             return seasons.phaseSettings;
         })).apply(builder, (p1) -> new BWSeason(new IdentityHashMap<>(p1)));
     });
+
+    private Season.Key key;
+    private Season.Phase currentPhase;
+    private final IdentityHashMap<Season.Phase, SubSeasonSettings> phaseSettings;
 
     public BWSeason(IdentityHashMap<Season.Phase, SubSeasonSettings> phaseSettings) {
         this.phaseSettings = phaseSettings;
