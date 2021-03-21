@@ -1,6 +1,6 @@
 package corgitaco.betterweather;
 
-import corgitaco.betterweather.season.SubSeasonSettings;
+import corgitaco.betterweather.season.BWSubseasonSettings;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
@@ -43,7 +43,7 @@ public class BetterWeatherUtil {
         return (O) obj;
     }
 
-    public static int transformRainOrThunderTimeToCurrentSeason(int rainOrThunderTime, SubSeasonSettings previous, SubSeasonSettings current) {
+    public static int transformRainOrThunderTimeToCurrentSeason(int rainOrThunderTime, BWSubseasonSettings previous, BWSubseasonSettings current) {
         double previousMultiplier = previous.getWeatherEventChanceMultiplier();
         double currentMultiplier = current.getWeatherEventChanceMultiplier();
         double normalTime = rainOrThunderTime * previousMultiplier;

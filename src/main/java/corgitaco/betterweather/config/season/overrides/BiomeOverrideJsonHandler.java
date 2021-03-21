@@ -3,7 +3,7 @@ package corgitaco.betterweather.config.season.overrides;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.season.SubSeasonSettings;
+import corgitaco.betterweather.season.BWSubseasonSettings;
 import corgitaco.betterweather.season.storage.OverrideStorage;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
@@ -19,7 +19,7 @@ import java.util.IdentityHashMap;
 public class BiomeOverrideJsonHandler {
 
 
-    public static void handleOverrideJsonConfigs(Path path, IdentityHashMap<Object, OverrideStorage> objectToOverrideStorageDefault, SubSeasonSettings subSeasonSettings, Registry<Biome> biomeRegistry) {
+    public static void handleOverrideJsonConfigs(Path path, IdentityHashMap<Object, OverrideStorage> objectToOverrideStorageDefault, BWSubseasonSettings subSeasonSettings, Registry<Biome> biomeRegistry) {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(BiomeToOverrideStorageJsonStorage.class, new OverrideDeserializer(biomeRegistry));
         gsonBuilder.setPrettyPrinting();

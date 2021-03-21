@@ -4,8 +4,8 @@ import corgitaco.betterweather.datastorage.SeasonSavedData;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.helpers.IBiomeModifier;
 import corgitaco.betterweather.helpers.IBiomeUpdate;
+import corgitaco.betterweather.season.BWSubseasonSettings;
 import corgitaco.betterweather.season.SeasonContext;
-import corgitaco.betterweather.season.SubSeasonSettings;
 import corgitaco.betterweather.util.WorldDynamicRegistry;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.NBTDynamicOps;
@@ -67,7 +67,7 @@ public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWor
 
     @SuppressWarnings("ConstantConditions")
     @Override
-    public void updateBiomeData(SubSeasonSettings subSeasonSettings) {
+    public void updateBiomeData(BWSubseasonSettings subSeasonSettings) {
         for (Map.Entry<RegistryKey<Biome>, Biome> entry : registry.getRegistry(Registry.BIOME_KEY).getEntries()) {
             Biome biome = entry.getValue();
             RegistryKey<Biome> biomeKey = entry.getKey();

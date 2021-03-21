@@ -10,28 +10,28 @@ import java.util.IdentityHashMap;
 
 public final class BWSeason {
 
-    public static final IdentityHashMap<Season.Phase, SubSeasonSettings> DEFAULT_SPRING_PHASES = Util.make(new IdentityHashMap<>(), (map) -> {
-        map.put(Season.Phase.START, SubSeasonSettings.DEFAULT_SPRING_START);
-        map.put(Season.Phase.MID, SubSeasonSettings.DEFAULT_SPRING_MID);
-        map.put(Season.Phase.END, SubSeasonSettings.DEFAULT_SPRING_END);
+    public static final IdentityHashMap<Season.Phase, BWSubseasonSettings> DEFAULT_SPRING_PHASES = Util.make(new IdentityHashMap<>(), (map) -> {
+        map.put(Season.Phase.START, BWSubseasonSettings.DEFAULT_SPRING_START);
+        map.put(Season.Phase.MID, BWSubseasonSettings.DEFAULT_SPRING_MID);
+        map.put(Season.Phase.END, BWSubseasonSettings.DEFAULT_SPRING_END);
     });
 
-    public static final IdentityHashMap<Season.Phase, SubSeasonSettings> DEFAULT_SUMMER_PHASES = Util.make(new IdentityHashMap<>(), (map) -> {
-        map.put(Season.Phase.START, SubSeasonSettings.DEFAULT_SUMMER_START);
-        map.put(Season.Phase.MID, SubSeasonSettings.DEFAULT_SUMMER_MID);
-        map.put(Season.Phase.END, SubSeasonSettings.DEFAULT_SUMMER_END);
+    public static final IdentityHashMap<Season.Phase, BWSubseasonSettings> DEFAULT_SUMMER_PHASES = Util.make(new IdentityHashMap<>(), (map) -> {
+        map.put(Season.Phase.START, BWSubseasonSettings.DEFAULT_SUMMER_START);
+        map.put(Season.Phase.MID, BWSubseasonSettings.DEFAULT_SUMMER_MID);
+        map.put(Season.Phase.END, BWSubseasonSettings.DEFAULT_SUMMER_END);
     });
 
-    public static final IdentityHashMap<Season.Phase, SubSeasonSettings> DEFAULT_AUTUMN_PHASES = Util.make(new IdentityHashMap<>(), (map) -> {
-        map.put(Season.Phase.START, SubSeasonSettings.DEFAULT_AUTUMN_START);
-        map.put(Season.Phase.MID, SubSeasonSettings.DEFAULT_AUTUMN_MID);
-        map.put(Season.Phase.END, SubSeasonSettings.DEFAULT_AUTUMN_END);
+    public static final IdentityHashMap<Season.Phase, BWSubseasonSettings> DEFAULT_AUTUMN_PHASES = Util.make(new IdentityHashMap<>(), (map) -> {
+        map.put(Season.Phase.START, BWSubseasonSettings.DEFAULT_AUTUMN_START);
+        map.put(Season.Phase.MID, BWSubseasonSettings.DEFAULT_AUTUMN_MID);
+        map.put(Season.Phase.END, BWSubseasonSettings.DEFAULT_AUTUMN_END);
     });
 
-    public static final IdentityHashMap<Season.Phase, SubSeasonSettings> DEFAULT_WINTER_PHASES = Util.make(new IdentityHashMap<>(), (map) -> {
-        map.put(Season.Phase.START, SubSeasonSettings.DEFAULT_WINTER_START);
-        map.put(Season.Phase.MID, SubSeasonSettings.DEFAULT_WINTER_MID);
-        map.put(Season.Phase.END, SubSeasonSettings.DEFAULT_WINTER_END);
+    public static final IdentityHashMap<Season.Phase, BWSubseasonSettings> DEFAULT_WINTER_PHASES = Util.make(new IdentityHashMap<>(), (map) -> {
+        map.put(Season.Phase.START, BWSubseasonSettings.DEFAULT_WINTER_START);
+        map.put(Season.Phase.MID, BWSubseasonSettings.DEFAULT_WINTER_MID);
+        map.put(Season.Phase.END, BWSubseasonSettings.DEFAULT_WINTER_END);
     });
 
     public static final BWSeason DEFAULT_SPRING = new BWSeason(DEFAULT_SPRING_PHASES);
@@ -40,16 +40,16 @@ public final class BWSeason {
     public static final BWSeason DEFAULT_WINTER = new BWSeason(DEFAULT_WINTER_PHASES);
 
     public static final Codec<BWSeason> CODEC = RecordCodecBuilder.create((builder) -> {
-        return builder.group(Codec.simpleMap(Season.Phase.CODEC, SubSeasonSettings.CODEC, IStringSerializable.createKeyable(Season.Phase.values())).fieldOf("phases").forGetter((seasons) -> {
+        return builder.group(Codec.simpleMap(Season.Phase.CODEC, BWSubseasonSettings.CODEC, IStringSerializable.createKeyable(Season.Phase.values())).fieldOf("phases").forGetter((seasons) -> {
             return seasons.phaseSettings;
         })).apply(builder, (p1) -> new BWSeason(new IdentityHashMap<>(p1)));
     });
 
     private Season.Key key;
     private Season.Phase currentPhase;
-    private final IdentityHashMap<Season.Phase, SubSeasonSettings> phaseSettings;
+    private final IdentityHashMap<Season.Phase, BWSubseasonSettings> phaseSettings;
 
-    public BWSeason(IdentityHashMap<Season.Phase, SubSeasonSettings> phaseSettings) {
+    public BWSeason(IdentityHashMap<Season.Phase, BWSubseasonSettings> phaseSettings) {
         this.phaseSettings = phaseSettings;
     }
 
@@ -61,7 +61,7 @@ public final class BWSeason {
         this.key = key;
     }
 
-    public SubSeasonSettings getCurrentSettings() {
+    public BWSubseasonSettings getCurrentSettings() {
         return this.phaseSettings.get(currentPhase);
     }
 
@@ -69,11 +69,11 @@ public final class BWSeason {
         return currentPhase;
     }
 
-    public SubSeasonSettings getSettingsForPhase(Season.Phase phase) {
+    public BWSubseasonSettings getSettingsForPhase(Season.Phase phase) {
         return this.phaseSettings.get(phase);
     }
 
-    public IdentityHashMap<Season.Phase, SubSeasonSettings> getPhaseSettings() {
+    public IdentityHashMap<Season.Phase, BWSubseasonSettings> getPhaseSettings() {
         return phaseSettings;
     }
 

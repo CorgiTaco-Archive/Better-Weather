@@ -31,9 +31,9 @@ public interface Season {
     Phase getPhase();
 
     /**
-     * @return current season's settings.
+     * @return current sub season's settings.
      */
-    Settings getSettings();
+    SubseasonSettings getSettings();
 
 
     /**

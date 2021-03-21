@@ -5,8 +5,8 @@ import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.helpers.IBiomeModifier;
 import corgitaco.betterweather.helpers.IBiomeUpdate;
+import corgitaco.betterweather.season.BWSubseasonSettings;
 import corgitaco.betterweather.season.SeasonContext;
-import corgitaco.betterweather.season.SubSeasonSettings;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.vector.Vector3d;
@@ -82,7 +82,7 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, IBiome
 
     @SuppressWarnings("ConstantConditions")
     @Override
-    public void updateBiomeData(SubSeasonSettings subSeasonSettings) {
+    public void updateBiomeData(BWSubseasonSettings subSeasonSettings) {
         for (Map.Entry<RegistryKey<Biome>, Biome> entry : this.func_241828_r().getRegistry(Registry.BIOME_KEY).getEntries()) {
             Biome biome = entry.getValue();
             RegistryKey<Biome> biomeKey = entry.getKey();

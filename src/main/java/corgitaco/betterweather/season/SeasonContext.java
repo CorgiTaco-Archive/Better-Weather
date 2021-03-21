@@ -7,7 +7,7 @@ import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.season.Season;
-import corgitaco.betterweather.api.season.Settings;
+import corgitaco.betterweather.api.season.SubseasonSettings;
 import corgitaco.betterweather.config.season.SeasonConfigHolder;
 import corgitaco.betterweather.config.season.overrides.BiomeOverrideJsonHandler;
 import corgitaco.betterweather.datastorage.SeasonSavedData;
@@ -83,9 +83,9 @@ public class SeasonContext implements Season {
 
     private void fillSubSeasonOverrideStorage() {
         for (Map.Entry<Season.Key, BWSeason> seasonKeySeasonEntry : this.seasons.entrySet()) {
-            IdentityHashMap<Season.Phase, SubSeasonSettings> phaseSettings = seasonKeySeasonEntry.getValue().getPhaseSettings();
-            for (Map.Entry<Season.Phase, SubSeasonSettings> phaseSubSeasonSettingsEntry : phaseSettings.entrySet()) {
-                BiomeOverrideJsonHandler.handleOverrideJsonConfigs(this.seasonOverridesPath.resolve(seasonKeySeasonEntry.getKey().toString() + "-" + phaseSubSeasonSettingsEntry.getKey() + ".json"), seasonKeySeasonEntry.getKey() == Season.Key.WINTER ? SubSeasonSettings.WINTER_OVERRIDE : new IdentityHashMap<>(), phaseSubSeasonSettingsEntry.getValue(), this.biomeRegistry);
+            IdentityHashMap<Season.Phase, BWSubseasonSettings> phaseSettings = seasonKeySeasonEntry.getValue().getPhaseSettings();
+            for (Map.Entry<Season.Phase, BWSubseasonSettings> phaseSubSeasonSettingsEntry : phaseSettings.entrySet()) {
+                BiomeOverrideJsonHandler.handleOverrideJsonConfigs(this.seasonOverridesPath.resolve(seasonKeySeasonEntry.getKey().toString() + "-" + phaseSubSeasonSettingsEntry.getKey() + ".json"), seasonKeySeasonEntry.getKey() == Season.Key.WINTER ? BWSubseasonSettings.WINTER_OVERRIDE : new IdentityHashMap<>(), phaseSubSeasonSettingsEntry.getValue(), this.biomeRegistry);
             }
         }
     }
@@ -141,7 +141,7 @@ public class SeasonContext implements Season {
     }
 
     public void tickCrops(ServerWorld world, BlockPos posIn, Block block, BlockState self, CallbackInfo ci) {
-        SubSeasonSettings subSeason = this.getCurrentSubSeasonSettings();
+        BWSubseasonSettings subSeason = this.getCurrentSubSeasonSettings();
         if (subSeason.getBiomeToOverrideStorage().isEmpty() && subSeason.getCropToMultiplierStorage().isEmpty()) {
             if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block) || BlockTags.SAPLINGS.contains(block)) {
                 cropTicker(world, posIn, block, subSeason, self, ci);
@@ -153,9 +153,9 @@ public class SeasonContext implements Season {
         }
     }
 
-    private static void cropTicker(ServerWorld world, BlockPos posIn, Block block, SubSeasonSettings subSeason, BlockState self, CallbackInfo ci) {
+    private static void cropTicker(ServerWorld world, BlockPos posIn, Block block, BWSubseasonSettings subSeason, BlockState self, CallbackInfo ci) {
         //Collect the crop multiplier for the given subseason.
-        double cropGrowthMultiplier = subSeason.getCropGrowthChanceMultiplier(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(world.getBiome(posIn)).get(), block);
+        double cropGrowthMultiplier = subSeason.getCropGrowthMultiplier(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(world.getBiome(posIn)).get(), block);
         if (cropGrowthMultiplier == 1)
             return;
 
@@ -208,7 +208,7 @@ public class SeasonContext implements Season {
         return currentSeason;
     }
 
-    public SubSeasonSettings getCurrentSubSeasonSettings() {
+    public BWSubseasonSettings getCurrentSubSeasonSettings() {
         return this.currentSeason.getCurrentSettings();
     }
 
@@ -234,7 +234,7 @@ public class SeasonContext implements Season {
     }
 
     @Override
-    public Settings getSettings() {
+    public SubseasonSettings getSettings() {
         return this.currentSeason.getCurrentSettings();
     }
 
