@@ -3,7 +3,7 @@ package corgitaco.betterweather.config.season.overrides;
 import com.google.gson.*;
 import com.mojang.datafixers.util.Pair;
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.util.storage.OverrideStorage;
+import corgitaco.betterweather.season.storage.OverrideStorage;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.util.RegistryKey;

@@ -3,7 +3,6 @@ package corgitaco.betterweather.season;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.api.season.Season;
-import corgitaco.betterweather.util.SeasonUtils;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.Util;
 
@@ -83,10 +82,10 @@ public final class BWSeason {
     }
 
     public BWSeason setPhaseForTime(int currentYearTime, int yearLength) {
-        int seasonTimeOffset = SeasonUtils.getTimeInCycleForSeason(key, yearLength);
+        int seasonTimeOffset = Season.getTimeInCycleForSeason(key, yearLength);
         int seasonLocalTime = currentYearTime - seasonTimeOffset;
         int seasonLength = yearLength / Season.Key.values().length;
-        int phaseLength = SeasonUtils.getPhaseLength(seasonLength);
+        int phaseLength = Season.getPhaseLength(seasonLength);
 
         if (seasonLocalTime < phaseLength)
             this.currentPhase = Season.Phase.START;

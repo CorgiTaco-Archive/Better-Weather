@@ -16,7 +16,6 @@ import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
 import corgitaco.betterweather.datastorage.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.helpers.IBiomeUpdate;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
-import corgitaco.betterweather.util.SeasonUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -67,7 +66,7 @@ public class SeasonContext implements Season {
         this.seasonOverridesPath = seasonsFolderPath.resolve("overrides");
 
         this.handleConfig();
-        this.currentSeason = seasons.get(SeasonUtils.getSeasonFromTime(currentYearTime, yearLength)).setPhaseForTime(this.currentYearTime, this.yearLength);
+        this.currentSeason = seasons.get(Season.getSeasonFromTime(currentYearTime, yearLength)).setPhaseForTime(this.currentYearTime, this.yearLength);
     }
 
     public void handleConfig() {
@@ -92,7 +91,7 @@ public class SeasonContext implements Season {
     }
 
     public void setSeason(List<ServerPlayerEntity> players, Season.Key newSeason, Season.Phase phase) {
-        this.currentYearTime = SeasonUtils.getTimeInCycleForSeasonAndPhase(newSeason, phase, this.yearLength);
+        this.currentYearTime = Season.getTimeInCycleForSeasonAndPhase(newSeason, phase, this.yearLength);
         this.currentSeason = seasons.get(newSeason);
         this.currentSeason.setPhaseForTime(currentYearTime, yearLength);
         this.updatePacket(players);
@@ -192,7 +191,7 @@ public class SeasonContext implements Season {
     private void tickSeasonTime(World world) {
         if (world.getGameRules().getBoolean(BetterWeatherGameRules.DO_SEASON_CYCLE)) {
             this.currentYearTime = currentYearTime > this.yearLength ? 0 : (currentYearTime + 1);
-            this.currentSeason = this.seasons.get(SeasonUtils.getSeasonFromTime(this.currentYearTime, this.yearLength)).setPhaseForTime(this.currentYearTime, this.yearLength);
+            this.currentSeason = this.seasons.get(Season.getSeasonFromTime(this.currentYearTime, this.yearLength)).setPhaseForTime(this.currentYearTime, this.yearLength);
 
             if (world.getWorldInfo().getGameTime() % 50 == 0) {
                 save(world);

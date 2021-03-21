@@ -6,7 +6,7 @@ import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.BetterWeatherUtil;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.season.Settings;
-import corgitaco.betterweather.util.storage.OverrideStorage;
+import corgitaco.betterweather.season.storage.OverrideStorage;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;

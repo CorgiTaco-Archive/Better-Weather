@@ -1,4 +1,4 @@
-package corgitaco.betterweather.util.storage;
+package corgitaco.betterweather.season.storage;
 
 import corgitaco.betterweather.BetterWeatherUtil;
 import net.minecraft.block.Block;

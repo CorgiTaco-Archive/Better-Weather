@@ -1,6 +1,6 @@
 package corgitaco.betterweather.config.season.overrides;
 
-import corgitaco.betterweather.util.storage.OverrideStorage;
+import corgitaco.betterweather.season.storage.OverrideStorage;
 import net.minecraft.block.Block;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.world.biome.Biome;

@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.season.SubSeasonSettings;
-import corgitaco.betterweather.util.storage.OverrideStorage;
+import corgitaco.betterweather.season.storage.OverrideStorage;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 

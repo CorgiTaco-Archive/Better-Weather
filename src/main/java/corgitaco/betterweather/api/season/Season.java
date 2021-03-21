@@ -78,4 +78,39 @@ public interface Season {
             return this.name();
         }
     }
+
+
+    static int getPhaseLength(int seasonLength) {
+        return seasonLength / Season.Phase.values().length;
+    }
+
+    static int getSubSeasonLength(int yearLength) {
+        return yearLength / (Season.Key.values().length);
+    }
+
+    static int getTimeInCycleForSeason(Season.Key seasonKey, int yearLength) {
+        int perSubSeasonLength = getSubSeasonLength(yearLength);
+        return perSubSeasonLength * seasonKey.ordinal();
+    }
+
+
+    static int getTimeInCycleForSeasonAndPhase(Season.Key seasonKey, Season.Phase phase, int yearLength) {
+        int timeInCycleForSeason = getTimeInCycleForSeason(seasonKey, yearLength);
+        int phaseTime = getSubSeasonLength(yearLength) / Season.Phase.values().length;
+        return timeInCycleForSeason + (phaseTime * phase.ordinal());
+    }
+
+
+    static Season.Key getSeasonFromTime(int currentYearTime, int yearLength) {
+        int seasonLength = yearLength / 4;
+
+        if (currentYearTime < seasonLength) {
+            return Season.Key.SPRING;
+        } else if (currentYearTime < seasonLength * 2) {
+            return Season.Key.SUMMER;
+        } else if (currentYearTime < seasonLength * 3) {
+            return Season.Key.AUTUMN;
+        } else
+            return Season.Key.WINTER;
+    }
 }
