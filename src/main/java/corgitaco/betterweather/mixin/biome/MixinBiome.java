@@ -24,19 +24,11 @@ public abstract class MixinBiome implements BiomeModifier, BiomeClimate {
 
     @Inject(method = "getDownfall", at = @At("RETURN"), cancellable = true)
     private void modifyDownfall(CallbackInfoReturnable<Float> cir) {
-        if (humidityModifier == null) {
-            String s = "";
-        }
-
         cir.setReturnValue(this.climate.downfall + humidityModifier.get());
     }
 
     @Inject(method = "getTemperature()F", at = @At("RETURN"), cancellable = true)
     private void modifyTemperature(CallbackInfoReturnable<Float> cir) {
-        if (tempModifier == null) {
-            String s = "";
-        }
-
         cir.setReturnValue(this.climate.temperature + tempModifier.get());
     }
 
