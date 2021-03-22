@@ -2,13 +2,27 @@ package corgitaco.betterweather.api.season;
 
 import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
+import corgitaco.betterweather.api.Climate;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.Util;
+import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.Map;
 
+/**
+ * Contains season data for a world.
+ */
 public interface Season {
+
+    /**
+     * @param world Should be either or extenders of {@link net.minecraft.client.world.ClientWorld} or {@link net.minecraft.world.server.ServerWorld}
+     * @return Season
+     */
+    @Nullable
+    static Season getSeason(World world) {
+        return ((Climate) world).getSeason();
+    }
 
     /**
      * @return total year length.
@@ -26,12 +40,13 @@ public interface Season {
     Key getKey();
 
     /**
-     * @return current season's phase.
+     * @return current season's phase/subseason
      */
     Phase getPhase();
 
     /**
      * @return current subseason's settings.
+     * In the current implementation, each season has 3 (length of {@link Phase}) Subseason settings for each phase.
      */
     SubseasonSettings getSettings();
 
@@ -84,7 +99,7 @@ public interface Season {
     }
 
     /**
-     * Represents the time within a given season.
+     * Represents both the time within a given season and the "Subseason".
      */
     enum Phase implements IStringSerializable {
         START,

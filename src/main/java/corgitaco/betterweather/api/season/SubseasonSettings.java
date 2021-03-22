@@ -6,6 +6,9 @@ import net.minecraft.world.biome.Biome;
 
 import javax.annotation.Nullable;
 
+/**
+ * In the current implementation, each season has 3 (length of {@link Season.Phase}) Subseason Settings.
+ */
 public interface SubseasonSettings {
 
     /**
@@ -17,9 +20,9 @@ public interface SubseasonSettings {
     double getTemperatureModifier(@Nullable RegistryKey<Biome> biomeKey);
 
     /**
-     * @return Temperature modifier for these SubSeasonSettings.
+     * @return Temperature modifier for these SubseasonSettings.
      */
-    default double getSubSeasonTemperatureModifier() {
+    default double getSubseasonTemperatureModifier() {
         return getTemperatureModifier(null);
     }
 
@@ -32,9 +35,9 @@ public interface SubseasonSettings {
     double getHumidityModifier(@Nullable RegistryKey<Biome> biomeKey);
 
     /**
-     * @return Temperature modifier for these SubSeasonSettings.
+     * @return Temperature modifier for these SubseasonSettings.
      */
-    default double getSubSeasonHumidityModifier() {
+    default double getSubseasonHumidityModifier() {
         return getHumidityModifier(null);
     }
 
@@ -45,24 +48,24 @@ public interface SubseasonSettings {
      * <p></p>
      * 2. Biome Default(Crop is not present, Biome is present).
      * <p></p>
-     * 3. Sub-Season(Crop is present, Biome is not present)
+     * 3. Subseason(Crop is present, Biome is not present)
      * <p></p>
-     * 4. Sub-Season Default(Neither Crop or Biome is present)
+     * 4. Subseason Default(Neither Crop or Biome is present)
      */
     double getCropGrowthMultiplier(@Nullable RegistryKey<Biome> biomeKey, @Nullable Block crop);
 
     /**
-     * @return Crop growth for these SubSeasonSettings.
+     * @return Crop growth for these SubseasonSettings.
      */
-    default double getSubSeasonCropGrowthMultiplier() {
+    default double getSubseasonCropGrowthMultiplier() {
         return getCropGrowthMultiplier(null, null);
     }
 
     /**
      * @return Crop growth multiplier for the given crop in the following priority order:
      * <p></p>
-     * 1. Sub-Season
-     * 2. Sub-Season Default
+     * 1. Subseason
+     * 2. Subseason Default
      */
     default double getBlockCropGrowthMultiplier(Block crop) {
         return getCropGrowthMultiplier(null, crop);
@@ -72,7 +75,7 @@ public interface SubseasonSettings {
      * @return Crop growth multiplier for the given biome in the following priority order:
      * <p></p>
      * 1. Biome default
-     * 2. Sub-Season Default
+     * 2. Subseason Default
      */
     default double getBiomeCropGrowthMultiplier(RegistryKey<Biome> biomeKey) {
         return getCropGrowthMultiplier(biomeKey, null);
