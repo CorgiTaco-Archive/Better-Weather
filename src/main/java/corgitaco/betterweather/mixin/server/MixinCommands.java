@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Commands.class)
-public class MixinCommands {
+public abstract class MixinCommands {
 
     @Shadow
     @Final
@@ -24,7 +24,6 @@ public class MixinCommands {
     @Inject(method = "<init>", at = @At("RETURN"))
     private void addBetterWeatherCommands(Commands.EnvironmentType envType, CallbackInfo ci) {
         LiteralArgumentBuilder<CommandSource> requires = Commands.literal(BetterWeather.MOD_ID).requires(commandSource -> commandSource.hasPermissionLevel(3));
-
 
         requires.then(SetSeasonCommand.register(dispatcher));
         LiteralCommandNode<CommandSource> source = dispatcher.register(requires);

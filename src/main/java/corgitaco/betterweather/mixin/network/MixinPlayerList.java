@@ -26,7 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(PlayerList.class)
-public class MixinPlayerList {
+public abstract class MixinPlayerList {
 
     @Mutable
     @Shadow

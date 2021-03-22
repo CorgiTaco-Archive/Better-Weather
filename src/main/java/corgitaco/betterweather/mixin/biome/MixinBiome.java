@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 
 
 @Mixin(Biome.class)
-public class MixinBiome implements BiomeModifier, BiomeClimate {
+public abstract class MixinBiome implements BiomeModifier, BiomeClimate {
 
     @Shadow
     @Final
