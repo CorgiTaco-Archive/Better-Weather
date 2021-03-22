@@ -16,9 +16,9 @@ public class AbstractCommentedConfigBuilder {
 
     public AbstractCommentedConfigBuilder(Path filePath) {
         this.filePath = filePath;
-        CommentedFileConfig builder = CommentedFileConfig.builder(filePath).sync().autosave().writingMode(WritingMode.REPLACE).build();
-        builder.load();
-        this.config = builder;
+        CommentedFileConfig config = CommentedFileConfig.builder(filePath).sync().autosave().writingMode(WritingMode.REPLACE).build();
+        config.load();
+        this.config = config;
     }
 
 
