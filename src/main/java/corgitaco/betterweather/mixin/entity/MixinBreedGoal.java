@@ -24,7 +24,7 @@ public abstract class MixinBreedGoal {
     protected World world;
 
     @Inject(method = "shouldExecute", at = @At("HEAD"), cancellable = true)
-    private void seasonBreeding(CallbackInfoReturnable<Boolean> cir) {
+    private void seasonalBreeding(CallbackInfoReturnable<Boolean> cir) {
         SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
         if (seasonContext != null) {
             if (seasonContext.getCurrentSubSeasonSettings().getEntityTypeBreedingBlacklist().contains(this.animal.getType()))

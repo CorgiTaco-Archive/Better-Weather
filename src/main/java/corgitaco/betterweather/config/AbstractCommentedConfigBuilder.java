@@ -16,11 +16,9 @@ public class AbstractCommentedConfigBuilder {
 
     public AbstractCommentedConfigBuilder(Path filePath) {
         this.filePath = filePath;
-        if (filePath.toFile().exists()) {
-            this.config = CommentedFileConfig.builder(filePath).build();
-        } else {
-            this.config = CommentedConfig.inMemory();
-        }
+        CommentedFileConfig builder = CommentedFileConfig.builder(filePath).sync().autosave().writingMode(WritingMode.REPLACE).build();
+        builder.load();
+        this.config = builder;
     }
 
 
