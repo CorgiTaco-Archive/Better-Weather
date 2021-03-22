@@ -46,6 +46,11 @@ import java.util.function.BooleanSupplier;
 
 @Mixin(ServerWorld.class)
 public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWorldData {
+
+    @Shadow
+    @Final
+    private ServerChunkProvider field_241102_C_;
+
     private DynamicRegistries registry;
 
     @Nullable
@@ -56,12 +61,15 @@ public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWor
     private void storeUpgradablePerWorldRegistry(MinecraftServer server, Executor executor, SaveFormat.LevelSave save, IServerWorldInfo worldInfo, RegistryKey<World> key, DimensionType dimensionType, IChunkStatusListener statusListener, ChunkGenerator generator, boolean b, long seed, List<ISpecialSpawner> specialSpawners, boolean b1, CallbackInfo ci) {
         if (BetterWeatherConfig.SEASON_DIMENSIONS.contains(key.getLocation().toString())) {
             this.registry = new WorldDynamicRegistry((DynamicRegistries.Impl) server.func_244267_aX());
+
+            //Reload the world settings import with OUR implementation of the registry.
             WorldSettingsImport<INBT> worldSettingsImport = WorldSettingsImport.create(NBTDynamicOps.INSTANCE, server.getDataPackRegistries().getResourceManager(), (DynamicRegistries.Impl) this.registry);
-            IServerConfiguration newServerConfiguration = save.readServerConfiguration(worldSettingsImport, server.getServerConfiguration().getDatapackCodec());
-            Dimension dimension = newServerConfiguration.getDimensionGeneratorSettings().func_236224_e_().getOptional(key.getLocation()).get();
-            ChunkGenerator dimensionChunkGenerator = dimension.getChunkGenerator();
-            this.field_241102_C_/*Server Chunk Provider*/.generator = dimensionChunkGenerator; // Some modded generators do weird stuff so we'll just reset the field.
-            this.field_241102_C_/*Server Chunk Provider*/.chunkManager.generator = dimensionChunkGenerator; // Some modded generators do weird stuff so we'll just reset the field.
+            ChunkGenerator dimensionChunkGenerator = save.readServerConfiguration(worldSettingsImport, server.getServerConfiguration().getDatapackCodec()).getDimensionGeneratorSettings().func_236224_e_().getOptional(key.getLocation()).get().getChunkGenerator();
+            // Reset the chunk generator fields in both the chunk provider and chunk manager. This is required for chunk generators to return the current biome object type required by our registry. //TODO: Do this earlier so mods mixing here can capture our version of the chunk generator.
+            this.field_241102_C_/*Server Chunk Provider*/.generator = dimensionChunkGenerator;
+            this.field_241102_C_/*Server Chunk Provider*/.chunkManager.generator = dimensionChunkGenerator;
+
+
             this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));
             updateBiomeData(seasonContext.getCurrentSubSeasonSettings());
         } else {
@@ -97,13 +105,6 @@ public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWor
         cir.setReturnValue(this.registry);
     }
 
-    @Shadow
-    public IServerWorldInfo field_241103_E_;
-
-    @Shadow
-    @Final
-    private ServerChunkProvider field_241102_C_;
-
 //    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z", ordinal = 0))
 //    private boolean rollBetterWeatherEvent(GameRules gameRules, GameRules.RuleKey<GameRules.BooleanValue> key) {
 //        if (gameRules.getBoolean(GameRules.DO_WEATHER_CYCLE))
@@ -130,10 +131,10 @@ public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWor
 //    }
 
 
-    @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 0))
-    private int neverSpawnLightning(Random random, int bound) {
-        return -1;
-    }
+//    @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 0))
+//    private int neverSpawnLightning(Random random, int bound) {
+//        return -1;
+//    }
 
     @Nullable
     @Override

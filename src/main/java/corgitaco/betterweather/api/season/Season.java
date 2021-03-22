@@ -11,11 +11,12 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
- * Contains season data for a world.
+ * Contains season data for a world including the current year time, year length, the key, phase, and settings for a world.
  */
 public interface Season {
 
     /**
+     * If null, seasons are not enabled for this world.
      * @param world Should be either or extenders of {@link net.minecraft.client.world.ClientWorld} or {@link net.minecraft.world.server.ServerWorld}
      * @return Season
      */
@@ -46,7 +47,7 @@ public interface Season {
 
     /**
      * @return current subseason's settings.
-     * In the current implementation, each season has 3 (length of {@link Phase}) Subseason settings for each phase.
+     * In the current implementation, each season has 3 (length of {@link Phase}) subseason settings for each phase.
      */
     SubseasonSettings getSettings();
 

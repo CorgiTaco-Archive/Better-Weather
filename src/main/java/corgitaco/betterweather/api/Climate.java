@@ -12,6 +12,9 @@ import javax.annotation.Nullable;
  * Basically the functioning "entry point" for Better Weather's Data.
  */
 public interface Climate {
+    /**
+     * @return If null, seasons are not enabled for this world.
+     */
     @Nullable
     Season getSeason();
 
