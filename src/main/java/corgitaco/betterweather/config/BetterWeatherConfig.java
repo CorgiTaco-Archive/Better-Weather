@@ -11,7 +11,7 @@ public class BetterWeatherConfig {
 
     public static void serialize() {
         AbstractCommentedConfigBuilder builder = new AbstractCommentedConfigBuilder(BetterWeather.CONFIG_PATH.resolve("better-weather.toml"));
-        SEASON_DIMENSIONS = builder.addList("What dimensions have seasons?", "dimension_whitelist", Collections.singletonList(World.OVERWORLD.getLocation().toString()));
+        SEASON_DIMENSIONS = builder.addList("What dimensions have seasons?", "season_dimension_whitelist", Collections.singletonList(World.OVERWORLD.getLocation().toString()));
         builder.build();
     }
 }
