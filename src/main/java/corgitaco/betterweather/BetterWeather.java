@@ -2,6 +2,7 @@ package corgitaco.betterweather;
 
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
+import net.minecraft.util.LazyValue;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -19,8 +20,17 @@ import java.nio.file.Path;
 public class BetterWeather {
     public static final String MOD_ID = "betterweather";
     public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
-    public static Logger LOGGER = LogManager.getLogger();
-    public static boolean usingOptifine;
+    public static final Logger LOGGER = LogManager.getLogger();
+
+    public static final boolean USING_OPTIFINE = new LazyValue<>(() -> {
+        try {
+            final Class<?> clazz = Class.forName("net.optifine.Config");
+            return clazz != null;
+        } catch (final Exception e) {
+
+            return false;
+        }
+    }).getValue();
 
     public BetterWeather() {
         File dir = new File(CONFIG_PATH.toString());
@@ -39,7 +49,9 @@ public class BetterWeather {
     }
 
     private void clientSetup(FMLClientSetupEvent event) {
-
+        if (USING_OPTIFINE) {
+            LOGGER.info("Optifine is loaded.");
+        }
     }
 
     private void lateSetup(FMLLoadCompleteEvent event) {
