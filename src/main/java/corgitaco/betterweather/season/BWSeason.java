@@ -78,7 +78,6 @@ public final class BWSeason {
     }
 
     public void tick(int currentYearTime, int yearLength) {
-        setPhaseForTime(currentYearTime, yearLength);
     }
 
     public BWSeason setPhaseForTime(int currentYearTime, int yearLength) {

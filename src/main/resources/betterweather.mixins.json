@@ -14,8 +14,7 @@
     "network.MixinPlayerList",
     "server.MixinCommands",
     "server.MixinMinecraftServer",
-    "server.MixinServerWorld",
-    "server.MixinWeatherCommand"
+    "server.MixinServerWorld"
   ],
   "client": [
     "client.MixinBiomeClient",

@@ -126,10 +126,8 @@ public class SeasonContext implements Season {
 
     public void tick(World world) {
         BWSeason prevSeason = this.currentSeason;
-        this.tickSeasonTime(world);
-
         Season.Phase prevPhase = this.currentSeason.getCurrentPhase();
-        this.currentSeason.tick(currentYearTime, yearLength);
+        this.tickSeasonTime(world);
 
         if (prevSeason != this.currentSeason || prevPhase != this.currentSeason.getCurrentPhase()) {
             ((IBiomeUpdate) world).updateBiomeData(this.getCurrentSubSeasonSettings());
