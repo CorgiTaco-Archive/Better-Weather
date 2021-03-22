@@ -9,7 +9,6 @@
     "access.RegistryAccess",
     "biome.MixinBiome",
     "block.MixinAbstractBlockstate",
-    "client.MixinDebugOverlayGui",
     "entity.MixinBreedGoal",
     "network.MixinPlayerList",
     "server.MixinCommands",
@@ -20,7 +19,8 @@
     "client.MixinBiomeClient",
     "client.MixinClientWorld",
     "client.MixinFogRenderer",
-    "client.MixinLeavesBlock"
+    "client.MixinLeavesBlock",
+    "client.MixinDebugOverlayGui"
   ],
   "injectors": {
     "defaultRequire": 1
