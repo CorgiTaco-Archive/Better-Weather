@@ -9,7 +9,7 @@
     "access.RegistryAccess",
     "biome.MixinBiome",
     "block.MixinAbstractBlockstate",
-    "client.MixinDebugOverGui",
+    "client.MixinDebugOverlayGui",
     "entity.MixinBreedGoal",
     "network.MixinPlayerList",
     "server.MixinCommands",

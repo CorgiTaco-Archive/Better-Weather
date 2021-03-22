@@ -41,10 +41,13 @@ public interface SubseasonSettings {
     /**
      * @return Crop growth multiplier for the given crop in the following priority order:
      * <p></p>
-     * 1. Biome
-     * 2. Biome Default
-     * 3. Sub-Season
-     * 4. Sub-Season Default
+     * 1. Biome(Crop & Biome is present)
+     * <p></p>
+     * 2. Biome Default(Crop is not present, Biome is present).
+     * <p></p>
+     * 3. Sub-Season(Crop is present, Biome is not present)
+     * <p></p>
+     * 4. Sub-Season Default(Neither Crop or Biome is present)
      */
     double getCropGrowthMultiplier(@Nullable RegistryKey<Biome> biomeKey, @Nullable Block crop);
 

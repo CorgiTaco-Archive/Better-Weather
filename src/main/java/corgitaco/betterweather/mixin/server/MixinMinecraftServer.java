@@ -3,6 +3,7 @@ package corgitaco.betterweather.mixin.server;
 import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.datafixers.DataFixer;
+import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.datastorage.SeasonSavedData;
 import net.minecraft.resources.DataPackRegistries;
 import net.minecraft.resources.ResourcePackList;
@@ -36,6 +37,7 @@ public abstract class MixinMinecraftServer {
     private void readConfigsAtWorldCreation(Thread serverThread, DynamicRegistries.Impl registries, SaveFormat.LevelSave anvilConverterForAnvilFile, IServerConfiguration p_i232576_4_, ResourcePackList dataPacks, Proxy serverProxy, DataFixer dataFixer, DataPackRegistries dataRegistries, MinecraftSessionService sessionService, GameProfileRepository profileRepo, PlayerProfileCache profileCache, IChunkStatusListenerFactory chunkStatusListenerFactory, CallbackInfo ci) {
 //        if (!BetterWeather.useSeasons)
 //            WeatherEventControllerConfig.handleConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-weather-controller.json"));
+        BetterWeatherConfig.serialize();
     }
 
     @Inject(method = "func_240787_a_", at = @At("TAIL"))

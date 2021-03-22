@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 
 @Mixin(DebugOverlayGui.class)
-public class MixinDebugOverGui {
+public class MixinDebugOverlayGui {
 
     @Shadow
     @Final
