@@ -93,7 +93,6 @@ jar.finalizedBy('reobfJar')
 
 //run "gradlew apiJar reobfApiJar"
 task apiJar(type: Jar) {
-    from(sourceSets.main.java)
     from(sourceSets.main.output)
     include 'corgitaco/betterweather/api/**'
     classifier = 'api'
