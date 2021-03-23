@@ -1,5 +1,6 @@
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
+import net.minecraftforge.gradle.patcher.task.TaskReobfuscateJar
 
 buildscript {
     repositories {
@@ -20,7 +21,7 @@ apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
 version = "${mod_version}"
-group = "corgiaoc.${modid}" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group = "corgitaco.${modid}" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "${modid}"
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
@@ -61,6 +62,10 @@ minecraft {
     }
 }
 
+repositories{
+    maven {url = 'https://jitpack.io'}
+}
+
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 //    annotationProcessor 'org.spongepowered:mixin:0.8.2:processor' //Re-enable when building jar
@@ -70,8 +75,8 @@ jar {
     manifest {
         attributes([
                 "Specification-Title": "${modid}",
-                "Specification-Vendor": "BYG",
-                "Specification-Version": "1.1", // We are version 1 of ourselves
+                "Specification-Vendor": "Better Weather",
+                "Specification-Version": "1.2", // We are version 1 of ourselves
                 "Implementation-Title": project.name,
                 "Implementation-Version": "${version}",
                 "Implementation-Vendor" :"${modid}",
@@ -89,6 +94,21 @@ task srcJar(type: Jar) {
     from(sourceSets.main.output)
     classifier = 'srcs'
 }
+
+task apiJar(type: Jar) {
+    from(sourceSets.main.allJava)
+    from(sourceSets.main.output)
+    include 'corgitaco/betterweather/api/**'
+    classifier = 'api'
+}
+
+apiJar.finalizedBy('reobfJar')
+
+
+//task remapApiJar(type: TaskReobfuscateJar, dependsOn: apiJar) {
+//    input = apiJar.outputs.getFiles().first() // Forge equivalent
+//    srg = project.getTasks().getByName("createMcp2Srg").getOutputs()
+//}
 
 publishing {
     publications {
@@ -108,6 +128,12 @@ apply plugin: 'org.spongepowered.mixin'
 mixin {
     add sourceSets.main, "${modid}.refmap.json"
 }
+
+reobf {
+    apiJar {}
+}
+
+build.dependsOn reobfApiJar
 
 tasks.withType(JavaCompile) {
     options.incremental = true
