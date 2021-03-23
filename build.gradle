@@ -96,13 +96,17 @@ task srcJar(type: Jar) {
 }
 
 task apiJar(type: Jar) {
-    from(sourceSets.main.allJava)
+    from(sourceSets.main.java)
     from(sourceSets.main.output)
     include 'corgitaco/betterweather/api/**'
     classifier = 'api'
 }
-
-apiJar.finalizedBy('reobfJar')
+reobf {
+    apiJar {}
+}
+apiJar.finalizedBy('reobfApiJar')
+build.dependsOn reobfApiJar
+assemble.dependsOn apiJar
 
 
 //task remapApiJar(type: TaskReobfuscateJar, dependsOn: apiJar) {
@@ -128,12 +132,6 @@ apply plugin: 'org.spongepowered.mixin'
 mixin {
     add sourceSets.main, "${modid}.refmap.json"
 }
-
-reobf {
-    apiJar {}
-}
-
-build.dependsOn reobfApiJar
 
 tasks.withType(JavaCompile) {
     options.incremental = true
