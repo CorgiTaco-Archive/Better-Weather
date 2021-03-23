@@ -1,7 +1,6 @@
 package corgitaco.betterweather.server;
 
 import net.minecraft.world.GameRules;
-import net.minecraftforge.fml.ModList;
 
 public class BetterWeatherGameRules {
 

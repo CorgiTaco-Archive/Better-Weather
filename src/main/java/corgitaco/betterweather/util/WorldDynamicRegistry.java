@@ -8,7 +8,6 @@ import net.minecraft.world.DimensionType;
 
 import java.util.Optional;
 
-
 /**
  * Used to redirect calls/obtainers of the biome registry to a per world biome registry instead.
  */

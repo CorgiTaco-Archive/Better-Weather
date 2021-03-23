@@ -16,7 +16,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.WorldSettingsImport;
-import net.minecraft.world.Dimension;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -25,7 +24,6 @@ import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.server.ServerChunkProvider;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.spawner.ISpecialSpawner;
-import net.minecraft.world.storage.IServerConfiguration;
 import net.minecraft.world.storage.IServerWorldInfo;
 import net.minecraft.world.storage.SaveFormat;
 import org.spongepowered.asm.mixin.Final;
@@ -33,14 +31,12 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 
@@ -50,7 +46,7 @@ public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWor
 
     @Shadow
     @Final
-    private ServerChunkProvider field_241102_C_;
+    private ServerChunkProvider serverChunkProvider;
 
     private DynamicRegistries registry;
 
@@ -62,20 +58,20 @@ public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWor
     private void storeUpgradablePerWorldRegistry(MinecraftServer server, Executor executor, SaveFormat.LevelSave save, IServerWorldInfo worldInfo, RegistryKey<World> key, DimensionType dimensionType, IChunkStatusListener statusListener, ChunkGenerator generator, boolean b, long seed, List<ISpecialSpawner> specialSpawners, boolean b1, CallbackInfo ci) {
         ResourceLocation worldKeyLocation = key.getLocation();
         if (BetterWeatherConfig.SEASON_DIMENSIONS.contains(worldKeyLocation.toString()) || BetterWeatherConfig.SEASON_DIMENSIONS.contains(worldKeyLocation.getNamespace())) {
-            this.registry = new WorldDynamicRegistry((DynamicRegistries.Impl) server.func_244267_aX());
+            this.registry = new WorldDynamicRegistry((DynamicRegistries.Impl) server.getDynamicRegistries());
 
             //Reload the world settings import with OUR implementation of the registry.
             WorldSettingsImport<INBT> worldSettingsImport = WorldSettingsImport.create(NBTDynamicOps.INSTANCE, server.getDataPackRegistries().getResourceManager(), (DynamicRegistries.Impl) this.registry);
             ChunkGenerator dimensionChunkGenerator = save.readServerConfiguration(worldSettingsImport, server.getServerConfiguration().getDatapackCodec()).getDimensionGeneratorSettings().func_236224_e_().getOptional(worldKeyLocation).get().getChunkGenerator();
             // Reset the chunk generator fields in both the chunk provider and chunk manager. This is required for chunk generators to return the current biome object type required by our registry. //TODO: Do this earlier so mods mixing here can capture our version of the chunk generator.
-            this.field_241102_C_/*Server Chunk Provider*/.generator = dimensionChunkGenerator;
-            this.field_241102_C_/*Server Chunk Provider*/.chunkManager.generator = dimensionChunkGenerator;
+            this.serverChunkProvider/*Server Chunk Provider*/.generator = dimensionChunkGenerator;
+            this.serverChunkProvider/*Server Chunk Provider*/.chunkManager.generator = dimensionChunkGenerator;
 
 
             this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));
             updateBiomeData(seasonContext.getCurrentSubSeasonSettings());
         } else {
-            registry = server.func_244267_aX();
+            registry = server.getDynamicRegistries();
         }
     }
 
@@ -110,15 +106,15 @@ public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWor
 //    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z", ordinal = 0))
 //    private boolean rollBetterWeatherEvent(GameRules gameRules, GameRules.RuleKey<GameRules.BooleanValue> key) {
 //        if (gameRules.getBoolean(GameRules.DO_WEATHER_CYCLE))
-//            WeatherEventUtil.doWeatherAndRollWeatherEventChance(this.field_241103_E_, (ServerWorld) (Object) this);
+//            WeatherEventUtil.doWeatherAndRollWeatherEventChance(this.serverWorldInfo, (ServerWorld) (Object) this);
 //        return false;
 ////        } else
 ////            return gameRules.getBoolean(GameRules.DO_WEATHER_CYCLE);
 //    }
 //
-//    @Inject(method = "func_241113_a_", at = @At("HEAD"))
+//    @Inject(method = "setWeather", at = @At("HEAD"))
 //    private void setWeatherForced(int clearWeatherTime, int weatherTime, boolean rain, boolean thunder, CallbackInfo ci) {
-//        ((IsWeatherForced) this.field_241103_E_).setWeatherForced(true);
+//        ((IsWeatherForced) this.serverWorldInfo).setWeatherForced(true);
 //        BetterWeatherEventData.get((ServerWorld) (Object) this).setWeatherForced(true);
 //    }
 //

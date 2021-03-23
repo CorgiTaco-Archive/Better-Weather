@@ -1,13 +1,17 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
 buildscript {
     repositories {
         maven { url = 'https://files.minecraftforge.net/maven' }
-        maven { url ='https://www.dogforce-games.com/maven/'}
         jcenter()
         mavenCentral()
         maven {url='https://repo.spongepowered.org/repository/maven-public/'}
+
+
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.1.+', changing: true
         classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
     }
 }
@@ -16,13 +20,13 @@ apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
 version = "${mod_version}"
-group = "corgitaco.${modid}" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group = "corgiaoc.${modid}" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "${modid}"
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
 minecraft {
-    mappings channel: "snapshot", version: "${mapping}-1.16.3"
+    mappings channel: "snapshot", version: "${mapping}-${mc_version}"
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -57,37 +61,17 @@ minecraft {
     }
 }
 
-repositories{
-    maven {
-        // location of the maven that hosts JEI files
-        name = "Progwml6 maven"
-        url = "https://dvs1.progwml6.com/files/maven/"
-    }
-    maven {
-        // location of a maven mirror for JEI files, as a fallback
-        name = "ModMaven"
-        url = "https://modmaven.k-4u.nl"
-    }
-
-    maven {url='https://dist.creeper.host/Sponge/maven'}
-
-    jcenter()
-    mavenCentral()
-
-}
-
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
-
-    compile 'org.spongepowered:mixin:0.8'
+//    annotationProcessor 'org.spongepowered:mixin:0.8.2:processor' //Re-enable when building jar
 }
 
 jar {
     manifest {
         attributes([
                 "Specification-Title": "${modid}",
-                "Specification-Vendor": "examplemodsareus",
-                "Specification-Version": "1", // We are version 1 of ourselves
+                "Specification-Vendor": "BYG",
+                "Specification-Version": "1.1", // We are version 1 of ourselves
                 "Implementation-Title": project.name,
                 "Implementation-Version": "${version}",
                 "Implementation-Vendor" :"${modid}",
@@ -97,17 +81,19 @@ jar {
     }
 }
 
-def reobfFile = file("$buildDir/reobfJar/output.jar")
+// Example configuration to allow publishing using the maven-publish task
+// This is the preferred method to reobfuscate your jar file
+jar.finalizedBy('reobfJar')
 
-def reobfArtifact = artifacts.add('default', reobfFile) {
-    type 'jar'
-    builtBy 'reobfJar'
+task srcJar(type: Jar) {
+    from(sourceSets.main.output)
+    classifier = 'srcs'
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact reobfArtifact
+            artifact jar
         }
     }
     repositories {
@@ -123,7 +109,6 @@ mixin {
     add sourceSets.main, "${modid}.refmap.json"
 }
 
-repositories {
-    maven { url ='https://www.dogforce-games.com/maven/'}
+tasks.withType(JavaCompile) {
+    options.incremental = true
 }
-
