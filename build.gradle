@@ -90,11 +90,8 @@ jar {
 // This is the preferred method to reobfuscate your jar file
 jar.finalizedBy('reobfJar')
 
-task srcJar(type: Jar) {
-    from(sourceSets.main.output)
-    classifier = 'srcs'
-}
 
+//run "gradlew apiJar reobfApiJar"
 task apiJar(type: Jar) {
     from(sourceSets.main.java)
     from(sourceSets.main.output)
