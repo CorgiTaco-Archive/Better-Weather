@@ -1,5 +1,7 @@
 package corgitaco.betterweather.mixin.server;
 
+import corgitaco.betterweather.api.Climate;
+import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.datastorage.SeasonSavedData;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
@@ -42,7 +44,7 @@ import java.util.function.BooleanSupplier;
 
 
 @Mixin(ServerWorld.class)
-public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWorldData {
+public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWorldData, Climate {
 
     @Shadow
     @Final
@@ -143,5 +145,11 @@ public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWor
     @Override
     public void setSeasonContext(SeasonContext seasonContext) {
         this.seasonContext = seasonContext;
+    }
+
+    @Nullable
+    @Override
+    public Season getSeason() {
+        return this.seasonContext;
     }
 }
