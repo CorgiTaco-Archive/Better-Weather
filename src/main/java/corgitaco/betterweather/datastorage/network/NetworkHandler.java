@@ -1,7 +1,7 @@
 package corgitaco.betterweather.datastorage.network;
 
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
+import corgitaco.betterweather.datastorage.network.packet.season.SeasonPacket;
 import corgitaco.betterweather.datastorage.network.packet.util.RefreshRenderersPacket;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;

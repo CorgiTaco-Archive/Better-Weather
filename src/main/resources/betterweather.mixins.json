@@ -8,6 +8,7 @@
     "access.BiomeAccess",
     "access.RegistryAccess",
     "biome.MixinBiome",
+    "biome.MixinBiomeClimate",
     "block.MixinAbstractBlockstate",
     "entity.MixinBreedGoal",
     "network.MixinPlayerList",

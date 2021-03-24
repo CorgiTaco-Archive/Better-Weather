@@ -1,4 +1,4 @@
-package corgitaco.betterweather.datastorage.network.packet;
+package corgitaco.betterweather.datastorage.network.packet.season;
 
 import corgitaco.betterweather.datastorage.SeasonSavedData;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;

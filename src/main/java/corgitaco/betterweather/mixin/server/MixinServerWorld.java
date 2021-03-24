@@ -6,8 +6,7 @@ import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.datastorage.SeasonSavedData;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.helpers.BiomeModifier;
-import corgitaco.betterweather.helpers.IBiomeUpdate;
-import corgitaco.betterweather.season.BWSubseasonSettings;
+import corgitaco.betterweather.helpers.BiomeUpdate;
 import corgitaco.betterweather.season.SeasonContext;
 import corgitaco.betterweather.util.WorldDynamicRegistry;
 import net.minecraft.nbt.INBT;
@@ -44,7 +43,7 @@ import java.util.function.BooleanSupplier;
 
 
 @Mixin(ServerWorld.class)
-public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWorldData, Climate {
+public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorldData, Climate {
 
     @Shadow
     @Final
@@ -71,7 +70,7 @@ public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWor
 
 
             this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));
-            updateBiomeData(seasonContext.getCurrentSubSeasonSettings());
+            updateBiomeData();
         } else {
             registry = server.getDynamicRegistries();
         }
@@ -79,12 +78,12 @@ public abstract class MixinServerWorld implements IBiomeUpdate, BetterWeatherWor
 
     @SuppressWarnings("ConstantConditions")
     @Override
-    public void updateBiomeData(BWSubseasonSettings subSeasonSettings) {
+    public void updateBiomeData() {
         for (Map.Entry<RegistryKey<Biome>, Biome> entry : registry.getRegistry(Registry.BIOME_KEY).getEntries()) {
             Biome biome = entry.getValue();
             RegistryKey<Biome> biomeKey = entry.getKey();
-            ((BiomeModifier) (Object) biome).setHumidityModifier((float) subSeasonSettings.getHumidityModifier(biomeKey));
-            ((BiomeModifier) (Object) biome).setTempModifier((float) subSeasonSettings.getTemperatureModifier(biomeKey));
+            ((BiomeModifier) (Object) biome).setHumidityModifier((float) this.seasonContext.getCurrentSubSeasonSettings().getHumidityModifier(biomeKey));
+            ((BiomeModifier) (Object) biome).setTempModifier((float) this.seasonContext.getCurrentSubSeasonSettings().getTemperatureModifier(biomeKey));
         }
     }
 

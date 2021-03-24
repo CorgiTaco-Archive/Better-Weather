@@ -1,8 +1,10 @@
 package corgitaco.betterweather.mixin.client;
 
+import corgitaco.betterweather.api.BiomeClimate;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.season.SeasonContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.overlay.DebugOverlayGui;
 import org.apache.commons.lang3.text.WordUtils;
 import org.spongepowered.asm.mixin.Final;
@@ -27,6 +29,11 @@ public abstract class MixinDebugOverlayGui {
             SeasonContext seasonContext = ((BetterWeatherWorldData) this.mc.world).getSeasonContext();
             if (this.mc.gameSettings.showDebugInfo && seasonContext != null) {
                 cir.getReturnValue().add("Season: " + WordUtils.capitalize(seasonContext.getCurrentSeason().getSeasonKey().toString().toLowerCase()) + " | " + WordUtils.capitalize(seasonContext.getCurrentSeason().getCurrentPhase().toString().replace("_", "").toLowerCase()));
+                ClientPlayerEntity player = mc.player;
+
+                if (player != null) {
+                    cir.getReturnValue().add("Biome offset temperature: " + BiomeClimate.getClimate(mc.world.getBiome(player.getPosition())).getTemperatureModifier());
+                }
             }
         }
     }

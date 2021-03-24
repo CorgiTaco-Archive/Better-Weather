@@ -3,18 +3,10 @@ package corgitaco.betterweather.mixin.client;
 import corgitaco.betterweather.api.Climate;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
-import corgitaco.betterweather.helpers.BiomeModifier;
-import corgitaco.betterweather.helpers.IBiomeUpdate;
-import corgitaco.betterweather.season.BWSubseasonSettings;
 import corgitaco.betterweather.season.SeasonContext;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.registry.DynamicRegistries;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.biome.Biome;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -22,14 +14,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import javax.annotation.Nullable;
-import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 @Mixin(ClientWorld.class)
-public abstract class MixinClientWorld implements BetterWeatherWorldData, IBiomeUpdate, Climate {
-
-    @Shadow
-    public abstract DynamicRegistries func_241828_r();
+public abstract class MixinClientWorld implements BetterWeatherWorldData, Climate {
 
     @Nullable
     SeasonContext seasonContext;
@@ -77,17 +65,6 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, IBiome
             if (this.seasonContext != null) {
                 this.seasonContext.tick((ClientWorld) (Object) this);
             }
-        }
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    @Override
-    public void updateBiomeData(BWSubseasonSettings subSeasonSettings) {
-        for (Map.Entry<RegistryKey<Biome>, Biome> entry : this.func_241828_r().getRegistry(Registry.BIOME_KEY).getEntries()) {
-            Biome biome = entry.getValue();
-            RegistryKey<Biome> biomeKey = entry.getKey();
-            ((BiomeModifier) (Object) biome).setHumidityModifier((float) subSeasonSettings.getHumidityModifier(biomeKey));
-            ((BiomeModifier) (Object) biome).setTempModifier((float) subSeasonSettings.getTemperatureModifier(biomeKey));
         }
     }
 

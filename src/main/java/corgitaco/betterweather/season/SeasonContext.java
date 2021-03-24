@@ -12,9 +12,9 @@ import corgitaco.betterweather.config.season.SeasonConfigHolder;
 import corgitaco.betterweather.config.season.overrides.BiomeOverrideJsonHandler;
 import corgitaco.betterweather.datastorage.SeasonSavedData;
 import corgitaco.betterweather.datastorage.network.NetworkHandler;
-import corgitaco.betterweather.datastorage.network.packet.SeasonPacket;
+import corgitaco.betterweather.datastorage.network.packet.season.SeasonPacket;
 import corgitaco.betterweather.datastorage.network.packet.util.RefreshRenderersPacket;
-import corgitaco.betterweather.helpers.IBiomeUpdate;
+import corgitaco.betterweather.helpers.BiomeUpdate;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -59,7 +59,6 @@ public class SeasonContext implements Season {
         this.currentYearTime = seasonData.getCurrentYearTime();
         this.yearLength = seasonData.getYearLength();
         this.biomeRegistry = biomeRegistry;
-
         ResourceLocation dimensionLocation = worldKey.getLocation();
         Path seasonsFolderPath = BetterWeather.CONFIG_PATH.resolve(dimensionLocation.getNamespace()).resolve(dimensionLocation.getPath()).resolve("seasons");
         this.seasonConfigFile = seasonsFolderPath.resolve(CONFIG_NAME).toFile();
@@ -130,10 +129,9 @@ public class SeasonContext implements Season {
         this.tickSeasonTime(world);
 
         if (prevSeason != this.currentSeason || prevPhase != this.currentSeason.getCurrentPhase()) {
-            ((IBiomeUpdate) world).updateBiomeData(this.getCurrentSubSeasonSettings());
             if (!world.isRemote) {
+                ((BiomeUpdate) world).updateBiomeData();
                 updatePacket(((ServerWorld) world).getPlayers());
-
             }
         }
     }
