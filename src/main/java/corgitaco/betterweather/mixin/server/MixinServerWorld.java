@@ -82,8 +82,11 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
         for (Map.Entry<RegistryKey<Biome>, Biome> entry : registry.getRegistry(Registry.BIOME_KEY).getEntries()) {
             Biome biome = entry.getValue();
             RegistryKey<Biome> biomeKey = entry.getKey();
-            ((BiomeModifier) (Object) biome).setHumidityModifier((float) this.seasonContext.getCurrentSubSeasonSettings().getHumidityModifier(biomeKey));
-            ((BiomeModifier) (Object) biome).setTempModifier((float) this.seasonContext.getCurrentSubSeasonSettings().getTemperatureModifier(biomeKey));
+            float seasonHumidityModifier = seasonContext == null ? 0.0F : (float) this.seasonContext.getCurrentSubSeasonSettings().getHumidityModifier(biomeKey);
+            float seasonTemperatureModifier = seasonContext == null ? 0.0F : (float) this.seasonContext.getCurrentSubSeasonSettings().getTemperatureModifier(biomeKey);
+
+            ((BiomeModifier) (Object) biome).setHumidityModifier(seasonHumidityModifier);
+            ((BiomeModifier) (Object) biome).setTempModifier(seasonTemperatureModifier);
         }
     }
 
