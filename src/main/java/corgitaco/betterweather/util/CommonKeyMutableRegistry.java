@@ -2,7 +2,6 @@ package corgitaco.betterweather.util;
 
 import com.mojang.serialization.Lifecycle;
 import corgitaco.betterweather.mixin.access.BiomeAccess;
-import corgitaco.betterweather.mixin.access.RegistryAccess;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.MutableRegistry;

@@ -6,7 +6,6 @@
   "mixins": [
     "MixinWorld",
     "access.BiomeAccess",
-    "access.RegistryAccess",
     "biome.MixinBiome",
     "biome.MixinBiomeClimate",
     "block.MixinAbstractBlockstate",
