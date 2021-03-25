@@ -31,7 +31,7 @@ public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
     private void fillWorldRegistry(MutableRegistry<Biome> serverRegistry) {
         for (Map.Entry<RegistryKey<Biome>, Biome> entry : serverRegistry.getEntries()) {
             Biome biome = entry.getValue();
-            Biome worldBiome = this.register(serverRegistry.getId(biome), entry.getKey(), new Biome(((BiomeAccess) (Object) biome).getClimate(), biome.getCategory(), biome.getDepth(), biome.getScale(), biome.getAmbience(), biome.getGenerationSettings(), biome.getMobSpawnInfo()), ((RegistryAccess<Biome>) serverRegistry).invokeGetLifecycleByRegistry(biome));
+            Biome worldBiome = this.register(serverRegistry.getId(biome), entry.getKey(), new Biome(((BiomeAccess) (Object) biome).getClimate(), biome.getCategory(), biome.getDepth(), biome.getScale(), biome.getAmbience(), biome.getGenerationSettings(), biome.getMobSpawnInfo()), ((SimpleRegistry<Biome>) serverRegistry).getLifecycleByRegistry(biome));
             @Nullable ResourceLocation registryName = biome.getRegistryName();
             worldBiome.setRegistryName(registryName);
             this.serverBiomeToWorldBiome.put(biome, worldBiome);
