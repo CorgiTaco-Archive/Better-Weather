@@ -49,7 +49,7 @@ public class SeasonPacket {
                                 world.getDimensionKey().getLocation(), world.func_241828_r().getRegistry(Registry.BIOME_KEY), message.seasonContext.getSeasons()));
                     }
 
-                    seasonContext.setCurrentYearTime(seasonContext.getCurrentYearTime());
+                    seasonContext.setCurrentYearTime(message.seasonContext.getCurrentYearTime());
                 }
             });
         }
