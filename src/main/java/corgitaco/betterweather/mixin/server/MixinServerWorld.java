@@ -141,9 +141,11 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
         return this.seasonContext;
     }
 
+    @Nullable
     @Override
-    public void setSeasonContext(SeasonContext seasonContext) {
+    public SeasonContext setSeasonContext(SeasonContext seasonContext) {
         this.seasonContext = seasonContext;
+        return this.seasonContext;
     }
 
     @Nullable

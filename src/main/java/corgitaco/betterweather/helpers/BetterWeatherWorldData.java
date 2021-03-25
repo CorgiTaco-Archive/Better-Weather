@@ -9,7 +9,6 @@ public interface BetterWeatherWorldData {
     @Nullable
     SeasonContext getSeasonContext();
 
-    void setSeasonContext(SeasonContext seasonContext);
-
-
+    @Nullable
+    SeasonContext setSeasonContext(SeasonContext seasonContext);
 }

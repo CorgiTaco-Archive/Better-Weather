@@ -53,9 +53,11 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
         return this.seasonContext;
     }
 
+    @Nullable
     @Override
-    public void setSeasonContext(SeasonContext seasonContext) {
+    public SeasonContext setSeasonContext(SeasonContext seasonContext) {
         this.seasonContext = seasonContext;
+        return this.seasonContext;
     }
 
     @Inject(method = "tick", at = @At("HEAD"))

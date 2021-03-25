@@ -36,7 +36,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
         }), Codec.unboundedMap(Codec.STRING, Codec.DOUBLE).fieldOf("weatherEventController").forGetter((subSeasonSettings) -> {
             return subSeasonSettings.weatherEventController;
         }), SeasonClientSettings.CODEC.fieldOf("client").forGetter(subSeasonSettings -> {
-            return subSeasonSettings.client;
+            return subSeasonSettings.clientSettings;
         }), Codec.list(Codec.STRING).optionalFieldOf("entityBreedingBlacklist", new ArrayList<>()).forGetter(subSeasonSettings -> {
             return subSeasonSettings.entityTypeBreedingBlacklist.stream().map(Registry.ENTITY_TYPE::getKey).map(ResourceLocation::toString).collect(Collectors.toList());
         })).apply(subSeasonSettingsInstance, BWSubseasonSettings::new);
@@ -80,7 +80,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
     private final double weatherEventChanceMultiplier;
     private final double cropGrowthChanceMultiplier; //Final Fallback
     private final HashMap<String, Double> weatherEventController;
-    private final SeasonClientSettings client;
+    private SeasonClientSettings clientSettings;
 
     //These are not to be serialized by GSON.
     private transient Season.Key parentSeason;
@@ -88,23 +88,23 @@ public class BWSubseasonSettings implements SubseasonSettings {
     private transient IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage;
     private transient ObjectOpenHashSet<EntityType<?>> entityTypeBreedingBlacklist;
 
-    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, SeasonClientSettings client) {
-        this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, client, new ObjectOpenHashSet<>());
+    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, SeasonClientSettings clientSettings) {
+        this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, new ObjectOpenHashSet<>());
     }
 
-    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, SeasonClientSettings client, List<String> entityBreedingBlacklist) {
-        this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, client, new HashSet<>(entityBreedingBlacklist));
+    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, SeasonClientSettings clientSettings, List<String> entityBreedingBlacklist) {
+        this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, new HashSet<>(entityBreedingBlacklist));
     }
 
 
-    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, SeasonClientSettings client, Set<String> entityBreedingBlacklist) {
+    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, SeasonClientSettings clientSettings, Set<String> entityBreedingBlacklist) {
         this.tempModifier = tempModifier;
         this.humidityModifier = humidityModifier;
         this.weatherEventChanceMultiplier = weatherEventChanceMultiplier;
         this.cropGrowthChanceMultiplier = cropGrowthChanceMultiplier;
         this.weatherEventController = new HashMap<>(weatherEventController);
-        this.client = client;
-        entityTypeBreedingBlacklist = new ObjectOpenHashSet<>(entityBreedingBlacklist.stream().map(ResourceLocation::new).filter((resourceLocation) -> (BetterWeatherUtil.filterRegistryID(resourceLocation, Registry.ENTITY_TYPE, "Entity"))).map(Registry.ENTITY_TYPE::getOptional).map(Optional::get).collect(Collectors.toSet()));
+        this.clientSettings = clientSettings;
+        this.entityTypeBreedingBlacklist = new ObjectOpenHashSet<>(entityBreedingBlacklist.stream().map(ResourceLocation::new).filter((resourceLocation) -> (BetterWeatherUtil.filterRegistryID(resourceLocation, Registry.ENTITY_TYPE, "Entity"))).map(Registry.ENTITY_TYPE::getOptional).map(Optional::get).collect(Collectors.toSet()));
     }
 
     public Season.Key getParent() {
@@ -113,6 +113,10 @@ public class BWSubseasonSettings implements SubseasonSettings {
 
     public void setParentSeason(Season.Key parentSeason) {
         this.parentSeason = parentSeason;
+    }
+
+    public void setClient(SeasonClientSettings clientSettings) {
+        this.clientSettings = clientSettings;
     }
 
     public IdentityHashMap<Block, Double> getCropToMultiplierStorage() {
@@ -178,11 +182,11 @@ public class BWSubseasonSettings implements SubseasonSettings {
     }
 
     public SeasonClientSettings getClientSettings() {
-        return client;
+        return clientSettings;
     }
 
     public int getTargetFoliageColor(RegistryKey<Biome> biomeKey) {
-        int defaultValue = client.targetFoliageHexColor;
+        int defaultValue = clientSettings.targetFoliageHexColor;
         if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
@@ -192,7 +196,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
     }
 
     public double getFoliageColorBlendStrength(RegistryKey<Biome> biomeKey) {
-        double defaultValue = client.foliageColorBlendStrength;
+        double defaultValue = clientSettings.foliageColorBlendStrength;
         if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
@@ -202,7 +206,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
     }
 
     public int getTargetGrassColor(RegistryKey<Biome> biomeKey) {
-        int defaultValue = client.targetGrassHexColor;
+        int defaultValue = clientSettings.targetGrassHexColor;
         if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
@@ -212,7 +216,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
     }
 
     public double getGrassColorBlendStrength(RegistryKey<Biome> biomeKey) {
-        double defaultValue = client.grassColorBlendStrength;
+        double defaultValue = clientSettings.grassColorBlendStrength;
         if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
@@ -222,7 +226,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
     }
 
     public int getTargetSkyColor(RegistryKey<Biome> biomeKey) {
-        int defaultValue = client.targetSkyHexColor;
+        int defaultValue = clientSettings.targetSkyHexColor;
         if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
@@ -232,7 +236,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
     }
 
     public double getSkyColorBlendStrength(RegistryKey<Biome> biomeKey) {
-        double defaultValue = client.skyColorBlendStrength;
+        double defaultValue = clientSettings.skyColorBlendStrength;
         if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
@@ -242,7 +246,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
     }
 
     public int getTargetFogColor(RegistryKey<Biome> biomeKey) {
-        int defaultValue = client.targetFogHexColor;
+        int defaultValue = clientSettings.targetFogHexColor;
         if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }
@@ -252,7 +256,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
     }
 
     public double getFogColorBlendStrength(RegistryKey<Biome> biomeKey) {
-        double defaultValue = client.fogColorBlendStrength;
+        double defaultValue = clientSettings.fogColorBlendStrength;
         if (!this.getBiomeToOverrideStorage().containsKey(biomeKey)) {
             return defaultValue;
         }

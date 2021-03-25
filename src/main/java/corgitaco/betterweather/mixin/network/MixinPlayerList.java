@@ -43,7 +43,7 @@ public abstract class MixinPlayerList {
     private void sendSeasonContext(ServerPlayerEntity playerIn, ServerWorld worldIn, CallbackInfo ci) {
         SeasonContext seasonContext = ((BetterWeatherWorldData) worldIn).getSeasonContext();
         if (seasonContext != null) {
-            NetworkHandler.sendToClient(playerIn, new SeasonPacket(seasonContext.getCurrentYearTime(), seasonContext.getYearLength()));
+            NetworkHandler.sendToClient(playerIn, new SeasonPacket(seasonContext));
         }
     }
 }

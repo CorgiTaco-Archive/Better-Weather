@@ -4,7 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.season.SubseasonSettings;
@@ -20,6 +22,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -31,6 +34,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -48,33 +52,63 @@ public class SeasonContext implements Season {
     private BWSeason currentSeason;
     private int currentYearTime;
     private int yearLength;
+    private final ResourceLocation worldID;
     private final Registry<Biome> biomeRegistry;
 
     private final File seasonConfigFile;
     private final Path seasonOverridesPath;
-
     private IdentityHashMap<Season.Key, BWSeason> seasons;
 
-    public SeasonContext(SeasonSavedData seasonData, RegistryKey<World> worldKey, Registry<Biome> biomeRegistry) {
-        this.currentYearTime = seasonData.getCurrentYearTime();
-        this.yearLength = seasonData.getYearLength();
+    public static final Codec<SeasonContext> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
+        return builder.group(Codec.INT.fieldOf("currentYearTime").forGetter((seasonContext) -> {
+            return seasonContext.currentYearTime;
+        }), Codec.INT.fieldOf("yearLength").forGetter((seasonContext) -> {
+            return seasonContext.yearLength;
+        }), ResourceLocation.CODEC.fieldOf("worldID").forGetter((seasonContext) -> {
+            return seasonContext.worldID;
+        }), Codec.simpleMap(Season.Key.CODEC, BWSeason.CODEC, IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasons").forGetter((seasonContext) -> {
+            return seasonContext.seasons;
+        })).apply(builder, (currentYearTime, yearLength, worldID, seasonMap) -> new SeasonContext(currentYearTime, yearLength, worldID, new IdentityHashMap<>(seasonMap)));
+    });
+
+    //Packet Constructor
+    public SeasonContext(int currentYearTime, int yearLength, ResourceLocation worldID, IdentityHashMap<Season.Key, BWSeason> seasons) {
+        this(currentYearTime, yearLength, worldID, null, seasons);
+    }
+
+    //Server world constructor
+    public SeasonContext(SeasonSavedData seasonData, RegistryKey<World> worldID, Registry<Biome> biomeRegistry) {
+        this(seasonData.getCurrentYearTime(), seasonData.getYearLength(), worldID.getLocation(), biomeRegistry, null);
+    }
+
+    public SeasonContext(int currentYearTime, int yearLength, ResourceLocation worldID, @Nullable Registry<Biome> biomeRegistry, @Nullable IdentityHashMap<Season.Key, BWSeason> seasons) {
+        this.currentYearTime = currentYearTime;
+        this.yearLength = yearLength;
+        this.worldID = worldID;
         this.biomeRegistry = biomeRegistry;
-        ResourceLocation dimensionLocation = worldKey.getLocation();
-        Path seasonsFolderPath = BetterWeather.CONFIG_PATH.resolve(dimensionLocation.getNamespace()).resolve(dimensionLocation.getPath()).resolve("seasons");
+        Path seasonsFolderPath = BetterWeather.CONFIG_PATH.resolve(worldID.getNamespace()).resolve(worldID.getPath()).resolve("seasons");
         this.seasonConfigFile = seasonsFolderPath.resolve(CONFIG_NAME).toFile();
         this.seasonOverridesPath = seasonsFolderPath.resolve("overrides");
 
-        this.handleConfig();
-        this.currentSeason = seasons.get(Season.getSeasonFromTime(currentYearTime, yearLength)).setPhaseForTime(this.currentYearTime, this.yearLength);
+        boolean isClient = seasons != null;
+        boolean isPacket = biomeRegistry == null;
+
+        if (isClient)
+            this.seasons = seasons;
+        if (!isPacket) {
+            this.handleConfig(isClient);
+            this.currentSeason = this.seasons.get(Season.getSeasonFromTime(currentYearTime, yearLength));
+            this.currentSeason.setPhaseForTime(this.currentYearTime, this.yearLength);
+        }
     }
 
-    public void handleConfig() {
+    public void handleConfig(boolean isClient) {
         Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
         if (!seasonConfigFile.exists()) {
             create(gson);
         }
         if (seasonConfigFile.exists()) {
-            read();
+            read(isClient);
         }
 
         fillSubSeasonOverrideStorage();
@@ -82,6 +116,8 @@ public class SeasonContext implements Season {
 
     private void fillSubSeasonOverrideStorage() {
         for (Map.Entry<Season.Key, BWSeason> seasonKeySeasonEntry : this.seasons.entrySet()) {
+            Key key = seasonKeySeasonEntry.getKey();
+            seasonKeySeasonEntry.getValue().setSeasonKey(key);
             IdentityHashMap<Season.Phase, BWSubseasonSettings> phaseSettings = seasonKeySeasonEntry.getValue().getPhaseSettings();
             for (Map.Entry<Season.Phase, BWSubseasonSettings> phaseSubSeasonSettingsEntry : phaseSettings.entrySet()) {
                 BiomeOverrideJsonHandler.handleOverrideJsonConfigs(this.seasonOverridesPath.resolve(seasonKeySeasonEntry.getKey().toString() + "-" + phaseSubSeasonSettingsEntry.getKey() + ".json"), seasonKeySeasonEntry.getKey() == Season.Key.WINTER ? BWSubseasonSettings.WINTER_OVERRIDE : new IdentityHashMap<>(), phaseSubSeasonSettingsEntry.getValue(), this.biomeRegistry);
@@ -107,16 +143,20 @@ public class SeasonContext implements Season {
         }
     }
 
-    private void read() {
+    private void read(boolean isClient) {
         try (Reader reader = new FileReader(seasonConfigFile)) {
             JsonObject jsonObject = new JsonParser().parse(reader).getAsJsonObject();
             Optional<SeasonConfigHolder> configHolder = SeasonConfigHolder.CODEC.parse(JsonOps.INSTANCE, jsonObject).resultOrPartial(BetterWeather.LOGGER::error);
-            if (configHolder.isPresent()) {
-                this.seasons = configHolder.get().getSeasonKeySeasonMap();
-                this.yearLength = configHolder.get().getSeasonCycleLength();
-            } else {
-                this.seasons = SeasonConfigHolder.DEFAULT_CONFIG_HOLDER.getSeasonKeySeasonMap();
-                this.yearLength = SeasonConfigHolder.DEFAULT_CONFIG_HOLDER.getSeasonCycleLength();
+
+
+            if (!isClient) {
+                if (configHolder.isPresent()) {
+                    this.seasons = configHolder.get().getSeasonKeySeasonMap();
+                    this.yearLength = configHolder.get().getSeasonCycleLength();
+                } else {
+                    this.seasons = SeasonConfigHolder.DEFAULT_CONFIG_HOLDER.getSeasonKeySeasonMap();
+                    this.yearLength = SeasonConfigHolder.DEFAULT_CONFIG_HOLDER.getSeasonCycleLength();
+                }
             }
         } catch (IOException e) {
 
@@ -179,7 +219,7 @@ public class SeasonContext implements Season {
 
     public void updatePacket(List<ServerPlayerEntity> players) {
         for (ServerPlayerEntity player : players) {
-            NetworkHandler.sendToClient(player, new SeasonPacket(this.currentYearTime, this.yearLength));
+            NetworkHandler.sendToClient(player, new SeasonPacket(this));
             NetworkHandler.sendToClient(player, new RefreshRenderersPacket());
         }
     }
@@ -242,5 +282,9 @@ public class SeasonContext implements Season {
     @OnlyIn(Dist.CLIENT)
     public void setYearLength(int yearLength) {
         this.yearLength = yearLength;
+    }
+
+    public IdentityHashMap<Key, BWSeason> getSeasons() {
+        return seasons;
     }
 }

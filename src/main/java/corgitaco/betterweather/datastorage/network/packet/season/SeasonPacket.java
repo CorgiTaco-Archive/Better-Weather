@@ -1,6 +1,5 @@
 package corgitaco.betterweather.datastorage.network.packet.season;
 
-import corgitaco.betterweather.datastorage.SeasonSavedData;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.season.SeasonContext;
 import net.minecraft.client.Minecraft;
@@ -8,24 +7,32 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.registry.Registry;
 import net.minecraftforge.fml.network.NetworkEvent;
 
+import java.io.IOException;
 import java.util.function.Supplier;
 
 public class SeasonPacket {
-    private final int currentYearTime;
-    private final int yearLength;
 
-    public SeasonPacket(int currentYearTime, int yearLength) {
-        this.currentYearTime = currentYearTime;
-        this.yearLength = yearLength;
+    private final SeasonContext seasonContext;
+
+    public SeasonPacket(SeasonContext seasonContext) {
+        this.seasonContext = seasonContext;
     }
 
     public static void writeToPacket(SeasonPacket packet, PacketBuffer buf) {
-        buf.writeInt(packet.currentYearTime);
-        buf.writeInt(packet.yearLength);
+        try {
+            buf.func_240629_a_(SeasonContext.PACKET_CODEC, packet.seasonContext);
+        } catch (IOException e) {
+            throw new IllegalStateException("Season packet could not be written to. This is really really bad...\n\n" + e.getMessage());
+
+        }
     }
 
     public static SeasonPacket readFromPacket(PacketBuffer buf) {
-        return new SeasonPacket(buf.readInt(), buf.readInt());
+        try {
+            return new SeasonPacket(buf.func_240628_a_(SeasonContext.PACKET_CODEC));
+        } catch (IOException e) {
+            throw new IllegalStateException("Season packet could not be read. This is really really bad...\n\n" + e.getMessage());
+        }
     }
 
     public static void handle(SeasonPacket message, Supplier<NetworkEvent.Context> ctx) {
@@ -36,13 +43,10 @@ public class SeasonPacket {
                 if (minecraft.world != null && minecraft.player != null) {
                     SeasonContext seasonContext = ((BetterWeatherWorldData) minecraft.world).getSeasonContext();
                     if (seasonContext == null) {
-                        SeasonSavedData.get(minecraft.world).setCurrentYearTime(message.currentYearTime);
-                        SeasonSavedData.get(minecraft.world).setYearLength(message.yearLength);
-                        ((BetterWeatherWorldData) minecraft.world).setSeasonContext(new SeasonContext(SeasonSavedData.get(minecraft.world), minecraft.world.getDimensionKey(), minecraft.world.func_241828_r().getRegistry(Registry.BIOME_KEY)));
+                        seasonContext = ((BetterWeatherWorldData) minecraft.world).setSeasonContext(new SeasonContext(message.seasonContext.getCurrentYearTime(), message.seasonContext.getYearLength(), minecraft.world.getDimensionKey().getLocation(), minecraft.world.func_241828_r().getRegistry(Registry.BIOME_KEY), message.seasonContext.getSeasons()));
                     }
 
-                    ((BetterWeatherWorldData) minecraft.world).getSeasonContext().setCurrentYearTime(message.currentYearTime);
-                    ((BetterWeatherWorldData) minecraft.world).getSeasonContext().setYearLength(message.yearLength);
+                    seasonContext.setCurrentYearTime(seasonContext.getCurrentYearTime());
                 }
             });
         }
