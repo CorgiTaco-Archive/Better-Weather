@@ -1,6 +1,7 @@
 package corgitaco.betterweather.datastorage.network.packet.season;
 
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
+import corgitaco.betterweather.helpers.BiomeUpdate;
 import corgitaco.betterweather.season.SeasonContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;
@@ -47,6 +48,7 @@ public class SeasonPacket {
                     if (seasonContext == null) {
                         seasonContext = ((BetterWeatherWorldData) world).setSeasonContext(new SeasonContext(message.seasonContext.getCurrentYearTime(), message.seasonContext.getYearLength(),
                                 world.getDimensionKey().getLocation(), world.func_241828_r().getRegistry(Registry.BIOME_KEY), message.seasonContext.getSeasons()));
+                        ((BiomeUpdate) world).updateBiomeData();
                     }
 
                     seasonContext.setCurrentYearTime(message.seasonContext.getCurrentYearTime());
