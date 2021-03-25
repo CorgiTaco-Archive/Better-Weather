@@ -177,8 +177,8 @@ public class SeasonContext implements Season {
         this.tickSeasonTime(world);
 
         if (prevSeason != this.currentSeason || prevPhase != this.currentSeason.getCurrentPhase()) {
+            ((BiomeUpdate) world).updateBiomeData();
             if (!world.isRemote) {
-                ((BiomeUpdate) world).updateBiomeData();
                 updatePacket(((ServerWorld) world).getPlayers());
             }
         }
