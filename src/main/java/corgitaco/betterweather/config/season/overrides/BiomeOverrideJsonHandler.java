@@ -19,14 +19,10 @@ import java.util.IdentityHashMap;
 public class BiomeOverrideJsonHandler {
 
 
-    public static void handleOverrideJsonConfigs(Path path, IdentityHashMap<Object, OverrideStorage> objectToOverrideStorageDefault, BWSubseasonSettings subSeasonSettings, Registry<Biome> biomeRegistry) {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(BiomeToOverrideStorageJsonStorage.class, new OverrideDeserializer(biomeRegistry));
-        gsonBuilder.setPrettyPrinting();
-        gsonBuilder.disableHtmlEscaping();
-        Gson gson = gsonBuilder.create();
+    public static void handleOverrideJsonConfigs(Path path, IdentityHashMap<Object, OverrideStorage> objectToOverrideStorageDefault, BWSubseasonSettings subSeasonSettings, Registry<Biome> biomeRegistry, boolean isClient) {
+        Gson gson = new GsonBuilder().registerTypeAdapter(BiomeToOverrideStorageJsonStorage.class, new OverrideDeserializer(biomeRegistry, subSeasonSettings.getBiomeToOverrideStorage(), subSeasonSettings.getCropToMultiplierStorage(), isClient)).setPrettyPrinting().disableHtmlEscaping().create();
 
-        final File CONFIG_FILE = new File(String.valueOf(path));
+        final File CONFIG_FILE = path.toFile();
 
         if (!CONFIG_FILE.exists() && !objectToOverrideStorageDefault.isEmpty()) {
             createOverridesJson(path, objectToOverrideStorageDefault);
@@ -47,7 +43,6 @@ public class BiomeOverrideJsonHandler {
             }
         }
     }
-
 
     public static void createOverridesJson(Path path, IdentityHashMap<Object, OverrideStorage> objectToOverrideStorageDefault) {
         GsonBuilder gsonBuilder = new GsonBuilder();

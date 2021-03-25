@@ -3,6 +3,7 @@ package corgitaco.betterweather.datastorage.network.packet.season;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.season.SeasonContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.registry.Registry;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -40,10 +41,12 @@ public class SeasonPacket {
             ctx.get().enqueueWork(() -> {
                 Minecraft minecraft = Minecraft.getInstance();
 
-                if (minecraft.world != null && minecraft.player != null) {
-                    SeasonContext seasonContext = ((BetterWeatherWorldData) minecraft.world).getSeasonContext();
+                ClientWorld world = minecraft.world;
+                if (world != null && minecraft.player != null) {
+                    SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
                     if (seasonContext == null) {
-                        seasonContext = ((BetterWeatherWorldData) minecraft.world).setSeasonContext(new SeasonContext(message.seasonContext.getCurrentYearTime(), message.seasonContext.getYearLength(), minecraft.world.getDimensionKey().getLocation(), minecraft.world.func_241828_r().getRegistry(Registry.BIOME_KEY), message.seasonContext.getSeasons()));
+                        seasonContext = ((BetterWeatherWorldData) world).setSeasonContext(new SeasonContext(message.seasonContext.getCurrentYearTime(), message.seasonContext.getYearLength(),
+                                world.getDimensionKey().getLocation(), world.func_241828_r().getRegistry(Registry.BIOME_KEY), message.seasonContext.getSeasons()));
                     }
 
                     seasonContext.setCurrentYearTime(seasonContext.getCurrentYearTime());

@@ -18,33 +18,35 @@ import java.util.stream.Collectors;
 
 public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideStorageJsonStorage> {
 
-
     private final Registry<Biome> biomeRegistry;
+    private final IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeOverrideStorage;
+    private final IdentityHashMap<Block, Double> cropToMultiplierMap;
+    private final boolean isClient;
 
-    public OverrideDeserializer(Registry<Biome> biomeRegistry) {
+    public OverrideDeserializer(Registry<Biome> biomeRegistry, IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeOverrideStorage, IdentityHashMap<Block, Double> cropToMultiplierMap, boolean isClient) {
         this.biomeRegistry = biomeRegistry;
+        this.biomeOverrideStorage = biomeOverrideStorage;
+        this.cropToMultiplierMap = cropToMultiplierMap;
+        this.isClient = isClient;
     }
 
-
-    public static IdentityHashMap<RegistryKey<Biome>, OverrideStorage> processKeys(ObjectOpenHashSet<Pair<Object, JsonElement>> oldMap, Registry<Biome> biomeRegistry) {
-        IdentityHashMap<RegistryKey<Biome>, OverrideStorage> newMap = new IdentityHashMap<>();
-
+    public void processKeys(ObjectOpenHashSet<Pair<Object, JsonElement>> processedJson) {
         Map<Biome.Category, List<Biome>> categoryListMap = biomeRegistry.getEntries().stream().map(Map.Entry::getValue).collect(Collectors.groupingBy(Biome::getCategory));
         Map<BiomeDictionary.Type, List<Biome>> biomeDictionaryMap = biomeRegistry.getEntries().stream()
-                .flatMap(e -> BiomeDictionary.getTypes(e.getKey()).stream().map(x -> new AbstractMap.SimpleEntry<>(x, e.getValue())))
+                .flatMap(biomeKey -> BiomeDictionary.getTypes(biomeKey.getKey()).stream().map(biomeDictionaryType -> new AbstractMap.SimpleEntry<>(biomeDictionaryType, biomeKey.getValue())))
                 .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
 
 
-        for (Pair<Object, JsonElement> pair : oldMap) {
+        for (Pair<Object, JsonElement> pair : processedJson) {
             Object object = pair.getFirst();
             if (object instanceof BiomeDictionary.Type) {
                 for (Biome biome : biomeDictionaryMap.get(object)) {
                     ResourceLocation biomeID = biomeRegistry.getKey(biome);
                     if (biomeID != null) {
                         RegistryKey<Biome> biomeKey = RegistryKey.getOrCreateKey(Registry.BIOME_KEY, biomeID);
-                        OverrideStorage overrideStorage = newMap.getOrDefault(biomeKey, new OverrideStorage());
-                        updateOverrideStorageData(overrideStorage, pair.getSecond());
-                        newMap.put(biomeKey, overrideStorage);
+                        OverrideStorage overrideStorage = this.biomeOverrideStorage.getOrDefault(biomeKey, new OverrideStorage());
+                        updateOverrideStorageData(overrideStorage, pair.getSecond(), isClient);
+                        this.biomeOverrideStorage.put(biomeKey, overrideStorage);
                     }
 
                 }
@@ -53,9 +55,9 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
                     ResourceLocation biomeID = biomeRegistry.getKey(biome);
                     if (biomeID != null) {
                         RegistryKey<Biome> biomeKey = RegistryKey.getOrCreateKey(Registry.BIOME_KEY, biomeID);
-                        OverrideStorage overrideStorage = newMap.getOrDefault(biomeKey, new OverrideStorage());
-                        updateOverrideStorageData(overrideStorage, pair.getSecond());
-                        newMap.put(biomeKey, overrideStorage);
+                        OverrideStorage overrideStorage = this.biomeOverrideStorage.getOrDefault(biomeKey, new OverrideStorage());
+                        updateOverrideStorageData(overrideStorage, pair.getSecond(), isClient);
+                        this.biomeOverrideStorage.put(biomeKey, overrideStorage);
                     }
                 }
             } else if (object instanceof Biome) {
@@ -63,28 +65,37 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
                 ResourceLocation biomeID = biomeRegistry.getKey(biome);
                 if (biomeID != null) {
                     RegistryKey<Biome> biomeKey = RegistryKey.getOrCreateKey(Registry.BIOME_KEY, biomeID);
-                    OverrideStorage overrideStorage = newMap.getOrDefault(biomeKey, new OverrideStorage());
-                    updateOverrideStorageData(overrideStorage, pair.getSecond());
-                    newMap.put(biomeKey, overrideStorage);
+                    OverrideStorage overrideStorage = this.biomeOverrideStorage.getOrDefault(biomeKey, new OverrideStorage());
+                    updateOverrideStorageData(overrideStorage, pair.getSecond(), isClient);
+                    this.biomeOverrideStorage.put(biomeKey, overrideStorage);
                 }
             }
         }
-        return newMap;
     }
 
-    public static void updateOverrideStorageData(OverrideStorage storage, JsonElement element) {
+    public static void updateOverrideStorageData(OverrideStorage storage, JsonElement element, boolean isClient) {
         JsonObject jsonObject = element.getAsJsonObject();
+
+        if (!isClient) {
+            processOverrides(storage, jsonObject);
+            processCropOverrides(storage, jsonObject);
+        }
+        processClientOverrides(storage, element);
+    }
+
+    private static void processOverrides(OverrideStorage storage, JsonObject jsonObject) {
         if (jsonObject.has("tempModifier")) {
             storage.setTempModifier(jsonObject.get("tempModifier").getAsDouble());
         }
         if (jsonObject.has("humidityModifier")) {
             storage.setHumidityModifier(jsonObject.get("humidityModifier").getAsDouble());
         }
-
         if (jsonObject.has("cropGrowthMultiplier")) {
             storage.setFallBack(jsonObject.get("cropGrowthMultiplier").getAsDouble());
         }
+    }
 
+    private static void processCropOverrides(OverrideStorage storage, JsonObject jsonObject) {
         if (jsonObject.has("cropOverrides")) {
             JsonObject cropOverrides = jsonObject.get("cropOverrides").getAsJsonObject();
             IdentityHashMap<Block, Double> cropMulitplierMap = new IdentityHashMap<>();
@@ -99,6 +110,9 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
             }
             storage.setBlockToCropGrowthMultiplierMap(cropMulitplierMap);
         }
+    }
+
+    private static void processClientOverrides(OverrideStorage storage, JsonElement element) {
         if (element.getAsJsonObject().has("client")) {
             JsonObject client = element.getAsJsonObject().get("client").getAsJsonObject();
 
@@ -128,7 +142,6 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
             }
             storage.getClientStorage().parseHexColors();
         }
-
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -168,9 +181,13 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
         }
 
 
-        IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage = processKeys(biomeObjects, biomeRegistry);
-        IdentityHashMap<Block, Double> cropToMultiplierMap = new IdentityHashMap<>();
+        processKeys(biomeObjects);
+        return new BiomeToOverrideStorageJsonStorage(this.biomeOverrideStorage, isClient ? this.cropToMultiplierMap : processCropToMultiplierMap(uncastedCropOverrides));
+    }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private IdentityHashMap<Block, Double> processCropToMultiplierMap(Map uncastedCropOverrides) {
+        IdentityHashMap<Block, Double> cropToMultiplierMap = new IdentityHashMap<>();
         if (!uncastedCropOverrides.isEmpty()) {
             IdentityHashMap<String, Double> blockIDToMultiplierMap = new IdentityHashMap<>(uncastedCropOverrides);
             blockIDToMultiplierMap.forEach((blockId, multiplier) -> {
@@ -182,8 +199,7 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
                     BetterWeather.LOGGER.error("Block ID: \"" + blockId + "\" is not a valid block ID in the registry, the override will not be applied...");
             });
         }
-
-        return new BiomeToOverrideStorageJsonStorage(biomeToOverrideStorage, cropToMultiplierMap);
+        return cropToMultiplierMap;
     }
 
     private Object extractKey(StringBuilder errorBuilder, String key, Registry<Biome> biomeRegistry) {

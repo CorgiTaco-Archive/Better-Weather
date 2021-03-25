@@ -111,16 +111,16 @@ public class SeasonContext implements Season {
             read(isClient);
         }
 
-        fillSubSeasonOverrideStorage();
+        fillSubSeasonOverrideStorage(isClient);
     }
 
-    private void fillSubSeasonOverrideStorage() {
+    private void fillSubSeasonOverrideStorage(boolean isClient) {
         for (Map.Entry<Season.Key, BWSeason> seasonKeySeasonEntry : this.seasons.entrySet()) {
             Key key = seasonKeySeasonEntry.getKey();
             seasonKeySeasonEntry.getValue().setSeasonKey(key);
             IdentityHashMap<Season.Phase, BWSubseasonSettings> phaseSettings = seasonKeySeasonEntry.getValue().getPhaseSettings();
             for (Map.Entry<Season.Phase, BWSubseasonSettings> phaseSubSeasonSettingsEntry : phaseSettings.entrySet()) {
-                BiomeOverrideJsonHandler.handleOverrideJsonConfigs(this.seasonOverridesPath.resolve(seasonKeySeasonEntry.getKey().toString() + "-" + phaseSubSeasonSettingsEntry.getKey() + ".json"), seasonKeySeasonEntry.getKey() == Season.Key.WINTER ? BWSubseasonSettings.WINTER_OVERRIDE : new IdentityHashMap<>(), phaseSubSeasonSettingsEntry.getValue(), this.biomeRegistry);
+                BiomeOverrideJsonHandler.handleOverrideJsonConfigs(this.seasonOverridesPath.resolve(seasonKeySeasonEntry.getKey().toString() + "-" + phaseSubSeasonSettingsEntry.getKey() + ".json"), seasonKeySeasonEntry.getKey() == Season.Key.WINTER ? BWSubseasonSettings.WINTER_OVERRIDE : new IdentityHashMap<>(), phaseSubSeasonSettingsEntry.getValue(), this.biomeRegistry, isClient);
             }
         }
     }
@@ -139,7 +139,6 @@ public class SeasonContext implements Season {
             Files.createDirectories(seasonConfigFile.toPath().getParent());
             Files.write(seasonConfigFile.toPath(), toJson.getBytes());
         } catch (IOException e) {
-
         }
     }
 
@@ -148,7 +147,6 @@ public class SeasonContext implements Season {
             JsonObject jsonObject = new JsonParser().parse(reader).getAsJsonObject();
             Optional<SeasonConfigHolder> configHolder = SeasonConfigHolder.CODEC.parse(JsonOps.INSTANCE, jsonObject).resultOrPartial(BetterWeather.LOGGER::error);
 
-
             if (!isClient) {
                 if (configHolder.isPresent()) {
                     this.seasons = configHolder.get().getSeasonKeySeasonMap();
@@ -156,6 +154,16 @@ public class SeasonContext implements Season {
                 } else {
                     this.seasons = SeasonConfigHolder.DEFAULT_CONFIG_HOLDER.getSeasonKeySeasonMap();
                     this.yearLength = SeasonConfigHolder.DEFAULT_CONFIG_HOLDER.getSeasonCycleLength();
+                }
+            } else {
+                if (configHolder.isPresent()) {
+                    for (Map.Entry<Key, BWSeason> entry : configHolder.get().getSeasonKeySeasonMap().entrySet()) {
+                        Key key = entry.getKey();
+                        BWSeason season = entry.getValue();
+                        for (Phase phase : Phase.values()) {
+                            this.seasons.get(key).getSettingsForPhase(phase).setClient(season.getSettingsForPhase(phase).getClientSettings()); //Only update client settings on the client.
+                        }
+                    }
                 }
             }
         } catch (IOException e) {
