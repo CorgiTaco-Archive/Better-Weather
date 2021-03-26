@@ -48,11 +48,8 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void tick(BooleanSupplier hasTicksLeft, CallbackInfo ci) {
-        long gameTime = ((ClientWorld) (Object) this).getWorldInfo().getGameTime();
-        if (gameTime % 10 == 0) {
-            if (this.seasonContext != null) {
-                this.seasonContext.tick((ClientWorld) (Object) this);
-            }
+        if (this.seasonContext != null) {
+            this.seasonContext.tick((ClientWorld) (Object) this);
         }
     }
 
