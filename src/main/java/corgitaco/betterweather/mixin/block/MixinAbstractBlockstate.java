@@ -28,6 +28,6 @@ public abstract class MixinAbstractBlockstate {
     private void cropGrowthModifier(ServerWorld world, BlockPos posIn, Random randomIn, CallbackInfo ci) {
         SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
         if (seasonContext != null)
-            seasonContext.tickCrops(world, posIn, this.getBlock(), this.getSelf(), ci);
+            seasonContext.randomTickCrops(world, posIn, this.getBlock(), this.getSelf(), ci);
     }
 }

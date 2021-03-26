@@ -30,8 +30,6 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
@@ -49,16 +47,6 @@ import java.util.Optional;
 public class SeasonContext implements Season {
     public static final String CONFIG_NAME = "season-settings.json";
 
-    private BWSeason currentSeason;
-    private int currentYearTime;
-    private int yearLength;
-    private final ResourceLocation worldID;
-    private final Registry<Biome> biomeRegistry;
-
-    private final File seasonConfigFile;
-    private final Path seasonOverridesPath;
-    private IdentityHashMap<Season.Key, BWSeason> seasons;
-
     public static final Codec<SeasonContext> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(Codec.INT.fieldOf("currentYearTime").forGetter((seasonContext) -> {
             return seasonContext.currentYearTime;
@@ -70,6 +58,16 @@ public class SeasonContext implements Season {
             return seasonContext.seasons;
         })).apply(builder, (currentYearTime, yearLength, worldID, seasonMap) -> new SeasonContext(currentYearTime, yearLength, worldID, new IdentityHashMap<>(seasonMap)));
     });
+
+    private final ResourceLocation worldID;
+    private final Registry<Biome> biomeRegistry;
+    private final File seasonConfigFile;
+    private final Path seasonOverridesPath;
+    private final IdentityHashMap<Season.Key, BWSeason> seasons = new IdentityHashMap<>();
+
+    private BWSeason currentSeason;
+    private int currentYearTime;
+    private int yearLength;
 
     //Packet Constructor
     public SeasonContext(int currentYearTime, int yearLength, ResourceLocation worldID, IdentityHashMap<Season.Key, BWSeason> seasons) {
@@ -94,34 +92,11 @@ public class SeasonContext implements Season {
         boolean isPacket = biomeRegistry == null;
 
         if (isClient)
-            this.seasons = seasons;
+            this.seasons.putAll(seasons);
         if (!isPacket) {
             this.handleConfig(isClient);
             this.currentSeason = this.seasons.get(Season.getSeasonFromTime(currentYearTime, yearLength));
             this.currentSeason.setPhaseForTime(this.currentYearTime, this.yearLength);
-        }
-    }
-
-    public void handleConfig(boolean isClient) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-        if (!seasonConfigFile.exists()) {
-            create(gson);
-        }
-        if (seasonConfigFile.exists()) {
-            read(isClient);
-        }
-
-        fillSubSeasonOverrideStorage(isClient);
-    }
-
-    private void fillSubSeasonOverrideStorage(boolean isClient) {
-        for (Map.Entry<Season.Key, BWSeason> seasonKeySeasonEntry : this.seasons.entrySet()) {
-            Key key = seasonKeySeasonEntry.getKey();
-            seasonKeySeasonEntry.getValue().setSeasonKey(key);
-            IdentityHashMap<Season.Phase, BWSubseasonSettings> phaseSettings = seasonKeySeasonEntry.getValue().getPhaseSettings();
-            for (Map.Entry<Season.Phase, BWSubseasonSettings> phaseSubSeasonSettingsEntry : phaseSettings.entrySet()) {
-                BiomeOverrideJsonHandler.handleOverrideJsonConfigs(this.seasonOverridesPath.resolve(seasonKeySeasonEntry.getKey().toString() + "-" + phaseSubSeasonSettingsEntry.getKey() + ".json"), seasonKeySeasonEntry.getKey() == Season.Key.WINTER ? BWSubseasonSettings.WINTER_OVERRIDE : new IdentityHashMap<>(), phaseSubSeasonSettingsEntry.getValue(), this.biomeRegistry, isClient);
-            }
         }
     }
 
@@ -130,45 +105,6 @@ public class SeasonContext implements Season {
         this.currentSeason = seasons.get(newSeason);
         this.currentSeason.setPhaseForTime(currentYearTime, yearLength);
         this.updatePacket(players);
-    }
-
-    private void create(Gson gson) {
-        String toJson = gson.toJson(SeasonConfigHolder.CODEC.encodeStart(JsonOps.INSTANCE, SeasonConfigHolder.DEFAULT_CONFIG_HOLDER).result().get());
-
-        try {
-            Files.createDirectories(seasonConfigFile.toPath().getParent());
-            Files.write(seasonConfigFile.toPath(), toJson.getBytes());
-        } catch (IOException e) {
-        }
-    }
-
-    private void read(boolean isClient) {
-        try (Reader reader = new FileReader(seasonConfigFile)) {
-            JsonObject jsonObject = new JsonParser().parse(reader).getAsJsonObject();
-            Optional<SeasonConfigHolder> configHolder = SeasonConfigHolder.CODEC.parse(JsonOps.INSTANCE, jsonObject).resultOrPartial(BetterWeather.LOGGER::error);
-
-            if (!isClient) {
-                if (configHolder.isPresent()) {
-                    this.seasons = configHolder.get().getSeasonKeySeasonMap();
-                    this.yearLength = configHolder.get().getSeasonCycleLength();
-                } else {
-                    this.seasons = SeasonConfigHolder.DEFAULT_CONFIG_HOLDER.getSeasonKeySeasonMap();
-                    this.yearLength = SeasonConfigHolder.DEFAULT_CONFIG_HOLDER.getSeasonCycleLength();
-                }
-            } else {
-                if (configHolder.isPresent()) {
-                    for (Map.Entry<Key, BWSeason> entry : configHolder.get().getSeasonKeySeasonMap().entrySet()) {
-                        Key key = entry.getKey();
-                        BWSeason season = entry.getValue();
-                        for (Phase phase : Phase.values()) {
-                            this.seasons.get(key).getSettingsForPhase(phase).setClient(season.getSettingsForPhase(phase).getClientSettings()); //Only update client settings on the client.
-                        }
-                    }
-                }
-            }
-        } catch (IOException e) {
-
-        }
     }
 
     public void tick(World world) {
@@ -184,37 +120,39 @@ public class SeasonContext implements Season {
         }
     }
 
-    public void tickCrops(ServerWorld world, BlockPos posIn, Block block, BlockState self, CallbackInfo ci) {
-        BWSubseasonSettings subSeason = this.getCurrentSubSeasonSettings();
+    /**
+     * Called every block random tick.
+     */
+    public void randomTickCrops(ServerWorld world, BlockPos posIn, Block block, BlockState self, CallbackInfo ci) {
         if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block) || BlockTags.SAPLINGS.contains(block)) {
-            cropTicker(world, posIn, block, subSeason, self, ci);
-        }
-    }
+            Block block1 = block;
+            //Collect the crop multiplier for the given subseason.
+            double cropGrowthMultiplier = getCurrentSubSeasonSettings().getCropGrowthMultiplier(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(world.getBiome(posIn)).get(), block1);
+            if (cropGrowthMultiplier == 1) {
+                return;
+            }
 
-    private static void cropTicker(ServerWorld world, BlockPos posIn, Block block, BWSubseasonSettings subSeason, BlockState self, CallbackInfo ci) {
-        //Collect the crop multiplier for the given subseason.
-        double cropGrowthMultiplier = subSeason.getCropGrowthMultiplier(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(world.getBiome(posIn)).get(), block);
-        if (cropGrowthMultiplier == 1)
-            return;
-
-        //Pretty self explanatory, basically run a chance on whether or not the crop will tick for this tick
-        if (cropGrowthMultiplier < 1) {
-            if (world.getRandom().nextDouble() < cropGrowthMultiplier) {
-                block.randomTick(self, world, posIn, world.getRandom());
-            } else
-                ci.cancel();
-        }
-        //Here we gather a random number of ticks that this block will tick for this given tick.
-        //We do a random.nextDouble() to determine if we get the ceil or floor value for the given crop growth multiplier.
-        else if (cropGrowthMultiplier > 1) {
-            int numberOfTicks = world.getRandom().nextInt((world.getRandom().nextDouble() + (cropGrowthMultiplier - 1) < cropGrowthMultiplier) ? (int) Math.ceil(cropGrowthMultiplier) : (int) cropGrowthMultiplier) + 1;
-            for (int tick = 0; tick < numberOfTicks; tick++) {
-                if (tick > 0) {
-                    self = world.getBlockState(posIn);
-                    block = self.getBlock();
+            //Pretty self explanatory, basically run a chance on whether or not the crop will tick for this tick
+            if (cropGrowthMultiplier < 1) {
+                if (world.getRandom().nextDouble() < cropGrowthMultiplier) {
+                    block1.randomTick(self, world, posIn, world.getRandom());
+                } else {
+                    ci.cancel();
                 }
+            }
 
-                block.randomTick(self, world, posIn, world.getRandom());
+            //Here we gather a random number of ticks that this block will tick for this given tick.
+            //We do a random.nextDouble() to determine if we get the ceil or floor value for the given crop growth multiplier.
+            else if (cropGrowthMultiplier > 1) {
+                int numberOfTicks = world.getRandom().nextInt((world.getRandom().nextDouble() + (cropGrowthMultiplier - 1) < cropGrowthMultiplier) ? (int) Math.ceil(cropGrowthMultiplier) : (int) cropGrowthMultiplier) + 1;
+                for (int tick = 0; tick < numberOfTicks; tick++) {
+                    if (tick > 0) {
+                        self = world.getBlockState(posIn);
+                        block1 = self.getBlock();
+                    }
+
+                    block1.randomTick(self, world, posIn, world.getRandom());
+                }
             }
         }
     }
@@ -242,6 +180,71 @@ public class SeasonContext implements Season {
         SeasonSavedData.get(world).setYearLength(this.yearLength);
     }
 
+    /**********Configs**********/
+
+    public void handleConfig(boolean isClient) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+        if (!seasonConfigFile.exists()) {
+            create(gson);
+        }
+        if (seasonConfigFile.exists()) {
+            read(isClient);
+        }
+
+        fillSubSeasonOverrideStorage(isClient);
+    }
+
+    private void create(Gson gson) {
+        String toJson = gson.toJson(SeasonConfigHolder.CODEC.encodeStart(JsonOps.INSTANCE, SeasonConfigHolder.DEFAULT_CONFIG_HOLDER).result().get());
+
+        try {
+            Files.createDirectories(seasonConfigFile.toPath().getParent());
+            Files.write(seasonConfigFile.toPath(), toJson.getBytes());
+        } catch (IOException e) {
+
+        }
+    }
+
+    private void read(boolean isClient) {
+        try (Reader reader = new FileReader(seasonConfigFile)) {
+            JsonObject jsonObject = new JsonParser().parse(reader).getAsJsonObject();
+            Optional<SeasonConfigHolder> configHolder = SeasonConfigHolder.CODEC.parse(JsonOps.INSTANCE, jsonObject).resultOrPartial(BetterWeather.LOGGER::error);
+
+            if (!isClient) {
+                if (configHolder.isPresent()) {
+                    this.seasons.putAll(configHolder.get().getSeasonKeySeasonMap());
+                    this.yearLength = configHolder.get().getSeasonCycleLength();
+                } else {
+                    this.seasons.putAll(SeasonConfigHolder.DEFAULT_CONFIG_HOLDER.getSeasonKeySeasonMap());
+                    this.yearLength = SeasonConfigHolder.DEFAULT_CONFIG_HOLDER.getSeasonCycleLength();
+                }
+            } else {
+                if (configHolder.isPresent()) {
+                    for (Map.Entry<Key, BWSeason> entry : configHolder.get().getSeasonKeySeasonMap().entrySet()) {
+                        Key key = entry.getKey();
+                        BWSeason season = entry.getValue();
+                        for (Phase phase : Phase.values()) {
+                            this.seasons.get(key).getSettingsForPhase(phase).setClient(season.getSettingsForPhase(phase).getClientSettings()); //Only update client settings on the client.
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+
+        }
+    }
+
+    private void fillSubSeasonOverrideStorage(boolean isClient) {
+        for (Map.Entry<Season.Key, BWSeason> seasonKeySeasonEntry : this.seasons.entrySet()) {
+            Key key = seasonKeySeasonEntry.getKey();
+            seasonKeySeasonEntry.getValue().setSeasonKey(key);
+            IdentityHashMap<Season.Phase, BWSubseasonSettings> phaseSettings = seasonKeySeasonEntry.getValue().getPhaseSettings();
+            for (Map.Entry<Season.Phase, BWSubseasonSettings> phaseSubSeasonSettingsEntry : phaseSettings.entrySet()) {
+                BiomeOverrideJsonHandler.handleOverrideJsonConfigs(this.seasonOverridesPath.resolve(seasonKeySeasonEntry.getKey().toString() + "-" + phaseSubSeasonSettingsEntry.getKey() + ".json"), seasonKeySeasonEntry.getKey() == Season.Key.WINTER ? BWSubseasonSettings.WINTER_OVERRIDE : new IdentityHashMap<>(), phaseSubSeasonSettingsEntry.getValue(), this.biomeRegistry, isClient);
+            }
+        }
+    }
+
     public BWSeason getCurrentSeason() {
         return currentSeason;
     }
@@ -249,7 +252,6 @@ public class SeasonContext implements Season {
     public BWSubseasonSettings getCurrentSubSeasonSettings() {
         return this.currentSeason.getCurrentSettings();
     }
-
 
     @Override
     public Key getKey() {
