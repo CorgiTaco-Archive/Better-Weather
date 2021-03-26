@@ -17,6 +17,7 @@ import corgitaco.betterweather.data.network.packet.season.SeasonPacket;
 import corgitaco.betterweather.data.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.data.storage.SeasonSavedData;
 import corgitaco.betterweather.helpers.BiomeUpdate;
+import corgitaco.betterweather.helpers.WeatherTime;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -30,6 +31,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.storage.ServerWorldInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
@@ -110,13 +112,25 @@ public class SeasonContext implements Season {
     public void tick(World world) {
         BWSeason prevSeason = this.currentSeason;
         Season.Phase prevPhase = this.currentSeason.getCurrentPhase();
+
         this.tickSeasonTime(world);
 
-        if (prevSeason != this.currentSeason || prevPhase != this.currentSeason.getCurrentPhase()) {
+        boolean changedSeasonFlag = prevSeason != this.currentSeason;
+        boolean changedPhaseFlag = prevPhase != this.currentSeason.getCurrentPhase();
+
+        if (changedSeasonFlag || changedPhaseFlag) {
             ((BiomeUpdate) world).updateBiomeData();
             if (!world.isRemote) {
+                updateWeatherMultiplier(world);
                 updatePacket(((ServerWorld) world).getPlayers());
             }
+        }
+    }
+
+    public void updateWeatherMultiplier(World world) {
+        if (world.getWorldInfo() instanceof ServerWorldInfo) {
+            ServerWorldInfo worldInfo = (ServerWorldInfo) world.getWorldInfo();
+            ((WeatherTime) worldInfo).setWeatherTimeMultiplier(1 / this.currentSeason.getCurrentSettings().getWeatherEventChanceMultiplier());
         }
     }
 
