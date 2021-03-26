@@ -19,8 +19,7 @@
     "client.MixinBiomeClient",
     "client.MixinClientWorld",
     "client.MixinDebugOverlayGui",
-    "client.MixinFogRenderer",
-    "client.MixinLeavesBlock"
+    "client.MixinFogRenderer"
   ],
   "injectors": {
     "defaultRequire": 1

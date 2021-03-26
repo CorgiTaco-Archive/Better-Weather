@@ -33,31 +33,6 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
     @Nullable
     SeasonContext seasonContext;
 
-    @Redirect(method = "getSkyColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
-    private float doNotDarkenSkyWithRainStrength(ClientWorld world, float delta) {
-        return 0.0F;
-    }
-
-    @Redirect(method = "getCloudColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
-    private float doNotDarkenCloudsWithRainStrength(ClientWorld world, float delta) {
-        return 0.0F;
-    }
-
-    @Inject(method = "getCloudColor", at = @At("RETURN"), cancellable = true)
-    private void modifyCloudColor(float partialTicks, CallbackInfoReturnable<Vector3d> cir) {
-//        int rgbColor = WeatherData.currentWeatherEvent.modifyCloudColor(BetterWeatherUtil.transformFloatColor(cir.getReturnValue()), ((ClientWorld) (Object) this).getRainStrength(partialTicks)).getRGB();
-//        float r = (float) (rgbColor >> 16 & 255) / 255.0F;
-//        float g = (float) (rgbColor >> 8 & 255) / 255.0F;
-//        float b = (float) (rgbColor & 255) / 255.0F;
-//        cir.setReturnValue(new Vector3d(r, g, b));
-    }
-
-//    @Redirect(method = "getSunBrightness", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
-//    private float sunBrightness(ClientWorld world, float delta) {
-//        float rainStrength = ((ClientWorld) (Object) this).getRainStrength(delta);
-//        return rainStrength * WeatherData.currentWeatherEvent.dayLightDarkness();
-//    }
-
     @Nullable
     @Override
     public SeasonContext getSeasonContext() {
