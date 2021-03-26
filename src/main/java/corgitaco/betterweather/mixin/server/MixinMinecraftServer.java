@@ -35,15 +35,6 @@ public abstract class MixinMinecraftServer {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void readConfigsAtWorldCreation(Thread serverThread, DynamicRegistries.Impl registries, SaveFormat.LevelSave anvilConverterForAnvilFile, IServerConfiguration serverConfig, ResourcePackList dataPacks, Proxy serverProxy, DataFixer dataFixer, DataPackRegistries dataRegistries, MinecraftSessionService sessionService, GameProfileRepository profileRepo, PlayerProfileCache profileCache, IChunkStatusListenerFactory chunkStatusListenerFactory, CallbackInfo ci) {
-//        if (!BetterWeather.useSeasons)
-//            WeatherEventControllerConfig.handleConfig(BetterWeather.CONFIG_PATH.resolve(BetterWeather.MOD_ID + "-weather-controller.json"));
         BetterWeatherConfig.serialize();
-    }
-
-    @Inject(method = "func_240787_a_", at = @At("TAIL"))
-    private void assignWorldData(IChunkStatusListener p_240787_1_, CallbackInfo ci) {
-//        BetterWeatherGeneralData.get(getWorld(World.OVERWORLD));
-//        BetterWeatherEventData.get(getWorld(World.OVERWORLD));
-        SeasonSavedData.get(getWorld(World.OVERWORLD));
     }
 }

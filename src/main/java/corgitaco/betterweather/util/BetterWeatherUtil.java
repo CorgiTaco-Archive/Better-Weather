@@ -1,5 +1,6 @@
-package corgitaco.betterweather;
+package corgitaco.betterweather.util;
 
+import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.season.BWSubseasonSettings;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;

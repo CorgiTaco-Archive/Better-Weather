@@ -95,10 +95,6 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
         if (seasonContext != null) {
             this.seasonContext.tick((ServerWorld) (Object) this);
         }
-        long worldTime = ((ServerWorld) (Object) this).getWorldInfo().getGameTime();
-//        WeatherData.currentWeatherEvent.worldTick((ServerWorld) (Object) this, ((ServerWorld) (Object) this).getGameRules().getInt(GameRules.RANDOM_TICK_SPEED), worldTime);
-//        if (worldTime % 10 == 0)
-//            WeatherEventSystem.updateWeatherEventPacket((ServerWorld) (Object) this, ((ServerWorld) (Object) this).getPlayers(), false);
     }
 
 
@@ -106,37 +102,6 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     private void dynamicRegistryWrapper(CallbackInfoReturnable<DynamicRegistries> cir) {
         cir.setReturnValue(this.registry);
     }
-
-//    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z", ordinal = 0))
-//    private boolean rollBetterWeatherEvent(GameRules gameRules, GameRules.RuleKey<GameRules.BooleanValue> key) {
-//        if (gameRules.getBoolean(GameRules.DO_WEATHER_CYCLE))
-//            WeatherEventUtil.doWeatherAndRollWeatherEventChance(this.serverWorldInfo, (ServerWorld) (Object) this);
-//        return false;
-////        } else
-////            return gameRules.getBoolean(GameRules.DO_WEATHER_CYCLE);
-//    }
-//
-//    @Inject(method = "setWeather", at = @At("HEAD"))
-//    private void setWeatherForced(int clearWeatherTime, int weatherTime, boolean rain, boolean thunder, CallbackInfo ci) {
-//        ((IsWeatherForced) this.serverWorldInfo).setWeatherForced(true);
-//        BetterWeatherEventData.get((ServerWorld) (Object) this).setWeatherForced(true);
-//    }
-//
-//    @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 1))
-//    private int takeAdvantageOfExistingChunkIterator(Random random, int bound, Chunk chunk, int randomTickSpeed) {
-//        if (((ServerWorld) (Object) this).rand.nextInt(16) == 0)
-//            WeatherEventUtil.vanillaIceAndSnowChunkTicks(chunk, (ServerWorld) (Object) this);
-//        WeatherData.currentWeatherEvent.tickLiveChunks(chunk, (ServerWorld) (Object) this);
-//        return -1;
-////        } else
-////            return ((ServerWorld) (Object) this).rand.nextInt(16);
-//    }
-
-
-//    @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 0))
-//    private int neverSpawnLightning(Random random, int bound) {
-//        return -1;
-//    }
 
     @Nullable
     @Override
