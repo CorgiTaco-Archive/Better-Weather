@@ -4,7 +4,7 @@ import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.datafixers.DataFixer;
 import corgitaco.betterweather.config.BetterWeatherConfig;
-import corgitaco.betterweather.datastorage.SeasonSavedData;
+import corgitaco.betterweather.data.storage.SeasonSavedData;
 import net.minecraft.resources.DataPackRegistries;
 import net.minecraft.resources.ResourcePackList;
 import net.minecraft.server.MinecraftServer;

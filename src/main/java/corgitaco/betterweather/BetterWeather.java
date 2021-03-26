@@ -1,6 +1,6 @@
 package corgitaco.betterweather;
 
-import corgitaco.betterweather.datastorage.network.NetworkHandler;
+import corgitaco.betterweather.data.network.NetworkHandler;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import net.minecraft.util.LazyValue;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -24,10 +24,8 @@ public class BetterWeather {
 
     public static final boolean USING_OPTIFINE = new LazyValue<>(() -> {
         try {
-            final Class<?> clazz = Class.forName("net.optifine.Config");
-            return clazz != null;
+            return Class.forName("net.optifine.Config") != null;
         } catch (final Exception e) {
-
             return false;
         }
     }).getValue();

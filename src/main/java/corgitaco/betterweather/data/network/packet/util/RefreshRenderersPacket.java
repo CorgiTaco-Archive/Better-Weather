@@ -1,4 +1,4 @@
-package corgitaco.betterweather.datastorage.network.packet.util;
+package corgitaco.betterweather.data.network.packet.util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.PacketBuffer;

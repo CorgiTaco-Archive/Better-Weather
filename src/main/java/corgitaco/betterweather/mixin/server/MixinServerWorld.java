@@ -3,7 +3,7 @@ package corgitaco.betterweather.mixin.server;
 import corgitaco.betterweather.api.Climate;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.config.BetterWeatherConfig;
-import corgitaco.betterweather.datastorage.SeasonSavedData;
+import corgitaco.betterweather.data.storage.SeasonSavedData;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.helpers.BiomeModifier;
 import corgitaco.betterweather.helpers.BiomeUpdate;

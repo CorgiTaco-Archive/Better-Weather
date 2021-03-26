@@ -1,10 +1,8 @@
 package corgitaco.betterweather.mixin.client;
 
-import corgitaco.betterweather.api.BiomeClimate;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.season.SeasonContext;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.overlay.DebugOverlayGui;
 import org.apache.commons.lang3.text.WordUtils;
 import org.spongepowered.asm.mixin.Final;

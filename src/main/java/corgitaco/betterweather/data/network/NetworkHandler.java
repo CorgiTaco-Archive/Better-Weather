@@ -1,8 +1,8 @@
-package corgitaco.betterweather.datastorage.network;
+package corgitaco.betterweather.data.network;
 
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.datastorage.network.packet.season.SeasonPacket;
-import corgitaco.betterweather.datastorage.network.packet.util.RefreshRenderersPacket;
+import corgitaco.betterweather.data.network.packet.season.SeasonPacket;
+import corgitaco.betterweather.data.network.packet.util.RefreshRenderersPacket;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkDirection;

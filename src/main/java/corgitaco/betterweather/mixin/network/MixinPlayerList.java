@@ -1,8 +1,8 @@
 package corgitaco.betterweather.mixin.network;
 
 import com.mojang.authlib.GameProfile;
-import corgitaco.betterweather.datastorage.network.NetworkHandler;
-import corgitaco.betterweather.datastorage.network.packet.season.SeasonPacket;
+import corgitaco.betterweather.data.network.NetworkHandler;
+import corgitaco.betterweather.data.network.packet.season.SeasonPacket;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.season.SeasonContext;
 import net.minecraft.entity.player.ServerPlayerEntity;
