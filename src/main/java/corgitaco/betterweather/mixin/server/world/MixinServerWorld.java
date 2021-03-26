@@ -1,4 +1,4 @@
-package corgitaco.betterweather.mixin.server;
+package corgitaco.betterweather.mixin.server.world;
 
 import corgitaco.betterweather.api.Climate;
 import corgitaco.betterweather.api.season.Season;
@@ -71,6 +71,7 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
 
             this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));
             updateBiomeData();
+            this.seasonContext.updateWeatherMultiplier((ServerWorld) (Object) this);
         } else {
             registry = server.getDynamicRegistries();
         }
