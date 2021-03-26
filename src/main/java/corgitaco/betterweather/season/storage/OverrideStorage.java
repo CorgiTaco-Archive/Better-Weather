@@ -1,6 +1,6 @@
 package corgitaco.betterweather.season.storage;
 
-import corgitaco.betterweather.BetterWeatherUtil;
+import corgitaco.betterweather.util.BetterWeatherUtil;
 import net.minecraft.block.Block;
 
 import java.util.IdentityHashMap;
