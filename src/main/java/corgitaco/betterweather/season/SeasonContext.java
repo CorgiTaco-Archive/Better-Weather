@@ -123,7 +123,7 @@ public class SeasonContext implements Season {
     /**
      * Called every block random tick.
      */
-    public void randomTickCrops(ServerWorld world, BlockPos posIn, Block block, BlockState self, CallbackInfo ci) {
+    public void enhanceCropRandomTick(ServerWorld world, BlockPos posIn, Block block, BlockState self, CallbackInfo ci) {
         if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block) || BlockTags.SAPLINGS.contains(block)) {
             Block block1 = block;
             //Collect the crop multiplier for the given subseason.
