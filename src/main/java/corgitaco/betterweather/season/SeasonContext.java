@@ -186,14 +186,8 @@ public class SeasonContext implements Season {
 
     public void tickCrops(ServerWorld world, BlockPos posIn, Block block, BlockState self, CallbackInfo ci) {
         BWSubseasonSettings subSeason = this.getCurrentSubSeasonSettings();
-        if (subSeason.getBiomeToOverrideStorage().isEmpty() && subSeason.getCropToMultiplierStorage().isEmpty()) {
-            if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block) || BlockTags.SAPLINGS.contains(block)) {
-                cropTicker(world, posIn, block, subSeason, self, ci);
-            }
-        } else {
-            if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block) || BlockTags.SAPLINGS.contains(block)) {
-                cropTicker(world, posIn, block, subSeason, self, ci);
-            }
+        if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block) || BlockTags.SAPLINGS.contains(block)) {
+            cropTicker(world, posIn, block, subSeason, self, ci);
         }
     }
 
@@ -282,12 +276,10 @@ public class SeasonContext implements Season {
         return this.currentSeason.getCurrentSettings();
     }
 
-    @OnlyIn(Dist.CLIENT)
     public void setCurrentYearTime(int currentYearTime) {
         this.currentYearTime = currentYearTime;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public void setYearLength(int yearLength) {
         this.yearLength = yearLength;
     }
