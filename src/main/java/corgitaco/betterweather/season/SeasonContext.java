@@ -130,7 +130,7 @@ public class SeasonContext implements Season {
     public void updateWeatherMultiplier(World world) {
         if (world.getWorldInfo() instanceof ServerWorldInfo) {
             ServerWorldInfo worldInfo = (ServerWorldInfo) world.getWorldInfo();
-            ((WeatherTime) worldInfo).setWeatherTimeMultiplier(this.currentSeason.getCurrentSettings().getWeatherEventChanceMultiplier());
+            ((WeatherTime) worldInfo).setWeatherTimeMultiplier(1 / this.currentSeason.getCurrentSettings().getWeatherEventChanceMultiplier());
         }
     }
 

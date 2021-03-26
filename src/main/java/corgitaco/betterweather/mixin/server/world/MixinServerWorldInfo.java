@@ -16,7 +16,7 @@ public abstract class MixinServerWorldInfo implements WeatherTime {
 
     private double multiplier = 0.0;
 
-    @Inject(method = {"getRainTime", "getThunderTime"}, at = @At("HEAD"), cancellable = true)
+    @Inject(method = {"getRainTime", "getThunderTime"}, at = @At("RETURN"), cancellable = true)
     private void adjustRainAndThunderTime(CallbackInfoReturnable<Integer> cir) {
         if (!isRaining()) {
             cir.setReturnValue((int) (cir.getReturnValue() * multiplier));
