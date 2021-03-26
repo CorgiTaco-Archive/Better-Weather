@@ -17,8 +17,8 @@ import corgitaco.betterweather.data.network.packet.season.SeasonPacket;
 import corgitaco.betterweather.data.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.data.storage.SeasonSavedData;
 import corgitaco.betterweather.helpers.BiomeUpdate;
-import corgitaco.betterweather.helpers.WeatherTime;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
+import corgitaco.betterweather.util.BetterWeatherUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -112,7 +112,7 @@ public class SeasonContext implements Season {
     public void tick(World world) {
         BWSeason prevSeason = this.currentSeason;
         Season.Phase prevPhase = this.currentSeason.getCurrentPhase();
-
+        BWSubseasonSettings prevSettings = prevSeason.getSettingsForPhase(prevPhase);
         this.tickSeasonTime(world);
 
         boolean changedSeasonFlag = prevSeason != this.currentSeason;
@@ -121,16 +121,19 @@ public class SeasonContext implements Season {
         if (changedSeasonFlag || changedPhaseFlag) {
             ((BiomeUpdate) world).updateBiomeData();
             if (!world.isRemote) {
-                updateWeatherMultiplier(world);
+                updateWeatherMultiplier(world, prevSettings.getWeatherEventChanceMultiplier(), this.currentSeason.getCurrentSettings().getWeatherEventChanceMultiplier());
                 updatePacket(((ServerWorld) world).getPlayers());
             }
         }
     }
 
-    public void updateWeatherMultiplier(World world) {
+    public void updateWeatherMultiplier(World world, double prevMultiplier, double currentMultiplier) {
         if (world.getWorldInfo() instanceof ServerWorldInfo) {
             ServerWorldInfo worldInfo = (ServerWorldInfo) world.getWorldInfo();
-            ((WeatherTime) worldInfo).setWeatherTimeMultiplier(1 / this.currentSeason.getCurrentSettings().getWeatherEventChanceMultiplier());
+            if (!worldInfo.isRaining()) {
+                worldInfo.setRainTime(BetterWeatherUtil.transformRainOrThunderTimeToCurrentSeason(worldInfo.getRainTime(), prevMultiplier, currentMultiplier));
+                worldInfo.setThunderTime(BetterWeatherUtil.transformRainOrThunderTimeToCurrentSeason(worldInfo.getThunderTime(), prevMultiplier, currentMultiplier));
+            }
         }
     }
 

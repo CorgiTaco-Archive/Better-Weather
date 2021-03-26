@@ -47,10 +47,14 @@ public class BetterWeatherUtil {
     public static int transformRainOrThunderTimeToCurrentSeason(int rainOrThunderTime, BWSubseasonSettings previous, BWSubseasonSettings current) {
         double previousMultiplier = previous.getWeatherEventChanceMultiplier();
         double currentMultiplier = current.getWeatherEventChanceMultiplier();
-        double normalTime = rainOrThunderTime * previousMultiplier;
+        return transformRainOrThunderTimeToCurrentSeason(rainOrThunderTime, previous, current);
+    }
 
+    public static int transformRainOrThunderTimeToCurrentSeason(int rainOrThunderTime, double prevMultiplier, double currentMultiplier) {
+        double normalTime = rainOrThunderTime * prevMultiplier;
         return (int) (normalTime * 1 / currentMultiplier);
     }
+
 
     public static int modifiedColorValue(int original, int target, double blendStrength) {
         return (int) MathHelper.lerp(blendStrength, original, target);

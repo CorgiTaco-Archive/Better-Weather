@@ -31,7 +31,9 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -71,7 +73,6 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
 
             this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));
             updateBiomeData();
-            this.seasonContext.updateWeatherMultiplier((ServerWorld) (Object) this);
         } else {
             registry = server.getDynamicRegistries();
         }
@@ -98,10 +99,15 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
         }
     }
 
-
     @Inject(method = "func_241828_r", at = @At("HEAD"), cancellable = true)
     private void dynamicRegistryWrapper(CallbackInfoReturnable<DynamicRegistries> cir) {
         cir.setReturnValue(this.registry);
+    }
+
+    @ModifyConstant(method = "tick", constant = {@Constant(intValue = 168000), @Constant(intValue = 12000, ordinal = 0), @Constant(intValue = 12000, ordinal = 2)})
+    private int modifyWeatherTime(int arg0) {
+        SeasonContext seasonContext = this.seasonContext;
+        return seasonContext != null ? (int) (arg0 * (1 / seasonContext.getCurrentSeason().getCurrentSettings().getWeatherEventChanceMultiplier())) : arg0;
     }
 
     @Nullable
