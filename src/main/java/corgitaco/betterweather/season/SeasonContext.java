@@ -56,7 +56,7 @@ public class SeasonContext implements Season {
             return seasonContext.yearLength;
         }), ResourceLocation.CODEC.fieldOf("worldID").forGetter((seasonContext) -> {
             return seasonContext.worldID;
-        }), Codec.simpleMap(Season.Key.CODEC, BWSeason.CODEC, IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasons").forGetter((seasonContext) -> {
+        }), Codec.simpleMap(Season.Key.CODEC, BWSeason.PACKET_CODEC, IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasons").forGetter((seasonContext) -> {
             return seasonContext.seasons;
         })).apply(builder, (currentYearTime, yearLength, worldID, seasonMap) -> new SeasonContext(currentYearTime, yearLength, worldID, new IdentityHashMap<>(seasonMap)));
     });

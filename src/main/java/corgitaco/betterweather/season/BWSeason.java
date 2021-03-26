@@ -45,6 +45,12 @@ public final class BWSeason {
         })).apply(builder, (p1) -> new BWSeason(new IdentityHashMap<>(p1)));
     });
 
+    public static final Codec<BWSeason> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
+        return builder.group(Codec.simpleMap(Season.Phase.CODEC, BWSubseasonSettings.PACKET_CODEC, IStringSerializable.createKeyable(Season.Phase.values())).fieldOf("phases").forGetter((seasons) -> {
+            return seasons.phaseSettings;
+        })).apply(builder, (p1) -> new BWSeason(new IdentityHashMap<>(p1)));
+    });
+
     private Season.Key key;
     private Season.Phase currentPhase;
     private final IdentityHashMap<Season.Phase, BWSubseasonSettings> phaseSettings;

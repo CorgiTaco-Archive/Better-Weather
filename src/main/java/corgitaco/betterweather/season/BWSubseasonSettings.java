@@ -3,10 +3,9 @@ package corgitaco.betterweather.season;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.util.BetterWeatherUtil;
-import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.season.SubseasonSettings;
 import corgitaco.betterweather.season.storage.OverrideStorage;
+import corgitaco.betterweather.util.BetterWeatherUtil;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
@@ -22,9 +21,11 @@ import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static corgitaco.betterweather.util.BetterWeatherUtil.*;
+
 public class BWSubseasonSettings implements SubseasonSettings {
 
-    public static Codec<BWSubseasonSettings> CODEC = RecordCodecBuilder.create((subSeasonSettingsInstance -> {
+    public static final Codec<BWSubseasonSettings> CODEC = RecordCodecBuilder.create((subSeasonSettingsInstance -> {
         return subSeasonSettingsInstance.group(Codec.DOUBLE.optionalFieldOf("tempModifier", 0.0).forGetter((subSeasonSettings) -> {
             return subSeasonSettings.tempModifier;
         }), Codec.DOUBLE.optionalFieldOf("humidityModifier", 0.0).forGetter((subSeasonSettings) -> {
@@ -40,6 +41,39 @@ public class BWSubseasonSettings implements SubseasonSettings {
         }), Codec.list(Codec.STRING).optionalFieldOf("entityBreedingBlacklist", new ArrayList<>()).forGetter(subSeasonSettings -> {
             return subSeasonSettings.entityTypeBreedingBlacklist.stream().map(Registry.ENTITY_TYPE::getKey).map(ResourceLocation::toString).collect(Collectors.toList());
         })).apply(subSeasonSettingsInstance, BWSubseasonSettings::new);
+    }));
+
+    public static final Codec<BWSubseasonSettings> PACKET_CODEC = RecordCodecBuilder.create((subSeasonSettingsInstance -> {
+        return subSeasonSettingsInstance.group(Codec.DOUBLE.optionalFieldOf("tempModifier", 0.0).forGetter((subSeasonSettings) -> {
+            return subSeasonSettings.tempModifier;
+        }), Codec.DOUBLE.optionalFieldOf("humidityModifier", 0.0).forGetter((subSeasonSettings) -> {
+            return subSeasonSettings.humidityModifier;
+        }), Codec.DOUBLE.optionalFieldOf("weatherEventChanceMultiplier", 0.0).forGetter((subSeasonSettings) -> {
+            return subSeasonSettings.weatherEventChanceMultiplier;
+        }), Codec.DOUBLE.optionalFieldOf("cropGrowthChanceMultiplier", 0.0).forGetter((subSeasonSettings) -> {
+            return subSeasonSettings.cropGrowthChanceMultiplier;
+        }), Codec.unboundedMap(Codec.STRING, Codec.DOUBLE).fieldOf("weatherEventController").forGetter((subSeasonSettings) -> {
+            return subSeasonSettings.weatherEventController;
+        }), SeasonClientSettings.CODEC.fieldOf("client").forGetter(subSeasonSettings -> {
+            return subSeasonSettings.clientSettings;
+        }), Codec.list(Codec.STRING).optionalFieldOf("entityBreedingBlacklist", new ArrayList<>()).forGetter(subSeasonSettings -> {
+            return subSeasonSettings.entityTypeBreedingBlacklist.stream().map(Registry.ENTITY_TYPE::getKey).map(ResourceLocation::toString).collect(Collectors.toList());
+        }), Codec.unboundedMap(ResourceLocation.CODEC, Codec.DOUBLE).fieldOf("cropToMultiplierStorage").forGetter((subSeasonSettings) -> {
+            Map<ResourceLocation, Double> newMap = new IdentityHashMap<>();
+            subSeasonSettings.cropToMultiplierStorage.forEach((block, multiplier) -> {
+                newMap.put(Registry.BLOCK.getKey(block), multiplier);
+            });
+            return newMap;
+        }), Codec.unboundedMap(ResourceLocation.CODEC, OverrideStorage.PACKET_CODEC).fieldOf("biomeToOverrideStorage").forGetter((subSeasonSettings) -> {
+            Map<ResourceLocation, OverrideStorage> newMap = new IdentityHashMap<>();
+            subSeasonSettings.biomeToOverrideStorage.forEach((biomeKey, overrideStorage) -> {
+                newMap.put(biomeKey.getLocation(), overrideStorage);
+            });
+            return newMap;
+        })).apply(subSeasonSettingsInstance, (tempModifier, humidityModifier, weatherEventMultiplier, cropGrowthChanceMultiplier,
+                weatherEventController, clientSettings, entityTypeBreedingBlacklist, cropToMultiplierStorage, biomeToOverrideStorage) ->
+                new BWSubseasonSettings(tempModifier, humidityModifier, weatherEventMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, entityTypeBreedingBlacklist,
+                transformBlockResourceLocations(cropToMultiplierStorage), transformBiomeResourceLocationsToKeys(biomeToOverrideStorage)));
     }));
 
     public static final HashMap<String, Double> SPRING_START_WEATHER_EVENT_CONTROLLER = new HashMap<>();
@@ -81,23 +115,26 @@ public class BWSubseasonSettings implements SubseasonSettings {
     private final double cropGrowthChanceMultiplier; //Final Fallback
     private final HashMap<String, Double> weatherEventController;
     private SeasonClientSettings clientSettings;
+    private final IdentityHashMap<Block, Double> cropToMultiplierStorage;
+    private final IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage;
+    private final ObjectOpenHashSet<EntityType<?>> entityTypeBreedingBlacklist;
 
-    //These are not to be serialized by GSON.
-    private transient Season.Key parentSeason;
-    private transient IdentityHashMap<Block, Double> cropToMultiplierStorage;
-    private transient IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage;
-    private transient ObjectOpenHashSet<EntityType<?>> entityTypeBreedingBlacklist;
 
     public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, SeasonClientSettings clientSettings) {
-        this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, new ObjectOpenHashSet<>());
+        this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, new ObjectOpenHashSet<>(), new IdentityHashMap<>(), new IdentityHashMap<>());
     }
 
+    //Codec constructor
     public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, SeasonClientSettings clientSettings, List<String> entityBreedingBlacklist) {
-        this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, new HashSet<>(entityBreedingBlacklist));
+        this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, new HashSet<>(entityBreedingBlacklist), new IdentityHashMap<>(), new IdentityHashMap<>());
     }
 
+    //Packet Codec Constructor
+    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, SeasonClientSettings clientSettings, List<String> entityBreedingBlacklist, Map<Block, Double> cropToMultiplierStorage, Map<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage) {
+        this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, new HashSet<>(entityBreedingBlacklist), new IdentityHashMap<>(cropToMultiplierStorage), new IdentityHashMap<>(biomeToOverrideStorage));
+    }
 
-    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, SeasonClientSettings clientSettings, Set<String> entityBreedingBlacklist) {
+    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, SeasonClientSettings clientSettings, Set<String> entityBreedingBlacklist, IdentityHashMap<Block, Double> cropToMultiplierStorage, IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage) {
         this.tempModifier = tempModifier;
         this.humidityModifier = humidityModifier;
         this.weatherEventChanceMultiplier = weatherEventChanceMultiplier;
@@ -105,14 +142,8 @@ public class BWSubseasonSettings implements SubseasonSettings {
         this.weatherEventController = new HashMap<>(weatherEventController);
         this.clientSettings = clientSettings;
         this.entityTypeBreedingBlacklist = new ObjectOpenHashSet<>(entityBreedingBlacklist.stream().map(ResourceLocation::new).filter((resourceLocation) -> (BetterWeatherUtil.filterRegistryID(resourceLocation, Registry.ENTITY_TYPE, "Entity"))).map(Registry.ENTITY_TYPE::getOptional).map(Optional::get).collect(Collectors.toSet()));
-    }
-
-    public Season.Key getParent() {
-        return parentSeason;
-    }
-
-    public void setParentSeason(Season.Key parentSeason) {
-        this.parentSeason = parentSeason;
+        this.cropToMultiplierStorage = cropToMultiplierStorage;
+        this.biomeToOverrideStorage = biomeToOverrideStorage;
     }
 
     public void setClient(SeasonClientSettings clientSettings) {
@@ -120,23 +151,19 @@ public class BWSubseasonSettings implements SubseasonSettings {
     }
 
     public IdentityHashMap<Block, Double> getCropToMultiplierStorage() {
-        if (cropToMultiplierStorage == null)
-            cropToMultiplierStorage = new IdentityHashMap<>();
         return cropToMultiplierStorage;
     }
 
     public void setCropToMultiplierStorage(IdentityHashMap<Block, Double> cropToMultiplierStorage) {
-        this.cropToMultiplierStorage = cropToMultiplierStorage;
+        this.cropToMultiplierStorage.putAll(cropToMultiplierStorage);
     }
 
     public IdentityHashMap<RegistryKey<Biome>, OverrideStorage> getBiomeToOverrideStorage() {
-        if (biomeToOverrideStorage == null)
-            biomeToOverrideStorage = new IdentityHashMap<>();
         return biomeToOverrideStorage;
     }
 
     public void setBiomeToOverrideStorage(IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage) {
-        this.biomeToOverrideStorage = biomeToOverrideStorage;
+        this.biomeToOverrideStorage.putAll(biomeToOverrideStorage);
     }
 
     @Override
@@ -266,8 +293,6 @@ public class BWSubseasonSettings implements SubseasonSettings {
     }
 
     public ObjectOpenHashSet<EntityType<?>> getEntityTypeBreedingBlacklist() {
-        if (entityTypeBreedingBlacklist == null)
-            entityTypeBreedingBlacklist = new ObjectOpenHashSet<>();
         return entityTypeBreedingBlacklist;
     }
 

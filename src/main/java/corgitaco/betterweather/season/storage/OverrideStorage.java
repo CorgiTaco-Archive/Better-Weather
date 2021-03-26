@@ -1,28 +1,55 @@
 package corgitaco.betterweather.season.storage;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.util.BetterWeatherUtil;
 import net.minecraft.block.Block;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.registry.Registry;
 
 import java.util.IdentityHashMap;
+import java.util.Map;
 
 public class OverrideStorage {
-    private double tempModifier = Double.MAX_VALUE;
-    private double humidityModifier = Double.MAX_VALUE;
-    private IdentityHashMap<Block, Double> blockToCropGrowthMultiplierMap = new IdentityHashMap<>();
-    private double fallBack = Double.MAX_VALUE;
+    private double tempModifier;
+    private double humidityModifier;
+    private final IdentityHashMap<Block, Double> blockToCropGrowthMultiplierMap;
+    private double fallBack;
     private OverrideClientStorage clientStorage = new OverrideClientStorage();
 
+    public static final Codec<OverrideStorage> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
+        return builder.group(Codec.unboundedMap(ResourceLocation.CODEC, Codec.DOUBLE).fieldOf("blockToCropGrowthMultiplierMap").forGetter((overrideStorage) -> {
+            Map<ResourceLocation, Double> newMap = new IdentityHashMap<>();
+            overrideStorage.blockToCropGrowthMultiplierMap.forEach((block, multiplier) -> {
+                newMap.put(Registry.BLOCK.getKey(block), multiplier);
+            });
+            return newMap;
+        }), Codec.DOUBLE.optionalFieldOf("tempModifier", Double.MAX_VALUE).forGetter((overrideStorage) -> {
+            return overrideStorage.tempModifier;
+        }), Codec.DOUBLE.optionalFieldOf("humidityModifier", Double.MAX_VALUE).forGetter((overrideStorage) -> {
+            return overrideStorage.humidityModifier;
+        }), Codec.DOUBLE.optionalFieldOf("fallBack", Double.MAX_VALUE).forGetter((overrideStorage) -> {
+            return overrideStorage.fallBack;
+        })).apply(builder, (map, tempModifier, humidityModifier, fallBack) -> new OverrideStorage(BetterWeatherUtil.transformBlockResourceLocations(map), tempModifier, humidityModifier, fallBack));
+    });
+
     public OverrideStorage() {
+        this(new IdentityHashMap<>(), Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+    }
+
+    public OverrideStorage(Map<Block, Double> blockToCropGrowthMultiplierMap, double tempModifier, double humidityModifier, double fallBack) {
+        this.blockToCropGrowthMultiplierMap = new IdentityHashMap<>(blockToCropGrowthMultiplierMap);
+        this.tempModifier = tempModifier;
+        this.humidityModifier = humidityModifier;
+        this.fallBack = fallBack;
     }
 
     public IdentityHashMap<Block, Double> getBlockToCropGrowthMultiplierMap() {
-        if (blockToCropGrowthMultiplierMap == null)
-            blockToCropGrowthMultiplierMap = new IdentityHashMap<>();
         return blockToCropGrowthMultiplierMap;
     }
 
     public OverrideStorage setBlockToCropGrowthMultiplierMap(IdentityHashMap<Block, Double> blockToCropGrowthMultiplierMap) {
-        this.blockToCropGrowthMultiplierMap = blockToCropGrowthMultiplierMap;
+        this.blockToCropGrowthMultiplierMap.putAll(blockToCropGrowthMultiplierMap);
         return this;
     }
 

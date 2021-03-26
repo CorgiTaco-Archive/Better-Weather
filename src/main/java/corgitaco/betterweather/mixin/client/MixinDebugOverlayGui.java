@@ -4,6 +4,7 @@ import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.season.SeasonContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.overlay.DebugOverlayGui;
+import net.minecraft.util.registry.Registry;
 import org.apache.commons.lang3.text.WordUtils;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,6 +28,8 @@ public abstract class MixinDebugOverlayGui {
             SeasonContext seasonContext = ((BetterWeatherWorldData) this.mc.world).getSeasonContext();
             if (this.mc.gameSettings.showDebugInfo && seasonContext != null) {
                 cir.getReturnValue().add("Season: " + WordUtils.capitalize(seasonContext.getCurrentSeason().getSeasonKey().toString().toLowerCase()) + " | " + WordUtils.capitalize(seasonContext.getCurrentSeason().getCurrentPhase().toString().replace("_", "").toLowerCase()));
+                if (mc.player != null)
+                    cir.getReturnValue().add("TempOffset: " + seasonContext.getCurrentSubSeasonSettings().getTemperatureModifier(mc.world.func_241828_r().func_230521_a_(Registry.BIOME_KEY).get().getOptionalKey(mc.world.getBiome(mc.player.getPosition())).get()));
             }
         }
     }

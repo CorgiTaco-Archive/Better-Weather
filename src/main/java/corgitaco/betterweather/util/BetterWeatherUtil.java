@@ -2,12 +2,18 @@ package corgitaco.betterweather.util;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.season.BWSubseasonSettings;
+import corgitaco.betterweather.season.storage.OverrideStorage;
+import net.minecraft.block.Block;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.biome.Biome;
 
 import java.awt.*;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 public class BetterWeatherUtil {
 
@@ -69,5 +75,25 @@ public class BetterWeatherUtil {
 
     public static Color transformFloatColor(Vector3d floatColor) {
         return new Color((int) (floatColor.getX() * 255), (int) (floatColor.getY() * 255), (int) (floatColor.getZ() * 255));
+    }
+
+    public static IdentityHashMap<Block, Double> transformBlockResourceLocations(Map<ResourceLocation, Double> blockResourceLocationToCropGrowthMultiplierMap) {
+        IdentityHashMap<Block, Double> newMap = new IdentityHashMap<>();
+        blockResourceLocationToCropGrowthMultiplierMap.forEach((resourceLocation, multiplier) -> {
+            if (Registry.BLOCK.keySet().contains(resourceLocation)) {
+                newMap.put(Registry.BLOCK.getOrDefault(resourceLocation), multiplier);
+            } else {
+                BetterWeather.LOGGER.error("The value: \"" + resourceLocation.toString() + "\" is not a valid block ID...");
+            }
+        });
+        return newMap;
+    }
+
+    public static IdentityHashMap<RegistryKey<Biome>, OverrideStorage> transformBiomeResourceLocationsToKeys(Map<ResourceLocation, OverrideStorage> blockResourceLocationToCropGrowthMultiplierMap) {
+        IdentityHashMap<RegistryKey<Biome>, OverrideStorage> newMap = new IdentityHashMap<>();
+        blockResourceLocationToCropGrowthMultiplierMap.forEach((resourceLocation, multiplier) -> {
+            newMap.put(RegistryKey.getOrCreateKey(Registry.BIOME_KEY, resourceLocation), multiplier);
+        });
+        return newMap;
     }
 }
