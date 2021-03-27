@@ -1,60 +1,70 @@
 package corgitaco.betterweather.mixin.client;
 
-import corgitaco.betterweather.BetterWeatherUtil;
-import corgitaco.betterweather.api.weatherevent.WeatherData;
-import corgitaco.betterweather.datastorage.BetterWeatherEventData;
-import net.minecraft.client.network.play.ClientPlayNetHandler;
-import net.minecraft.client.renderer.WorldRenderer;
+import corgitaco.betterweather.api.Climate;
+import corgitaco.betterweather.api.season.Season;
+import corgitaco.betterweather.helpers.BetterWeatherWorldData;
+import corgitaco.betterweather.helpers.BiomeModifier;
+import corgitaco.betterweather.helpers.BiomeUpdate;
+import corgitaco.betterweather.season.SeasonContext;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.profiler.IProfiler;
 import net.minecraft.util.RegistryKey;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.World;
+import net.minecraft.util.registry.DynamicRegistries;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.biome.Biome;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.function.Supplier;
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.function.BooleanSupplier;
 
 @Mixin(ClientWorld.class)
-public abstract class MixinClientWorld {
+public abstract class MixinClientWorld implements BetterWeatherWorldData, Climate, BiomeUpdate {
 
-    @Inject(method = "<init>", at = @At("RETURN"))
-    private void setupClientBetterWeatherData(ClientPlayNetHandler handler, ClientWorld.ClientWorldInfo info, RegistryKey<World> key, DimensionType dimtype, int i, Supplier<IProfiler> profiler, WorldRenderer renderer, boolean b1, long b2, CallbackInfo ci) {
-        WeatherData.currentWeatherEvent = BetterWeatherEventData.get((ClientWorld) (Object) this).getEvent();
+    @Shadow
+    public abstract DynamicRegistries func_241828_r();
+
+    @Nullable
+    SeasonContext seasonContext;
+
+    @Nullable
+    @Override
+    public SeasonContext getSeasonContext() {
+        return this.seasonContext;
     }
 
-    @Redirect(method = "getSkyColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
-    private float doNotDarkenSkyWithRainStrength(ClientWorld world, float delta) {
-        return BetterWeatherUtil.isOverworld(world.getDimensionKey()) ? 0.0F : world.getRainStrength(delta);
+    @Nullable
+    @Override
+    public SeasonContext setSeasonContext(SeasonContext seasonContext) {
+        this.seasonContext = seasonContext;
+        return this.seasonContext;
     }
 
-    @Redirect(method = "getCloudColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
-    private float doNotDarkenCloudsWithRainStrength(ClientWorld world, float delta) {
-        return 0.0F;
-    }
-
-    @Inject(method = "getCloudColor", at = @At("RETURN"), cancellable = true)
-    private void modifyCloudColor(float partialTicks, CallbackInfoReturnable<Vector3d> cir) {
-        if (BetterWeatherUtil.isOverworld(((ClientWorld) (Object) this).getDimensionKey())) {
-            int rgbColor = WeatherData.currentWeatherEvent.modifyCloudColor(BetterWeatherUtil.transformFloatColor(cir.getReturnValue()), ((ClientWorld) (Object) this).getRainStrength(partialTicks)).getRGB();
-            float r = (float) (rgbColor >> 16 & 255) / 255.0F;
-            float g = (float) (rgbColor >> 8 & 255) / 255.0F;
-            float b = (float) (rgbColor & 255) / 255.0F;
-            cir.setReturnValue(new Vector3d(r, g, b));
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void tick(BooleanSupplier hasTicksLeft, CallbackInfo ci) {
+        if (this.seasonContext != null) {
+            this.seasonContext.tick((ClientWorld) (Object) this);
         }
     }
 
-    @Redirect(method = "getSunBrightness", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
-    private float sunBrightness(ClientWorld world, float delta) {
-        float rainStrength = ((ClientWorld) (Object) this).getRainStrength(delta);
-        if (BetterWeatherUtil.isOverworld(((ClientWorld) (Object) this).getDimensionKey())) {
-            return BetterWeatherUtil.isOverworld(world.getDimensionKey()) ? rainStrength * WeatherData.currentWeatherEvent.dayLightDarkness() : rainStrength;
-        } else
-            return rainStrength;
+    @Override
+    public Season getSeason() {
+        return this.seasonContext;
+    }
+
+    @Override
+    public void updateBiomeData() {
+        for (Map.Entry<RegistryKey<Biome>, Biome> entry : this.func_241828_r().getRegistry(Registry.BIOME_KEY).getEntries()) {
+            Biome biome = entry.getValue();
+            RegistryKey<Biome> biomeKey = entry.getKey();
+            float seasonHumidityModifier = seasonContext == null ? 0.0F : (float) this.seasonContext.getCurrentSubSeasonSettings().getHumidityModifier(biomeKey);
+            float seasonTemperatureModifier = seasonContext == null ? 0.0F : (float) this.seasonContext.getCurrentSubSeasonSettings().getTemperatureModifier(biomeKey);
+
+            ((BiomeModifier) (Object) biome).setHumidityModifier(seasonHumidityModifier);
+            ((BiomeModifier) (Object) biome).setTempModifier(seasonTemperatureModifier);
+        }
     }
 }
