@@ -31,9 +31,8 @@ public class BetterWeather {
     }).getValue();
 
     public BetterWeather() {
-        File dir = new File(CONFIG_PATH.toString());
-        if (!dir.exists())
-            dir.mkdir();
+        if (!CONFIG_PATH.toFile().exists())
+            CONFIG_PATH.toFile().mkdir();
 
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         bus.addListener(this::commonSetup);

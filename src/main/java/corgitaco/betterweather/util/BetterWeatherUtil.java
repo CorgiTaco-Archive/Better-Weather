@@ -53,7 +53,7 @@ public class BetterWeatherUtil {
     public static int transformRainOrThunderTimeToCurrentSeason(int rainOrThunderTime, BWSubseasonSettings previous, BWSubseasonSettings current) {
         double previousMultiplier = previous.getWeatherEventChanceMultiplier();
         double currentMultiplier = current.getWeatherEventChanceMultiplier();
-        return transformRainOrThunderTimeToCurrentSeason(rainOrThunderTime, previous, current);
+        return transformRainOrThunderTimeToCurrentSeason(rainOrThunderTime, previousMultiplier, currentMultiplier);
     }
 
     public static int transformRainOrThunderTimeToCurrentSeason(int rainOrThunderTime, double prevMultiplier, double currentMultiplier) {
