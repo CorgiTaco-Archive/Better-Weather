@@ -21,8 +21,10 @@ import corgitaco.betterweather.server.BetterWeatherGameRules;
 import corgitaco.betterweather.util.BetterWeatherUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.Direction;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
@@ -32,6 +34,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.ServerWorldInfo;
+import net.minecraftforge.common.Tags;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
@@ -140,19 +143,27 @@ public class SeasonContext implements Season {
     /**
      * Called every block random tick.
      */
-    public void enhanceCropRandomTick(ServerWorld world, BlockPos posIn, Block block, BlockState self, CallbackInfo ci) {
+    public void enhanceCropRandomTick(ServerWorld world, BlockPos pos, Block block, BlockState self, CallbackInfo ci) {
         if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block) || BlockTags.SAPLINGS.contains(block)) {
             Block block1 = block;
             //Collect the crop multiplier for the given subseason.
-            double cropGrowthMultiplier = getCurrentSubSeasonSettings().getCropGrowthMultiplier(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(world.getBiome(posIn)).get(), block1);
+            double cropGrowthMultiplier = getCurrentSubSeasonSettings().getCropGrowthMultiplier(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(world.getBiome(pos)).get(), block1);
             if (cropGrowthMultiplier == 1) {
                 return;
+            }
+            BlockPos.Mutable mutable = new BlockPos.Mutable().setPos(pos.up(1));
+
+            for (int move = 0; move <= 16; move++) {
+                if (world.getBlockState(mutable.move(Direction.UP)).isIn(Tags.Blocks.GLASS)) {
+                    cropGrowthMultiplier = cropGrowthMultiplier * 1.5;
+                    break;
+                }
             }
 
             //Pretty self explanatory, basically run a chance on whether or not the crop will tick for this tick
             if (cropGrowthMultiplier < 1) {
                 if (world.getRandom().nextDouble() < cropGrowthMultiplier) {
-                    block1.randomTick(self, world, posIn, world.getRandom());
+                    block1.randomTick(self, world, pos, world.getRandom());
                 } else {
                     ci.cancel();
                 }
@@ -164,11 +175,11 @@ public class SeasonContext implements Season {
                 int numberOfTicks = world.getRandom().nextInt((world.getRandom().nextDouble() + (cropGrowthMultiplier - 1) < cropGrowthMultiplier) ? (int) Math.ceil(cropGrowthMultiplier) : (int) cropGrowthMultiplier) + 1;
                 for (int tick = 0; tick < numberOfTicks; tick++) {
                     if (tick > 0) {
-                        self = world.getBlockState(posIn);
+                        self = world.getBlockState(pos);
                         block1 = self.getBlock();
                     }
 
-                    block1.randomTick(self, world, posIn, world.getRandom());
+                    block1.randomTick(self, world, pos, world.getRandom());
                 }
             }
         }
