@@ -232,9 +232,7 @@ public class SeasonContext implements Season {
     /**********Configs**********/
 
     public void handleConfig(boolean isClient) {
-//        if (!seasonConfigFile.exists()) {
         createConfig();
-//        }
         if (seasonConfigFile.exists()) {
             read(isClient);
         }
@@ -249,15 +247,13 @@ public class SeasonContext implements Season {
 
         try {
             Files.createDirectories(seasonConfigFile.toPath().getParent());
-            TomlWriter writer = new TomlWriter();
-            CommentedConfig updatedAndSortedConfig = recursivelyUpdateAndSortConfig(readConfig, encodedConfig);
-            writer.write(updatedAndSortedConfig, this.seasonConfigFile, WritingMode.REPLACE);
+            new TomlWriter().write(seasonConfigFile.exists() ? recursivelyUpdateAndSortConfig(readConfig, encodedConfig) : encodedConfig, this.seasonConfigFile, WritingMode.REPLACE);
         } catch (IOException e) {
 
         }
     }
 
-    private static CommentedConfig recursivelyUpdateAndSortConfig(CommentedConfig readConfig, CommentedConfig encodedConfig) {
+    private CommentedConfig recursivelyUpdateAndSortConfig(CommentedConfig readConfig, CommentedConfig encodedConfig) {
         CommentedConfig newConfig = organizeConfig(readConfig);
 
         encodedConfig.valueMap().entrySet().stream().sorted(Comparator.comparing(Objects::toString)).forEachOrdered((entry) -> {
@@ -265,16 +261,24 @@ public class SeasonContext implements Season {
             String key = entry.getKey();
 
             if (object instanceof CommentedConfig) {
-                if (!newConfig.contains(key)) {
+                boolean hasConfig;
+
+                //Requires a try catch due to Night Config allowing .contains() to throw a NPE.
+                try {
+                    hasConfig = !newConfig.contains(key);
+                } catch (NullPointerException e) {
+                    hasConfig = false;
+                }
+
+                if (!hasConfig) {
                     object = recursivelyUpdateAndSortConfig(newConfig.set(key, object), (CommentedConfig) object);
                 } else {
                     object = recursivelyUpdateAndSortConfig(newConfig.get(key), (CommentedConfig) object);
                 }
+                newConfig.set(key, object);
             }
 
-            if (!newConfig.contains(key)) {
-                newConfig.add(key, object);
-            }
+            newConfig.add(key, object);
 
             if (!newConfig.containsComment(key) || !newConfig.getComment(key).equals(encodedConfig.getComment(key))) {
                 newConfig.setComment(key, encodedConfig.getComment(key));
@@ -290,12 +294,13 @@ public class SeasonContext implements Season {
         return newConfig;
     }
 
-    public static CommentedConfig organizeConfig(CommentedConfig config) {
+
+    public CommentedConfig organizeConfig(CommentedConfig config) {
         CommentedConfig newConfig = CommentedConfig.of(Config.getDefaultMapCreator(false, true), TomlFormat.instance());
 
         List<Map.Entry<String, Object>> organizedCollection = config.valueMap().entrySet().stream().sorted(Comparator.comparing(Objects::toString)).collect(Collectors.toList());
         organizedCollection.forEach((stringObjectEntry -> {
-            newConfig.add(stringObjectEntry.getKey(), stringObjectEntry.getValue());
+            newConfig.set(stringObjectEntry.getKey(), stringObjectEntry.getValue());
         }));
 
         newConfig.commentMap().putAll(config.commentMap());
