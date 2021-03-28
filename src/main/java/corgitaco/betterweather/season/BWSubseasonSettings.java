@@ -39,7 +39,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
         }), SeasonClientSettings.CODEC.fieldOf("client").forGetter(subSeasonSettings -> {
             return subSeasonSettings.clientSettings;
         }), Codec.list(Codec.STRING).optionalFieldOf("entityBreedingBlacklist", new ArrayList<>()).forGetter(subSeasonSettings -> {
-            return subSeasonSettings.entityTypeBreedingBlacklist.stream().map(Registry.ENTITY_TYPE::getKey).map(ResourceLocation::toString).collect(Collectors.toList());
+            return !subSeasonSettings.entityTypeBreedingBlacklist.isEmpty() ? subSeasonSettings.entityTypeBreedingBlacklist.stream().map(Registry.ENTITY_TYPE::getKey).map(ResourceLocation::toString).collect(Collectors.toList()) : Arrays.asList(new ResourceLocation("modid", "dummymob").toString(), new ResourceLocation("modid", "dummymob2").toString());
         })).apply(subSeasonSettingsInstance, BWSubseasonSettings::new);
     }));
 
@@ -76,21 +76,60 @@ public class BWSubseasonSettings implements SubseasonSettings {
                 transformBlockResourceLocations(cropToMultiplierStorage), transformBiomeResourceLocationsToKeys(biomeToOverrideStorage)));
     }));
 
-    public static final HashMap<String, Double> SPRING_START_WEATHER_EVENT_CONTROLLER = new HashMap<>();
-    public static final HashMap<String, Double> SPRING_MID_WEATHER_EVENT_CONTROLLER = new HashMap<>();
-    public static final HashMap<String, Double> SPRING_END_WEATHER_EVENT_CONTROLLER = new HashMap<>();
+    public static final String RAIN = "RAIN";
+    public static final String THUNDER = "THUNDER";
 
-    public static final HashMap<String, Double> SUMMER_START_WEATHER_EVENT_CONTROLLER = new HashMap<>();
-    public static final HashMap<String, Double> SUMMER_MID_WEATHER_EVENT_CONTROLLER = new HashMap<>();
-    public static final HashMap<String, Double> SUMMER_END_WEATHER_EVENT_CONTROLLER = new HashMap<>();
+    public static final HashMap<String, Double> SPRING_START_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+        map.put(RAIN, 1.0);
+        map.put(THUNDER, 0.75);
+    });
+    public static final HashMap<String, Double> SPRING_MID_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+        map.put(RAIN, 1.0);
+        map.put(THUNDER, 0.75);
+    });
+    public static final HashMap<String, Double> SPRING_END_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+        map.put(RAIN, 1.0);
+        map.put(THUNDER, 0.75);
+    });
 
-    public static final HashMap<String, Double> AUTUMN_START_WEATHER_EVENT_CONTROLLER = new HashMap<>();
-    public static final HashMap<String, Double> AUTUMN_MID_WEATHER_EVENT_CONTROLLER = new HashMap<>();
-    public static final HashMap<String, Double> AUTUMN_END_WEATHER_EVENT_CONTROLLER = new HashMap<>();
+    public static final HashMap<String, Double> SUMMER_START_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+        map.put(RAIN, 1.0);
+        map.put(THUNDER, 0.75);
+    });
+    public static final HashMap<String, Double> SUMMER_MID_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+        map.put(RAIN, 1.0);
+        map.put(THUNDER, 0.75);
+    });
+    public static final HashMap<String, Double> SUMMER_END_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+        map.put(RAIN, 1.0);
+        map.put(THUNDER, 0.75);
+    });
 
-    public static final HashMap<String, Double> WINTER_START_WEATHER_EVENT_CONTROLLER = new HashMap<>();
-    public static final HashMap<String, Double> WINTER_MID_WEATHER_EVENT_CONTROLLER = new HashMap<>();
-    public static final HashMap<String, Double> WINTER_END_WEATHER_EVENT_CONTROLLER = new HashMap<>();
+    public static final HashMap<String, Double> AUTUMN_START_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+        map.put(RAIN, 1.0);
+        map.put(THUNDER, 0.75);
+    });
+    public static final HashMap<String, Double> AUTUMN_MID_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+        map.put(RAIN, 1.0);
+        map.put(THUNDER, 0.75);
+    });
+    public static final HashMap<String, Double> AUTUMN_END_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+        map.put(RAIN, 1.0);
+        map.put(THUNDER, 0.75);
+    });
+
+    public static final HashMap<String, Double> WINTER_START_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+        map.put(RAIN, 1.0);
+        map.put(THUNDER, 0.75);
+    });
+    public static final HashMap<String, Double> WINTER_MID_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+        map.put(RAIN, 1.0);
+        map.put(THUNDER, 0.75);
+    });
+    public static final HashMap<String, Double> WINTER_END_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+        map.put(RAIN, 1.0);
+        map.put(THUNDER, 0.75);
+    });
     public static final BWSubseasonSettings DEFAULT_SPRING_START = new BWSubseasonSettings(-0.15, 0.5, 1.5, 1.3, SPRING_START_WEATHER_EVENT_CONTROLLER, new SeasonClientSettings(Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5, Integer.toHexString(new Color(51, 97, 50).getRGB()), 0.5));
     public static final BWSubseasonSettings DEFAULT_SPRING_MID = new BWSubseasonSettings(0.1, 0.5, 2.0, 2.0, SPRING_MID_WEATHER_EVENT_CONTROLLER, new SeasonClientSettings(Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(41, 87, 2).getRGB()), 0.5));
     public static final BWSubseasonSettings DEFAULT_SPRING_END = new BWSubseasonSettings(0.25, 0.4, 1.5, 1.7, SPRING_END_WEATHER_EVENT_CONTROLLER, new SeasonClientSettings(Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5, Integer.toHexString(new Color(20, 87, 2).getRGB()), 0.5));
@@ -299,19 +338,19 @@ public class BWSubseasonSettings implements SubseasonSettings {
     public static class SeasonClientSettings {
 
         public static final Codec<SeasonClientSettings> CODEC = RecordCodecBuilder.create(seasonClientSettingsInstance -> {
-            return seasonClientSettingsInstance.group(Codec.STRING.optionalFieldOf("targetFoliageHexColor", "").forGetter((seasonClientSettings) -> {
+            return seasonClientSettingsInstance.group(Codec.STRING.optionalFieldOf("foliageTargetHexColor", "").forGetter((seasonClientSettings) -> {
                 return seasonClientSettings.targetFoliageHexColor == Integer.MIN_VALUE ? "" : Integer.toHexString(seasonClientSettings.targetFoliageHexColor);
             }), Codec.DOUBLE.fieldOf("foliageColorBlendStrength").orElse(0.0).forGetter((seasonClientSettings) -> {
                 return seasonClientSettings.foliageColorBlendStrength;
-            }), Codec.STRING.fieldOf("targetGrassHexColor").orElse("").forGetter((seasonClientSettings) -> {
+            }), Codec.STRING.fieldOf("grassTargetHexColor").orElse("").forGetter((seasonClientSettings) -> {
                 return seasonClientSettings.targetGrassHexColor == Integer.MIN_VALUE ? "" : Integer.toHexString(seasonClientSettings.targetGrassHexColor);
             }), Codec.DOUBLE.fieldOf("grassColorBlendStrength").orElse(0.0).forGetter((seasonClientSettings) -> {
                 return seasonClientSettings.foliageColorBlendStrength;
-            }), Codec.STRING.fieldOf("targetSkyHexColor").orElse("").forGetter((seasonClientSettings) -> {
+            }), Codec.STRING.fieldOf("skyTargetHexColor").orElse("").forGetter((seasonClientSettings) -> {
                 return seasonClientSettings.targetSkyHexColor == Integer.MIN_VALUE ? "" : Integer.toHexString(seasonClientSettings.targetSkyHexColor);
             }), Codec.DOUBLE.fieldOf("skyColorBlendStrength").orElse(0.0).forGetter((seasonClientSettings) -> {
                 return seasonClientSettings.skyColorBlendStrength;
-            }), Codec.STRING.fieldOf("targetFogHexColor").orElse("").forGetter((seasonClientSettings) -> {
+            }), Codec.STRING.fieldOf("fogTargetHexColor").orElse("").forGetter((seasonClientSettings) -> {
                 return seasonClientSettings.targetFogHexColor == Integer.MIN_VALUE ? "" : Integer.toHexString(seasonClientSettings.targetFogHexColor);
             }), Codec.DOUBLE.fieldOf("fogColorBlendStrength").orElse(0.0).forGetter((seasonClientSettings) -> {
                 return seasonClientSettings.fogColorBlendStrength;

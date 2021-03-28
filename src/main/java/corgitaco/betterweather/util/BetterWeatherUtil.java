@@ -40,7 +40,9 @@ public class BetterWeatherUtil {
         if (registry.keySet().contains(id))
             return true;
         else {
-            BetterWeather.LOGGER.error("\"" + id.toString() + "\" was not a registryID in the " + registryTypeName + "! Skipping entry...");
+            if (!id.toString().contains("modid:dummymob")) {
+                BetterWeather.LOGGER.error("\"" + id.toString() + "\" was not a registryID in the " + registryTypeName + "! Skipping entry...");
+            }
             return false;
         }
     }

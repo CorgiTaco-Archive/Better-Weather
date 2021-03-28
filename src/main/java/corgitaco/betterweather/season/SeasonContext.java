@@ -1,11 +1,10 @@
 package corgitaco.betterweather.season;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.electronwill.nightconfig.core.UnmodifiableConfig;
+import com.electronwill.nightconfig.core.io.WritingMode;
+import com.electronwill.nightconfig.toml.TomlParser;
+import com.electronwill.nightconfig.toml.TomlWriter;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.season.Season;
@@ -19,15 +18,12 @@ import corgitaco.betterweather.data.storage.SeasonSavedData;
 import corgitaco.betterweather.helpers.BiomeUpdate;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import corgitaco.betterweather.util.BetterWeatherUtil;
+import corgitaco.betterweather.util.TomlCommentedConfigOps;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.Direction;
-import net.minecraft.util.IStringSerializable;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
@@ -44,13 +40,10 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class SeasonContext implements Season {
-    public static final String CONFIG_NAME = "season-settings.json";
+    public static final String CONFIG_NAME = "season-settings.toml";
 
     public static final Codec<SeasonContext> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(Codec.INT.fieldOf("currentYearTime").forGetter((seasonContext) -> {
@@ -63,6 +56,30 @@ public class SeasonContext implements Season {
             return seasonContext.seasons;
         })).apply(builder, (currentYearTime, yearLength, worldID, seasonMap) -> new SeasonContext(currentYearTime, yearLength, worldID, new IdentityHashMap<>(seasonMap)));
     });
+
+    public static final TomlCommentedConfigOps CONFIG_OPS = new TomlCommentedConfigOps(Util.make(new HashMap<>(), (map) -> {
+        map.put("yearLength", "Represents this world's year length.");
+        map.put("tempModifier", "Modifies this world's temperature.");
+
+        map.put("entityBreedingBlacklist", "Blacklist specific mobs from breeding.");
+
+        map.put("humidityModifier", "Modifies this world's humidity.");
+        map.put("weatherEventChanceMultiplier", "Multiplies the chance of a weather event occurring.");
+
+        map.put("fogColorBlendStrength", "The strength of this world's fog color blend towards the value of \"fogTargetHexColor\".\nRange: 0 - 1.0");
+        map.put("fogTargetHexColor", "Blends the world's fog color towards this value. Blend strength is determined by the value of \"fogColorBlendStrength\".");
+
+        map.put("foliageColorBlendStrength", "The strength of this world's sky color blend towards the value of \"foliageTargetHexColor\".\nRange: 0 - 1.0");
+        map.put("foliageTargetHexColor", "Blends this world's foliage color towards this value. Blend strength is determined by the value of \"foliageColorBlendStrength\".");
+
+        map.put("grassColorBlendStrength", "The strength of this world's grass color blend towards the value of \"grassTargetHexColor\".\nRange: 0 - 1.0");
+        map.put("grassTargetHexColor", "Blends this world's grass color towards this value. Blend strength is determined by the value of \"grassColorBlendStrength\".");
+
+        map.put("skyColorBlendStrength", "The strength of this world's sky color blend towards the value of \"skyTargetHexColor\".\nRange: 0 - 1.0");
+        map.put("skyTargetHexColor", "Blends this world's grass color towards this value. Blend strength is determined by the value of \"skyColorBlendStrength\".");
+
+        map.put("weatherEventController", "Represents the chance of the listed weather event.");
+    }), true);
 
     private final ResourceLocation worldID;
     private final Registry<Biome> biomeRegistry;
@@ -211,9 +228,8 @@ public class SeasonContext implements Season {
     /**********Configs**********/
 
     public void handleConfig(boolean isClient) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
         if (!seasonConfigFile.exists()) {
-            create(gson);
+            create();
         }
         if (seasonConfigFile.exists()) {
             read(isClient);
@@ -222,12 +238,14 @@ public class SeasonContext implements Season {
         fillSubSeasonOverrideStorage(isClient);
     }
 
-    private void create(Gson gson) {
-        String toJson = gson.toJson(SeasonConfigHolder.CODEC.encodeStart(JsonOps.INSTANCE, SeasonConfigHolder.DEFAULT_CONFIG_HOLDER).result().get());
+    private void create() {
+        UnmodifiableConfig config = (UnmodifiableConfig) SeasonConfigHolder.CODEC.encodeStart(CONFIG_OPS, SeasonConfigHolder.DEFAULT_CONFIG_HOLDER).result().get();
+
 
         try {
             Files.createDirectories(seasonConfigFile.toPath().getParent());
-            Files.write(seasonConfigFile.toPath(), toJson.getBytes());
+            TomlWriter writer = new TomlWriter();
+            writer.write(config, this.seasonConfigFile, WritingMode.REPLACE);
         } catch (IOException e) {
 
         }
@@ -235,8 +253,7 @@ public class SeasonContext implements Season {
 
     private void read(boolean isClient) {
         try (Reader reader = new FileReader(seasonConfigFile)) {
-            JsonObject jsonObject = new JsonParser().parse(reader).getAsJsonObject();
-            Optional<SeasonConfigHolder> configHolder = SeasonConfigHolder.CODEC.parse(JsonOps.INSTANCE, jsonObject).resultOrPartial(BetterWeather.LOGGER::error);
+            Optional<SeasonConfigHolder> configHolder = SeasonConfigHolder.CODEC.parse(CONFIG_OPS, new TomlParser().parse(reader)).resultOrPartial(BetterWeather.LOGGER::error);
 
             if (!isClient) {
                 if (configHolder.isPresent()) {
@@ -266,7 +283,7 @@ public class SeasonContext implements Season {
         for (Map.Entry<Season.Key, BWSeason> seasonKeySeasonEntry : this.seasons.entrySet()) {
             Key key = seasonKeySeasonEntry.getKey();
             seasonKeySeasonEntry.getValue().setSeasonKey(key);
-            IdentityHashMap<Season.Phase, BWSubseasonSettings> phaseSettings = seasonKeySeasonEntry.getValue().getPhaseSettings();
+            Map<Season.Phase, BWSubseasonSettings> phaseSettings = seasonKeySeasonEntry.getValue().getPhaseSettings();
             for (Map.Entry<Season.Phase, BWSubseasonSettings> phaseSubSeasonSettingsEntry : phaseSettings.entrySet()) {
                 BiomeOverrideJsonHandler.handleOverrideJsonConfigs(this.seasonOverridesPath.resolve(seasonKeySeasonEntry.getKey().toString() + "-" + phaseSubSeasonSettingsEntry.getKey() + ".json"), seasonKeySeasonEntry.getKey() == Season.Key.WINTER ? BWSubseasonSettings.WINTER_OVERRIDE : new IdentityHashMap<>(), phaseSubSeasonSettingsEntry.getValue(), this.biomeRegistry, isClient);
             }
