@@ -1,7 +1,10 @@
 package corgitaco.betterweather.season;
 
-import com.electronwill.nightconfig.core.UnmodifiableConfig;
+import com.electronwill.nightconfig.core.CommentedConfig;
+import com.electronwill.nightconfig.core.Config;
+import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
+import com.electronwill.nightconfig.toml.TomlFormat;
 import com.electronwill.nightconfig.toml.TomlParser;
 import com.electronwill.nightconfig.toml.TomlWriter;
 import com.mojang.serialization.Codec;
@@ -41,6 +44,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SeasonContext implements Season {
     public static final String CONFIG_NAME = "season-settings.toml";
@@ -228,9 +232,9 @@ public class SeasonContext implements Season {
     /**********Configs**********/
 
     public void handleConfig(boolean isClient) {
-        if (!seasonConfigFile.exists()) {
-            create();
-        }
+//        if (!seasonConfigFile.exists()) {
+        createConfig();
+//        }
         if (seasonConfigFile.exists()) {
             read(isClient);
         }
@@ -238,17 +242,64 @@ public class SeasonContext implements Season {
         fillSubSeasonOverrideStorage(isClient);
     }
 
-    private void create() {
-        UnmodifiableConfig config = (UnmodifiableConfig) SeasonConfigHolder.CODEC.encodeStart(CONFIG_OPS, SeasonConfigHolder.DEFAULT_CONFIG_HOLDER).result().get();
-
+    private void createConfig() {
+        CommentedFileConfig readConfig = CommentedFileConfig.builder(this.seasonConfigFile).sync().autosave().writingMode(WritingMode.REPLACE).build();
+        readConfig.load();
+        CommentedConfig encodedConfig = (CommentedConfig) SeasonConfigHolder.CODEC.encodeStart(CONFIG_OPS, SeasonConfigHolder.DEFAULT_CONFIG_HOLDER).result().get();
 
         try {
             Files.createDirectories(seasonConfigFile.toPath().getParent());
             TomlWriter writer = new TomlWriter();
-            writer.write(config, this.seasonConfigFile, WritingMode.REPLACE);
+            CommentedConfig updatedAndSortedConfig = recursivelyUpdateAndSortConfig(readConfig, encodedConfig);
+            writer.write(updatedAndSortedConfig, this.seasonConfigFile, WritingMode.REPLACE);
         } catch (IOException e) {
 
         }
+    }
+
+    private static CommentedConfig recursivelyUpdateAndSortConfig(CommentedConfig readConfig, CommentedConfig encodedConfig) {
+        CommentedConfig newConfig = organizeConfig(readConfig);
+
+        encodedConfig.valueMap().entrySet().stream().sorted(Comparator.comparing(Objects::toString)).forEachOrdered((entry) -> {
+            Object object = entry.getValue();
+            String key = entry.getKey();
+
+            if (object instanceof CommentedConfig) {
+                if (!newConfig.contains(key)) {
+                    object = recursivelyUpdateAndSortConfig(newConfig.set(key, object), (CommentedConfig) object);
+                } else {
+                    object = recursivelyUpdateAndSortConfig(newConfig.get(key), (CommentedConfig) object);
+                }
+            }
+
+            if (!newConfig.contains(key)) {
+                newConfig.add(key, object);
+            }
+
+            if (!newConfig.containsComment(key) || !newConfig.getComment(key).equals(encodedConfig.getComment(key))) {
+                newConfig.setComment(key, encodedConfig.getComment(key));
+            }
+        });
+
+        newConfig.valueMap().forEach((key, object) -> {
+            if (!encodedConfig.contains(key)) {
+                newConfig.removeComment(key);
+                newConfig.remove(key);
+            }
+        });
+        return newConfig;
+    }
+
+    public static CommentedConfig organizeConfig(CommentedConfig config) {
+        CommentedConfig newConfig = CommentedConfig.of(Config.getDefaultMapCreator(false, true), TomlFormat.instance());
+
+        List<Map.Entry<String, Object>> organizedCollection = config.valueMap().entrySet().stream().sorted(Comparator.comparing(Objects::toString)).collect(Collectors.toList());
+        organizedCollection.forEach((stringObjectEntry -> {
+            newConfig.add(stringObjectEntry.getKey(), stringObjectEntry.getValue());
+        }));
+
+        newConfig.commentMap().putAll(config.commentMap());
+        return newConfig;
     }
 
     private void read(boolean isClient) {
