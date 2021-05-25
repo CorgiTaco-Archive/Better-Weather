@@ -28,8 +28,9 @@ public abstract class MixinDebugOverlayGui {
             SeasonContext seasonContext = ((BetterWeatherWorldData) this.mc.world).getSeasonContext();
             if (this.mc.gameSettings.showDebugInfo && seasonContext != null) {
                 cir.getReturnValue().add("Season: " + WordUtils.capitalize(seasonContext.getCurrentSeason().getSeasonKey().toString().toLowerCase()) + " | " + WordUtils.capitalize(seasonContext.getCurrentSeason().getCurrentPhase().toString().replace("_", "").toLowerCase()));
-                if (mc.player != null)
+                if (mc.player != null) {
                     cir.getReturnValue().add("TempOffset: " + seasonContext.getCurrentSubSeasonSettings().getTemperatureModifier(mc.world.func_241828_r().func_230521_a_(Registry.BIOME_KEY).get().getOptionalKey(mc.world.getBiome(mc.player.getPosition())).get()));
+                }
             }
         }
     }

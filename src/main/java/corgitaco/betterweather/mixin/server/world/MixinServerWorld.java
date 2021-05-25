@@ -4,11 +4,13 @@ import corgitaco.betterweather.api.Climate;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.data.storage.SeasonSavedData;
+import corgitaco.betterweather.data.storage.WeatherEventSavedData;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.helpers.BiomeModifier;
 import corgitaco.betterweather.helpers.BiomeUpdate;
 import corgitaco.betterweather.season.SeasonContext;
 import corgitaco.betterweather.util.WorldDynamicRegistry;
+import corgitaco.betterweather.weatherevent.BWWeatherEventContext;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.server.MinecraftServer;
@@ -56,39 +58,48 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     @Nullable
     private SeasonContext seasonContext;
 
+    @Nullable
+    private BWWeatherEventContext weatherContext;
+
     @SuppressWarnings("ALL")
     @Inject(method = "<init>", at = @At("RETURN"))
     private void storeUpgradablePerWorldRegistry(MinecraftServer server, Executor executor, SaveFormat.LevelSave save, IServerWorldInfo worldInfo, RegistryKey<World> key, DimensionType dimensionType, IChunkStatusListener statusListener, ChunkGenerator generator, boolean b, long seed, List<ISpecialSpawner> specialSpawners, boolean b1, CallbackInfo ci) {
         ResourceLocation worldKeyLocation = key.getLocation();
+        this.registry = new WorldDynamicRegistry((DynamicRegistries.Impl) server.getDynamicRegistries());
+
+        //Reload the world settings import with OUR implementation of the registry.
+        WorldSettingsImport<INBT> worldSettingsImport = WorldSettingsImport.create(NBTDynamicOps.INSTANCE, server.getDataPackRegistries().getResourceManager(), (DynamicRegistries.Impl) this.registry);
+        ChunkGenerator dimensionChunkGenerator = save.readServerConfiguration(worldSettingsImport, server.getServerConfiguration().getDatapackCodec()).getDimensionGeneratorSettings().func_236224_e_().getOptional(worldKeyLocation).get().getChunkGenerator();
+        // Reset the chunk generator fields in both the chunk provider and chunk manager. This is required for chunk generators to return the current biome object type required by our registry. //TODO: Do this earlier so mods mixing here can capture our version of the chunk generator.
+        this.serverChunkProvider/*Server Chunk Provider*/.generator = dimensionChunkGenerator;
+        this.serverChunkProvider/*Server Chunk Provider*/.chunkManager.generator = dimensionChunkGenerator;
+
         if (BetterWeatherConfig.SEASON_DIMENSIONS.contains(worldKeyLocation.toString()) || BetterWeatherConfig.SEASON_DIMENSIONS.contains(worldKeyLocation.getNamespace())) {
-            this.registry = new WorldDynamicRegistry((DynamicRegistries.Impl) server.getDynamicRegistries());
-
-            //Reload the world settings import with OUR implementation of the registry.
-            WorldSettingsImport<INBT> worldSettingsImport = WorldSettingsImport.create(NBTDynamicOps.INSTANCE, server.getDataPackRegistries().getResourceManager(), (DynamicRegistries.Impl) this.registry);
-            ChunkGenerator dimensionChunkGenerator = save.readServerConfiguration(worldSettingsImport, server.getServerConfiguration().getDatapackCodec()).getDimensionGeneratorSettings().func_236224_e_().getOptional(worldKeyLocation).get().getChunkGenerator();
-            // Reset the chunk generator fields in both the chunk provider and chunk manager. This is required for chunk generators to return the current biome object type required by our registry. //TODO: Do this earlier so mods mixing here can capture our version of the chunk generator.
-            this.serverChunkProvider/*Server Chunk Provider*/.generator = dimensionChunkGenerator;
-            this.serverChunkProvider/*Server Chunk Provider*/.chunkManager.generator = dimensionChunkGenerator;
-
-
             this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));
-            updateBiomeData();
-        } else {
-            registry = server.getDynamicRegistries();
         }
+        if (BetterWeatherConfig.WEATHER_EVENT_DIMENSIONS.contains(worldKeyLocation.toString()) || BetterWeatherConfig.WEATHER_EVENT_DIMENSIONS.contains(worldKeyLocation.getNamespace())) {
+            this.weatherContext = new BWWeatherEventContext(WeatherEventSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));
+        }
+
+        updateBiomeData();
     }
 
     @SuppressWarnings("ConstantConditions")
     @Override
     public void updateBiomeData() {
-        for (Map.Entry<RegistryKey<Biome>, Biome> entry : registry.getRegistry(Registry.BIOME_KEY).getEntries()) {
+        for (Map.Entry<RegistryKey<Biome>, Biome> entry : this.registry.getRegistry(Registry.BIOME_KEY).getEntries()) {
             Biome biome = entry.getValue();
             RegistryKey<Biome> biomeKey = entry.getKey();
             float seasonHumidityModifier = seasonContext == null ? 0.0F : (float) this.seasonContext.getCurrentSubSeasonSettings().getHumidityModifier(biomeKey);
             float seasonTemperatureModifier = seasonContext == null ? 0.0F : (float) this.seasonContext.getCurrentSubSeasonSettings().getTemperatureModifier(biomeKey);
+            float weatherHumidityModifier = weatherContext == null ? 0.0F : (float) this.weatherContext.getCurrentWeatherEventSettings().getHumidityModifierAtPosition(null);
+            float weatherTemperatureModifier = weatherContext == null ? 0.0F : (float) this.weatherContext.getCurrentWeatherEventSettings().getTemperatureModifierAtPosition(null);
 
-            ((BiomeModifier) (Object) biome).setHumidityModifier(seasonHumidityModifier);
-            ((BiomeModifier) (Object) biome).setTempModifier(seasonTemperatureModifier);
+
+            ((BiomeModifier) (Object) biome).setSeasonTempModifier(seasonTemperatureModifier);
+            ((BiomeModifier) (Object) biome).setSeasonHumidityModifier(seasonHumidityModifier);
+            ((BiomeModifier) (Object) biome).setWeatherTempModifier(weatherTemperatureModifier);
+            ((BiomeModifier) (Object) biome).setWeatherHumidityModifier(weatherHumidityModifier);
         }
     }
 
@@ -96,6 +107,9 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     private void tick(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
         if (seasonContext != null) {
             this.seasonContext.tick((ServerWorld) (Object) this);
+        }
+        if (weatherContext != null) {
+//            this.weatherContext.tick((ServerWorld) (Object) this);
         }
     }
 
@@ -121,6 +135,19 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     public SeasonContext setSeasonContext(SeasonContext seasonContext) {
         this.seasonContext = seasonContext;
         return this.seasonContext;
+    }
+
+    @Nullable
+    @Override
+    public BWWeatherEventContext getWeatherEventContext() {
+        return this.weatherContext;
+    }
+
+    @Nullable
+    @Override
+    public BWWeatherEventContext setWeatherEventContext(BWWeatherEventContext weatherEventContext) {
+        this.weatherContext = weatherEventContext;
+        return this.weatherContext;
     }
 
     @Nullable

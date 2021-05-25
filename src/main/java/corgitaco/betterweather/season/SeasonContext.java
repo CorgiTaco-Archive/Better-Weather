@@ -16,6 +16,7 @@ import corgitaco.betterweather.config.season.SeasonConfigHolder;
 import corgitaco.betterweather.config.season.overrides.BiomeOverrideJsonHandler;
 import corgitaco.betterweather.data.network.NetworkHandler;
 import corgitaco.betterweather.data.network.packet.season.SeasonPacket;
+import corgitaco.betterweather.data.network.packet.season.SeasonTimePacket;
 import corgitaco.betterweather.data.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.data.storage.SeasonSavedData;
 import corgitaco.betterweather.helpers.BiomeUpdate;
@@ -117,8 +118,9 @@ public class SeasonContext implements Season {
         boolean isClient = seasons != null;
         boolean isPacket = biomeRegistry == null;
 
-        if (isClient)
+        if (isClient) {
             this.seasons.putAll(seasons);
+        }
         if (!isPacket) {
             this.handleConfig(isClient);
             this.currentSeason = this.seasons.get(Season.getSeasonFromTime(currentYearTime, yearLength));
@@ -207,10 +209,8 @@ public class SeasonContext implements Season {
     }
 
     public void updatePacket(List<ServerPlayerEntity> players) {
-        for (ServerPlayerEntity player : players) {
-            NetworkHandler.sendToClient(player, new SeasonPacket(this));
-            NetworkHandler.sendToClient(player, new RefreshRenderersPacket());
-        }
+        NetworkHandler.sendToAllPlayers(players, new SeasonPacket(this));
+        NetworkHandler.sendToAllPlayers(players, new RefreshRenderersPacket());
     }
 
     private void tickSeasonTime(World world) {
@@ -220,6 +220,11 @@ public class SeasonContext implements Season {
 
             if (world.getWorldInfo().getGameTime() % 50 == 0) {
                 save(world);
+            }
+        }
+        if (world instanceof ServerWorld) {
+            if (world.getWorldInfo().getGameTime() % 3 == 0) { // Update season time every 3 ticks
+                NetworkHandler.sendToAllPlayers(((ServerWorld) world).getPlayers(), new SeasonTimePacket(this.currentYearTime));
             }
         }
     }
@@ -241,8 +246,10 @@ public class SeasonContext implements Season {
     }
 
     private void createConfig() {
-        CommentedFileConfig readConfig = CommentedFileConfig.builder(this.seasonConfigFile).sync().autosave().writingMode(WritingMode.REPLACE).build();
-        readConfig.load();
+        CommentedConfig readConfig = this.seasonConfigFile.exists() ? CommentedFileConfig.builder(this.seasonConfigFile).sync().autosave().writingMode(WritingMode.REPLACE).build() : CommentedConfig.inMemory();
+        if (readConfig instanceof CommentedFileConfig) {
+            ((CommentedFileConfig) readConfig).load();
+        }
         CommentedConfig encodedConfig = (CommentedConfig) SeasonConfigHolder.CODEC.encodeStart(CONFIG_OPS, SeasonConfigHolder.DEFAULT_CONFIG_HOLDER).result().get();
 
         try {
@@ -285,11 +292,16 @@ public class SeasonContext implements Season {
             }
         });
 
+        Set<String> keysToRemove = new HashSet<>();
         newConfig.valueMap().forEach((key, object) -> {
             if (!encodedConfig.contains(key)) {
-                newConfig.removeComment(key);
-                newConfig.remove(key);
+                keysToRemove.add(key);
             }
+        });
+
+        keysToRemove.forEach(key -> {
+            newConfig.removeComment(key);
+            newConfig.remove(key);
         });
         return newConfig;
     }

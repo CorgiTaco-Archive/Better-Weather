@@ -8,10 +8,12 @@ import java.util.List;
 
 public class BetterWeatherConfig {
     public static List<String> SEASON_DIMENSIONS;
+    public static List<String> WEATHER_EVENT_DIMENSIONS;
 
     public static void serialize() {
         AbstractCommentedConfigBuilder builder = new AbstractCommentedConfigBuilder(BetterWeather.CONFIG_PATH.resolve("better-weather.toml"));
         SEASON_DIMENSIONS = builder.addList("What dimensions have seasons?\nMod IDs or dimension IDs ONLY.\nDefault: [\"minecraft:overworld\"]", "season_dimension_whitelist", Collections.singletonList(World.OVERWORLD.getLocation().toString()));
+        WEATHER_EVENT_DIMENSIONS = builder.addList("What dimensions have weather events?\nMod IDs or dimension IDs ONLY.\nDefault: [\"minecraft:overworld\"]", "weather_event_dimension_whitelist", Collections.singletonList(World.OVERWORLD.getLocation().toString()));
         builder.build();
     }
 }

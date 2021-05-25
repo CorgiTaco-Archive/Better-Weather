@@ -21,7 +21,8 @@ import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static corgitaco.betterweather.util.BetterWeatherUtil.*;
+import static corgitaco.betterweather.util.BetterWeatherUtil.transformBiomeResourceLocationsToKeys;
+import static corgitaco.betterweather.util.BetterWeatherUtil.transformBlockResourceLocations;
 
 public class BWSubseasonSettings implements SubseasonSettings {
 
@@ -239,7 +240,6 @@ public class BWSubseasonSettings implements SubseasonSettings {
 
         OverrideStorage overrideStorage = getBiomeToOverrideStorage().get(biomeKey);
         double fallBack = overrideStorage.getFallBack();
-
         return overrideStorage.getBlockToCropGrowthMultiplierMap().getOrDefault(block, fallBack == Double.MAX_VALUE ? cropGrowthChanceMultiplier : fallBack);
     }
 
@@ -400,7 +400,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
             try {
                 result = (int) Long.parseLong(input.replace("#", "").replace("0x", ""), 16);
             } catch (NumberFormatException e) {
-                BetterWeather.LOGGER.info(e.toString());
+                BetterWeather.LOGGER.error("Not a valid hex string: " + input + ". Doing nothing with this value...");
             }
             return result;
         }

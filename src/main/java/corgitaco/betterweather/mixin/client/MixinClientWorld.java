@@ -6,6 +6,7 @@ import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.helpers.BiomeModifier;
 import corgitaco.betterweather.helpers.BiomeUpdate;
 import corgitaco.betterweather.season.SeasonContext;
+import corgitaco.betterweather.weatherevent.BWWeatherEventContext;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.registry.DynamicRegistries;
@@ -31,6 +32,9 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
     SeasonContext seasonContext;
 
     @Nullable
+    private BWWeatherEventContext weatherContext;
+
+    @Nullable
     @Override
     public SeasonContext getSeasonContext() {
         return this.seasonContext;
@@ -41,6 +45,19 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
     public SeasonContext setSeasonContext(SeasonContext seasonContext) {
         this.seasonContext = seasonContext;
         return this.seasonContext;
+    }
+
+    @Nullable
+    @Override
+    public BWWeatherEventContext getWeatherEventContext() {
+        return this.weatherContext;
+    }
+
+    @Nullable
+    @Override
+    public BWWeatherEventContext setWeatherEventContext(BWWeatherEventContext weatherEventContext) {
+        this.weatherContext = weatherEventContext;
+        return this.weatherContext;
     }
 
     @Inject(method = "tick", at = @At("HEAD"))
@@ -62,9 +79,13 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
             RegistryKey<Biome> biomeKey = entry.getKey();
             float seasonHumidityModifier = seasonContext == null ? 0.0F : (float) this.seasonContext.getCurrentSubSeasonSettings().getHumidityModifier(biomeKey);
             float seasonTemperatureModifier = seasonContext == null ? 0.0F : (float) this.seasonContext.getCurrentSubSeasonSettings().getTemperatureModifier(biomeKey);
+            float weatherHumidityModifier = weatherContext == null ? 0.0F : (float) this.weatherContext.getCurrentWeatherEventSettings().getHumidityModifierAtPosition(null);
+            float weatherTemperatureModifier = weatherContext == null ? 0.0F : (float) this.weatherContext.getCurrentWeatherEventSettings().getTemperatureModifierAtPosition(null);
 
-            ((BiomeModifier) (Object) biome).setHumidityModifier(seasonHumidityModifier);
-            ((BiomeModifier) (Object) biome).setTempModifier(seasonTemperatureModifier);
+            ((BiomeModifier) (Object) biome).setSeasonTempModifier(seasonTemperatureModifier);
+            ((BiomeModifier) (Object) biome).setSeasonHumidityModifier(seasonHumidityModifier);
+            ((BiomeModifier) (Object) biome).setWeatherTempModifier(weatherTemperatureModifier);
+            ((BiomeModifier) (Object) biome).setWeatherHumidityModifier(weatherHumidityModifier);
         }
     }
 }

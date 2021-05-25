@@ -1,8 +1,12 @@
 package corgitaco.betterweather.helpers;
 
 public interface BiomeModifier {
-    void setTempModifier(float tempModifier);
 
-    void setHumidityModifier(float humidityModifier);
+    void setSeasonTempModifier(float tempModifier);
 
+    void setSeasonHumidityModifier(float humidityModifier);
+
+    void setWeatherTempModifier(float tempModifier);
+
+    void setWeatherHumidityModifier(float humidityModifier);
 }
