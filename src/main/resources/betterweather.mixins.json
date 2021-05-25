@@ -13,6 +13,7 @@
     "network.MixinPlayerList",
     "server.MixinCommands",
     "server.MixinMinecraftServer",
+    "server.commands.MixinLocateBiomeCommand",
     "server.world.MixinServerWorld"
   ],
   "client": [
