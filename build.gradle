@@ -69,6 +69,9 @@ repositories{
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.2:processor' //Re-enable when building jar
+
+    // Jetbrains' Annotations, cause I think contracts look neat.
+    compileOnly 'org.jetbrains:annotations:21.0.1'
 }
 
 ////////////////

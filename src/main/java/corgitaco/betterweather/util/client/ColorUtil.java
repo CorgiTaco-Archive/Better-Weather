@@ -13,8 +13,15 @@ import java.util.Optional;
 
 import static net.minecraft.util.registry.Registry.BIOME_KEY;
 
-public class ColorUtil {
-    private static final int MASK = 0xFF; // bit mask
+/*
+Notes:
+
+- Biome colors don't use alpha, so really no need to blend the alpha.
+- The American English spelling of "colour" is normalised so much, on the internet in general.
+ */
+@SuppressWarnings("unused") // Default constants are not being used.
+public final class ColorUtil {
+    private static final long BIT_MASK = 0xFF; // 255
 
     public static final int DEFAULT_RAIN_SKY = pack(103, 114, 136);
     public static final int DEFAULT_RAIN_FOG = pack(89, 100, 142);
@@ -24,6 +31,9 @@ public class ColorUtil {
     public static final int DEFAULT_THUNDER_FOG = pack(85, 95, 135);
     public static final int DEFAULT_THUNDER_CLOUDS = pack(37, 37, 37);
 
+    // Preferable for utility classes to not be instantiated.
+    private ColorUtil() {
+    }
 
     public static int getBiomeColor(Biome biome, Type type, int previous) {
         Minecraft minecraft = Minecraft.getInstance();
@@ -47,91 +57,71 @@ public class ColorUtil {
         BWSubseasonSettings settings = context.getCurrentSubSeasonSettings();
 
         int target;
-        double blendStrength;
+        double blend;
+
         switch (type) {
             case GRASS:
-                int grassTarget = settings.getTargetGrassColor(key);
-
-                if (grassTarget == Integer.MAX_VALUE) {
-                    return previous;
-                }
-
-                target = grassTarget;
-                blendStrength = settings.getGrassColorBlendStrength(key);
+                target = clamp(settings.getTargetGrassColor(key), previous);
+                blend = settings.getGrassColorBlendStrength(key);
                 break;
             case FOLIAGE:
-                int foliageTarget = settings.getTargetFoliageColor(key);
-
-                if (foliageTarget == Integer.MAX_VALUE) {
-                    return previous;
-                }
-
-                target = foliageTarget;
-                blendStrength = settings.getFoliageColorBlendStrength(key);
+                target = clamp(settings.getTargetFoliageColor(key), previous);
+                blend = settings.getFoliageColorBlendStrength(key);
                 break;
             case FOG:
-                int fogTarget = settings.getTargetFogColor(key);
-
-                if (fogTarget == Integer.MAX_VALUE) {
-                    return previous;
-                }
-
-                target = fogTarget;
-                blendStrength = settings.getFogColorBlendStrength(key);
+                target = clamp(settings.getTargetFogColor(key), previous);
+                blend = settings.getFogColorBlendStrength(key);
                 break;
             default:
-                int skyTarget = settings.getTargetSkyColor(key);
-
-                if (skyTarget == Integer.MAX_VALUE) {
-                    return previous;
-                }
-
-                target = skyTarget;
-                blendStrength = settings.getSkyColorBlendStrength(key);
+                target = clamp(settings.getTargetSkyColor(key), previous);
+                blend = settings.getSkyColorBlendStrength(key);
                 break;
         }
 
-        return blend(previous, target, blendStrength);
+        return mix(unpack(previous), unpack(target), blend);
     }
 
-    public static int blend(int start, int end, double blend) {
-        int[] us = unpack(start); // unpacked start
-        int[] ue = unpack(end); // unpacked end
-
-        return mix(us, ue, (float) blend);
+    private static int clamp(int target, int fallback) {
+        return target == Integer.MAX_VALUE ? fallback : target;
     }
 
-    public static int mix(int[] start, int[] end, float blend) {
-        float alpha = lerp(start[0], end[0], blend);
-        float red = lerp(start[1], end[1], blend);
-        float green = lerp(start[2], end[2], blend);
-        float blue = lerp(start[3], end[3], blend);
-
-        long mask = 0xFFL;
-
-        return (int) ((((int) alpha & mask) << 24) | (((int) red & mask) << 16) | (((int) green & mask) << 8) | ((int) blue & mask));
+    // Mix two colour arrays together. Similar to additive color mixing.
+    public static int mix(int[] start, int end[], double blend) {
+        return pack(
+                lerp(start[0], end[0], blend), // Alpha.
+                lerp(start[1], end[1], blend), // Red.
+                lerp(start[2], end[2], blend), // Green.
+                lerp(start[3], end[3], blend)  // Blue.
+        );
     }
 
-    private static float lerp(int start, int end, float blend) {
-        return start + ((end - start) * blend);
+    // Interpolate between color channels.
+    private static int lerp(int start, int end, double blend) {
+        return (int) (start + ((end - start) * blend));
     }
 
-    // packs rgb channels into a decimal
+    // Packs ARGB into a decimal.
     public static int pack(int a, int r, int g, int b) {
-        return (a & MASK) << 24 | (r & MASK) << 16 | (g & MASK) << 8 | b & MASK;
+        return (int) (
+                ((a & BIT_MASK) << 24) |
+                ((r & BIT_MASK) << 16) |
+                ((g & BIT_MASK)) << 8 |
+                (b & BIT_MASK)
+        );
     }
 
+    // Packs ARGB decimal, with an alpha of 255.
     public static int pack(int r, int g, int b) {
         return pack(255, r, g, b);
     }
 
-    // unpacks rgb channels from a decimal
+    // Unpacks ARGB channels from a decimal.
     public static int[] unpack(int decimal) {
-        return new int[]{
-                (decimal >> 24) & MASK,
-                (decimal >> 16) & MASK,
-                (decimal >> 8) & MASK,
-                decimal & MASK
+        return new int[] {
+                (int) ((decimal >> 24) & BIT_MASK), // Alpha.
+                (int) ((decimal >> 16) & BIT_MASK), // Red.
+                (int) ((decimal >> 8) & BIT_MASK),  // Green.
+                (int) (decimal & BIT_MASK)          // Blue.
         };
     }
 
