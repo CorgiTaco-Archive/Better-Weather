@@ -1,8 +1,8 @@
 package corgitaco.betterweather.api.weather;
 
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
+import corgitaco.betterweather.api.BetterWeatherRegistry;
 import corgitaco.betterweather.api.season.Season;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
@@ -14,27 +14,22 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.EnumMap;
+import java.util.function.Function;
 
 public abstract class WeatherEvent implements WeatherEventSettings {
 
-
-//    public static final Codec<WeatherEvent> CODEC = RecordCodecBuilder.create((builder) -> {
-//        return builder.group(Codec.of().fieldOf("currentEvent").forGetter((weatherEvent) -> {
-//            return weatherEvent.codec();
-//        })).apply(builder, (arg) -> new)
-//    });
-
+    public static final Codec<WeatherEvent> CODEC = BetterWeatherRegistry.WEATHER_EVENT.dispatchStable(WeatherEvent::codec, Function.identity());
 
     private final String id;
-    private final ClientWeatherEventSettings clientSettings;
+    private final WeatherEventClient clientSettings;
     private final double defaultChance;
     private final EnumMap<Season.Key, EnumMap<Season.Phase, Double>> seasonChances;
 
-    public WeatherEvent(String id, ClientWeatherEventSettings clientSettings, double defaultChance) {
+    public WeatherEvent(String id, WeatherEventClient clientSettings, double defaultChance) {
         this(id, clientSettings, defaultChance, new EnumMap<>(Season.Key.class));
     }
 
-    public WeatherEvent(String id, ClientWeatherEventSettings clientSettings, double defaultChance, EnumMap<Season.Key, EnumMap<Season.Phase, Double>> seasonChance) {
+    public WeatherEvent(String id, WeatherEventClient clientSettings, double defaultChance, EnumMap<Season.Key, EnumMap<Season.Phase, Double>> seasonChance) {
         this.id = id;
         this.clientSettings = clientSettings;
         this.defaultChance = defaultChance;
@@ -55,9 +50,9 @@ public abstract class WeatherEvent implements WeatherEventSettings {
 
     public abstract void worldTick(ServerWorld world, int tickSpeed, long worldTime);
 
-    public abstract Pair<Codec<? extends WeatherEvent>, DynamicOps<?>> config();
-
     public abstract Codec<? extends WeatherEvent> codec();
+
+    public abstract DynamicOps<?> configOps();
 
     public float modifyTemperature(float biomeTemp, float modifiedBiomeTemp) {
         return modifiedBiomeTemp == Double.MAX_VALUE ? biomeTemp : modifiedBiomeTemp;
@@ -93,7 +88,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public ClientWeatherEventSettings getClientSettings() {
+    public WeatherEventClient getClientSettings() {
         return clientSettings;
     }
 }

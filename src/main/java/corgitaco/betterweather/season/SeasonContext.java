@@ -64,6 +64,7 @@ public class SeasonContext implements Season {
 
     public static final TomlCommentedConfigOps CONFIG_OPS = new TomlCommentedConfigOps(Util.make(new HashMap<>(), (map) -> {
         map.put("yearLength", "Represents this world's year length.");
+        map.put("tickSeasonTimeWhenNoPlayersOnline", "Does Season Time tick when no players are online?");
         map.put("tempModifier", "Modifies this world's temperature.");
         map.put("cropGrowthChanceMultiplier", "Multiplies the growth rate of crops when ticked.");
         map.put("entityBreedingBlacklist", "Blacklist specific mobs from breeding.");
@@ -91,6 +92,7 @@ public class SeasonContext implements Season {
     private final File seasonConfigFile;
     private final Path seasonOverridesPath;
     private final IdentityHashMap<Season.Key, BWSeason> seasons = new IdentityHashMap<>();
+    private boolean tickSeasonTimeWhenNoPlayersOnline = true;
 
     private BWSeason currentSeason;
     private int currentYearTime;
@@ -122,7 +124,7 @@ public class SeasonContext implements Season {
             this.seasons.putAll(seasons);
         }
         if (!isPacket) {
-            this.handleConfig(isClient);
+            this.tickSeasonTimeWhenNoPlayersOnline = this.handleConfig(isClient).isTickSeasonTimeWhenNoPlayersOnline();
             this.currentSeason = this.seasons.get(Season.getSeasonFromTime(currentYearTime, yearLength));
             this.currentSeason.setPhaseForTime(this.currentYearTime, this.yearLength);
         }
@@ -214,6 +216,12 @@ public class SeasonContext implements Season {
     }
 
     private void tickSeasonTime(World world) {
+        if (world instanceof ServerWorld) {
+            if (!this.tickSeasonTimeWhenNoPlayersOnline && world.getPlayers().isEmpty()) {
+                return;
+            }
+        }
+
         if (world.getGameRules().getBoolean(BetterWeatherGameRules.DO_SEASON_CYCLE)) {
             this.currentYearTime = currentYearTime > this.yearLength ? 0 : (currentYearTime + 1);
             this.currentSeason = this.seasons.get(Season.getSeasonFromTime(this.currentYearTime, this.yearLength)).setPhaseForTime(this.currentYearTime, this.yearLength);
@@ -236,13 +244,16 @@ public class SeasonContext implements Season {
 
     /**********Configs**********/
 
-    public void handleConfig(boolean isClient) {
+    public SeasonConfigHolder handleConfig(boolean isClient) {
         createConfig();
-        if (seasonConfigFile.exists()) {
-            read(isClient);
+        if (!seasonConfigFile.exists()) {
+            BetterWeather.LOGGER.error(seasonConfigFile.toString() + " does not exist and therefore cannot be read, using defaults...");
+            return SeasonConfigHolder.DEFAULT_CONFIG_HOLDER;
         }
 
+        SeasonConfigHolder configHolder = read(isClient);
         fillSubSeasonOverrideStorage(isClient);
+        return configHolder;
     }
 
     private void createConfig() {
@@ -319,7 +330,7 @@ public class SeasonContext implements Season {
         return newConfig;
     }
 
-    private void read(boolean isClient) {
+    private SeasonConfigHolder read(boolean isClient) {
         try (Reader reader = new FileReader(seasonConfigFile)) {
             Optional<SeasonConfigHolder> configHolder = SeasonConfigHolder.CODEC.parse(CONFIG_OPS, new TomlParser().parse(reader)).resultOrPartial(BetterWeather.LOGGER::error);
 
@@ -342,9 +353,11 @@ public class SeasonContext implements Season {
                     }
                 }
             }
+            return configHolder.orElse(SeasonConfigHolder.DEFAULT_CONFIG_HOLDER);
         } catch (IOException e) {
-
+            BetterWeather.LOGGER.error(e.toString());
         }
+        return SeasonConfigHolder.DEFAULT_CONFIG_HOLDER; // We should never hit this ever.
     }
 
     private void fillSubSeasonOverrideStorage(boolean isClient) {

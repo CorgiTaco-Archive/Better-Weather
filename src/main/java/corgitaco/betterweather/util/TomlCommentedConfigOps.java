@@ -110,6 +110,11 @@ public class TomlCommentedConfigOps implements DynamicOps<Object> {
     }
 
     @Override
+    public Object createBoolean(boolean value) {
+        return value;
+    }
+
+    @Override
     public DataResult<Object> mergeToList(Object list, Object value) {
         if (!(list instanceof Collection) && list != this.empty()) {
             return DataResult.error("mergeToList called with not a list: " + list, list);

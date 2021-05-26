@@ -1,5 +1,7 @@
 package corgitaco.betterweather.weatherevent;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.api.weather.WeatherEventContext;
@@ -20,15 +22,15 @@ import java.util.HashMap;
 public class BWWeatherEventContext implements WeatherEventContext {
     public static final String CONFIG_NAME = "weather-settings.toml";
 
-//    public static final Codec<BWWeatherEventContext> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
-//        return builder.group(Codec.STRING.fieldOf("currentEvent").forGetter((weatherEventContext) -> {
-//            return weatherEventContext.currentEvent.getID();
-//        }), ResourceLocation.CODEC.fieldOf("worldID").forGetter((weatherEventContext) -> {
-//            return weatherEventContext.worldID;
-//        }), Codec.simpleMap(Codec.STRING, WeatherEvent.PACKET_CODEC, IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasons").forGetter((seasonContext) -> {
-//            return seasonContext.seasons;
-//        })).apply(builder, (currentYearTime, yearLength, worldID, seasonMap) -> new BWWeatherEventContext(currentYearTime, yearLength, worldID, new IdentityHashMap<>(seasonMap)));
-//    });
+    public static final Codec<BWWeatherEventContext> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
+        return builder.group(Codec.STRING.fieldOf("currentEvent").forGetter((weatherEventContext) -> {
+            return weatherEventContext.currentEvent.getID();
+        }), ResourceLocation.CODEC.fieldOf("worldID").forGetter((weatherEventContext) -> {
+            return weatherEventContext.worldID;
+        }), Codec.unboundedMap(Codec.STRING, WeatherEvent.CODEC).fieldOf("weather_events").forGetter((seasonContext) -> {
+            return seasonContext.weatherEvents;
+        })).apply(builder, (currentEvent, worldID, weatherEvents) -> new BWWeatherEventContext(currentEvent, worldID, new HashMap<>(weatherEvents)));
+    });
 
 
     private final HashMap<String, WeatherEvent> weatherEvents = new HashMap<>();

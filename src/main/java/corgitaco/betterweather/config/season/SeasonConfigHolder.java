@@ -18,26 +18,34 @@ public class SeasonConfigHolder {
         map.put(Season.Key.WINTER, BWSeason.DEFAULT_WINTER);
     });
 
-    public static final SeasonConfigHolder DEFAULT_CONFIG_HOLDER = new SeasonConfigHolder(240000, DEFAULT_SEASONS);
+    public static final SeasonConfigHolder DEFAULT_CONFIG_HOLDER = new SeasonConfigHolder(true, 240000, DEFAULT_SEASONS);
 
     public static final Codec<SeasonConfigHolder> CODEC = RecordCodecBuilder.create((builder) -> {
-        return builder.group(Codec.INT.fieldOf("yearLength").orElse(240000).forGetter((seasonConfigHolder) -> {
+        return builder.group(Codec.BOOL.fieldOf("tickSeasonTimeWhenNoPlayersOnline").orElse(true).forGetter((seasonConfigHolder) -> {
+            return seasonConfigHolder.tickSeasonTimeWhenNoPlayersOnline;
+        }), Codec.INT.fieldOf("yearLength").orElse(240000).forGetter((seasonConfigHolder) -> {
             return seasonConfigHolder.seasonCycleLength;
         }), Codec.simpleMap(Season.Key.CODEC, BWSeason.CODEC, IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasons").forGetter((seasonConfigHolder) -> {
             return seasonConfigHolder.seasonKeySeasonMap;
-        })).apply(builder, ((cycleLength, seasons) -> new SeasonConfigHolder(cycleLength, new IdentityHashMap<>(seasons))));
+        })).apply(builder, ((tickSeasonTimeWhenNoPlayersOnline, cycleLength, seasons) -> new SeasonConfigHolder(tickSeasonTimeWhenNoPlayersOnline, cycleLength, new IdentityHashMap<>(seasons))));
     });
 
+    private final boolean tickSeasonTimeWhenNoPlayersOnline;
     private final int seasonCycleLength;
     private final IdentityHashMap<Season.Key, BWSeason> seasonKeySeasonMap;
 
-    public SeasonConfigHolder(int seasonCycleLength, IdentityHashMap<Season.Key, BWSeason> seasonKeySeasonMap) {
+    public SeasonConfigHolder(boolean tickSeasonTimeWhenNoPlayersOnline, int seasonCycleLength, IdentityHashMap<Season.Key, BWSeason> seasonKeySeasonMap) {
+        this.tickSeasonTimeWhenNoPlayersOnline = tickSeasonTimeWhenNoPlayersOnline;
         this.seasonCycleLength = seasonCycleLength;
         this.seasonKeySeasonMap = seasonKeySeasonMap;
 
         for (Season.Key key : seasonKeySeasonMap.keySet()) {
             seasonKeySeasonMap.get(key).setSeasonKey(key);
         }
+    }
+
+    public boolean isTickSeasonTimeWhenNoPlayersOnline() {
+        return tickSeasonTimeWhenNoPlayersOnline;
     }
 
     public int getSeasonCycleLength() {
