@@ -10,6 +10,8 @@ import net.minecraft.util.registry.Registry;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+import static corgitaco.betterweather.util.client.ColorUtil.tryParseColor;
+
 public class OverrideStorage {
     private double tempModifier;
     private double humidityModifier;
@@ -109,13 +111,13 @@ public class OverrideStorage {
 
         public void parseHexColors() {
             if (!targetFoliageHexColor.isEmpty())
-                parsedFoliageHexColor = BetterWeatherUtil.parseHexColor(targetFoliageHexColor);
+                parsedFoliageHexColor = tryParseColor(targetFoliageHexColor);
             if (!targetGrassHexColor.isEmpty())
-                parsedGrassHexColor = BetterWeatherUtil.parseHexColor(targetGrassHexColor);
+                parsedGrassHexColor = tryParseColor(targetGrassHexColor);
             if (!targetSkyHexColor.isEmpty())
-                parsedSkyHexColor = BetterWeatherUtil.parseHexColor(targetSkyHexColor);
+                parsedSkyHexColor = tryParseColor(targetSkyHexColor);
             if (!targetFogHexColor.isEmpty())
-                parsedFogHexColor = BetterWeatherUtil.parseHexColor(targetFogHexColor);
+                parsedFogHexColor = tryParseColor(targetFogHexColor);
         }
 
         public String getTargetFoliageHexColor() {

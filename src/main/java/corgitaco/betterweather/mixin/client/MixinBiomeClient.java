@@ -6,8 +6,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static corgitaco.betterweather.client.ColorCalculator.Type.*;
-import static corgitaco.betterweather.client.ColorCalculator.getBiomeColor;
+import static corgitaco.betterweather.util.client.ColorUtil.Type.*;
+import static corgitaco.betterweather.util.client.ColorUtil.getBiomeColor;
 
 @Mixin(Biome.class)
 public abstract class MixinBiomeClient {

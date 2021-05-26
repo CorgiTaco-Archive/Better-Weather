@@ -3,6 +3,7 @@ package corgitaco.betterweather.util;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.season.BWSubseasonSettings;
 import corgitaco.betterweather.season.storage.OverrideStorage;
+import corgitaco.betterweather.util.client.ColorUtil;
 import net.minecraft.block.Block;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
@@ -11,30 +12,10 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 
-import java.awt.*;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
 public class BetterWeatherUtil {
-
-    public static final Color DEFAULT_RAIN_SKY = new Color(103, 114, 136);
-    public static final Color DEFAULT_RAIN_FOG = new Color(89, 100, 142);
-    public static final Color DEFAULT_RAIN_CLOUDS = new Color(158, 158, 158);
-
-    public static final Color DEFAULT_THUNDER_SKY = new Color(42, 45, 51);
-    public static final Color DEFAULT_THUNDER_FOG = new Color(85, 95, 135);
-    public static final Color DEFAULT_THUNDER_CLOUDS = new Color(37, 37, 37);
-
-    public static int parseHexColor(String targetHexColor) {
-        if (!targetHexColor.isEmpty()) {
-            try {
-                return (int) Long.parseLong(targetHexColor.replace("#", "").replace("0x", ""), 16);
-            } catch (Exception e) {
-                throw new IllegalArgumentException(e);
-            }
-        }
-        return Integer.MAX_VALUE;
-    }
 
     public static boolean filterRegistryID(ResourceLocation id, Registry<?> registry, String registryTypeName) {
         if (registry.keySet().contains(id))
@@ -68,15 +49,8 @@ public class BetterWeatherUtil {
         return (int) MathHelper.lerp(blendStrength, original, target);
     }
 
-    public static Color blendColor(Color original, Color target, double blendStrength) {
-        int modifiedRed = modifiedColorValue(original.getRed(), target.getRed(), blendStrength);
-        int modifiedGreen = modifiedColorValue(original.getGreen(), target.getGreen(), blendStrength);
-        int modifiedBlue = modifiedColorValue(original.getBlue(), target.getBlue(), blendStrength);
-        return new Color(modifiedRed, modifiedGreen, modifiedBlue);
-    }
-
-    public static Color transformFloatColor(Vector3d floatColor) {
-        return new Color((int) (floatColor.getX() * 255), (int) (floatColor.getY() * 255), (int) (floatColor.getZ() * 255));
+    public static int transformFloatColor(Vector3d floatColor) {
+        return ColorUtil.pack((int) (floatColor.getX() * 255), (int) (floatColor.getY() * 255), (int) (floatColor.getZ() * 255));
     }
 
     public static IdentityHashMap<Block, Double> transformBlockResourceLocations(Map<ResourceLocation, Double> blockResourceLocationToCropGrowthMultiplierMap) {
