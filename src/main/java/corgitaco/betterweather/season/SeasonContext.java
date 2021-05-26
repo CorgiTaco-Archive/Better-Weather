@@ -65,7 +65,7 @@ public class SeasonContext implements Season {
     public static final TomlCommentedConfigOps CONFIG_OPS = new TomlCommentedConfigOps(Util.make(new HashMap<>(), (map) -> {
         map.put("yearLength", "Represents this world's year length.");
         map.put("tempModifier", "Modifies this world's temperature.");
-
+        map.put("cropGrowthChanceMultiplier", "Multiplies the growth rate of crops when ticked.");
         map.put("entityBreedingBlacklist", "Blacklist specific mobs from breeding.");
 
         map.put("humidityModifier", "Modifies this world's humidity.");
