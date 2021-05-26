@@ -265,58 +265,11 @@ public class SeasonContext implements Season {
 
         try {
             Files.createDirectories(seasonConfigFile.toPath().getParent());
-            new TomlWriter().write(seasonConfigFile.exists() ? recursivelyUpdateAndSortConfig(readConfig, encodedConfig) : encodedConfig, this.seasonConfigFile, WritingMode.REPLACE);
+            new TomlWriter().write(seasonConfigFile.exists() ? TomlCommentedConfigOps.recursivelyUpdateAndSortConfig(readConfig, encodedConfig) : encodedConfig, this.seasonConfigFile, WritingMode.REPLACE);
         } catch (IOException e) {
 
         }
     }
-
-    private CommentedConfig recursivelyUpdateAndSortConfig(CommentedConfig readConfig, CommentedConfig encodedConfig) {
-        CommentedConfig newConfig = organizeConfig(readConfig);
-
-        encodedConfig.valueMap().entrySet().stream().sorted(Comparator.comparing(Objects::toString)).forEachOrdered((entry) -> {
-            Object object = entry.getValue();
-            String key = entry.getKey();
-
-            if (object instanceof CommentedConfig) {
-                boolean hasConfig;
-
-                //Requires a try catch due to Night Config allowing .contains() to throw a NPE.
-                try {
-                    hasConfig = !newConfig.contains(key);
-                } catch (NullPointerException e) {
-                    hasConfig = false;
-                }
-
-                if (!hasConfig) {
-                    object = recursivelyUpdateAndSortConfig(newConfig.set(key, object), (CommentedConfig) object);
-                } else {
-                    object = recursivelyUpdateAndSortConfig(newConfig.get(key), (CommentedConfig) object);
-                }
-                newConfig.set(key, object);
-            }
-
-            newConfig.add(key, object);
-
-            if (!newConfig.containsComment(key) || !newConfig.getComment(key).equals(encodedConfig.getComment(key))) {
-                newConfig.setComment(key, encodedConfig.getComment(key));
-            }
-        });
-
-        Set<String> keysToRemove = new HashSet<>();
-        newConfig.valueMap().forEach((key, object) -> {
-            if (!encodedConfig.contains(key)) {
-                keysToRemove.add(key);
-            }
-        });
-
-        keysToRemove.forEach(key -> {
-            newConfig.removeComment(key);
-            newConfig.remove(key);
-        });
-        return newConfig;
-    }
-
 
     public CommentedConfig organizeConfig(CommentedConfig config) {
         CommentedConfig newConfig = CommentedConfig.of(Config.getDefaultMapCreator(false, true), TomlFormat.instance());

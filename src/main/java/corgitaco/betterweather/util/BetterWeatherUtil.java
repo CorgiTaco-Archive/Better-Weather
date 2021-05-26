@@ -1,9 +1,13 @@
 package corgitaco.betterweather.util;
 
+import com.mojang.serialization.Codec;
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.api.BetterWeatherRegistry;
+import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.season.BWSubseasonSettings;
 import corgitaco.betterweather.season.storage.OverrideStorage;
 import corgitaco.betterweather.util.client.ColorUtil;
+import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import net.minecraft.block.Block;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
@@ -12,8 +16,10 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class BetterWeatherUtil {
 
@@ -69,6 +75,14 @@ public class BetterWeatherUtil {
         IdentityHashMap<RegistryKey<Biome>, OverrideStorage> newMap = new IdentityHashMap<>();
         blockResourceLocationToCropGrowthMultiplierMap.forEach((resourceLocation, multiplier) -> {
             newMap.put(RegistryKey.getOrCreateKey(Registry.BIOME_KEY, resourceLocation), multiplier);
+        });
+        return newMap;
+    }
+
+    public static ReferenceArraySet<RegistryKey<Codec<? extends WeatherEvent>>> transformWeatherLocationsToKeys(Collection<ResourceLocation> blockResourceLocationToCropGrowthMultiplierMap) {
+        ReferenceArraySet<RegistryKey<Codec<? extends WeatherEvent>>> newMap = new ReferenceArraySet<>();
+        blockResourceLocationToCropGrowthMultiplierMap.forEach((resourceLocation) -> {
+            newMap.add(RegistryKey.getOrCreateKey(BetterWeatherRegistry.WEATHER_EVENT_KEY, resourceLocation));
         });
         return newMap;
     }

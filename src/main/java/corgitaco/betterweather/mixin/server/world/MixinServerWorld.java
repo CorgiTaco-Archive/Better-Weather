@@ -10,7 +10,7 @@ import corgitaco.betterweather.helpers.BiomeModifier;
 import corgitaco.betterweather.helpers.BiomeUpdate;
 import corgitaco.betterweather.season.SeasonContext;
 import corgitaco.betterweather.util.WorldDynamicRegistry;
-import corgitaco.betterweather.weatherevent.BWWeatherEventContext;
+import corgitaco.betterweather.weather.BWWeatherEventContext;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.server.MinecraftServer;

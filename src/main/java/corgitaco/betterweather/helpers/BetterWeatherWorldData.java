@@ -1,7 +1,7 @@
 package corgitaco.betterweather.helpers;
 
 import corgitaco.betterweather.season.SeasonContext;
-import corgitaco.betterweather.weatherevent.BWWeatherEventContext;
+import corgitaco.betterweather.weather.BWWeatherEventContext;
 
 import javax.annotation.Nullable;
 

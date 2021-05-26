@@ -1,8 +1,15 @@
 package corgitaco.betterweather;
 
+import corgitaco.betterweather.api.BetterWeatherRegistry;
 import corgitaco.betterweather.data.network.NetworkHandler;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
+import corgitaco.betterweather.weather.event.Blizzard;
+import corgitaco.betterweather.weather.event.None;
+import corgitaco.betterweather.weather.event.client.BlizzardClient;
+import corgitaco.betterweather.weather.event.client.NoneClient;
 import net.minecraft.util.LazyValue;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.registry.Registry;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -43,6 +50,11 @@ public class BetterWeather {
     private void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(BetterWeatherGameRules::init);
         NetworkHandler.init();
+
+        Registry.register(BetterWeatherRegistry.CLIENT_WEATHER_EVENT, new ResourceLocation(MOD_ID, "blizzard"), BlizzardClient.CODEC);
+        Registry.register(BetterWeatherRegistry.CLIENT_WEATHER_EVENT, new ResourceLocation(MOD_ID, "none"), NoneClient.CODEC);
+        Registry.register(BetterWeatherRegistry.WEATHER_EVENT, new ResourceLocation(MOD_ID, "blizzard"), Blizzard.CODEC);
+        Registry.register(BetterWeatherRegistry.WEATHER_EVENT, new ResourceLocation(MOD_ID, "none"), None.CODEC);
     }
 
     private void clientSetup(FMLClientSetupEvent event) {

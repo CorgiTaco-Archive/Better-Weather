@@ -143,7 +143,7 @@ public class TomlCommentedConfigOps implements DynamicOps<Object> {
 
             final CommentedConfig output = CommentedConfig.inMemory();
             if (map != this.empty()) {
-                CommentedConfig oldConfig = organizeConfig((CommentedConfig) map);
+                CommentedConfig oldConfig = organizeConfig((CommentedConfig) map, isAlphabeticallySorted);
                 output.addAll(oldConfig);
                 output.commentMap().putAll(oldConfig.commentMap());
             }
@@ -153,11 +153,11 @@ public class TomlCommentedConfigOps implements DynamicOps<Object> {
                     output.setComment(s, TomlCommentedConfigOps.this.getKeyCommentMap().get(s));
                 }
             }
-            return DataResult.success(organizeConfig(output));
+            return DataResult.success(organizeConfig(output, isAlphabeticallySorted));
         });
     }
 
-    public CommentedConfig organizeConfig(CommentedConfig config) {
+    public static CommentedConfig organizeConfig(CommentedConfig config, boolean isAlphabeticallySorted) {
         if (!isAlphabeticallySorted) {
             return config;
         }
@@ -166,7 +166,7 @@ public class TomlCommentedConfigOps implements DynamicOps<Object> {
 
         List<Map.Entry<String, Object>> organizedCollection = config.valueMap().entrySet().stream().sorted(Comparator.comparing(Objects::toString)).collect(Collectors.toList());
         organizedCollection.forEach((stringObjectEntry -> {
-            newConfig.add(stringObjectEntry.getKey(), stringObjectEntry.getValue());
+            newConfig.set(stringObjectEntry.getKey(), stringObjectEntry.getValue());
         }));
 
         newConfig.commentMap().putAll(config.commentMap());
@@ -196,7 +196,7 @@ public class TomlCommentedConfigOps implements DynamicOps<Object> {
                 }
             }
         });
-        return organizeConfig(result);
+        return organizeConfig(result, isAlphabeticallySorted);
     }
 
     @Override
@@ -228,9 +228,9 @@ public class TomlCommentedConfigOps implements DynamicOps<Object> {
                             }
                         }
                     });
-            return organizeConfig(result);
+            return organizeConfig(result, isAlphabeticallySorted);
         }
-        return organizeConfig((CommentedConfig) input);
+        return organizeConfig((CommentedConfig) input, isAlphabeticallySorted);
     }
 
 
@@ -294,4 +294,51 @@ public class TomlCommentedConfigOps implements DynamicOps<Object> {
             return DataResult.error("mergeToMap called with not a Config: " + prefix, prefix);
         }
     }
+
+    public static CommentedConfig recursivelyUpdateAndSortConfig(CommentedConfig readConfig, CommentedConfig encodedConfig) {
+        CommentedConfig newConfig = organizeConfig(readConfig, true);
+
+        encodedConfig.valueMap().entrySet().stream().sorted(Comparator.comparing(Objects::toString)).forEachOrdered((entry) -> {
+            Object object = entry.getValue();
+            String key = entry.getKey();
+
+            if (object instanceof CommentedConfig) {
+                boolean hasConfig;
+
+                //Requires a try catch due to Night Config allowing .contains() to throw a NPE.
+                try {
+                    hasConfig = !newConfig.contains(key);
+                } catch (NullPointerException e) {
+                    hasConfig = false;
+                }
+
+                if (!hasConfig) {
+                    object = recursivelyUpdateAndSortConfig(newConfig.set(key, object), (CommentedConfig) object);
+                } else {
+                    object = recursivelyUpdateAndSortConfig(newConfig.get(key), (CommentedConfig) object);
+                }
+                newConfig.set(key, object);
+            }
+
+            newConfig.add(key, object);
+
+            if (!newConfig.containsComment(key) || !newConfig.getComment(key).equals(encodedConfig.getComment(key))) {
+                newConfig.setComment(key, encodedConfig.getComment(key));
+            }
+        });
+
+        Set<String> keysToRemove = new HashSet<>();
+        newConfig.valueMap().forEach((key, object) -> {
+            if (!encodedConfig.contains(key)) {
+                keysToRemove.add(key);
+            }
+        });
+
+        keysToRemove.forEach(key -> {
+            newConfig.removeComment(key);
+            newConfig.remove(key);
+        });
+        return newConfig;
+    }
+
 }
