@@ -2,83 +2,86 @@ package corgitaco.betterweather.util;
 
 import com.mojang.serialization.Lifecycle;
 import corgitaco.betterweather.mixin.access.BiomeAccess;
-import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.util.registry.SimpleRegistry;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeAmbience;
-import net.minecraft.world.biome.BiomeGenerationSettings;
-import net.minecraft.world.biome.MobSpawnInfo;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
-
 /**
  * Used to allow either server or world specific biome objects to function as keys to return the same common biome for the given world since each world can contain a unique biome registry.
  */
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
 public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
-    private final IdentityHashMap<Biome, Biome> server2World = new IdentityHashMap<>();
+    private final Map<Biome, Biome> storage = new IdentityHashMap<>();
 
-    public CommonKeyMutableRegistry(MutableRegistry<Biome> serverMutableRegistry) {
-        super(serverMutableRegistry.getRegistryKey(), serverMutableRegistry.getLifecycle());
-        fillWorldRegistry(serverMutableRegistry);
-    }
+    // Registry is the Server registry.
+    public CommonKeyMutableRegistry(MutableRegistry<Biome> registry) {
+        super(registry.getRegistryKey(), registry.getLifecycle());
 
-    private void fillWorldRegistry(MutableRegistry<Biome> registry) {
-        // since there are many many keys and values we need to use a stream, but not a parallel, because the order is needed.
         registry.getEntries().forEach(entry -> {
-            Biome server = entry.getValue();
-            Biome world = register(registry.getId(server), entry.getKey(), copy(server), ((SimpleRegistry<Biome>) registry).getLifecycleByRegistry(server)); // warn: lifecycle will always be null
+            Biome biome1 = entry.getValue();
+            Biome biome2 = register(
+                    registry.getId(biome1),
+                    entry.getKey(),
+                    shallow(biome1),
+                    ((SimpleRegistry<Biome>) registry).getLifecycleByRegistry(biome1)
+            );
 
-            // server biome registry will never be null. if it somehow manages to be null, error.
-            ResourceLocation location = requireNonNull(server.getRegistryName());
-            world.setRegistryName(location);
+            ResourceLocation name = requireNonNull(biome1.getRegistryName(), "Invalid Biome registry name.");
 
-            server2World.put(server, world);
+            storage.put(biome1, biome2.setRegistryName(name));
         });
     }
 
-    // create a shallow copy of the server biome. ignore the class cast exception, as mixins are used
-    private static Biome copy(Biome biome) {
-        @SuppressWarnings("ConstantConditions") Biome.Climate climate = ((BiomeAccess) (Object) biome).getClimate();
-        Biome.Category category = biome.getCategory();
-        float depth = biome.getDepth();
-        float scale = biome.getScale();
-        BiomeAmbience ambiance = biome.getAmbience();
-        BiomeGenerationSettings settings = biome.getGenerationSettings();
-        MobSpawnInfo info = biome.getMobSpawnInfo();
+    // Creates a shallow copy of a biome.
+    private static Biome shallow(Biome biome) {
+        @SuppressWarnings("ConstantConditions") // Mixins are used.
+        Biome.Climate climate = ((BiomeAccess) (Object) biome).getClimate();
 
-        return new Biome(climate, category, depth, scale, ambiance, settings, info);
+        return new Biome(
+                climate,
+                biome.getCategory(),
+                biome.getDepth(),
+                biome.getScale(),
+                biome.getAmbience(),
+                biome.getGenerationSettings(),
+                biome.getMobSpawnInfo()
+        );
     }
 
-    // methods below are self explanatory. get the world biome from the server biome if available, otherwise just the server biome.
-
+    // Overrides.
     @Override
-    public ResourceLocation getKey(Biome biome) {
-        return super.getKey(server2World.getOrDefault(biome, biome));
+    public ResourceLocation getKey(@NotNull Biome biome) {
+        return super.getKey(get(biome));
     }
 
     @Override
-    public Optional<RegistryKey<Biome>> getOptionalKey(Biome biome) {
-        return super.getOptionalKey(server2World.getOrDefault(biome, biome));
+    public @NotNull Optional<RegistryKey<Biome>> getOptionalKey(@NotNull Biome biome) {
+        return super.getOptionalKey(get(biome));
     }
 
     @Override
     public int getId(@Nullable Biome biome) {
-        return super.getId(server2World.getOrDefault(biome, biome));
+        return super.getId(get(biome));
     }
 
     @Override
-    public Lifecycle getLifecycleByRegistry(Biome biome) {
-        return super.getLifecycleByRegistry(server2World.getOrDefault(biome, biome));
+    public @NotNull Lifecycle getLifecycleByRegistry(@NotNull Biome biome) {
+        return super.getLifecycleByRegistry(get(biome));
+    }
+
+    // Get the mapped biome, otherwise the biome itself.
+    @Contract("null -> param1")
+    private Biome get(Biome biome) {
+        return storage.getOrDefault(biome, biome);
     }
 }

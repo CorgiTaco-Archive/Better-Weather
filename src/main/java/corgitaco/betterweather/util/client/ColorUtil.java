@@ -135,8 +135,9 @@ public final class ColorUtil {
         try {
             result = (int) Long.parseLong(input.replace("#", "").replace("0x", ""), 16);
         } catch (NumberFormatException e) {
-            BetterWeather.LOGGER.error("Not a valid hex string: " + input + ". Doing nothing with this value...");
+            BetterWeather.LOGGER.warn("\"{}\" is not a valid hex. Defaulted to Vanilla.", input);
         }
+
         return result;
     }
 
