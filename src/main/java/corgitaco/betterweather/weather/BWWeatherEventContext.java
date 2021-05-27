@@ -131,6 +131,8 @@ public class BWWeatherEventContext implements WeatherEventContext {
                         }
 //                    }
                 }
+            } else {
+                this.currentEvent = this.weatherEvents.get("none");
             }
         }
     }

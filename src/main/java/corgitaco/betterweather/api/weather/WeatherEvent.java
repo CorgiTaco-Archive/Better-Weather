@@ -122,7 +122,6 @@ public abstract class WeatherEvent implements WeatherEventSettings {
         return name;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public WeatherEventClientSettings getClientSettings() {
         return clientSettings;
     }

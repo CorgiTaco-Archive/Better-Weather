@@ -10,7 +10,6 @@
     "biome.MixinBiome",
     "biome.MixinBiomeClimate",
     "block.MixinAbstractBlockstate",
-    "client.MixinWorldRenderer",
     "entity.MixinBreedGoal",
     "network.MixinPlayerList",
     "server.MixinCommands",
@@ -22,7 +21,8 @@
     "client.MixinBiomeClient",
     "client.MixinClientWorld",
     "client.MixinDebugOverlayGui",
-    "client.MixinFogRenderer"
+    "client.MixinFogRenderer",
+    "client.MixinWorldRenderer"
   ],
   "injectors": {
     "defaultRequire": 1
