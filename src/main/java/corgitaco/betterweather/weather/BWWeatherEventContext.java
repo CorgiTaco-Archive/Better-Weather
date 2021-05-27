@@ -125,7 +125,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
         boolean hasSeasons = season != null;
         if (world.rainingStrength == 0.0F) {
             if (isPrecipitation) {
-//                if (!this.weatherForced) {
+                if (!this.weatherForced) {
                     Random random = new Random(((ServerWorld) world).getSeed() + world.getGameTime());
                     ArrayList<String> list = new ArrayList<>(this.weatherEvents.keySet());
                     Collections.shuffle(list, random);
@@ -141,7 +141,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
                             break;
                         }
                     }
-//                }
+                }
             } else {
                 this.currentEvent = this.weatherEvents.get("none");
                 this.weatherForced = false;
