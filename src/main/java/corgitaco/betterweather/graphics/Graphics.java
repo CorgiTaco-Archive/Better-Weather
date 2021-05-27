@@ -18,18 +18,20 @@ public final class Graphics {
             config = "auto";
         }
 
-        if (config.equalsIgnoreCase("force_legacy")) {
+        if (config.equalsIgnoreCase("force_off")) {
             SUPPORTED = false;
         } else {
             if (BetterWeather.USING_OPTIFINE) {
                 SUPPORTED = false;
             }
 
-            //todo: mixin into the window class, and test for opengl version
+            /**
+             * see {@link corgitaco.betterweather.mixin.client.MixinMainWindow}
+             */
         }
 
         if (!SUPPORTED) {
-            BetterWeather.LOGGER.info("OpenGL 3.0+ isn't supported, or is disabled.");
+            BetterWeather.LOGGER.info("GLSL Shaders arnt supported, or they're disabled in the config.");
         }
     }
 
