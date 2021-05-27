@@ -124,6 +124,14 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
         return seasonContext != null ? (int) (arg0 * (1 / seasonContext.getCurrentSeason().getCurrentSettings().getWeatherEventChanceMultiplier())) : arg0;
     }
 
+
+    @Inject(method = "setWeather", at = @At("HEAD"))
+    private void setWeatherForced(int clearWeatherTime, int weatherTime, boolean rain, boolean thunder, CallbackInfo ci) {
+        if (this.weatherContext != null) {
+            this.weatherContext.setWeatherForced(true);
+        }
+    }
+
     @Nullable
     @Override
     public SeasonContext getSeasonContext() {

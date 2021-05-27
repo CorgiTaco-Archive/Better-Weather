@@ -2,8 +2,10 @@ package corgitaco.betterweather.api.weather;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
+import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.BetterWeatherRegistry;
 import corgitaco.betterweather.api.season.Season;
+import corgitaco.betterweather.graphics.Graphics;
 import corgitaco.betterweather.season.client.ColorSettings;
 import corgitaco.betterweather.weather.event.Blizzard;
 import corgitaco.betterweather.weather.event.None;
@@ -12,26 +14,29 @@ import corgitaco.betterweather.weather.event.client.NoneClientSettings;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.BiomeDictionary;
 
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 public abstract class WeatherEvent implements WeatherEventSettings {
 
     public static final Codec<WeatherEvent> CODEC = BetterWeatherRegistry.WEATHER_EVENT.dispatchStable(WeatherEvent::codec, Function.identity());
 
-    public static final Map<Season.Key, Map<Season.Phase, Double>> DEFAULT = Util.make(new IdentityHashMap<>(), (map) -> {
+    public static final Map<Season.Key, Map<Season.Phase, Double>> NO_SEASON_CHANCES = Util.make(new IdentityHashMap<>(), (map) -> {
         for (Season.Key value : Season.Key.values()) {
             IdentityHashMap<Season.Phase, Double> phaseDoubleMap = new IdentityHashMap<>();
             for (Season.Phase phase : Season.Phase.values()) {
@@ -43,12 +48,13 @@ public abstract class WeatherEvent implements WeatherEventSettings {
 
     public static final Map<String, String> VALUE_COMMENTS = Util.make(new HashMap<>(ColorSettings.VALUE_COMMENTS), (map) -> {
         map.put("defaultChance", "What is the default chance for this weather event to occur? This value is only used when Seasons are NOT present in the given dimension.");
-        map.put("type", "Target to configure settings in this config.");
+        map.put("type", "Target Weather Event's Registry ID to configure settings for in this config.");
         map.put("seasonChances", "What is the chance for this weather event to occur for the given season (phase)?");
+        map.put("biomeCondition", "Better Weather uses a prefix system for what biomes weather is allowed to function in.\n Prefix Guide:\n \"#\" - Biome category representable.\n \"$\" - Biome dictionary representable.\n \",\" - Creates a new condition, separate from the previous.\n \"ALL\" - Spawn in all biomes(no condition).\n \"!\" - Negates/flips/does the reverse of the condition.\n \"\" - No prefix serves as a biome ID OR Mod ID representable.\n\n Here are a few examples:\n1. \"byg#THE_END, $OCEAN\" would mean that the ore may spawn in biomes with the name space \"byg\" AND in the \"END\" biome category, OR all biomes in the \"OCEAN\" dictionary.\n2. \"byg:guiana_shield, #MESA\" would mean that the ore may spawn in the \"byg:guiana_shield\" OR all biomes in the \"MESA\" category.\n3. \"byg#ICY$MOUNTAIN\" would mean that the ore may only spawn in biomes from byg in the \"ICY\" category and \"MOUNTAIN\" dictionary type.\n4. \"!byg#DESERT\" would mean that the ore may only spawn in biomes that are NOT from byg and NOT in the \"DESERT\" category.\n5. \"ALL\", spawn everywhere. \n6. \"\" Don't spawn anywhere.");
     });
 
-    public static final None NONE = new None(new NoneClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)), DEFAULT);
-    public static final Blizzard BLIZZARD = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), false, new ResourceLocation("minecraft:textures/environment/snow.png")), 0.0D, DEFAULT);
+    public static final None NONE = new None(new NoneClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)));
+    public static final Blizzard BLIZZARD = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), new ResourceLocation("minecraft:textures/environment/snow.png")), "!#DESERT#SAVANNA", 0.0D, NO_SEASON_CHANCES);
 
     public static final Set<WeatherEvent> DEFAULT_EVENTS = Util.make(new ReferenceArraySet<>(), (set) -> {
         set.add(BLIZZARD);
@@ -56,12 +62,14 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     });
 
     private final WeatherEventClientSettings clientSettings;
+    private final String biomeCondition;
     private final double defaultChance;
     private final Map<Season.Key, Map<Season.Phase, Double>> seasonChances;
     private String name;
 
-    public WeatherEvent(WeatherEventClientSettings clientSettings, double defaultChance, Map<Season.Key, Map<Season.Phase, Double>> seasonChance) {
+    public WeatherEvent(WeatherEventClientSettings clientSettings, String biomeCondition, double defaultChance, Map<Season.Key, Map<Season.Phase, Double>> seasonChance) {
         this.clientSettings = clientSettings;
+        this.biomeCondition = biomeCondition;
         this.defaultChance = defaultChance;
         this.seasonChances = seasonChance;
     }
@@ -79,14 +87,6 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     public abstract Codec<? extends WeatherEvent> codec();
 
     public abstract DynamicOps<?> configOps();
-
-    public float modifyTemperature(float biomeTemp, float modifiedBiomeTemp) {
-        return modifiedBiomeTemp == Double.MAX_VALUE ? biomeTemp : modifiedBiomeTemp;
-    }
-
-    public float modifyHumidity(float biomeHumidity, float modifiedBiomeHumidity) {
-        return modifiedBiomeHumidity == Double.MAX_VALUE ? biomeHumidity : modifiedBiomeHumidity;
-    }
 
     public void livingEntityUpdate(Entity entity) {
     }
@@ -124,5 +124,85 @@ public abstract class WeatherEvent implements WeatherEventSettings {
 
     public WeatherEventClientSettings getClientSettings() {
         return clientSettings;
+    }
+
+    public String getBiomeCondition() {
+        return biomeCondition;
+    }
+
+    public boolean biomeConditionPasses(RegistryKey<Biome> biomeKey, Biome biome) {
+        return conditionPasses(this.biomeCondition, biomeKey, biome);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z) {
+        return this.clientSettings.renderWeather(graphics, mc, world, lightTexture, ticks, partialTicks, x, y, z, (biome -> biomeConditionPasses(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(biome).get(), biome)));
+    }
+
+
+    public static boolean conditionPasses(String conditionString, RegistryKey<Biome> biomeKey, Biome biome) {
+        if (conditionString.isEmpty()) {
+            return false;
+        }
+
+        if (conditionString.equalsIgnoreCase("all")) {
+            return true;
+        }
+
+        String[] conditions = conditionString.trim().split("\\s*,\\s*");
+        String biomeNamespace = biomeKey.getLocation().getNamespace();
+        String biomeLocation = biomeKey.getLocation().toString();
+        for (String condition : conditions) {
+            String[] split = condition.split("(?=[\\$#])");
+            boolean categoryExists = true;
+            for (String result : split) {
+                if (result.equals("!")) {
+                    continue;
+                }
+
+                if (result.startsWith("#")) {
+                    String categoryString = result.substring(1);
+                    categoryExists = Arrays.stream(Biome.Category.values()).anyMatch(bc -> bc.toString().equalsIgnoreCase(categoryString));
+                    if (!categoryExists) {
+                        BetterWeather.LOGGER.error("\"" + categoryString + "\" is not a valid biome category!");
+                    }
+                }
+            }
+            if (!categoryExists) {
+                continue;
+            }
+            int passes = 0;
+            for (String result : split) {
+                if (result.equals("!")) {
+                    continue;
+                }
+                if (result.startsWith("!")) {
+                    result = result.substring(1);
+                }
+                if (result.startsWith("$")) {
+                    if (BiomeDictionary.hasType(biomeKey, BiomeDictionary.Type.getType(result.substring(1).toUpperCase()))) {
+                        passes++;
+                    }
+                } else if (result.startsWith("#")) {
+                    String categoryString = result.substring(1);
+                    if (biome.getCategory().getName().equalsIgnoreCase(categoryString)) {
+                        passes++;
+                    }
+                } else if (biomeLocation.equalsIgnoreCase(result) && result.equalsIgnoreCase(biomeNamespace)) {
+                    passes++;
+                }
+            }
+            boolean isFlipped = condition.startsWith("!");
+            if (passes == 0) {
+                if (isFlipped) {
+                    return true;
+                }
+            }
+
+            if (passes > 0 && !isFlipped) {
+                return true;
+            }
+        }
+        return false;
     }
 }

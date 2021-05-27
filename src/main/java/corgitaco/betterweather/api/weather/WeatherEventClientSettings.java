@@ -7,9 +7,11 @@ import corgitaco.betterweather.season.client.ColorSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.world.biome.Biome;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public abstract class WeatherEventClientSettings {
 
@@ -21,7 +23,7 @@ public abstract class WeatherEventClientSettings {
         this.colorSettings = colorSettings;
     }
 
-    public abstract boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z);
+    public abstract boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z, Predicate<Biome> biomePredicate);
 
     public abstract Codec<? extends WeatherEventClientSettings> codec();
 

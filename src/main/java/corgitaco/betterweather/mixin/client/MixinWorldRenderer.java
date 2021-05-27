@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinWorldRenderer {
     private Graphics graphics;
 
-    @Inject(at = @At("TAIL"), method = "<init>")
+    @Inject(at = @At("RETURN"), method = "<init>")
     public void init(Minecraft mcIn, RenderTypeBuffers rainTimeBuffersIn, CallbackInfo ci) {
         graphics = new Graphics();
     }
@@ -38,7 +38,7 @@ public abstract class MixinWorldRenderer {
     private void renderWeather(LightTexture lightmapIn, float partialTicks, double x, double y, double z, CallbackInfo ci) {
         BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) this.world).getWeatherEventContext();
         if (weatherEventContext != null) {
-            if (weatherEventContext.getCurrentEvent().getClientSettings().renderWeather(graphics, mc, this.world, lightmapIn, ticks, partialTicks, x, y, z)) {
+            if (weatherEventContext.getCurrentEvent().renderWeather(graphics, mc, this.world, lightmapIn, ticks, partialTicks, x, y, z)) {
                 ci.cancel();
             }
         }

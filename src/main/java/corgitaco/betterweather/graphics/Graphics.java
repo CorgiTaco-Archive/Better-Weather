@@ -36,6 +36,6 @@ public final class Graphics {
     }
 
     public boolean isSupported() {
-        return SUPPORTED;
+        return false;
     }
 }

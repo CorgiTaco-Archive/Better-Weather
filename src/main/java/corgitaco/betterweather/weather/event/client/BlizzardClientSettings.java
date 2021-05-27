@@ -20,13 +20,12 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.Heightmap;
 
 import java.util.Random;
+import java.util.function.Predicate;
 
 public class BlizzardClientSettings extends WeatherEventClientSettings {
     public static final Codec<BlizzardClientSettings> CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(ColorSettings.CODEC.fieldOf("colorSettings").forGetter(blizzardClientSettings -> {
             return blizzardClientSettings.getColorSettings();
-        }), Codec.BOOL.fieldOf("affectsDeserts").orElse(false).forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.affectsDeserts;
         }), ResourceLocation.CODEC.fieldOf("rendererTexture").forGetter(blizzardClientSettings -> {
             return blizzardClientSettings.textureLocation;
         })).apply(builder, BlizzardClientSettings::new);
@@ -34,12 +33,10 @@ public class BlizzardClientSettings extends WeatherEventClientSettings {
 
     private final float[] rainSizeX = new float[1024];
     private final float[] rainSizeZ = new float[1024];
-    private final boolean affectsDeserts;
     private final ResourceLocation textureLocation;
 
-    public BlizzardClientSettings(ColorSettings colorSettings, boolean affectsDeserts, ResourceLocation textureLocation) {
+    public BlizzardClientSettings(ColorSettings colorSettings, ResourceLocation textureLocation) {
         super(colorSettings);
-        this.affectsDeserts = affectsDeserts;
         this.textureLocation = textureLocation;
 
         for (int i = 0; i < 32; ++i) {
@@ -54,7 +51,7 @@ public class BlizzardClientSettings extends WeatherEventClientSettings {
     }
 
     @Override
-    public boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z) {
+    public boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z, Predicate<Biome> biomePredicate) {
         if (graphics.isSupported()) {
 
         } else {
@@ -131,7 +128,7 @@ public class BlizzardClientSettings extends WeatherEventClientSettings {
                         int i4 = (k3 & '\uffff') * 3;
                         int j4 = (l3 * 3 + 240) / 4;
                         int k4 = (i4 * 3 + 240) / 4;
-                        if (doBlizzardsAffectDeserts(biome)) {
+                        if (biomePredicate.test(biome)) {
                             bufferbuilder.pos((double) graphicQualityX - x - rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYPlusGraphicsQuality - y, (double) graphicQualityZ - z - rainSizeZ + 0.5D + random.nextGaussian()).tex(0.0F + f7, (float) floorYMinusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).lightmap(k4, j4).endVertex();
                             bufferbuilder.pos((double) graphicQualityX - x + rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYPlusGraphicsQuality - y, (double) graphicQualityZ - z + rainSizeZ + 0.5D + random.nextGaussian()).tex(1.0F + f7, (float) floorYMinusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).lightmap(k4, j4).endVertex();
                             bufferbuilder.pos((double) graphicQualityX - x + rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYMinusGraphicsQuality - y, (double) graphicQualityZ - z + rainSizeZ + 0.5D + random.nextGaussian()).tex(1.0F + f7, (float) floorYPlusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).lightmap(k4, j4).endVertex();
@@ -153,14 +150,6 @@ public class BlizzardClientSettings extends WeatherEventClientSettings {
         }
 
         return true;
-    }
-
-    private boolean doBlizzardsAffectDeserts(Biome biome) {
-        if (!this.affectsDeserts) {
-            return biome.getCategory() != Biome.Category.DESERT;
-        } else {
-            return true;
-        }
     }
 
     @Override

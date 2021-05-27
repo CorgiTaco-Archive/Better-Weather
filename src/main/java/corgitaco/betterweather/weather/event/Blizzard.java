@@ -20,6 +20,8 @@ public class Blizzard extends WeatherEvent {
     public static final Codec<Blizzard> CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(WeatherEventClientSettings.CODEC.fieldOf("clientSettings").forGetter((blizzard) -> {
             return blizzard.getClientSettings();
+        }), Codec.STRING.fieldOf("biomeCondition").forGetter(blizzard -> {
+            return blizzard.getBiomeCondition();
         }), Codec.DOUBLE.fieldOf("defaultChance").forGetter(blizzard -> {
             return blizzard.getDefaultChance();
         }), Codec.simpleMap(Season.Key.CODEC, Codec.unboundedMap(Season.Phase.CODEC, Codec.DOUBLE), IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasonChances").forGetter(blizzard -> {
@@ -31,8 +33,8 @@ public class Blizzard extends WeatherEvent {
     }), true);
 
 
-    public Blizzard(WeatherEventClientSettings clientSettings, double defaultChance, Map<Season.Key, Map<Season.Phase, Double>> map) {
-        super(clientSettings, defaultChance, map);
+    public Blizzard(WeatherEventClientSettings clientSettings, String biomeCondition, double defaultChance, Map<Season.Key, Map<Season.Phase, Double>> map) {
+        super(clientSettings, biomeCondition, defaultChance, map);
     }
 
     @Override

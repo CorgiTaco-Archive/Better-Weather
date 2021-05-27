@@ -44,6 +44,8 @@ public class BWWeatherEventContext implements WeatherEventContext {
     public static final Codec<BWWeatherEventContext> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(Codec.STRING.fieldOf("currentEvent").forGetter((weatherEventContext) -> {
             return weatherEventContext.currentEvent.getName();
+        }), Codec.BOOL.fieldOf("weatherForced").forGetter((weatherEventContext) -> {
+            return weatherEventContext.weatherForced;
         }), ResourceLocation.CODEC.fieldOf("worldID").forGetter((weatherEventContext) -> {
             return weatherEventContext.worldID;
         }), Codec.unboundedMap(Codec.STRING, WeatherEvent.CODEC).fieldOf("weatherEvents").forGetter((weatherEventContext) -> {
@@ -60,24 +62,26 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
     private WeatherEvent currentEvent;
 
+    private boolean weatherForced;
+
     //Packet Constructor
-    public BWWeatherEventContext(String currentEvent, ResourceLocation worldID, Map<String, WeatherEvent> weatherEvents) {
-        this(currentEvent, worldID, null, weatherEvents);
+    public BWWeatherEventContext(String currentEvent, boolean weatherForced, ResourceLocation worldID, Map<String, WeatherEvent> weatherEvents) {
+        this(currentEvent, weatherForced, worldID, null, weatherEvents);
     }
 
     //Server world constructor
     public BWWeatherEventContext(WeatherEventSavedData weatherEventSavedData, RegistryKey<World> worldID, Registry<Biome> biomeRegistry) {
-        this(weatherEventSavedData.getEvent(), worldID.getLocation(), biomeRegistry, null);
+        this(weatherEventSavedData.getEvent(), weatherEventSavedData.isWeatherForced(), worldID.getLocation(), biomeRegistry, null);
     }
 
-    public BWWeatherEventContext(String currentEvent, ResourceLocation worldID, @Nullable Registry<Biome> biomeRegistry, @Nullable Map<String, WeatherEvent> weatherEvents) {
+    public BWWeatherEventContext(String currentEvent, boolean weatherForced, ResourceLocation worldID, @Nullable Registry<Biome> biomeRegistry, @Nullable Map<String, WeatherEvent> weatherEvents) {
         this.worldID = worldID;
         this.biomeRegistry = biomeRegistry;
         this.weatherConfigPath = BetterWeather.CONFIG_PATH.resolve(worldID.getNamespace()).resolve(worldID.getPath()).resolve("weather");
         this.weatherEventsConfigPath = this.weatherConfigPath.resolve("events");
         this.weatherConfigFile = this.weatherConfigPath.resolve(CONFIG_NAME).toFile();
         this.weatherEvents.put("none", WeatherEvent.NONE.setName("none"));
-
+        this.weatherForced = weatherForced;
         boolean isClient = weatherEvents != null;
         boolean isPacket = biomeRegistry == null;
 
@@ -96,18 +100,23 @@ public class BWWeatherEventContext implements WeatherEventContext {
         } else {
             this.currentEvent = this.weatherEvents.getOrDefault(currentEvent, WeatherEvent.NONE);
             if (!isClient && !isPacket) {
-                BetterWeather.LOGGER.info(worldID.toString() + " initialized with a weather event of: \"" + (currentEvent == null ? "NONE" : currentEvent) + "\".");
+                BetterWeather.LOGGER.info(worldID.toString() + " initialized with a weather event of: \"" + (currentEvent == null ? "none" : currentEvent) + "\".");
             }
         }
     }
 
 
     public void tick(World world) {
+        WeatherEvent prevEvent = this.currentEvent;
+        boolean wasForced = this.weatherForced;
         if (world instanceof ServerWorld) {
             shuffleAndPickWeatherEvent(world);
         }
 
-
+        if (prevEvent != this.currentEvent || wasForced != this.weatherForced) {
+            save(world);
+            NetworkHandler.sendToAllPlayers(((ServerWorld) world).getPlayers(), new WeatherPacket(this));
+        }
     }
 
     private void shuffleAndPickWeatherEvent(World world) {
@@ -116,25 +125,34 @@ public class BWWeatherEventContext implements WeatherEventContext {
         boolean hasSeasons = season != null;
         if (world.rainingStrength == 0.0F) {
             if (isPrecipitation) {
-//                if (!WeatherEventSavedData.get(world).isWeatherForced()) {
+//                if (!this.weatherForced) {
                     Random random = new Random(((ServerWorld) world).getSeed() + world.getGameTime());
                     ArrayList<String> list = new ArrayList<>(this.weatherEvents.keySet());
                     Collections.shuffle(list, random);
                     for (String entry : list) {
+                        if (entry.equals("none")) {
+                            continue;
+                        }
                         WeatherEvent weatherEvent = this.weatherEvents.get(entry);
                         double chance = hasSeasons ? weatherEvent.getSeasonChances().getOrDefault(season.getKey(), new IdentityHashMap<>()).getOrDefault(season.getPhase(), weatherEvent.getDefaultChance()) : weatherEvent.getDefaultChance();
 
                         if (random.nextDouble() < chance) {
                             this.currentEvent = weatherEvent;
-                            NetworkHandler.sendToAllPlayers(((ServerWorld) world).getPlayers(), new WeatherPacket(this));
                             break;
                         }
-//                    }
-                }
+                    }
+//                }
             } else {
                 this.currentEvent = this.weatherEvents.get("none");
+                this.weatherForced = false;
             }
         }
+    }
+
+    private void save(World world) {
+        WeatherEventSavedData weatherEventSavedData = WeatherEventSavedData.get(world);
+        weatherEventSavedData.setEvent(this.currentEvent.getName());
+        weatherEventSavedData.setWeatherForced(this.weatherForced);
     }
 
 
@@ -230,12 +248,20 @@ public class BWWeatherEventContext implements WeatherEventContext {
         this.currentEvent = currentEvent;
     }
 
+    public void setWeatherForced(boolean weatherForced) {
+        this.weatherForced = weatherForced;
+    }
+
     public WeatherEvent getCurrentEvent() {
         return currentEvent;
     }
 
     public Map<String, WeatherEvent> getWeatherEvents() {
         return weatherEvents;
+    }
+
+    public boolean isWeatherForced() {
+        return weatherForced;
     }
 
     @Override

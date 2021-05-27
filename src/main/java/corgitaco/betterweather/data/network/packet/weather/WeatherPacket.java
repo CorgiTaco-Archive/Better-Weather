@@ -17,9 +17,6 @@ public class WeatherPacket {
     private final BWWeatherEventContext bwWeatherEventContext;
 
     public WeatherPacket(BWWeatherEventContext bwWeatherEventContext) {
-        if (bwWeatherEventContext == null) {
-            throw new NullPointerException("Weather Event Context was null!");
-        }
         this.bwWeatherEventContext = bwWeatherEventContext;
     }
 
@@ -50,7 +47,7 @@ public class WeatherPacket {
                     BWWeatherEventContext BWWeatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
                     if (BWWeatherEventContext == null) {
                         BWWeatherEventContext = ((BetterWeatherWorldData) world).setWeatherEventContext(new BWWeatherEventContext(message.bwWeatherEventContext.getCurrentWeatherEventKey(),
-                                world.getDimensionKey().getLocation(), world.func_241828_r().getRegistry(Registry.BIOME_KEY), message.bwWeatherEventContext.getWeatherEvents()));
+                                message.bwWeatherEventContext.isWeatherForced(), world.getDimensionKey().getLocation(), world.func_241828_r().getRegistry(Registry.BIOME_KEY), message.bwWeatherEventContext.getWeatherEvents()));
                         ((BiomeUpdate) world).updateBiomeData();
                     }
 

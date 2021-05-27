@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(MainWindow.class)
 public abstract class MixinMainWindow {
 
-    @Inject(at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL;createCapabilities()Lorg/lwjgl/opengl/GLCapabilities;", shift = At.Shift.AFTER), method = "<init>")
+    @Inject(method = "<init>", at = @At(value = "RETURN"))
     public void init(IWindowEventListener mc, MonitorHandler monitorHandler, ScreenSize size, String videoModeName, String titleIn, CallbackInfo ci) {
         GL.getCapabilities(); // todo: check if driver has the correct extensions.
     }
