@@ -10,19 +10,19 @@ import net.minecraftforge.client.event.EntityViewRenderEvent;
 
 import java.util.function.Function;
 
-public abstract class WeatherEventClient {
+public abstract class WeatherEventClientSettings {
 
-    public static final Codec<WeatherEventClient> CODEC = BetterWeatherRegistry.CLIENT_WEATHER_EVENT.dispatchStable(WeatherEventClient::codec, Function.identity());
+    public static final Codec<WeatherEventClientSettings> CODEC = BetterWeatherRegistry.CLIENT_WEATHER_EVENT_SETTINGS.dispatchStable(WeatherEventClientSettings::codec, Function.identity());
 
     private final ColorSettings colorSettings;
 
-    public WeatherEventClient(ColorSettings colorSettings) {
+    public WeatherEventClientSettings(ColorSettings colorSettings) {
         this.colorSettings = colorSettings;
     }
 
     public abstract boolean renderWeather(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z);
 
-    public abstract Codec<? extends WeatherEventClient> codec();
+    public abstract Codec<? extends WeatherEventClientSettings> codec();
 
     public abstract void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc);
 

@@ -17,6 +17,9 @@ public class WeatherPacket {
     private final BWWeatherEventContext bwWeatherEventContext;
 
     public WeatherPacket(BWWeatherEventContext bwWeatherEventContext) {
+        if (bwWeatherEventContext == null) {
+            throw new NullPointerException("Weather Event Context was null!");
+        }
         this.bwWeatherEventContext = bwWeatherEventContext;
     }
 

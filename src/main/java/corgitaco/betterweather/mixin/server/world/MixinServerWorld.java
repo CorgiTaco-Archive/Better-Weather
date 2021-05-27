@@ -109,7 +109,7 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
             this.seasonContext.tick((ServerWorld) (Object) this);
         }
         if (weatherContext != null) {
-//            this.weatherContext.tick((ServerWorld) (Object) this);
+            this.weatherContext.tick((ServerWorld) (Object) this);
         }
     }
 

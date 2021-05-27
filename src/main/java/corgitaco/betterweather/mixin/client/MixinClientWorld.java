@@ -65,6 +65,9 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
         if (this.seasonContext != null) {
             this.seasonContext.tick((ClientWorld) (Object) this);
         }
+        if (this.weatherContext != null) {
+            this.weatherContext.tick((ClientWorld) (Object) this);
+        }
     }
 
     @Override

@@ -12,10 +12,14 @@ import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.BetterWeatherRegistry;
+import corgitaco.betterweather.api.Climate;
+import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.api.weather.WeatherEventContext;
 import corgitaco.betterweather.api.weather.WeatherEventSettings;
 import corgitaco.betterweather.config.BetterWeatherConfig;
+import corgitaco.betterweather.data.network.NetworkHandler;
+import corgitaco.betterweather.data.network.packet.weather.WeatherPacket;
 import corgitaco.betterweather.data.storage.WeatherEventSavedData;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
 import net.minecraft.util.RegistryKey;
@@ -23,6 +27,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -31,9 +36,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class BWWeatherEventContext implements WeatherEventContext {
     public static final String CONFIG_NAME = "weather-settings.toml";
@@ -73,6 +76,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
         this.weatherConfigPath = BetterWeather.CONFIG_PATH.resolve(worldID.getNamespace()).resolve(worldID.getPath()).resolve("weather");
         this.weatherEventsConfigPath = this.weatherConfigPath.resolve("events");
         this.weatherConfigFile = this.weatherConfigPath.resolve(CONFIG_NAME).toFile();
+        this.weatherEvents.put("none", WeatherEvent.NONE.setName("none"));
 
         boolean isClient = weatherEvents != null;
         boolean isPacket = biomeRegistry == null;
@@ -84,7 +88,6 @@ public class BWWeatherEventContext implements WeatherEventContext {
             this.handleConfig();
         }
 
-        this.weatherEvents.put("none", WeatherEvent.NONE);
 
         WeatherEvent currentWeatherEvent = this.weatherEvents.get(currentEvent);
 
@@ -94,6 +97,40 @@ public class BWWeatherEventContext implements WeatherEventContext {
             this.currentEvent = this.weatherEvents.getOrDefault(currentEvent, WeatherEvent.NONE);
             if (!isClient && !isPacket) {
                 BetterWeather.LOGGER.info(worldID.toString() + " initialized with a weather event of: \"" + (currentEvent == null ? "NONE" : currentEvent) + "\".");
+            }
+        }
+    }
+
+
+    public void tick(World world) {
+        if (world instanceof ServerWorld) {
+            shuffleAndPickWeatherEvent(world);
+        }
+
+
+    }
+
+    private void shuffleAndPickWeatherEvent(World world) {
+        boolean isPrecipitation = world.getWorldInfo().isRaining() || world.getWorldInfo().isThundering();
+        Season season = ((Climate) world).getSeason();
+        boolean hasSeasons = season != null;
+        if (world.rainingStrength == 0.0F) {
+            if (isPrecipitation) {
+//                if (!WeatherEventSavedData.get(world).isWeatherForced()) {
+                    Random random = new Random(((ServerWorld) world).getSeed() + world.getGameTime());
+                    ArrayList<String> list = new ArrayList<>(this.weatherEvents.keySet());
+                    Collections.shuffle(list, random);
+                    for (String entry : list) {
+                        WeatherEvent weatherEvent = this.weatherEvents.get(entry);
+                        double chance = hasSeasons ? weatherEvent.getSeasonChances().getOrDefault(season.getKey(), new IdentityHashMap<>()).getOrDefault(season.getPhase(), weatherEvent.getDefaultChance()) : weatherEvent.getDefaultChance();
+
+                        if (random.nextDouble() < chance) {
+                            this.currentEvent = weatherEvent;
+                            NetworkHandler.sendToAllPlayers(((ServerWorld) world).getPlayers(), new WeatherPacket(this));
+                            break;
+                        }
+//                    }
+                }
             }
         }
     }

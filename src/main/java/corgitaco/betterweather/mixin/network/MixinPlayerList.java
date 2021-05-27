@@ -3,8 +3,10 @@ package corgitaco.betterweather.mixin.network;
 import com.mojang.authlib.GameProfile;
 import corgitaco.betterweather.data.network.NetworkHandler;
 import corgitaco.betterweather.data.network.packet.season.SeasonPacket;
+import corgitaco.betterweather.data.network.packet.weather.WeatherPacket;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.season.SeasonContext;
+import corgitaco.betterweather.weather.BWWeatherEventContext;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
@@ -40,10 +42,15 @@ public abstract class MixinPlayerList {
 
 
     @Inject(method = "sendWorldInfo", at = @At(value = "HEAD"))
-    private void sendSeasonContext(ServerPlayerEntity playerIn, ServerWorld worldIn, CallbackInfo ci) {
+    private void sendContext(ServerPlayerEntity playerIn, ServerWorld worldIn, CallbackInfo ci) {
         SeasonContext seasonContext = ((BetterWeatherWorldData) worldIn).getSeasonContext();
         if (seasonContext != null) {
             NetworkHandler.sendToPlayer(playerIn, new SeasonPacket(seasonContext));
+        }
+
+        BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) worldIn).getWeatherEventContext();
+        if (weatherEventContext != null) {
+            NetworkHandler.sendToPlayer(playerIn, new WeatherPacket(weatherEventContext));
         }
     }
 }

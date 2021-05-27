@@ -7,12 +7,13 @@ import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.season.client.ColorSettings;
 import corgitaco.betterweather.weather.event.Blizzard;
 import corgitaco.betterweather.weather.event.None;
-import corgitaco.betterweather.weather.event.client.BlizzardClient;
-import corgitaco.betterweather.weather.event.client.NoneClient;
+import corgitaco.betterweather.weather.event.client.BlizzardClientSettings;
+import corgitaco.betterweather.weather.event.client.NoneClientSettings;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.chunk.Chunk;
@@ -46,20 +47,20 @@ public abstract class WeatherEvent implements WeatherEventSettings {
         map.put("seasonChances", "What is the chance for this weather event to occur for the given season (phase)?");
     });
 
-    public static final None NONE = new None(new NoneClient(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)), DEFAULT);
-    public static final Blizzard BLIZZARD = new Blizzard(new BlizzardClient(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)), 0.0D, DEFAULT);
+    public static final None NONE = new None(new NoneClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)), DEFAULT);
+    public static final Blizzard BLIZZARD = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), false, new ResourceLocation("minecraft:textures/environment/snow.png")), 0.0D, DEFAULT);
 
     public static final Set<WeatherEvent> DEFAULT_EVENTS = Util.make(new ReferenceArraySet<>(), (set) -> {
         set.add(BLIZZARD);
         set.add(NONE);
     });
 
-    private final WeatherEventClient clientSettings;
+    private final WeatherEventClientSettings clientSettings;
     private final double defaultChance;
     private final Map<Season.Key, Map<Season.Phase, Double>> seasonChances;
     private String name;
 
-    public WeatherEvent(WeatherEventClient clientSettings, double defaultChance, Map<Season.Key, Map<Season.Phase, Double>> seasonChance) {
+    public WeatherEvent(WeatherEventClientSettings clientSettings, double defaultChance, Map<Season.Key, Map<Season.Phase, Double>> seasonChance) {
         this.clientSettings = clientSettings;
         this.defaultChance = defaultChance;
         this.seasonChances = seasonChance;
@@ -122,7 +123,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public WeatherEventClient getClientSettings() {
+    public WeatherEventClientSettings getClientSettings() {
         return clientSettings;
     }
 }

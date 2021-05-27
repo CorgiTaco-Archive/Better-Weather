@@ -5,7 +5,7 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.weather.WeatherEvent;
-import corgitaco.betterweather.api.weather.WeatherEventClient;
+import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.Util;
@@ -18,7 +18,7 @@ import java.util.Map;
 public class None extends WeatherEvent {
 
     public static final Codec<None> CODEC = RecordCodecBuilder.create((builder) -> {
-        return builder.group(WeatherEventClient.CODEC.fieldOf("clientSettings").forGetter((blizzard) -> {
+        return builder.group(WeatherEventClientSettings.CODEC.fieldOf("clientSettings").forGetter((blizzard) -> {
             return blizzard.getClientSettings();
         }), Codec.simpleMap(Season.Key.CODEC, Codec.unboundedMap(Season.Phase.CODEC, Codec.DOUBLE), IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasonChances").forGetter(blizzard -> {
             return blizzard.getSeasonChances();
@@ -29,7 +29,7 @@ public class None extends WeatherEvent {
     }), true);
 
 
-    public None(WeatherEventClient clientSettings, Map<Season.Key, Map<Season.Phase, Double>> seasonChances) {
+    public None(WeatherEventClientSettings clientSettings, Map<Season.Key, Map<Season.Phase, Double>> seasonChances) {
         super(clientSettings, 0.0, seasonChances);
     }
 
