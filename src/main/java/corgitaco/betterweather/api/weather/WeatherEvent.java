@@ -28,14 +28,18 @@ public abstract class WeatherEvent implements WeatherEventSettings {
 
     public static final Codec<WeatherEvent> CODEC = BetterWeatherRegistry.WEATHER_EVENT.dispatchStable(WeatherEvent::codec, Function.identity());
 
+    public static final None NONE = new None(new NoneClient(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)), 0.0D);
+
+
     public static final Set<WeatherEvent> DEFAULT_EVENTS = Util.make(new ReferenceArraySet<>(), (set) -> {
         set.add(new Blizzard(new BlizzardClient(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)), 0.0D));
-        set.add(new None(new NoneClient(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)), 0.0D));
+        set.add(NONE);
     });
 
     private final WeatherEventClient clientSettings;
     private final double defaultChance;
     private final EnumMap<Season.Key, EnumMap<Season.Phase, Double>> seasonChances;
+    private String name;
 
     public WeatherEvent(WeatherEventClient clientSettings, double defaultChance) {
         this(clientSettings, defaultChance, new EnumMap<>(Season.Key.class));
@@ -92,6 +96,15 @@ public abstract class WeatherEvent implements WeatherEventSettings {
 
     public final TranslationTextComponent successTranslationTextComponent() {
         return new TranslationTextComponent("commands.bw.setweather.success." + BetterWeatherRegistry.WEATHER_EVENT.getKey(codec()).toString());
+    }
+
+    public WeatherEvent setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @OnlyIn(Dist.CLIENT)
