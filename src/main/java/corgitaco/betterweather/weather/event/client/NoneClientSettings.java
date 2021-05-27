@@ -3,6 +3,7 @@ package corgitaco.betterweather.weather.event.client;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
+import corgitaco.betterweather.graphics.Graphics;
 import corgitaco.betterweather.season.client.ColorSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
@@ -21,7 +22,7 @@ public class NoneClientSettings extends WeatherEventClientSettings {
     }
 
     @Override
-    public boolean renderWeather(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z) {
+    public boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z) {
         return false;
     }
 

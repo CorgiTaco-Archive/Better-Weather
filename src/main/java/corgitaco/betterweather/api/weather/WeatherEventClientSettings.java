@@ -2,6 +2,7 @@ package corgitaco.betterweather.api.weather;
 
 import com.mojang.serialization.Codec;
 import corgitaco.betterweather.api.BetterWeatherRegistry;
+import corgitaco.betterweather.graphics.Graphics;
 import corgitaco.betterweather.season.client.ColorSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
@@ -20,7 +21,7 @@ public abstract class WeatherEventClientSettings {
         this.colorSettings = colorSettings;
     }
 
-    public abstract boolean renderWeather(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z);
+    public abstract boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z);
 
     public abstract Codec<? extends WeatherEventClientSettings> codec();
 

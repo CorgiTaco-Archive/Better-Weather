@@ -1,10 +1,12 @@
 package corgitaco.betterweather.mixin.client;
 
+import corgitaco.betterweather.graphics.Graphics;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.weather.BWWeatherEventContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.RenderTypeBuffers;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.world.ClientWorld;
 import org.spongepowered.asm.mixin.Final;
@@ -17,6 +19,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(WorldRenderer.class)
 public abstract class MixinWorldRenderer {
+    private Graphics graphics;
+
+    @Inject(at = @At("TAIL"), method = "<init>")
+    public void init(Minecraft mcIn, RenderTypeBuffers rainTimeBuffersIn, CallbackInfo ci) {
+        graphics = new Graphics();
+    }
 
     @Shadow
     public int ticks;
@@ -30,7 +38,7 @@ public abstract class MixinWorldRenderer {
     private void renderWeather(LightTexture lightmapIn, float partialTicks, double x, double y, double z, CallbackInfo ci) {
         BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) this.world).getWeatherEventContext();
         if (weatherEventContext != null) {
-            if (weatherEventContext.getCurrentEvent().getClientSettings().renderWeather(mc, this.world, lightmapIn, ticks, partialTicks, x, y, z)) {
+            if (weatherEventContext.getCurrentEvent().getClientSettings().renderWeather(graphics, mc, this.world, lightmapIn, ticks, partialTicks, x, y, z)) {
                 ci.cancel();
             }
         }
