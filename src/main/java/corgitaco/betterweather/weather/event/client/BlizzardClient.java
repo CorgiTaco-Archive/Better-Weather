@@ -10,7 +10,7 @@ import net.minecraft.client.world.ClientWorld;
 
 public class BlizzardClient extends WeatherEventClient {
     public static final Codec<BlizzardClient> CODEC = RecordCodecBuilder.create((builder) -> {
-        return builder.group(ColorSettings.CODEC.fieldOf("color_settings").forGetter(blizzardClient -> {
+        return builder.group(ColorSettings.CODEC.fieldOf("colorSettings").forGetter(blizzardClient -> {
             return blizzardClient.getColorSettings();
         })).apply(builder, BlizzardClient::new);
     });

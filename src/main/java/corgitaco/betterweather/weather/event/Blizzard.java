@@ -3,24 +3,36 @@ package corgitaco.betterweather.weather.event;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.api.weather.WeatherEventClient;
+import corgitaco.betterweather.util.TomlCommentedConfigOps;
+import net.minecraft.util.IStringSerializable;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Blizzard extends WeatherEvent {
 
     public static final Codec<Blizzard> CODEC = RecordCodecBuilder.create((builder) -> {
-        return builder.group(WeatherEventClient.CODEC.fieldOf("client_settings").forGetter((blizzard) -> {
+        return builder.group(WeatherEventClient.CODEC.fieldOf("clientSettings").forGetter((blizzard) -> {
             return blizzard.getClientSettings();
-        }), Codec.DOUBLE.fieldOf("chance").forGetter(blizzard -> {
+        }), Codec.DOUBLE.fieldOf("defaultChance").forGetter(blizzard -> {
             return blizzard.getDefaultChance();
+        }), Codec.simpleMap(Season.Key.CODEC, Codec.unboundedMap(Season.Phase.CODEC, Codec.DOUBLE), IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasonChances").forGetter(blizzard -> {
+            return blizzard.getSeasonChances();
         })).apply(builder, Blizzard::new);
     });
 
+    public static final TomlCommentedConfigOps CONFIG_OPS = new TomlCommentedConfigOps(Util.make(new HashMap<>(WeatherEvent.VALUE_COMMENTS), (map) -> {
+    }), true);
 
-    public Blizzard(WeatherEventClient clientSettings, double defaultChance) {
-        super(clientSettings, defaultChance);
+
+    public Blizzard(WeatherEventClient clientSettings, double defaultChance, Map<Season.Key, Map<Season.Phase, Double>> map) {
+        super(clientSettings, defaultChance, map);
     }
 
     @Override
@@ -35,7 +47,7 @@ public class Blizzard extends WeatherEvent {
 
     @Override
     public DynamicOps<?> configOps() {
-        return null;
+        return CONFIG_OPS;
     }
 
     @Override

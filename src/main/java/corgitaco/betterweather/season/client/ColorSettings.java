@@ -2,6 +2,10 @@ package corgitaco.betterweather.season.client;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.Util;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static corgitaco.betterweather.util.client.ColorUtil.tryParseColor;
 
@@ -26,6 +30,21 @@ public class ColorSettings {
             return colorSettings.fogColorBlendStrength;
         })).apply(seasonClientSettingsInstance, ColorSettings::new);
     });
+
+    public static Map<String, String> VALUE_COMMENTS = Util.make(new HashMap<>(), (map) -> {
+        map.put("fogColorBlendStrength", "The strength of this world's fog color blend towards the value of \"fogTargetHexColor\".\nRange: 0 - 1.0");
+        map.put("fogTargetHexColor", "Blends the world's fog color towards this value. Blend strength is determined by the value of \"fogColorBlendStrength\".");
+
+        map.put("foliageColorBlendStrength", "The strength of this world's sky color blend towards the value of \"foliageTargetHexColor\".\nRange: 0 - 1.0");
+        map.put("foliageTargetHexColor", "Blends this world's foliage color towards this value. Blend strength is determined by the value of \"foliageColorBlendStrength\".");
+
+        map.put("grassColorBlendStrength", "The strength of this world's grass color blend towards the value of \"grassTargetHexColor\".\nRange: 0 - 1.0");
+        map.put("grassTargetHexColor", "Blends this world's grass color towards this value. Blend strength is determined by the value of \"grassColorBlendStrength\".");
+
+        map.put("skyColorBlendStrength", "The strength of this world's sky color blend towards the value of \"skyTargetHexColor\".\nRange: 0 - 1.0");
+        map.put("skyTargetHexColor", "Blends this world's grass color towards this value. Blend strength is determined by the value of \"skyColorBlendStrength\".");
+    });
+
 
     private final int targetFoliageHexColor;
     private final double foliageColorBlendStrength;

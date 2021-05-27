@@ -4,6 +4,8 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import com.electronwill.nightconfig.toml.TomlWriter;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
@@ -13,11 +15,11 @@ import corgitaco.betterweather.api.BetterWeatherRegistry;
 import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.api.weather.WeatherEventContext;
 import corgitaco.betterweather.api.weather.WeatherEventSettings;
+import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.data.storage.WeatherEventSavedData;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -41,7 +43,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
             return weatherEventContext.currentEvent.getName();
         }), ResourceLocation.CODEC.fieldOf("worldID").forGetter((weatherEventContext) -> {
             return weatherEventContext.worldID;
-        }), Codec.unboundedMap(Codec.STRING, WeatherEvent.CODEC).fieldOf("weather_events").forGetter((weatherEventContext) -> {
+        }), Codec.unboundedMap(Codec.STRING, WeatherEvent.CODEC).fieldOf("weatherEvents").forGetter((weatherEventContext) -> {
             return weatherEventContext.weatherEvents;
         })).apply(builder, BWWeatherEventContext::new);
     });
@@ -79,25 +81,25 @@ public class BWWeatherEventContext implements WeatherEventContext {
             this.weatherEvents.putAll(weatherEvents);
         }
         if (!isPacket) {
-            this.handleConfig(isClient);
+            this.handleConfig();
         }
 
-        this.weatherEvents.put("NONE", WeatherEvent.NONE);
+        this.weatherEvents.put("none", WeatherEvent.NONE);
 
         WeatherEvent currentWeatherEvent = this.weatherEvents.get(currentEvent);
 
         if (currentEvent != null && currentWeatherEvent == null) {
             BetterWeather.LOGGER.error("The last weather event: \"" + worldID.toString() + "\" was not found in: \"" + this.weatherEventsConfigPath.toString() + "\".\nDefaulting to weather event: \"NONE\".");
         } else {
-            this.currentEvent = currentWeatherEvent;
+            this.currentEvent = this.weatherEvents.getOrDefault(currentEvent, WeatherEvent.NONE);
             if (!isClient && !isPacket) {
-                BetterWeather.LOGGER.info(worldID.toString() + " initialized with a weather event of: \"" + currentEvent + "\".");
+                BetterWeather.LOGGER.info(worldID.toString() + " initialized with a weather event of: \"" + (currentEvent == null ? "NONE" : currentEvent) + "\".");
             }
         }
     }
 
 
-    public void handleConfig(boolean isClient) {
+    public void handleConfig() {
         File eventsDirectory = this.weatherEventsConfigPath.toFile();
         if (!eventsDirectory.exists()) {
             createDefaultEventConfigs();
@@ -121,12 +123,12 @@ public class BWWeatherEventContext implements WeatherEventContext {
                 if (readConfig instanceof CommentedFileConfig) {
                     ((CommentedFileConfig) readConfig).load();
                 }
-                String name = configFile.getName().replace(".toml", "");
+                String name = configFile.getName().replace(".toml", "").toLowerCase();
                 this.weatherEvents.put(name, WeatherEvent.CODEC.decode(TomlCommentedConfigOps.INSTANCE, readConfig).resultOrPartial(BetterWeather.LOGGER::error).get().getFirst().setName(name));
 
             } else if (absolutePath.endsWith(".json")) {
                 try {
-                    String name = configFile.getName().replace(".json", "");
+                    String name = configFile.getName().replace(".json", "").toLowerCase();
                     this.weatherEvents.put(name, WeatherEvent.CODEC.decode(JsonOps.INSTANCE, new JsonParser().parse(new FileReader(configFile))).resultOrPartial(BetterWeather.LOGGER::error).get().getFirst().setName(name));
                 } catch (FileNotFoundException e) {
                 }
@@ -134,17 +136,33 @@ public class BWWeatherEventContext implements WeatherEventContext {
         }
     }
 
-    private void createEventConfig(WeatherEvent weatherEvent, ResourceLocation weatherEventID) {
+    private void createTomlEventConfig(WeatherEvent weatherEvent, ResourceLocation weatherEventID) {
         Path configFile = this.weatherEventsConfigPath.resolve(weatherEventID.getPath() + ".toml");
         CommentedConfig readConfig = configFile.toFile().exists() ? CommentedFileConfig.builder(configFile).sync().autosave().writingMode(WritingMode.REPLACE).build() : CommentedConfig.inMemory();
         if (readConfig instanceof CommentedFileConfig) {
             ((CommentedFileConfig) readConfig).load();
         }
-        CommentedConfig encodedConfig = (CommentedConfig) WeatherEvent.CODEC.encodeStart(TomlCommentedConfigOps.INSTANCE, weatherEvent).result().get();
+        CommentedConfig encodedConfig = (CommentedConfig) WeatherEvent.CODEC.encodeStart(weatherEvent.configOps(), weatherEvent).result().get();
 
         try {
             Files.createDirectories(configFile.getParent());
             new TomlWriter().write(configFile.toFile().exists() ? TomlCommentedConfigOps.recursivelyUpdateAndSortConfig(readConfig, encodedConfig) : encodedConfig, configFile, WritingMode.REPLACE);
+        } catch (IOException e) {
+
+        }
+    }
+
+    private void createJsonEventConfig(WeatherEvent weatherEvent, ResourceLocation weatherEventID) {
+        Path configFile = this.weatherEventsConfigPath.resolve(weatherEventID.getPath() + ".json");
+        CommentedConfig readConfig = configFile.toFile().exists() ? CommentedFileConfig.builder(configFile).sync().autosave().writingMode(WritingMode.REPLACE).build() : CommentedConfig.inMemory();
+        if (readConfig instanceof CommentedFileConfig) {
+            ((CommentedFileConfig) readConfig).load();
+        }
+        JsonElement jsonElement = WeatherEvent.CODEC.encodeStart(JsonOps.INSTANCE, weatherEvent).result().get();
+
+        try {
+            Files.createDirectories(configFile.getParent());
+            Files.write(configFile, new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(jsonElement).getBytes());
         } catch (IOException e) {
 
         }
@@ -156,14 +174,29 @@ public class BWWeatherEventContext implements WeatherEventContext {
             Optional<RegistryKey<Codec<? extends WeatherEvent>>> optionalKey = BetterWeatherRegistry.WEATHER_EVENT.getOptionalKey(defaultEvent.codec());
 
             if (optionalKey.isPresent()) {
-//                if (enabledWeatherEvents.contains(optionalKey.get())) {
-                createEventConfig(defaultEvent, optionalKey.get().getLocation());
-//                }
+                ResourceLocation location = optionalKey.get().getLocation();
+                if (BetterWeatherConfig.SERIALIZE_AS_JSON) {
+                    createJsonEventConfig(defaultEvent, location);
+                } else {
+                    createTomlEventConfig(defaultEvent, location);
+                }
             } else {
                 throw new IllegalStateException("Weather Event Key not there when requested: " + defaultEvent.getClass().getSimpleName());
             }
         }
 
+    }
+
+    public void setCurrentEvent(WeatherEvent currentEvent) {
+        this.currentEvent = currentEvent;
+    }
+
+    public WeatherEvent getCurrentEvent() {
+        return currentEvent;
+    }
+
+    public Map<String, WeatherEvent> getWeatherEvents() {
+        return weatherEvents;
     }
 
     @Override
@@ -173,21 +206,11 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
     @Override
     public String getCurrentWeatherEventKey() {
-        return null;
+        return this.currentEvent.getName();
     }
 
     @Override
     public WeatherEventSettings getCurrentWeatherEventSettings() {
-        return new WeatherEventSettings() {
-            @Override
-            public double getTemperatureModifierAtPosition(BlockPos pos) {
-                return 0;
-            }
-
-            @Override
-            public double getHumidityModifierAtPosition(BlockPos pos) {
-                return 0;
-            }
-        };
+        return this.currentEvent;
     }
 }

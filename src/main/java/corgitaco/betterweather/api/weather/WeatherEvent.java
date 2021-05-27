@@ -20,7 +20,9 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -28,24 +30,36 @@ public abstract class WeatherEvent implements WeatherEventSettings {
 
     public static final Codec<WeatherEvent> CODEC = BetterWeatherRegistry.WEATHER_EVENT.dispatchStable(WeatherEvent::codec, Function.identity());
 
-    public static final None NONE = new None(new NoneClient(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)), 0.0D);
+    public static final Map<Season.Key, Map<Season.Phase, Double>> DEFAULT = Util.make(new IdentityHashMap<>(), (map) -> {
+        for (Season.Key value : Season.Key.values()) {
+            IdentityHashMap<Season.Phase, Double> phaseDoubleMap = new IdentityHashMap<>();
+            for (Season.Phase phase : Season.Phase.values()) {
+                phaseDoubleMap.put(phase, 0.0D);
+            }
+            map.put(value, phaseDoubleMap);
+        }
+    });
 
+    public static final Map<String, String> VALUE_COMMENTS = Util.make(new HashMap<>(ColorSettings.VALUE_COMMENTS), (map) -> {
+        map.put("defaultChance", "What is the default chance for this weather event to occur? This value is only used when Seasons are NOT present in the given dimension.");
+        map.put("type", "Target to configure settings in this config.");
+        map.put("seasonChances", "What is the chance for this weather event to occur for the given season (phase)?");
+    });
+
+    public static final None NONE = new None(new NoneClient(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)), DEFAULT);
+    public static final Blizzard BLIZZARD = new Blizzard(new BlizzardClient(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)), 0.0D, DEFAULT);
 
     public static final Set<WeatherEvent> DEFAULT_EVENTS = Util.make(new ReferenceArraySet<>(), (set) -> {
-        set.add(new Blizzard(new BlizzardClient(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)), 0.0D));
+        set.add(BLIZZARD);
         set.add(NONE);
     });
 
     private final WeatherEventClient clientSettings;
     private final double defaultChance;
-    private final EnumMap<Season.Key, EnumMap<Season.Phase, Double>> seasonChances;
+    private final Map<Season.Key, Map<Season.Phase, Double>> seasonChances;
     private String name;
 
-    public WeatherEvent(WeatherEventClient clientSettings, double defaultChance) {
-        this(clientSettings, defaultChance, new EnumMap<>(Season.Key.class));
-    }
-
-    public WeatherEvent(WeatherEventClient clientSettings, double defaultChance, EnumMap<Season.Key, EnumMap<Season.Phase, Double>> seasonChance) {
+    public WeatherEvent(WeatherEventClient clientSettings, double defaultChance, Map<Season.Key, Map<Season.Phase, Double>> seasonChance) {
         this.clientSettings = clientSettings;
         this.defaultChance = defaultChance;
         this.seasonChances = seasonChance;
@@ -55,7 +69,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
         return defaultChance;
     }
 
-    public final EnumMap<Season.Key, EnumMap<Season.Phase, Double>> getSeasonChances() {
+    public final Map<Season.Key, Map<Season.Phase, Double>> getSeasonChances() {
         return seasonChances;
     }
 

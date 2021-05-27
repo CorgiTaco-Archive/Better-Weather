@@ -19,7 +19,6 @@ import net.minecraft.world.biome.Biome;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class BetterWeatherUtil {
 
