@@ -6,7 +6,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLCapabilities;
 
 @OnlyIn(Dist.CLIENT)
 public final class Graphics {
@@ -19,24 +18,12 @@ public final class Graphics {
         if (config == null) {
             config = "auto";
         }
-
-        if (config.equalsIgnoreCase("force_off")) {
-            SUPPORTED = false;
-        } else {
-            if (BetterWeather.USING_OPTIFINE) {
-                SUPPORTED = false;
-            } else {
-                if (GL.getCapabilities().OpenGL20) {
-                    SUPPORTED = true;
-                }
-            }
-        }
-        if (!SUPPORTED) {
-            BetterWeather.LOGGER.info("GLSL Shaders arnt supported, or they're disabled in the config.");
+        if (!(SUPPORTED = !(BetterWeather.USING_OPTIFINE || config.equalsIgnoreCase("force_off")) && GL.getCapabilities().OpenGL20)) {
+            BetterWeather.LOGGER.warn("OpenGL 2.0 is not supported (disabled GLSL Shaders), or shaders are disabled in the config.");
         }
     }
 
     public boolean isSupported() {
-        return false;
+        return SUPPORTED;
     }
 }

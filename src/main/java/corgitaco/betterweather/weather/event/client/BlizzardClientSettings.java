@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
 import corgitaco.betterweather.graphics.Graphics;
+import corgitaco.betterweather.graphics.ShaderProgram;
 import corgitaco.betterweather.season.client.ColorSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -22,6 +23,9 @@ import net.minecraft.world.gen.Heightmap;
 import java.util.Random;
 import java.util.function.Predicate;
 
+import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
+import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
+
 public class BlizzardClientSettings extends WeatherEventClientSettings {
     public static final Codec<BlizzardClientSettings> CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(ColorSettings.CODEC.fieldOf("colorSettings").forGetter(blizzardClientSettings -> {
@@ -34,6 +38,8 @@ public class BlizzardClientSettings extends WeatherEventClientSettings {
     private final float[] rainSizeX = new float[1024];
     private final float[] rainSizeZ = new float[1024];
     private final ResourceLocation textureLocation;
+
+    private ShaderProgram program;
 
     public BlizzardClientSettings(ColorSettings colorSettings, ResourceLocation textureLocation) {
         super(colorSettings);
@@ -50,10 +56,29 @@ public class BlizzardClientSettings extends WeatherEventClientSettings {
         }
     }
 
+    public static final String DEBUG_FRAGMENT =
+            "#version 120\n" +
+            "\n" +
+            "void main() {\n" +
+            "\n" +
+            "}";
+
+    public static final String DEBUG_VERTEX =
+            "#version 120\n" +
+            "\n" +
+            "void main() {\n" +
+            "\n" +
+            "}";
+
     @Override
     public boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z, Predicate<Biome> biomePredicate) {
         if (graphics.isSupported()) {
+            (program == null ? program = new ShaderProgram(compiler -> {
+                compiler.compile(GL_FRAGMENT_SHADER, DEBUG_FRAGMENT);
+                compiler.compile(GL_VERTEX_SHADER, DEBUG_VERTEX);
+            }) : program).bind();
 
+            program.unbind();
         } else {
             float rainStrength = world.getRainStrength(partialTicks);
             lightTexture.enableLightmap();
