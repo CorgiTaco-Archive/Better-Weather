@@ -40,7 +40,8 @@ import java.util.*;
 
 public class BWWeatherEventContext implements WeatherEventContext {
     public static final String CONFIG_NAME = "weather-settings.toml";
-
+    private static final String DEFAULT = "none";
+    
     public static final Codec<BWWeatherEventContext> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(Codec.STRING.fieldOf("currentEvent").forGetter((weatherEventContext) -> {
             return weatherEventContext.currentEvent.getName();
@@ -80,7 +81,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
         this.weatherConfigPath = BetterWeather.CONFIG_PATH.resolve(worldID.getNamespace()).resolve(worldID.getPath()).resolve("weather");
         this.weatherEventsConfigPath = this.weatherConfigPath.resolve("events");
         this.weatherConfigFile = this.weatherConfigPath.resolve(CONFIG_NAME).toFile();
-        this.weatherEvents.put("none", WeatherEvent.NONE.setName("none"));
+        this.weatherEvents.put(DEFAULT, WeatherEvent.NONE.setName(DEFAULT));
         this.weatherForced = weatherForced;
         boolean isClient = weatherEvents != null;
         boolean isPacket = biomeRegistry == null;
@@ -94,13 +95,13 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
 
         WeatherEvent currentWeatherEvent = this.weatherEvents.get(currentEvent);
+        this.currentEvent = this.weatherEvents.getOrDefault(currentEvent, WeatherEvent.NONE);
 
         if (currentEvent != null && currentWeatherEvent == null) {
-            BetterWeather.LOGGER.error("The last weather event: \"" + worldID.toString() + "\" was not found in: \"" + this.weatherEventsConfigPath.toString() + "\".\nDefaulting to weather event: \"NONE\".");
+            BetterWeather.LOGGER.error("The last weather event for the world: \"" + worldID.toString() + "\" was not found in: \"" + this.weatherEventsConfigPath.toString() + "\".\nDefaulting to weather event: \"NONE\".");
         } else {
-            this.currentEvent = this.weatherEvents.getOrDefault(currentEvent, WeatherEvent.NONE);
             if (!isClient && !isPacket) {
-                BetterWeather.LOGGER.info(worldID.toString() + " initialized with a weather event of: \"" + (currentEvent == null ? "none" : currentEvent) + "\".");
+                BetterWeather.LOGGER.info(worldID.toString() + " initialized with a weather event of: \"" + (currentEvent == null ? DEFAULT : currentEvent) + "\".");
             }
         }
     }
@@ -130,7 +131,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
                     ArrayList<String> list = new ArrayList<>(this.weatherEvents.keySet());
                     Collections.shuffle(list, random);
                     for (String entry : list) {
-                        if (entry.equals("none")) {
+                        if (entry.equals(DEFAULT)) {
                             continue;
                         }
                         WeatherEvent weatherEvent = this.weatherEvents.get(entry);
@@ -143,7 +144,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
                     }
                 }
             } else {
-                this.currentEvent = this.weatherEvents.get("none");
+                this.currentEvent = this.weatherEvents.get(DEFAULT);
                 this.weatherForced = false;
             }
         }

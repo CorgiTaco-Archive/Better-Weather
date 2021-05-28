@@ -20,6 +20,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.biome.Biome;
@@ -137,6 +138,39 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     @OnlyIn(Dist.CLIENT)
     public boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z) {
         return this.clientSettings.renderWeather(graphics, mc, world, lightTexture, ticks, partialTicks, x, y, z, (biome -> biomeConditionPasses(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(biome).get(), biome)));
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public float skyOpacity(ClientWorld world, BlockPos playerPos) {
+        int transitionStart = 12;
+
+        float defaultFogStrength = 0.0F;
+        defaultFogStrength *= defaultFogStrength;
+
+        int x = playerPos.getX();
+        int z = playerPos.getZ();
+        float accumulatedFogStrength = 0.0F;
+
+        BlockPos.Mutable pos = new BlockPos.Mutable();
+        for (int sampleX = x - transitionStart; sampleX <= x + transitionStart; ++sampleX) {
+            pos.setX(sampleX);
+
+            for (int sampleZ = z - transitionStart; sampleZ <= z + transitionStart; ++sampleZ) {
+                pos.setZ(sampleZ);
+
+                Biome biome = world.getBiome(pos);
+                if (biomeConditionPasses(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(biome).get(), biome)) {
+
+                    float fogStrength = 2;
+
+                    accumulatedFogStrength += fogStrength * fogStrength;
+                } else {
+                    accumulatedFogStrength += defaultFogStrength;
+                }
+            }
+        }
+        float transitionSmoothness = 33 * 33;
+        return Math.min(this.clientSettings.skyOpacity(), (float) Math.sqrt(accumulatedFogStrength / transitionSmoothness));
     }
 
 
