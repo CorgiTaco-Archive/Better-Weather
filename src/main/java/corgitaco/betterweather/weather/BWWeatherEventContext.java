@@ -42,7 +42,7 @@ import java.util.*;
 public class BWWeatherEventContext implements WeatherEventContext {
     public static final String CONFIG_NAME = "weather-settings.toml";
     private static final String DEFAULT = "none";
-    
+
     public static final Codec<BWWeatherEventContext> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(Codec.STRING.fieldOf("currentEvent").forGetter((weatherEventContext) -> {
             return weatherEventContext.currentEvent.getName();
@@ -127,8 +127,9 @@ public class BWWeatherEventContext implements WeatherEventContext {
         boolean isPrecipitation = world.getWorldInfo().isRaining() || world.getWorldInfo().isThundering();
         Season season = ((Climate) world).getSeason();
         boolean hasSeasons = season != null;
-        if (world.rainingStrength == 0.0F) {
-            if (isPrecipitation) {
+        float rainingStrength = world.rainingStrength;
+        if (isPrecipitation) {
+            if (rainingStrength <= 0.02F) {
                 if (!this.weatherForced) {
                     Random random = new Random(((ServerWorld) world).getSeed() + world.getGameTime());
                     ArrayList<String> list = new ArrayList<>(this.weatherEvents.keySet());
@@ -146,7 +147,9 @@ public class BWWeatherEventContext implements WeatherEventContext {
                         }
                     }
                 }
-            } else {
+            }
+        } else {
+            if (rainingStrength == 0.0F) {
                 this.currentEvent = this.weatherEvents.get(DEFAULT);
                 this.weatherForced = false;
             }

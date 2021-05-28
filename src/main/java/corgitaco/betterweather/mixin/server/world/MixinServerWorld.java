@@ -118,7 +118,7 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
         cir.setReturnValue(this.registry);
     }
 
-    @ModifyConstant(method = "tick", constant = {@Constant(intValue = 168000), @Constant(intValue = 12000, ordinal = 0), @Constant(intValue = 12000, ordinal = 2)})
+    @ModifyConstant(method = "tick", constant = {@Constant(intValue = 168000), @Constant(intValue = 12000, ordinal = 1), @Constant(intValue = 12000, ordinal = 4)})
     private int modifyWeatherTime(int arg0) {
         SeasonContext seasonContext = this.seasonContext;
         return seasonContext != null ? (int) (arg0 * (1 / seasonContext.getCurrentSeason().getCurrentSettings().getWeatherEventChanceMultiplier())) : arg0;
