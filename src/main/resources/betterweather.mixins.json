@@ -19,6 +19,7 @@
   ],
   "client": [
     "client.MixinBiomeClient",
+    "client.MixinClientPlayerEntity",
     "client.MixinClientWorld",
     "client.MixinDebugOverlayGui",
     "client.MixinFogRenderer",

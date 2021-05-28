@@ -5,6 +5,7 @@ import com.mojang.serialization.DynamicOps;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.BetterWeatherRegistry;
 import corgitaco.betterweather.api.season.Season;
+import corgitaco.betterweather.core.SoundRegistry;
 import corgitaco.betterweather.graphics.Graphics;
 import corgitaco.betterweather.season.client.ColorSettings;
 import corgitaco.betterweather.weather.event.Blizzard;
@@ -55,7 +56,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     });
 
     public static final None NONE = new None(new NoneClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)));
-    public static final Blizzard BLIZZARD = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), new ResourceLocation("minecraft:textures/environment/snow.png")), "!#DESERT#SAVANNA", 0.0D, NO_SEASON_CHANCES);
+    public static final Blizzard BLIZZARD = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), new ResourceLocation("minecraft:textures/environment/snow.png"), SoundRegistry.BLIZZARD_LOOP2, 100, 1.0F, 1.0F), "!#DESERT#SAVANNA", 0.0D, NO_SEASON_CHANCES);
 
     public static final Set<WeatherEvent> DEFAULT_EVENTS = Util.make(new ReferenceArraySet<>(), (set) -> {
         set.add(BLIZZARD);
@@ -171,6 +172,11 @@ public abstract class WeatherEvent implements WeatherEventSettings {
         }
         float transitionSmoothness = 33 * 33;
         return Math.min(this.clientSettings.skyOpacity(), (float) Math.sqrt(accumulatedFogStrength / transitionSmoothness));
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc) {
+        this.clientSettings.clientTick(world, tickSpeed, worldTime, mc, (biome -> biomeConditionPasses(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(biome).get(), biome)));
     }
 
 

@@ -22,9 +22,12 @@ import corgitaco.betterweather.data.network.NetworkHandler;
 import corgitaco.betterweather.data.network.packet.weather.WeatherPacket;
 import corgitaco.betterweather.data.storage.WeatherEventSavedData;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.server.ServerWorld;
@@ -121,6 +124,12 @@ public class BWWeatherEventContext implements WeatherEventContext {
                 NetworkHandler.sendToAllPlayers(((ServerWorld) world).getPlayers(), new WeatherPacket(this));
             }
         }
+        if (world instanceof ServerWorld) {
+            this.currentEvent.worldTick((ServerWorld) world, world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED), world.getGameTime());
+        }
+        if (world.isRemote) {
+            this.currentEvent.clientTick((ClientWorld) world, world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED), world.getGameTime(), Minecraft.getInstance());
+        }
     }
 
     private void shuffleAndPickWeatherEvent(World world) {
@@ -130,7 +139,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
         float rainingStrength = world.rainingStrength;
         if (isPrecipitation) {
             if (rainingStrength <= 0.02F) {
-                if (!this.weatherForced) {
+//                if (!this.weatherForced) {
                     Random random = new Random(((ServerWorld) world).getSeed() + world.getGameTime());
                     ArrayList<String> list = new ArrayList<>(this.weatherEvents.keySet());
                     Collections.shuffle(list, random);
@@ -141,12 +150,12 @@ public class BWWeatherEventContext implements WeatherEventContext {
                         WeatherEvent weatherEvent = this.weatherEvents.get(entry);
                         double chance = hasSeasons ? weatherEvent.getSeasonChances().getOrDefault(season.getKey(), new IdentityHashMap<>()).getOrDefault(season.getPhase(), weatherEvent.getDefaultChance()) : weatherEvent.getDefaultChance();
 
-                        if (random.nextDouble() < chance) {
+//                        if (random.nextDouble() < chance) {
                             this.currentEvent = weatherEvent;
                             break;
-                        }
+//                        }
                     }
-                }
+//                }
             }
         } else {
             if (rainingStrength == 0.0F) {

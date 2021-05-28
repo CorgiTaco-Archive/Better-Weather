@@ -27,8 +27,7 @@ public abstract class WeatherEventClientSettings {
 
     public abstract Codec<? extends WeatherEventClientSettings> codec();
 
-    public abstract void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc);
-
+    public abstract void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc, Predicate<Biome> biomePredicate);
 
     public boolean disableSkyColor() {
         return false;
