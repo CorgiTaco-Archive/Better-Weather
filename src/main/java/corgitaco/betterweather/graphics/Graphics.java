@@ -5,10 +5,12 @@ import corgitaco.betterweather.config.BetterWeatherConfig;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GLCapabilities;
 
 @OnlyIn(Dist.CLIENT)
 public final class Graphics {
-    private static boolean SUPPORTED = true;
+    private static boolean SUPPORTED = false;
 
     // Created when the world renderer is created.
     public Graphics() {
@@ -23,13 +25,12 @@ public final class Graphics {
         } else {
             if (BetterWeather.USING_OPTIFINE) {
                 SUPPORTED = false;
+            } else {
+                if (GL.getCapabilities().OpenGL20) {
+                    SUPPORTED = true;
+                }
             }
-
-            /**
-             * see {@link corgitaco.betterweather.mixin.client.MixinMainWindow}
-             */
         }
-
         if (!SUPPORTED) {
             BetterWeather.LOGGER.info("GLSL Shaders arnt supported, or they're disabled in the config.");
         }
