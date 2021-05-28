@@ -14,7 +14,7 @@ public class BetterWeatherConfig {
 
     public static void serialize() {
         AbstractCommentedConfigHelper builder = new AbstractCommentedConfigHelper(BetterWeather.CONFIG_PATH.resolve("better-weather.toml"));
-        COMPATIBILITY_MODE = builder.add("Whenever, or not to use GLSL Shaders. \n- \"auto\" Automatically disables if: Optifine is installed, or your driver doesn't support the corresponding OpenGL 2.0 extensions. \n- \"force_off\" Forces GLSL Shaders off, will be slower for modern drives. \nDefault: [\"auto\"]", "compatibility_mode", "auto");
+        COMPATIBILITY_MODE = builder.add("Whenever, or not to use GLSL Shaders. \n- \"auto\" Automatically disables if: Optifine is installed, or your driver doesn't support OpenGL 2.0 \n- \"force_off\" Forces GLSL Shaders off, will be slower for modern drives. \nDefault: [\"auto\"]", "compatibility_mode", "auto");
         SEASON_DIMENSIONS = builder.addList("What dimensions have seasons?\nMod IDs or dimension IDs ONLY.\nDefault: [\"minecraft:overworld\"]", "season_dimension_whitelist", Collections.singletonList(World.OVERWORLD.getLocation().toString()));
         WEATHER_EVENT_DIMENSIONS = builder.addList("What dimensions have weather events?\nMod IDs or dimension IDs ONLY.\nDefault: [\"minecraft:overworld\"]", "weather_event_dimension_whitelist", Collections.singletonList(World.OVERWORLD.getLocation().toString()));
         SERIALIZE_AS_JSON = builder.add("Serialize configs(besides this one) to json?", "use_json", false);

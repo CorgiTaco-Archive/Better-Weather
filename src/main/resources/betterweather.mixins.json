@@ -22,8 +22,7 @@
     "client.MixinClientWorld",
     "client.MixinDebugOverlayGui",
     "client.MixinFogRenderer",
-    "client.MixinWorldRenderer",
-    "client.MixinMainWindow"
+    "client.MixinWorldRenderer"
   ],
   "injectors": {
     "defaultRequire": 1

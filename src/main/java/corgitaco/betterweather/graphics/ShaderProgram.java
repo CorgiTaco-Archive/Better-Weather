@@ -24,7 +24,7 @@ public final class ShaderProgram {
         // Attempt to compile shaders.
         try {
             builder.build(compiler);
-        } catch (Exception e) { // Reason isn't known. will just delete the shader
+        } catch (Exception e) { // On any error; delete the shaders, and program.
             BetterWeather.LOGGER.error("Failed to create a shader program.", e);
             delete();
 
