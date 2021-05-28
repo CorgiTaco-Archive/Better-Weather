@@ -38,6 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+@SuppressWarnings("ConstantConditions")
 public class BWWeatherEventContext implements WeatherEventContext {
     public static final String CONFIG_NAME = "weather-settings.toml";
     private static final String DEFAULT = "none";
@@ -116,7 +117,9 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
         if (prevEvent != this.currentEvent || wasForced != this.weatherForced) {
             save(world);
-            NetworkHandler.sendToAllPlayers(((ServerWorld) world).getPlayers(), new WeatherPacket(this));
+            if (world instanceof ServerWorld) {
+                NetworkHandler.sendToAllPlayers(((ServerWorld) world).getPlayers(), new WeatherPacket(this));
+            }
         }
     }
 
