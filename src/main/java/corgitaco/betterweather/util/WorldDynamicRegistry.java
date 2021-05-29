@@ -1,6 +1,8 @@
 package corgitaco.betterweather.util;
 
 import com.mojang.serialization.Lifecycle;
+import corgitaco.betterweather.mixin.access.DynamicRegistriesAccess;
+import corgitaco.betterweather.mixin.access.DynamicRegistriesImplAccess;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.util.registry.MutableRegistry;
@@ -25,11 +27,11 @@ public class WorldDynamicRegistry extends DynamicRegistries.Impl {
     public WorldDynamicRegistry(Impl serverRegistry) {
         this.serverRegistry = serverRegistry;
         this.commonKeyMutableRegistry = new CommonKeyMutableRegistry(serverRegistry.getRegistry(Registry.BIOME_KEY));
-        this.keyToSimpleRegistryMap = fill();
+        ((DynamicRegistriesImplAccess) this).setKeyToSimpleRegistryMap(fill());
     }
 
     public Map<? extends RegistryKey<? extends Registry<?>>, ? extends SimpleRegistry<?>> fill() {
-        return DynamicRegistries.registryCodecMap.keySet().stream().collect(Collectors.toMap(Function.identity(), this::createStableRegistry));
+        return DynamicRegistriesAccess.getRegistryCodecMap().keySet().stream().collect(Collectors.toMap(Function.identity(), this::createStableRegistry));
     }
 
     private <E> SimpleRegistry<?> createStableRegistry(RegistryKey<? extends Registry<?>> key) {

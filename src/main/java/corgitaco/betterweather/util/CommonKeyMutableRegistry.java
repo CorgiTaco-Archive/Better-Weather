@@ -47,7 +47,7 @@ public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
         @SuppressWarnings("ConstantConditions") // Mixins are used.
         Biome.Climate climate = ((BiomeAccess) (Object) biome).getClimate();
 
-        return new Biome(
+        return BiomeAccess.create(
                 climate,
                 biome.getCategory(),
                 biome.getDepth(),

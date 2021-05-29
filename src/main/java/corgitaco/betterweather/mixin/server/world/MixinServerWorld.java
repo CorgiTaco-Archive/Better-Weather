@@ -8,6 +8,8 @@ import corgitaco.betterweather.data.storage.WeatherEventSavedData;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.helpers.BiomeModifier;
 import corgitaco.betterweather.helpers.BiomeUpdate;
+import corgitaco.betterweather.mixin.access.ChunkManagerAccess;
+import corgitaco.betterweather.mixin.access.ServerChunkProviderAccess;
 import corgitaco.betterweather.season.SeasonContext;
 import corgitaco.betterweather.util.WorldDynamicRegistry;
 import corgitaco.betterweather.weather.BWWeatherEventContext;
@@ -71,8 +73,8 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
         WorldSettingsImport<INBT> worldSettingsImport = WorldSettingsImport.create(NBTDynamicOps.INSTANCE, server.getDataPackRegistries().getResourceManager(), (DynamicRegistries.Impl) this.registry);
         ChunkGenerator dimensionChunkGenerator = save.readServerConfiguration(worldSettingsImport, server.getServerConfiguration().getDatapackCodec()).getDimensionGeneratorSettings().func_236224_e_().getOptional(worldKeyLocation).get().getChunkGenerator();
         // Reset the chunk generator fields in both the chunk provider and chunk manager. This is required for chunk generators to return the current biome object type required by our registry. //TODO: Do this earlier so mods mixing here can capture our version of the chunk generator.
-        this.serverChunkProvider/*Server Chunk Provider*/.generator = dimensionChunkGenerator;
-        this.serverChunkProvider/*Server Chunk Provider*/.chunkManager.generator = dimensionChunkGenerator;
+        ((ServerChunkProviderAccess) this.serverChunkProvider).setGenerator(dimensionChunkGenerator);
+        ((ChunkManagerAccess) this.serverChunkProvider.chunkManager).setGenerator(dimensionChunkGenerator);
 
         if (BetterWeatherConfig.SEASON_DIMENSIONS.contains(worldKeyLocation.toString()) || BetterWeatherConfig.SEASON_DIMENSIONS.contains(worldKeyLocation.getNamespace())) {
             this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));

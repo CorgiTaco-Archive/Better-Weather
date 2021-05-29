@@ -6,7 +6,13 @@
   "mixins": [
     "MixinWorld",
     "access.BiomeAccess",
+    "access.ChunkManagerAccess",
+    "access.DynamicRegistriesAccess",
+    "access.DynamicRegistriesImplAccess",
+    "access.GameRulesAccess",
+    "access.GameRulesBooleanValueAccess",
     "access.RegistryAccess",
+    "access.ServerChunkProviderAccess",
     "biome.MixinBiome",
     "biome.MixinBiomeClimate",
     "block.MixinAbstractBlockstate",
