@@ -14,7 +14,6 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeManager;
 import net.minecraftforge.api.distmarker.Dist;
@@ -46,7 +45,7 @@ public class WeatherSoundHandler implements IAmbientSoundHandler {
         WeatherEventClientSettings clientSettings = currentEvent.getClientSettings();
         if (clientSettings instanceof WeatherEventAudio) {
             Biome currentBiome = biomeManager.getBiome(player.getPosition());
-            if (currentEvent.biomeConditionPasses(this.player.world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(currentBiome).get(), currentBiome)) {
+            if (currentEvent.isValidBiome(currentBiome)) {
                 if (this.currentSound == null) {
                     this.currentSound = new WeatherSoundHandler.Sound(((WeatherEventAudio) clientSettings).getSound(), this.world, ((WeatherEventAudio) clientSettings).getVolume(), ((WeatherEventAudio) clientSettings).getPitch());
                     this.soundHandler.play(this.currentSound);

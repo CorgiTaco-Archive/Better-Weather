@@ -12,15 +12,15 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import java.io.IOException;
 import java.util.function.Supplier;
 
-public class WeatherPacket {
+public class WeatherContextConstructingPacket {
 
     private final BWWeatherEventContext bwWeatherEventContext;
 
-    public WeatherPacket(BWWeatherEventContext bwWeatherEventContext) {
+    public WeatherContextConstructingPacket(BWWeatherEventContext bwWeatherEventContext) {
         this.bwWeatherEventContext = bwWeatherEventContext;
     }
 
-    public static void writeToPacket(WeatherPacket packet, PacketBuffer buf) {
+    public static void writeToPacket(WeatherContextConstructingPacket packet, PacketBuffer buf) {
         try {
             buf.func_240629_a_(BWWeatherEventContext.PACKET_CODEC, packet.bwWeatherEventContext);
         } catch (IOException e) {
@@ -29,15 +29,15 @@ public class WeatherPacket {
         }
     }
 
-    public static WeatherPacket readFromPacket(PacketBuffer buf) {
+    public static WeatherContextConstructingPacket readFromPacket(PacketBuffer buf) {
         try {
-            return new WeatherPacket(buf.func_240628_a_(BWWeatherEventContext.PACKET_CODEC));
+            return new WeatherContextConstructingPacket(buf.func_240628_a_(BWWeatherEventContext.PACKET_CODEC));
         } catch (IOException e) {
             throw new IllegalStateException("Weather packet could not be read. This is really really bad...\n\n" + e.getMessage());
         }
     }
 
-    public static void handle(WeatherPacket message, Supplier<NetworkEvent.Context> ctx) {
+    public static void handle(WeatherContextConstructingPacket message, Supplier<NetworkEvent.Context> ctx) {
         if (ctx.get().getDirection().getReceptionSide().isClient()) {
             ctx.get().enqueueWork(() -> {
                 Minecraft minecraft = Minecraft.getInstance();
@@ -49,10 +49,10 @@ public class WeatherPacket {
                         BWWeatherEventContext = ((BetterWeatherWorldData) world).setWeatherEventContext(new BWWeatherEventContext(message.bwWeatherEventContext.getCurrentWeatherEventKey(),
                                 message.bwWeatherEventContext.isWeatherForced(), world.getDimensionKey().getLocation(), world.func_241828_r().getRegistry(Registry.BIOME_KEY), message.bwWeatherEventContext.getWeatherEvents()));
                         ((BiomeUpdate) world).updateBiomeData();
+                        BWWeatherEventContext.setCurrentEvent(message.bwWeatherEventContext.getCurrentEvent());
+                    } else {
+                        throw new UnsupportedOperationException("This should only ever be called for constructing the Weather Context!");
                     }
-
-                    assert BWWeatherEventContext != null;
-                    BWWeatherEventContext.setCurrentEvent(message.bwWeatherEventContext.getCurrentEvent());
                 }
             });
         }

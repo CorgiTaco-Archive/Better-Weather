@@ -67,7 +67,9 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     private final String biomeCondition;
     private final double defaultChance;
     private final Map<Season.Key, Map<Season.Phase, Double>> seasonChances;
+
     private String name;
+    private final ReferenceArraySet<Biome> validBiomes = new ReferenceArraySet<>();
 
     public WeatherEvent(WeatherEventClientSettings clientSettings, String biomeCondition, double defaultChance, Map<Season.Key, Map<Season.Phase, Double>> seasonChance) {
         this.clientSettings = clientSettings;
@@ -124,6 +126,19 @@ public abstract class WeatherEvent implements WeatherEventSettings {
         return name;
     }
 
+    public void fillBiomes(Registry<Biome> biomeRegistry) {
+        Set<Map.Entry<RegistryKey<Biome>, Biome>> entries = biomeRegistry.getEntries();
+
+        for (Map.Entry<RegistryKey<Biome>, Biome> entry : entries) {
+            Biome biome = entry.getValue();
+            RegistryKey<Biome> key = entry.getKey();
+
+            if (conditionPasses(this.biomeCondition, key, biome)) {
+                this.validBiomes.add(biome);
+            }
+        }
+    }
+
     public WeatherEventClientSettings getClientSettings() {
         return clientSettings;
     }
@@ -132,13 +147,13 @@ public abstract class WeatherEvent implements WeatherEventSettings {
         return biomeCondition;
     }
 
-    public boolean biomeConditionPasses(RegistryKey<Biome> biomeKey, Biome biome) {
-        return conditionPasses(this.biomeCondition, biomeKey, biome);
+    public boolean isValidBiome(Biome biome) {
+        return this.validBiomes.contains(biome);
     }
 
     @OnlyIn(Dist.CLIENT)
     public boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z) {
-        return this.clientSettings.renderWeather(graphics, mc, world, lightTexture, ticks, partialTicks, x, y, z, (biome -> biomeConditionPasses(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(biome).get(), biome)));
+        return this.clientSettings.renderWeather(graphics, mc, world, lightTexture, ticks, partialTicks, x, y, z, (this::isValidBiome));
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -160,7 +175,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
                 pos.setZ(sampleZ);
 
                 Biome biome = world.getBiome(pos);
-                if (biomeConditionPasses(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(biome).get(), biome)) {
+                if (validBiomes.contains(biome)) {
 
                     float fogStrength = 2;
 
@@ -176,7 +191,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
 
     @OnlyIn(Dist.CLIENT)
     public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc) {
-        this.clientSettings.clientTick(world, tickSpeed, worldTime, mc, (biome -> biomeConditionPasses(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(biome).get(), biome)));
+        this.clientSettings.clientTick(world, tickSpeed, worldTime, mc, this::isValidBiome);
     }
 
 

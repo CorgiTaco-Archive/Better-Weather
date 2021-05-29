@@ -15,11 +15,10 @@ import corgitaco.betterweather.api.BetterWeatherRegistry;
 import corgitaco.betterweather.api.Climate;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.weather.WeatherEvent;
-import corgitaco.betterweather.api.weather.WeatherEventContext;
 import corgitaco.betterweather.api.weather.WeatherEventSettings;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.data.network.NetworkHandler;
-import corgitaco.betterweather.data.network.packet.weather.WeatherPacket;
+import corgitaco.betterweather.data.network.packet.weather.WeatherDataPacket;
 import corgitaco.betterweather.data.storage.WeatherEventSavedData;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
 import net.minecraft.client.Minecraft;
@@ -42,7 +41,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 @SuppressWarnings("ConstantConditions")
-public class BWWeatherEventContext implements WeatherEventContext {
+public class BWWeatherEventContext implements corgitaco.betterweather.api.weather.WeatherEventContext {
     public static final String CONFIG_NAME = "weather-settings.toml";
     private static final String DEFAULT = "none";
 
@@ -102,10 +101,15 @@ public class BWWeatherEventContext implements WeatherEventContext {
         this.currentEvent = this.weatherEvents.getOrDefault(currentEvent, WeatherEvent.NONE);
 
         if (currentEvent != null && currentWeatherEvent == null) {
-            BetterWeather.LOGGER.error("The last weather event for the world: \"" + worldID.toString() + "\" was not found in: \"" + this.weatherEventsConfigPath.toString() + "\".\nDefaulting to weather event: \"NONE\".");
+            BetterWeather.LOGGER.error("The last weather event for the world: \"" + worldID.toString() + "\" was not found in: \"" + this.weatherEventsConfigPath.toString() + "\".\nDefaulting to weather event: \"" + DEFAULT + "\".");
         } else {
             if (!isClient && !isPacket) {
                 BetterWeather.LOGGER.info(worldID.toString() + " initialized with a weather event of: \"" + (currentEvent == null ? DEFAULT : currentEvent) + "\".");
+            }
+        }
+        if (!isPacket) {
+            for (Map.Entry<String, WeatherEvent> stringWeatherEventEntry : this.weatherEvents.entrySet()) {
+                stringWeatherEventEntry.getValue().fillBiomes(biomeRegistry);
             }
         }
     }
@@ -121,7 +125,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
         if (prevEvent != this.currentEvent || wasForced != this.weatherForced) {
             save(world);
             if (world instanceof ServerWorld) {
-                NetworkHandler.sendToAllPlayers(((ServerWorld) world).getPlayers(), new WeatherPacket(this));
+                NetworkHandler.sendToAllPlayers(((ServerWorld) world).getPlayers(), new WeatherDataPacket(this));
             }
         }
         if (world instanceof ServerWorld) {
@@ -140,21 +144,21 @@ public class BWWeatherEventContext implements WeatherEventContext {
         if (isPrecipitation) {
             if (rainingStrength <= 0.02F) {
 //                if (!this.weatherForced) {
-                    Random random = new Random(((ServerWorld) world).getSeed() + world.getGameTime());
-                    ArrayList<String> list = new ArrayList<>(this.weatherEvents.keySet());
-                    Collections.shuffle(list, random);
-                    for (String entry : list) {
-                        if (entry.equals(DEFAULT)) {
-                            continue;
-                        }
-                        WeatherEvent weatherEvent = this.weatherEvents.get(entry);
-                        double chance = hasSeasons ? weatherEvent.getSeasonChances().getOrDefault(season.getKey(), new IdentityHashMap<>()).getOrDefault(season.getPhase(), weatherEvent.getDefaultChance()) : weatherEvent.getDefaultChance();
+                Random random = new Random(((ServerWorld) world).getSeed() + world.getGameTime());
+                ArrayList<String> list = new ArrayList<>(this.weatherEvents.keySet());
+                Collections.shuffle(list, random);
+                for (String entry : list) {
+                    if (entry.equals(DEFAULT)) {
+                        continue;
+                    }
+                    WeatherEvent weatherEvent = this.weatherEvents.get(entry);
+                    double chance = hasSeasons ? weatherEvent.getSeasonChances().getOrDefault(season.getKey(), new IdentityHashMap<>()).getOrDefault(season.getPhase(), weatherEvent.getDefaultChance()) : weatherEvent.getDefaultChance();
 
 //                        if (random.nextDouble() < chance) {
-                            this.currentEvent = weatherEvent;
-                            break;
+                    this.currentEvent = weatherEvent;
+                    break;
 //                        }
-                    }
+                }
 //                }
             }
         } else {
@@ -262,6 +266,10 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
     public void setCurrentEvent(WeatherEvent currentEvent) {
         this.currentEvent = currentEvent;
+    }
+
+    public void setCurrentEvent(String currentEvent) {
+        this.currentEvent = this.weatherEvents.get(currentEvent);
     }
 
     public void setWeatherForced(boolean weatherForced) {

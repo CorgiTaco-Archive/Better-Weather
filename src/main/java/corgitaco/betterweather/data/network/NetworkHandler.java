@@ -4,7 +4,8 @@ import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.data.network.packet.season.SeasonPacket;
 import corgitaco.betterweather.data.network.packet.season.SeasonTimePacket;
 import corgitaco.betterweather.data.network.packet.util.RefreshRenderersPacket;
-import corgitaco.betterweather.data.network.packet.weather.WeatherPacket;
+import corgitaco.betterweather.data.network.packet.weather.WeatherContextConstructingPacket;
+import corgitaco.betterweather.data.network.packet.weather.WeatherDataPacket;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkDirection;
@@ -24,7 +25,8 @@ public class NetworkHandler {
 
     public static void init() {
         SIMPLE_CHANNEL.registerMessage(0, SeasonPacket.class, SeasonPacket::writeToPacket, SeasonPacket::readFromPacket, SeasonPacket::handle);
-        SIMPLE_CHANNEL.registerMessage(1, WeatherPacket.class, WeatherPacket::writeToPacket, WeatherPacket::readFromPacket, WeatherPacket::handle);
+        SIMPLE_CHANNEL.registerMessage(1, WeatherContextConstructingPacket.class, WeatherContextConstructingPacket::writeToPacket, WeatherContextConstructingPacket::readFromPacket, WeatherContextConstructingPacket::handle);
+        SIMPLE_CHANNEL.registerMessage(2, WeatherDataPacket.class, WeatherDataPacket::writeToPacket, WeatherDataPacket::readFromPacket, WeatherDataPacket::handle);
         SIMPLE_CHANNEL.registerMessage(3, RefreshRenderersPacket.class, RefreshRenderersPacket::writeToPacket, RefreshRenderersPacket::readFromPacket, RefreshRenderersPacket::handle);
         SIMPLE_CHANNEL.registerMessage(4, SeasonTimePacket.class, SeasonTimePacket::writeToPacket, SeasonTimePacket::readFromPacket, SeasonTimePacket::handle);
     }

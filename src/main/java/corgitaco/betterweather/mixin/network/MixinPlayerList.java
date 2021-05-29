@@ -3,7 +3,7 @@ package corgitaco.betterweather.mixin.network;
 import com.mojang.authlib.GameProfile;
 import corgitaco.betterweather.data.network.NetworkHandler;
 import corgitaco.betterweather.data.network.packet.season.SeasonPacket;
-import corgitaco.betterweather.data.network.packet.weather.WeatherPacket;
+import corgitaco.betterweather.data.network.packet.weather.WeatherContextConstructingPacket;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.season.SeasonContext;
 import corgitaco.betterweather.weather.BWWeatherEventContext;
@@ -50,7 +50,7 @@ public abstract class MixinPlayerList {
 
         BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) worldIn).getWeatherEventContext();
         if (weatherEventContext != null) {
-            NetworkHandler.sendToPlayer(playerIn, new WeatherPacket(weatherEventContext));
+            NetworkHandler.sendToPlayer(playerIn, new WeatherContextConstructingPacket(weatherEventContext));
         }
     }
 }
