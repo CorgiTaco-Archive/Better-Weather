@@ -11,6 +11,7 @@ import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.audio.TickableSound;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.*;
@@ -100,47 +101,47 @@ public class WeatherSoundHandler implements IAmbientSoundHandler {
 
         /**
          * Python script for visualising where the sound is being sampled from
-         *
+         * <p>
          * import math
-         *
+         * <p>
          * from matplotlib import pyplot
          * from mpl_toolkits.mplot3d import Axes3D
-         *
+         * <p>
          * import matplotlib.pyplot as plt
          * from mpl_toolkits.mplot3d import Axes3D
          * fig = plt.figure()
          * ax = fig.add_subplot(111, projection='3d')
-         *
-         *
+         * <p>
+         * <p>
          * def fibonacci_sphere(samples=1):
-         *
-         *     points = []
-         *     phi = math.pi * (3. - math.sqrt(5.))  # golden angle in radians
-         *
-         *     for i in range(int(samples/4), samples):
-         *         y = 1 - (i / float(samples - 1)) * 2  # y goes from 1 to -1
-         *         radius = math.sqrt(1 - y * y)  # radius at y
-         *
-         *         theta = phi * i  # golden angle increment
-         *
-         *         x = math.cos(theta) * radius
-         *         z = math.sin(theta) * radius
-         *
-         *         points.append((x, y, z))
-         *
-         *     return points
-         *
+         * <p>
+         * points = []
+         * phi = math.pi * (3. - math.sqrt(5.))  # golden angle in radians
+         * <p>
+         * for i in range(int(samples/4), samples):
+         * y = 1 - (i / float(samples - 1)) * 2  # y goes from 1 to -1
+         * radius = math.sqrt(1 - y * y)  # radius at y
+         * <p>
+         * theta = phi * i  # golden angle increment
+         * <p>
+         * x = math.cos(theta) * radius
+         * z = math.sin(theta) * radius
+         * <p>
+         * points.append((x, y, z))
+         * <p>
+         * return points
+         * <p>
          * xvals = []
          * yvals = []
          * zvals = []
          * for point in fibonacci_sphere(10000):
-         *         xvals.append(point[0])
-         *         yvals.append(point[1])
-         *         zvals.append(point[2])
-         *
+         * xvals.append(point[0])
+         * yvals.append(point[1])
+         * zvals.append(point[2])
+         * <p>
          * fig = pyplot.figure()
          * ax = Axes3D(fig)
-         *
+         * <p>
          * ax.scatter(xvals, yvals, zvals)
          * pyplot.show()
          */
@@ -148,8 +149,8 @@ public class WeatherSoundHandler implements IAmbientSoundHandler {
             List<Vector3d> points = new ArrayList<>();
             double phi = Math.PI * (3. - Math.sqrt(5.));  // golden angle in radians
 
-            for (int i = samples/4; i < samples; i++) {
-                double y = 1 - (i / (float)(samples - 1)) * 2; //y goes from 1 to -1
+            for (int i = samples / 4; i < samples; i++) {
+                double y = 1 - (i / (float) (samples - 1)) * 2; //y goes from 1 to -1
                 double radius = Math.sqrt(1 - y * y); //radius at y
 
                 double theta = phi * i; //golden angle increment
@@ -168,8 +169,9 @@ public class WeatherSoundHandler implements IAmbientSoundHandler {
             }
 
             Vector3d startPos = Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getProjectedView();
-            byte brightness = (byte) this.world.getLightFor(LightType.SKY, new BlockPos(startPos.x, startPos.y, startPos.z));
-            int vectorDistance = 10;
+            ClientPlayerEntity player = Minecraft.getInstance().player;
+            byte brightness = (byte) (this.world.getLightFor(LightType.SKY, new BlockPos(startPos.x, startPos.y, startPos.z)));
+            int vectorDistance = 15;
             double maxDistanceNormalised = 0; //average sample distance
 
             //Cast ray in every direction sampled
@@ -185,9 +187,10 @@ public class WeatherSoundHandler implements IAmbientSoundHandler {
                 Vector3d dif = startPos.subtract(hitVec);
                 float distance = (float) dif.length() / vectorDistance; //normalised distance
                 //distance is weighted such that longer distance count more, based on skylight brightness
-                maxDistanceNormalised += MathHelper.lerp(brightness / 15f, world.getSeaLevel() < startPos.y ? distance : 0.1, Math.pow(distance, 1 / 4f /*Controls the weighting based on distance*/));
+                maxDistanceNormalised += MathHelper.lerp(brightness / 15f, startPos.y < world.getSeaLevel() ? 0.0000000000001 : distance, Math.pow(distance, 1 / 4f /*Controls the weighting based on distance*/));
             }
-            volume = (float) maxDistanceNormalised / vector3ds.length;
+            volume = (float) (maxDistanceNormalised / vector3ds.length) * (player.areEyesInFluid(FluidTags.WATER) || player.areEyesInFluid(FluidTags.LAVA) ? 0.2F : 1);
+
 
 //            if (overrideRainStrength) {
 //                if (this.fadeInTicks < 0) {
