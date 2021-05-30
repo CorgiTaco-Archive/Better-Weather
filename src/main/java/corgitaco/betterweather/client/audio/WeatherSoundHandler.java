@@ -168,6 +168,21 @@ public class WeatherSoundHandler implements IAmbientSoundHandler {
                 this.finishPlaying();
             }
 
+//            if (overrideRainStrength) {
+//                if (this.fadeInTicks < 0) {
+//                    this.finishPlaying();
+//                }
+//
+//                this.fadeInTicks += this.fadeSpeed;
+//                this.volume = MathHelper.clamp((float) this.fadeInTicks / 40.0F, 0.0F, maxVolume);
+//
+//                if (this.volume == maxVolume) {
+//                    overrideRainStrength = false;
+//                }
+//            } else {
+//                this.volume = MathHelper.clamp(world.getRainStrength(Minecraft.getInstance().getRenderPartialTicks()), 0.0F, maxVolume);
+//            }
+
             Vector3d startPos = Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getProjectedView();
             ClientPlayerEntity player = Minecraft.getInstance().player;
             byte brightness = (byte) (this.world.getLightFor(LightType.SKY, new BlockPos(startPos.x, startPos.y, startPos.z)));
@@ -190,22 +205,6 @@ public class WeatherSoundHandler implements IAmbientSoundHandler {
                 maxDistanceNormalised += MathHelper.lerp(brightness / 15f, startPos.y < world.getSeaLevel() ? 0.0000000000001 : distance, Math.pow(distance, 1 / 4f /*Controls the weighting based on distance*/));
             }
             volume = (float) (maxDistanceNormalised / vector3ds.length) * (player.areEyesInFluid(FluidTags.WATER) || player.areEyesInFluid(FluidTags.LAVA) ? 0.2F : 1);
-
-
-//            if (overrideRainStrength) {
-//                if (this.fadeInTicks < 0) {
-//                    this.finishPlaying();
-//                }
-//
-//                this.fadeInTicks += this.fadeSpeed;
-//                this.volume = MathHelper.clamp((float) this.fadeInTicks / 40.0F, 0.0F, maxVolume);
-//
-//                if (this.volume == maxVolume) {
-//                    overrideRainStrength = false;
-//                }
-//            } else {
-//                this.volume = MathHelper.clamp(world.getRainStrength(Minecraft.getInstance().getRenderPartialTicks()), 0.0F, maxVolume);
-//            }
         }
 
         public void fadeOutSound() {
