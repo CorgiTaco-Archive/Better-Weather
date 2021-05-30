@@ -15,6 +15,7 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.LightType;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeManager;
 import net.minecraftforge.api.distmarker.Dist;
@@ -77,6 +78,8 @@ public class WeatherSoundHandler implements IAmbientSoundHandler {
 
     @OnlyIn(Dist.CLIENT)
     public static class Sound extends TickableSound {
+        private static final Vector3d[] vector3ds = vectorDistribution(1000);
+
         private final ClientWorld world;
         private final float maxVolume;
 
@@ -95,6 +98,52 @@ public class WeatherSoundHandler implements IAmbientSoundHandler {
             this.maxVolume = volume;
         }
 
+        /**
+         * Python script for visualising where the sound is being sampled from
+         *
+         * import math
+         *
+         * from matplotlib import pyplot
+         * from mpl_toolkits.mplot3d import Axes3D
+         *
+         * import matplotlib.pyplot as plt
+         * from mpl_toolkits.mplot3d import Axes3D
+         * fig = plt.figure()
+         * ax = fig.add_subplot(111, projection='3d')
+         *
+         *
+         * def fibonacci_sphere(samples=1):
+         *
+         *     points = []
+         *     phi = math.pi * (3. - math.sqrt(5.))  # golden angle in radians
+         *
+         *     for i in range(int(samples/4), samples):
+         *         y = 1 - (i / float(samples - 1)) * 2  # y goes from 1 to -1
+         *         radius = math.sqrt(1 - y * y)  # radius at y
+         *
+         *         theta = phi * i  # golden angle increment
+         *
+         *         x = math.cos(theta) * radius
+         *         z = math.sin(theta) * radius
+         *
+         *         points.append((x, y, z))
+         *
+         *     return points
+         *
+         * xvals = []
+         * yvals = []
+         * zvals = []
+         * for point in fibonacci_sphere(10000):
+         *         xvals.append(point[0])
+         *         yvals.append(point[1])
+         *         zvals.append(point[2])
+         *
+         * fig = pyplot.figure()
+         * ax = Axes3D(fig)
+         *
+         * ax.scatter(xvals, yvals, zvals)
+         * pyplot.show()
+         */
         private static Vector3d[] vectorDistribution(int samples) {
             List<Vector3d> points = new ArrayList<>();
             double phi = Math.PI * (3. - Math.sqrt(5.));  // golden angle in radians
@@ -119,25 +168,26 @@ public class WeatherSoundHandler implements IAmbientSoundHandler {
             }
 
             Vector3d startPos = Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getProjectedView();
+            byte brightness = (byte) this.world.getLightFor(LightType.SKY, new BlockPos(startPos.x, startPos.y, startPos.z));
             int vectorDistance = 10;
-            double maxDistanceNormalised = 0;
+            double maxDistanceNormalised = 0; //average sample distance
 
-            for (Vector3d vec : vectorDistribution(10000)) {
-                Vector3d endPos = startPos.add(vec.scale(vectorDistance));
+            //Cast ray in every direction sampled
+            for (int i = 0, vector3dsLength = vector3ds.length; i < vector3dsLength; i++) {
+                Vector3d endPos = startPos.add(vector3ds[i].scale(vectorDistance));
                 BlockRayTraceResult result = world.rayTraceBlocks(new RayTraceContext(startPos, endPos, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
 
-                if(result.getType() == RayTraceResult.Type.MISS) {
-                    maxDistanceNormalised += maxVolume;
+                if (result.getType() == RayTraceResult.Type.MISS) {
+                    maxDistanceNormalised += maxVolume; //if miss, assume max volume
                 }
 
                 Vector3d hitVec = result.getHitVec();
                 Vector3d dif = startPos.subtract(hitVec);
-                float distance = (float) dif.length() / vectorDistance;
-//                if(distance > maxDistanceNormalised) {
-                    maxDistanceNormalised += distance;
-//                }
+                float distance = (float) dif.length() / vectorDistance; //normalised distance
+                //distance is weighted such that longer distance count more, based on skylight brightness
+                maxDistanceNormalised += MathHelper.lerp(brightness / 15f, world.getSeaLevel() < startPos.y ? distance : 0.1, Math.pow(distance, 1 / 4f /*Controls the weighting based on distance*/));
             }
-            volume = (float)maxDistanceNormalised/10000;
+            volume = (float) maxDistanceNormalised / vector3ds.length;
 
 //            if (overrideRainStrength) {
 //                if (this.fadeInTicks < 0) {
