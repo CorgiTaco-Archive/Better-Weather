@@ -1,5 +1,6 @@
 package corgitaco.betterweather.api.weather;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import corgitaco.betterweather.BetterWeather;
@@ -18,7 +19,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.potion.Effects;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
@@ -59,7 +62,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     });
 
     public static final None NONE = new None(new NoneClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)));
-    public static final Blizzard BLIZZARD = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), new ResourceLocation("minecraft:textures/environment/snow.png"), SoundRegistry.BLIZZARD_LOOP2, 0.6F, 0.6F, 0.2F), "!#DESERT#SAVANNA", 0.0D, -0.5, 0.1, 2, 10, Blocks.SNOW, true, true, NO_SEASON_CHANCES);
+    public static final Blizzard BLIZZARD = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), new ResourceLocation("minecraft:textures/environment/snow.png"), SoundRegistry.BLIZZARD_LOOP2, 0.6F, 0.6F, 0.2F), "!#DESERT#SAVANNA", 0.0D, -0.5, 0.1, 2, 10, Blocks.SNOW, true, true, Util.make(new HashMap<>(), ((stringListHashMap) -> stringListHashMap.put(Registry.ENTITY_TYPE.getKey(EntityType.PLAYER).toString(), ImmutableList.of(Registry.EFFECTS.getKey(Effects.SLOWNESS).toString())))), NO_SEASON_CHANCES);
 
     public static final Set<WeatherEvent> DEFAULT_EVENTS = Util.make(new ReferenceArraySet<>(), (set) -> {
         set.add(BLIZZARD);
