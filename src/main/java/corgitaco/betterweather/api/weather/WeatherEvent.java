@@ -13,19 +13,22 @@ import corgitaco.betterweather.weather.event.None;
 import corgitaco.betterweather.weather.event.client.BlizzardClientSettings;
 import corgitaco.betterweather.weather.event.client.NoneClientSettings;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -56,14 +59,14 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     });
 
     public static final None NONE = new None(new NoneClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)));
-    public static final Blizzard BLIZZARD = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), new ResourceLocation("minecraft:textures/environment/snow.png"), SoundRegistry.BLIZZARD_LOOP2, 100, 1.0F, 1.0F), "!#DESERT#SAVANNA", 0.0D, NO_SEASON_CHANCES);
+    public static final Blizzard BLIZZARD = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), new ResourceLocation("minecraft:textures/environment/snow.png"), SoundRegistry.BLIZZARD_LOOP2, 0.6F, 0.6F, 0.2F), "!#DESERT#SAVANNA", 0.0D, 2, 10, Blocks.SNOW, true, NO_SEASON_CHANCES);
 
     public static final Set<WeatherEvent> DEFAULT_EVENTS = Util.make(new ReferenceArraySet<>(), (set) -> {
         set.add(BLIZZARD);
         set.add(NONE);
     });
 
-    private final WeatherEventClientSettings clientSettings;
+    private WeatherEventClientSettings clientSettings;
     private final String biomeCondition;
     private final double defaultChance;
     private final Map<Season.Key, Map<Season.Phase, Double>> seasonChances;
@@ -92,7 +95,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
 
     public abstract DynamicOps<?> configOps();
 
-    public void livingEntityUpdate(Entity entity) {
+    public void livingEntityUpdate(LivingEntity entity) {
     }
 
     public boolean weatherParticlesAndSound(ActiveRenderInfo renderInfo, Minecraft mc) {
@@ -103,6 +106,27 @@ public abstract class WeatherEvent implements WeatherEventSettings {
      * This is called in the chunk ticking iterator.
      */
     public void tickLiveChunks(Chunk chunk, ServerWorld world) {
+        if (world.rand.nextInt(16) == 0) {
+            ChunkPos chunkpos = chunk.getPos();
+            int xStart = chunkpos.getXStart();
+            int zStart = chunkpos.getZStart();
+            BlockPos randomPos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(xStart, 0, zStart, 15));
+            BlockPos randomPosDown = randomPos.down();
+
+            Biome biome = world.getBiome(randomPos);
+
+            if (spawnSnowInFreezingClimates() && biome.doesWaterFreeze(world, randomPosDown)) {
+                world.setBlockState(randomPosDown, Blocks.ICE.getDefaultState());
+            }
+
+            if (spawnSnowInFreezingClimates() && biome.doesSnowGenerate(world, randomPos)) {
+                world.setBlockState(randomPos, Blocks.SNOW.getDefaultState());
+            }
+
+            if (isValidBiome(biome) && world.isRainingAt(randomPos.up(25)) && fillBlocksWithWater()) {
+                world.getBlockState(randomPosDown).getBlock().fillWithRain(world, randomPosDown);
+            }
+        }
     }
 
     public boolean fillBlocksWithWater() {
@@ -141,6 +165,12 @@ public abstract class WeatherEvent implements WeatherEventSettings {
 
     public WeatherEventClientSettings getClientSettings() {
         return clientSettings;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public WeatherEvent setClientSettings(WeatherEventClientSettings clientSettings) {
+        this.clientSettings = clientSettings;
+        return this;
     }
 
     public String getBiomeCondition() {

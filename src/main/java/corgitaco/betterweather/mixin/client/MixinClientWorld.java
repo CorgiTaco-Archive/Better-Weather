@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
@@ -90,5 +91,12 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
             ((BiomeModifier) (Object) biome).setWeatherTempModifier(weatherTemperatureModifier);
             ((BiomeModifier) (Object) biome).setWeatherHumidityModifier(weatherHumidityModifier);
         }
+    }
+
+    @Redirect(method = "getSunBrightness", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
+    private float sunBrightness(ClientWorld world, float delta) {
+        float rainStrength = ((ClientWorld) (Object) this).getRainStrength(delta);
+        BWWeatherEventContext weatherContext = this.weatherContext;
+        return weatherContext != null ? rainStrength * weatherContext.getCurrentEvent().getClientSettings().dayLightDarkness() : rainStrength;
     }
 }

@@ -33,12 +33,12 @@ public class BlizzardClientSettings extends WeatherEventClientSettings implement
             return blizzardClientSettings.textureLocation;
         }), SoundEvent.CODEC.fieldOf("audioLocation").forGetter(blizzardClientSettings -> {
             return blizzardClientSettings.audio;
-        }), Codec.INT.fieldOf("audioReplayRate").forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.audioReplayRate;
         }), Codec.FLOAT.fieldOf("audioVolume").forGetter(blizzardClientSettings -> {
             return blizzardClientSettings.audioVolume;
         }), Codec.FLOAT.fieldOf("audioPitch").forGetter(blizzardClientSettings -> {
             return blizzardClientSettings.audioPitch;
+        }), Codec.FLOAT.fieldOf("fogDensity").forGetter(blizzardClientSettings -> {
+            return blizzardClientSettings.fogDensity;
         })).apply(builder, BlizzardClientSettings::new);
     });
 
@@ -46,19 +46,19 @@ public class BlizzardClientSettings extends WeatherEventClientSettings implement
     private final float[] rainSizeZ = new float[1024];
     private final ResourceLocation textureLocation;
     private final SoundEvent audio;
-    private final int audioReplayRate;
     private final float audioVolume;
     private final float audioPitch;
+    private final float fogDensity;
 
     private ShaderProgram program;
 
-    public BlizzardClientSettings(ColorSettings colorSettings, ResourceLocation textureLocation, SoundEvent audio, int audioReplayRate, float audioVolume, float audioPitch) {
+    public BlizzardClientSettings(ColorSettings colorSettings, ResourceLocation textureLocation, SoundEvent audio, float audioVolume, float audioPitch, float fogDensity) {
         super(colorSettings);
         this.textureLocation = textureLocation;
         this.audio = audio;
-        this.audioReplayRate = audioReplayRate;
         this.audioVolume = audioVolume;
         this.audioPitch = audioPitch;
+        this.fogDensity = fogDensity;
 
         for (int i = 0; i < 32; ++i) {
             for (int j = 0; j < 32; ++j) {
@@ -199,6 +199,26 @@ public class BlizzardClientSettings extends WeatherEventClientSettings implement
 
     @Override
     public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc, Predicate<Biome> biomePredicate) {
+    }
+
+    @Override
+    public float fogDensity() {
+        return this.fogDensity;
+    }
+
+    @Override
+    public boolean sunsetSunriseColor() {
+        return false;
+    }
+
+    @Override
+    public float skyOpacity() {
+        return 1.0F;
+    }
+
+    @Override
+    public boolean drippingLeaves() {
+        return false;
     }
 
     @Override

@@ -36,6 +36,5 @@ public class NoneClientSettings extends WeatherEventClientSettings {
 
     @Override
     public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc, Predicate<Biome> biomePredicate) {
-
     }
 }

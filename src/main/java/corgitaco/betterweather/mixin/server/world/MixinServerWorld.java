@@ -24,6 +24,7 @@ import net.minecraft.util.registry.WorldSettingsImport;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.listener.IChunkStatusListener;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.server.ServerChunkProvider;
@@ -34,16 +35,14 @@ import net.minecraft.world.storage.SaveFormat;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 
@@ -76,11 +75,12 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
         ((ServerChunkProviderAccess) this.serverChunkProvider).setGenerator(dimensionChunkGenerator);
         ((ChunkManagerAccess) this.serverChunkProvider.chunkManager).setGenerator(dimensionChunkGenerator);
 
-        if (BetterWeatherConfig.SEASON_DIMENSIONS.contains(worldKeyLocation.toString()) || BetterWeatherConfig.SEASON_DIMENSIONS.contains(worldKeyLocation.getNamespace())) {
-            this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));
-        }
         if (BetterWeatherConfig.WEATHER_EVENT_DIMENSIONS.contains(worldKeyLocation.toString()) || BetterWeatherConfig.WEATHER_EVENT_DIMENSIONS.contains(worldKeyLocation.getNamespace())) {
             this.weatherContext = new BWWeatherEventContext(WeatherEventSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));
+        }
+
+        if (BetterWeatherConfig.SEASON_DIMENSIONS.contains(worldKeyLocation.toString()) || BetterWeatherConfig.SEASON_DIMENSIONS.contains(worldKeyLocation.getNamespace())) {
+            this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));
         }
 
         updateBiomeData();
@@ -132,6 +132,23 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
         if (this.weatherContext != null) {
             this.weatherContext.setWeatherForced(true);
         }
+    }
+
+    @Inject(method = "tickEnvironment", at = @At("HEAD"), cancellable = true)
+    private void tickLiveChunks(Chunk chunkIn, int randomTickSpeed, CallbackInfo ci) {
+        if (weatherContext != null) {
+            weatherContext.getCurrentEvent().tickLiveChunks(chunkIn, (ServerWorld) (Object) this);
+        }
+    }
+
+    @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 0))
+    private int neverSpawnLightning(Random random, int bound) {
+        return weatherContext != null ? -1 : random.nextInt(bound);
+    }
+
+    @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 1))
+    private int takeAdvantageOfExistingChunkIterator(Random random, int bound, Chunk chunk, int randomTickSpeed) {
+        return weatherContext != null ? -1 : ((ServerWorld) (Object) this).rand.nextInt(16);
     }
 
     @Nullable

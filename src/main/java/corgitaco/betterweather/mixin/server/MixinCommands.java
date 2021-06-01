@@ -5,6 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.server.command.SetSeasonCommand;
+import corgitaco.betterweather.server.command.SetWeatherCommand;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import org.spongepowered.asm.mixin.Final;
@@ -26,6 +27,7 @@ public abstract class MixinCommands {
         LiteralArgumentBuilder<CommandSource> requires = Commands.literal(BetterWeather.MOD_ID).requires(commandSource -> commandSource.hasPermissionLevel(3));
 
         requires.then(SetSeasonCommand.register(dispatcher));
+        requires.then(SetWeatherCommand.register(dispatcher));
         LiteralCommandNode<CommandSource> source = dispatcher.register(requires);
         dispatcher.register(Commands.literal(BetterWeather.MOD_ID).redirect(source));
         BetterWeather.LOGGER.debug("Registered Better Weather Commands!");

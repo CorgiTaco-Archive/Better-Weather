@@ -267,7 +267,7 @@ public class SeasonContext implements Season {
             Files.createDirectories(seasonConfigFile.toPath().getParent());
             new TomlWriter().write(seasonConfigFile.exists() ? TomlCommentedConfigOps.recursivelyUpdateAndSortConfig(readConfig, encodedConfig) : encodedConfig, this.seasonConfigFile, WritingMode.REPLACE);
         } catch (IOException e) {
-
+            BetterWeather.LOGGER.error(e.toString());
         }
     }
 

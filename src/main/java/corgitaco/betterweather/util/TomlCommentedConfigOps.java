@@ -86,6 +86,13 @@ public class TomlCommentedConfigOps implements DynamicOps<Object> {
     }
 
     @Override
+    public DataResult<Boolean> getBooleanValue(Object input) {
+        return input instanceof Boolean
+                ? DataResult.success((Boolean) input)
+                : DataResult.error("Not a boolean: " + input);
+    }
+
+    @Override
     public boolean compressMaps() {
         return false;
     }

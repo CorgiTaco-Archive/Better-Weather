@@ -17,10 +17,12 @@
     "biome.MixinBiomeClimate",
     "block.MixinAbstractBlockstate",
     "entity.MixinBreedGoal",
+    "entity.MixinLivingEntity",
     "network.MixinPlayerList",
     "server.MixinCommands",
     "server.MixinMinecraftServer",
     "server.commands.MixinLocateBiomeCommand",
+    "server.commands.MixinWeatherCommand",
     "server.world.MixinServerWorld"
   ],
   "client": [
@@ -28,8 +30,10 @@
     "client.MixinClientPlayerEntity",
     "client.MixinClientWorld",
     "client.MixinDebugOverlayGui",
+    "client.MixinDimensionRenderInfo",
     "client.MixinFogRenderer",
-    "client.MixinWorldRenderer"
+    "client.MixinWorldRenderer",
+    "client.block.MixinLeavesBlock"
   ],
   "injectors": {
     "defaultRequire": 1

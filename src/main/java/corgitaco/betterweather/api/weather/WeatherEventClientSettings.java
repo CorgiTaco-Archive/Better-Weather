@@ -8,7 +8,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.world.biome.Biome;
-import net.minecraftforge.client.event.EntityViewRenderEvent;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -29,11 +28,8 @@ public abstract class WeatherEventClientSettings {
 
     public abstract void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc, Predicate<Biome> biomePredicate);
 
-    public boolean disableSkyColor() {
-        return false;
-    }
-
-    public void handleFogDensity(EntityViewRenderEvent.FogDensity event, Minecraft mc) {
+    public boolean sunsetSunriseColor() {
+        return true;
     }
 
     public float skyOpacity() {
@@ -44,23 +40,12 @@ public abstract class WeatherEventClientSettings {
         return 1.0F;
     }
 
-    public boolean refreshPlayerRenderer() {
-        return false;
-    }
-
-    public int forcedRenderDistance() {
-        return Minecraft.getInstance().gameSettings.renderDistanceChunks;
-    }
-
-    public boolean preventChunkRendererRefreshingWhenOptifineIsPresent() {
-        return false;
-    }
-
     public boolean drippingLeaves() {
         return false;
     }
 
-    public void onCommandWeatherChange() {
+    public float fogDensity() {
+        return -1.0f;
     }
 
     public ColorSettings getColorSettings() {
