@@ -59,7 +59,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     });
 
     public static final None NONE = new None(new NoneClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)));
-    public static final Blizzard BLIZZARD = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), new ResourceLocation("minecraft:textures/environment/snow.png"), SoundRegistry.BLIZZARD_LOOP2, 0.6F, 0.6F, 0.2F), "!#DESERT#SAVANNA", 0.0D, 2, 10, Blocks.SNOW, true, NO_SEASON_CHANCES);
+    public static final Blizzard BLIZZARD = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), new ResourceLocation("minecraft:textures/environment/snow.png"), SoundRegistry.BLIZZARD_LOOP2, 0.6F, 0.6F, 0.2F), "!#DESERT#SAVANNA", 0.0D, -0.5, 0.1, 2, 10, Blocks.SNOW, true, true, NO_SEASON_CHANCES);
 
     public static final Set<WeatherEvent> DEFAULT_EVENTS = Util.make(new ReferenceArraySet<>(), (set) -> {
         set.add(BLIZZARD);
@@ -69,15 +69,19 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     private WeatherEventClientSettings clientSettings;
     private final String biomeCondition;
     private final double defaultChance;
+    private final double temperatureOffsetRaw;
+    private final double humidityOffsetRaw;
     private final Map<Season.Key, Map<Season.Phase, Double>> seasonChances;
 
     private String name;
     private final ReferenceArraySet<Biome> validBiomes = new ReferenceArraySet<>();
 
-    public WeatherEvent(WeatherEventClientSettings clientSettings, String biomeCondition, double defaultChance, Map<Season.Key, Map<Season.Phase, Double>> seasonChance) {
+    public WeatherEvent(WeatherEventClientSettings clientSettings, String biomeCondition, double defaultChance, double temperatureOffsetRaw, double humidityOffsetRaw, Map<Season.Key, Map<Season.Phase, Double>> seasonChance) {
         this.clientSettings = clientSettings;
         this.biomeCondition = biomeCondition;
         this.defaultChance = defaultChance;
+        this.temperatureOffsetRaw = temperatureOffsetRaw;
+        this.humidityOffsetRaw = humidityOffsetRaw;
         this.seasonChances = seasonChance;
     }
 
@@ -289,5 +293,13 @@ public abstract class WeatherEvent implements WeatherEventSettings {
             }
         }
         return false;
+    }
+
+    public double getTemperatureOffsetRaw() {
+        return temperatureOffsetRaw;
+    }
+
+    public double getHumidityOffsetRaw() {
+        return humidityOffsetRaw;
     }
 }

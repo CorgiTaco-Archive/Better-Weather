@@ -25,7 +25,7 @@ public class None extends WeatherEvent {
 
 
     public None(WeatherEventClientSettings clientSettings) {
-        super(clientSettings, "ALL", 0.0, NO_SEASON_CHANCES);
+        super(clientSettings, "ALL", 0.0, 0.0, 0.0, NO_SEASON_CHANCES);
     }
 
     @Override

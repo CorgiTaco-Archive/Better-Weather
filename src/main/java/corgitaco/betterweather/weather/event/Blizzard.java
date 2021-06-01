@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@SuppressWarnings("deprecation")
 public class Blizzard extends WeatherEvent {
 
     public static final Codec<Blizzard> CODEC = RecordCodecBuilder.create((builder) -> {
@@ -36,6 +37,10 @@ public class Blizzard extends WeatherEvent {
             return blizzard.getClientSettings();
         }), Codec.STRING.fieldOf("biomeCondition").forGetter(blizzard -> {
             return blizzard.getBiomeCondition();
+        }), Codec.DOUBLE.fieldOf("temperatureOffset").forGetter(blizzard -> {
+            return blizzard.getTemperatureOffsetRaw();
+        }), Codec.DOUBLE.fieldOf("humidityOffset").forGetter(blizzard -> {
+            return blizzard.getHumidityOffsetRaw();
         }), Codec.DOUBLE.fieldOf("defaultChance").forGetter(blizzard -> {
             return blizzard.getDefaultChance();
         }), Codec.INT.fieldOf("blockLightThreshold").forGetter(blizzard -> {
@@ -46,15 +51,18 @@ public class Blizzard extends WeatherEvent {
             return Registry.BLOCK.getKey(blizzard.snowBlock);
         }), Codec.BOOL.fieldOf("snowLayering").forGetter(blizzard -> {
             return blizzard.snowLayers;
+        }), Codec.BOOL.fieldOf("waterFreezes").forGetter(blizzard -> {
+            return blizzard.waterFreezes;
         }), Codec.simpleMap(Season.Key.CODEC, Codec.unboundedMap(Season.Phase.CODEC, Codec.DOUBLE), IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasonChances").forGetter(blizzard -> {
             return blizzard.getSeasonChances();
-        })).apply(builder, (clientSettings, biomeCondition, defaultChance, tickRate, blockLightThreshold, snowBlockID, snowLayers, map) -> {
+        })).apply(builder, (clientSettings, biomeCondition, temperatureOffsetRaw, humidityOffsetRaw, defaultChance, tickRate, blockLightThreshold, snowBlockID, snowLayers, waterFreezes, map) -> {
             Optional<Block> blockOptional = Registry.BLOCK.getOptional(snowBlockID);
             if (!blockOptional.isPresent()) {
-                BetterWeather.LOGGER.error("\"" + snowBlockID.toString() + "\" is not a valid block ID in the registry, default to \"minecraft:snow\"...");
+                BetterWeather.LOGGER.error("\"" + snowBlockID.toString() + "\" is not a valid block ID in the registry, defaulting to \"minecraft:snow\"...");
             }
 
-            return new Blizzard(clientSettings, biomeCondition, defaultChance, tickRate, blockLightThreshold, blockOptional.orElse(Blocks.SNOW), snowLayers, map);
+
+            return new Blizzard(clientSettings, biomeCondition, defaultChance, temperatureOffsetRaw, humidityOffsetRaw, tickRate, blockLightThreshold, blockOptional.orElse(Blocks.SNOW), snowLayers, waterFreezes, map);
         });
     });
 
@@ -64,14 +72,16 @@ public class Blizzard extends WeatherEvent {
     private final int blockLightThreshold;
     private final Block snowBlock;
     private final boolean snowLayers;
+    private final boolean waterFreezes;
 
 
-    public Blizzard(WeatherEventClientSettings clientSettings, String biomeCondition, double defaultChance, int tickRate, int blockLightThreshold, Block snowBlock, boolean snowLayers, Map<Season.Key, Map<Season.Phase, Double>> map) {
-        super(clientSettings, biomeCondition, defaultChance, map);
+    public Blizzard(WeatherEventClientSettings clientSettings, String biomeCondition, double defaultChance, double temperatureOffsetRaw, double humidityOffsetRaw, int tickRate, int blockLightThreshold, Block snowBlock, boolean snowLayers, boolean waterFreezes, Map<Season.Key, Map<Season.Phase, Double>> map) {
+        super(clientSettings, biomeCondition, defaultChance, temperatureOffsetRaw, humidityOffsetRaw, map);
         this.tickRate = tickRate;
         this.blockLightThreshold = blockLightThreshold;
         this.snowBlock = snowBlock;
         this.snowLayers = snowLayers;
+        this.waterFreezes = waterFreezes;
     }
 
     @Override
@@ -94,12 +104,14 @@ public class Blizzard extends WeatherEvent {
                 return;
             }
 
-            if (biome.doesWaterFreeze(world, randomPosDown)) {
-                world.setBlockState(randomPosDown, Blocks.ICE.getDefaultState());
+            if (waterFreezes) {
+                if (biome.doesWaterFreeze(world, randomPosDown)) {
+                    world.setBlockState(randomPosDown, Blocks.ICE.getDefaultState());
+                }
             }
 
             if (meetsStateRequirements(world, randomHeightMapPos)) {
-                world.setBlockState(randomHeightMapPos, Blocks.SNOW.getDefaultState());
+                world.setBlockState(randomHeightMapPos, this.snowBlock.getDefaultState());
                 return;
             }
 
@@ -109,14 +121,6 @@ public class Blizzard extends WeatherEvent {
 
                     if (currentLayer < 7) {
                         world.setBlockState(randomHeightMapPos, blockState.with(BlockStateProperties.LAYERS_1_8, currentLayer + 1), 2);
-                    }
-                }
-
-                if (meetsLayeringRequirement(world, randomPosDown)) {
-                    int currentLayer = blockState.get(BlockStateProperties.LAYERS_1_8);
-
-                    if (currentLayer < 7) {
-                        world.setBlockState(randomPosDown, blockState.with(BlockStateProperties.LAYERS_1_8, currentLayer + 1), 2);
                     }
                 }
             }
@@ -145,6 +149,8 @@ public class Blizzard extends WeatherEvent {
         return true;
     }
 
+
+
     @Override
     public Codec<? extends WeatherEvent> codec() {
         return CODEC;
@@ -157,15 +163,11 @@ public class Blizzard extends WeatherEvent {
 
     @Override
     public double getTemperatureModifierAtPosition(BlockPos pos) {
-        return 0;
+        return getTemperatureOffsetRaw();
     }
 
     @Override
     public double getHumidityModifierAtPosition(BlockPos pos) {
-        return 0;
-    }
-
-    public Block getSnowBlock() {
-        return snowBlock;
+        return getHumidityOffsetRaw();
     }
 }
