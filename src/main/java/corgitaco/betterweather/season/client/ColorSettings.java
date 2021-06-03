@@ -12,7 +12,7 @@ import static corgitaco.betterweather.util.client.ColorUtil.tryParseColor;
 public class ColorSettings {
 
     public static final Codec<ColorSettings> CODEC = RecordCodecBuilder.create(seasonClientSettingsInstance -> {
-        return seasonClientSettingsInstance.group(Codec.STRING.optionalFieldOf("foliageTargetHexColor", "").forGetter((colorSettings) -> {
+        return seasonClientSettingsInstance.group(Codec.STRING.fieldOf("foliageTargetHexColor").forGetter((colorSettings) -> {
             return colorSettings.targetFoliageHexColor == Integer.MAX_VALUE ? "" : Integer.toHexString(colorSettings.targetFoliageHexColor);
         }), Codec.DOUBLE.fieldOf("foliageColorBlendStrength").orElse(0.0).forGetter((colorSettings) -> {
             return colorSettings.foliageColorBlendStrength;

@@ -4,6 +4,8 @@ import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.season.BWSubseasonSettings;
 import corgitaco.betterweather.season.SeasonContext;
+import corgitaco.betterweather.season.client.ColorSettings;
+import corgitaco.betterweather.weather.BWWeatherEventContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.RegistryKey;
@@ -43,8 +45,10 @@ public final class ColorUtil {
             return previous;
         }
 
-        SeasonContext context = ((BetterWeatherWorldData) world).getSeasonContext();
-        if (context == null) {
+        SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
+        BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
+
+        if (seasonContext == null && weatherEventContext == null) {
             return previous;
         }
 
@@ -53,32 +57,70 @@ public final class ColorUtil {
             return previous;
         }
 
+
         RegistryKey<Biome> key = optionalKey.get();
-        BWSubseasonSettings settings = context.getCurrentSubSeasonSettings();
 
-        int target;
-        double blend;
+        int seasonTarget = Integer.MAX_VALUE;
+        double seasonBlend = -1;
 
-        switch (type) {
-            case GRASS:
-                target = clamp(settings.getTargetGrassColor(key), previous);
-                blend = settings.getGrassColorBlendStrength(key);
-                break;
-            case FOLIAGE:
-                target = clamp(settings.getTargetFoliageColor(key), previous);
-                blend = settings.getFoliageColorBlendStrength(key);
-                break;
-            case FOG:
-                target = clamp(settings.getTargetFogColor(key), previous);
-                blend = settings.getFogColorBlendStrength(key);
-                break;
-            default:
-                target = clamp(settings.getTargetSkyColor(key), previous);
-                blend = settings.getSkyColorBlendStrength(key);
-                break;
+        if (seasonContext != null) {
+            BWSubseasonSettings settings = seasonContext.getCurrentSubSeasonSettings();
+
+            switch (type) {
+                case GRASS:
+                    seasonTarget = clamp(settings.getTargetGrassColor(key), previous);
+                    seasonBlend = settings.getGrassColorBlendStrength(key);
+                    break;
+                case FOLIAGE:
+                    seasonTarget = clamp(settings.getTargetFoliageColor(key), previous);
+                    seasonBlend = settings.getFoliageColorBlendStrength(key);
+                    break;
+                case FOG:
+                    seasonTarget = clamp(settings.getTargetFogColor(key), previous);
+                    seasonBlend = settings.getFogColorBlendStrength(key);
+                    break;
+                default:
+                    seasonTarget = clamp(settings.getTargetSkyColor(key), previous);
+                    seasonBlend = settings.getSkyColorBlendStrength(key);
+                    break;
+            }
         }
 
-        return mix(unpack(previous), unpack(target), blend);
+        int weatherTarget = Integer.MAX_VALUE;
+        double weatherBlend = -1;
+
+        if (weatherEventContext != null) {
+            ColorSettings colorSettings = weatherEventContext.getCurrentEvent().getClientSettings().getColorSettings();
+
+            switch (type) {
+                case GRASS:
+                    if (!weatherEventContext.isRefreshRenderers()) {
+                        break;
+                    }
+                    weatherTarget = clamp(colorSettings.getTargetFogHexColor(), previous);
+                    weatherBlend = colorSettings.getGrassColorBlendStrength();
+                    break;
+                case FOLIAGE:
+                    if (!weatherEventContext.isRefreshRenderers()) {
+                        break;
+                    }
+                    weatherTarget = clamp(colorSettings.getTargetFoliageHexColor(), previous);
+                    weatherBlend = colorSettings.getFoliageColorBlendStrength();
+                    break;
+                case FOG:
+                    weatherTarget = clamp(colorSettings.getTargetFogHexColor(), previous);
+                    weatherBlend = colorSettings.getFogColorBlendStrength();
+                    break;
+                default:
+                    weatherTarget = clamp(colorSettings.getTargetSkyHexColor(), previous);
+                    weatherBlend = colorSettings.getSkyColorBlendStrength();
+                    break;
+            }
+        }
+
+        int seasonMix = mix(unpack(previous), unpack(seasonTarget), seasonBlend);
+        int weatherMix = weatherEventContext != null ? mix(unpack(seasonContext != null ? seasonMix : previous), unpack(weatherTarget), weatherBlend) : Integer.MAX_VALUE;
+        return weatherMix == Integer.MAX_VALUE ? seasonMix : weatherMix;
     }
 
     private static int clamp(int target, int fallback) {
@@ -104,9 +146,9 @@ public final class ColorUtil {
     public static int pack(int a, int r, int g, int b) {
         return (int) (
                 ((a & BIT_MASK) << 24) |
-                ((r & BIT_MASK) << 16) |
-                ((g & BIT_MASK)) << 8 |
-                (b & BIT_MASK)
+                        ((r & BIT_MASK) << 16) |
+                        ((g & BIT_MASK)) << 8 |
+                        (b & BIT_MASK)
         );
     }
 
@@ -117,7 +159,7 @@ public final class ColorUtil {
 
     // Unpacks ARGB channels from a decimal.
     public static int[] unpack(int decimal) {
-        return new int[] {
+        return new int[]{
                 (int) ((decimal >> 24) & BIT_MASK), // Alpha.
                 (int) ((decimal >> 16) & BIT_MASK), // Red.
                 (int) ((decimal >> 8) & BIT_MASK),  // Green.
