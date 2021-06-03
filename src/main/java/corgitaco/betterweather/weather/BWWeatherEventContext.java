@@ -23,6 +23,7 @@ import corgitaco.betterweather.data.network.NetworkHandler;
 import corgitaco.betterweather.data.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.data.network.packet.weather.WeatherDataPacket;
 import corgitaco.betterweather.data.storage.WeatherEventSavedData;
+import corgitaco.betterweather.helpers.BiomeUpdate;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;
@@ -75,8 +76,6 @@ public class BWWeatherEventContext implements WeatherEventContext {
     private boolean refreshRenderers;
     private WeatherEvent currentEvent;
     private boolean weatherForced;
-    private boolean clearLater;
-
 
     //Packet Constructor
     public BWWeatherEventContext(String currentEvent, boolean weatherForced, ResourceLocation worldID, Map<String, WeatherEvent> weatherEvents) {
@@ -133,16 +132,21 @@ public class BWWeatherEventContext implements WeatherEventContext {
         }
 
         if (prevEvent != this.currentEvent || wasForced != this.weatherForced) {
-            save(world);
-            if (world instanceof ServerWorld) {
-                sendPackets((ServerWorld) world);
-            }
+            onWeatherChange(world);
         }
         if (world instanceof ServerWorld) {
             this.currentEvent.worldTick((ServerWorld) world, world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED), world.getGameTime());
         }
         if (world.isRemote) {
             this.currentEvent.clientTick((ClientWorld) world, world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED), world.getGameTime(), Minecraft.getInstance());
+        }
+    }
+
+    private void onWeatherChange(World world) {
+        ((BiomeUpdate) world).updateBiomeData();
+        save(world);
+        if (world instanceof ServerWorld) {
+            sendPackets((ServerWorld) world);
         }
     }
 
@@ -154,7 +158,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
     }
 
     private void shuffleAndPickWeatherEvent(World world) {
-        boolean isPrecipitation = world.getWorldInfo().isRaining() || world.getWorldInfo().isThundering();
+        boolean isPrecipitation = world.getWorldInfo().isRaining();
         Season season = ((Climate) world).getSeason();
         boolean hasSeasons = season != null;
         float rainingStrength = world.rainingStrength;
@@ -174,13 +178,6 @@ public class BWWeatherEventContext implements WeatherEventContext {
                         if (random.nextDouble() < chance) {
                             this.currentEvent = weatherEvent;
                             break;
-                        }
-                    }
-                } else {
-                    if (clearLater) {
-                        this.clearLater = false;
-                        if (rainingStrength == 0.0F) {
-                            this.currentEvent = this.weatherEvents.get(DEFAULT);
                         }
                     }
                 }
@@ -208,17 +205,13 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
         if (isDefault) {
             worldInfo.setClearWeatherTime(weatherEventLength);
-            clearLater = true;
         } else {
             worldInfo.setClearWeatherTime(0);
             worldInfo.setRainTime(weatherEventLength);
             worldInfo.setRaining(true);
-            worldInfo.setThunderTime(weatherEventLength);
-            worldInfo.setThundering(false);
-            sendPackets(world);
-            save(world);
-            clearLater = false;
         }
+
+        onWeatherChange(world);
         return this.currentEvent;
     }
 
