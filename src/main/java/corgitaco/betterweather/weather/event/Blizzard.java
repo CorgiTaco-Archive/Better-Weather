@@ -213,9 +213,9 @@ public class Blizzard extends WeatherEvent {
 
         if (entityTypeToEffectMap.containsKey(entity.getType())) {
             for (EffectInstance effectInstance : entityTypeToEffectMap.get(entity.getType())) {
-//                if (!entity.isPotionActive(effectInstance.getPotion())) {
+                if (!entity.isPotionActive(effectInstance.getPotion())) {
                     entity.addPotionEffect(effectInstance);
-//                }
+                }
             }
         }
     }
@@ -245,7 +245,7 @@ public class Blizzard extends WeatherEvent {
         String[] split = effectString.split("(?=[\\$])");
 
         Effect effect = null;
-        int amplifier = 5;
+        int amplifier = 4;
 
         for (int i = 0; i < split.length; i++) {
             String variable = split[i];
@@ -275,7 +275,7 @@ public class Blizzard extends WeatherEvent {
                 }
             }
         }
-        return effect != null ? new EffectInstance(effect, 5, amplifier, true, false) : null;
+        return effect != null ? new EffectInstance(effect, 5, amplifier, true, false, false) : null;
     }
 
     @Nullable

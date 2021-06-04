@@ -175,7 +175,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
                         WeatherEvent weatherEvent = this.weatherEvents.get(entry);
                         double chance = hasSeasons ? weatherEvent.getSeasonChances().getOrDefault(season.getKey(), new IdentityHashMap<>()).getOrDefault(season.getPhase(), weatherEvent.getDefaultChance()) : weatherEvent.getDefaultChance();
 
-                        if (random.nextDouble() < chance) {
+                        if (random.nextDouble() < chance || this.currentEvent == this.weatherEvents.get(DEFAULT)) {
                             this.currentEvent = weatherEvent;
                             break;
                         }

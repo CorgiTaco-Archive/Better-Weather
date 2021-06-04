@@ -9,6 +9,7 @@ import corgitaco.betterweather.weather.BWWeatherEventContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.RegistryKey;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.biome.Biome;
 
 import java.util.Optional;
@@ -119,7 +120,7 @@ public final class ColorUtil {
         }
 
         int seasonMix = mix(unpack(previous), unpack(seasonTarget), seasonBlend);
-        int weatherMix = weatherEventContext != null ? mix(unpack(seasonContext != null ? seasonMix : previous), unpack(weatherTarget), weatherBlend) : Integer.MAX_VALUE;
+        int weatherMix = weatherEventContext != null && weatherEventContext.getCurrentEvent().isValidBiome(biome) ? mix(unpack(seasonContext != null ? seasonMix : previous), unpack(weatherTarget), weatherBlend) : Integer.MAX_VALUE;
         return weatherMix == Integer.MAX_VALUE ? seasonMix : weatherMix;
     }
 
@@ -135,6 +136,10 @@ public final class ColorUtil {
                 lerp(start[2], end[2], blend), // Green.
                 lerp(start[3], end[3], blend)  // Blue.
         );
+    }
+
+    public static int[] transformFloatColor(Vector3d floatColor) {
+        return new int[]{255, (int) (floatColor.getX() * 255), (int) (floatColor.getY() * 255), (int) (floatColor.getZ() * 255)};
     }
 
     // Interpolate between color channels.

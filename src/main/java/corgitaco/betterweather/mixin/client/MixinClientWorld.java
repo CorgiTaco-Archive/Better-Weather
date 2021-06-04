@@ -93,6 +93,17 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
         }
     }
 
+
+    @Redirect(method = "getSkyColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
+    private float doNotDarkenSkyWithRainStrength(ClientWorld world, float delta) {
+        return this.weatherContext != null ? 0.0F : world.getRainStrength(delta);
+    }
+
+    @Redirect(method = "getCloudColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
+    private float doNotDarkenCloudsWithRainStrength(ClientWorld world, float delta) {
+        return this.weatherContext != null ? 0.0F : world.getRainStrength(delta);
+    }
+
     @Redirect(method = "getSunBrightness", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
     private float sunBrightness(ClientWorld world, float delta) {
         float rainStrength = ((ClientWorld) (Object) this).getRainStrength(delta);

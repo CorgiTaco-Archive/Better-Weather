@@ -9,6 +9,7 @@ import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.core.SoundRegistry;
 import corgitaco.betterweather.graphics.Graphics;
 import corgitaco.betterweather.season.client.ColorSettings;
+import corgitaco.betterweather.util.client.ColorUtil;
 import corgitaco.betterweather.weather.event.Blizzard;
 import corgitaco.betterweather.weather.event.None;
 import corgitaco.betterweather.weather.event.client.BlizzardClientSettings;
@@ -27,6 +28,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.biome.Biome;
@@ -195,35 +197,50 @@ public abstract class WeatherEvent implements WeatherEventSettings {
 
     @OnlyIn(Dist.CLIENT)
     public float skyOpacity(ClientWorld world, BlockPos playerPos) {
-        int transitionStart = 12;
+        return mixer(world, playerPos, 12, 2.0F, this.clientSettings.skyOpacity());
+    }
 
-        float defaultFogStrength = 0.0F;
-        defaultFogStrength *= defaultFogStrength;
+    @OnlyIn(Dist.CLIENT)
+    public float fogDensity(ClientWorld world, BlockPos playerPos) {
+        return mixer(world, playerPos, 12, 0.1F, this.clientSettings.fogDensity());
+    }
 
+
+    private float mixer(ClientWorld world, BlockPos playerPos, int transitionRange, float weight, float targetMaxValue) {
         int x = playerPos.getX();
         int z = playerPos.getZ();
-        float accumulatedFogStrength = 0.0F;
+        float accumulated = 0.0F;
 
         BlockPos.Mutable pos = new BlockPos.Mutable();
-        for (int sampleX = x - transitionStart; sampleX <= x + transitionStart; ++sampleX) {
+        for (int sampleX = x - transitionRange; sampleX <= x + transitionRange; ++sampleX) {
             pos.setX(sampleX);
 
-            for (int sampleZ = z - transitionStart; sampleZ <= z + transitionStart; ++sampleZ) {
+            for (int sampleZ = z - transitionRange; sampleZ <= z + transitionRange; ++sampleZ) {
                 pos.setZ(sampleZ);
 
                 Biome biome = world.getBiome(pos);
                 if (validBiomes.contains(biome)) {
 
-                    float fogStrength = 2;
-
-                    accumulatedFogStrength += fogStrength * fogStrength;
-                } else {
-                    accumulatedFogStrength += defaultFogStrength;
+                    accumulated += weight * weight;
                 }
             }
         }
         float transitionSmoothness = 33 * 33;
-        return Math.min(this.clientSettings.skyOpacity(), (float) Math.sqrt(accumulatedFogStrength / transitionSmoothness));
+        return Math.min(targetMaxValue, (float) Math.sqrt(accumulated / transitionSmoothness));
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public Vector3d cloudColor(ClientWorld world, BlockPos playerPos, Vector3d previous) {
+        float lerpWeight = mixer(world, playerPos, 12, 0.1F, 1.0F);
+
+        int[] prevColor = ColorUtil.transformFloatColor(previous);
+        int mix = ColorUtil.mix(prevColor, ColorUtil.unpack(this.clientSettings.getColorSettings().getTargetSkyHexColor()), Math.min(this.clientSettings.getColorSettings().getSkyColorBlendStrength(), Math.min(world.getRainStrength(Minecraft.getInstance().getRenderPartialTicks()), lerpWeight)));
+
+        float r = (float) (mix >> 16 & 255) / 255.0F;
+        float g = (float) (mix >> 8 & 255) / 255.0F;
+        float b = (float) (mix & 255) / 255.0F;
+
+        return new Vector3d(r, g, b);
     }
 
     @OnlyIn(Dist.CLIENT)

@@ -1,6 +1,7 @@
 package corgitaco.betterweather.mixin.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.weather.BWWeatherEventContext;
 import net.minecraft.client.Minecraft;
@@ -24,12 +25,15 @@ public abstract class MixinFogRenderer {
 
     @Inject(method = "setupFog(Lnet/minecraft/client/renderer/ActiveRenderInfo;Lnet/minecraft/client/renderer/FogRenderer$FogType;FZF)V", at = @At("HEAD"), cancellable = true, remap = false)
     private static void forceWeather(ActiveRenderInfo activeRenderInfoIn, FogRenderer.FogType fogTypeIn, float farPlaneDistance, boolean nearFog, float partialticks, CallbackInfo ci) {
-        BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) Minecraft.getInstance().world).getWeatherEventContext();
+        ClientWorld world = Minecraft.getInstance().world;
+        BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
         if (weatherEventContext != null) {
-            float currentFogDensity = weatherEventContext.getCurrentEvent().getClientSettings().fogDensity();
-            if (currentFogDensity == -1.0F) {
-            } else {
-                RenderSystem.fogDensity(MathHelper.lerp(activeRenderInfoIn.getRenderViewEntity().world.getRainStrength(Minecraft.getInstance().getRenderPartialTicks()), 0.0F, currentFogDensity));
+            WeatherEvent currentEvent = weatherEventContext.getCurrentEvent();
+            float currentFogDensity = currentEvent.getClientSettings().fogDensity();
+            float blendedFogDensity = currentEvent.fogDensity(world, activeRenderInfoIn.getBlockPos());
+
+            if (currentFogDensity != -1.0F && blendedFogDensity > 0.0F) {
+                RenderSystem.fogDensity(MathHelper.lerp(activeRenderInfoIn.getRenderViewEntity().world.getRainStrength(Minecraft.getInstance().getRenderPartialTicks()), 0.0F, blendedFogDensity));
                 ci.cancel();
             }
         }

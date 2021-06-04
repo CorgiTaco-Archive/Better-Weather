@@ -63,8 +63,8 @@ public class SeasonContext implements Season {
     });
 
     public static final TomlCommentedConfigOps CONFIG_OPS = new TomlCommentedConfigOps(Util.make(new HashMap<>(), (map) -> {
-        map.put("yearLength", "Represents this world's year length.");
-        map.put("tickSeasonTimeWhenNoPlayersOnline", "Does Season Time tick when no players are online?");
+        map.put("yearLength", "Represents this world's year length in ticks(a minecraft day is 24000 ticks). Season length is 1/4 of this value. Sub season length is 1/12(or 1/3 of season length) of this value.");
+        map.put("tickSeasonTimeWhenNoPlayersOnline", "Does Season Time tick in this world when no players are online?");
         map.put("tempModifier", "Modifies this world's temperature.");
         map.put("cropGrowthChanceMultiplier", "Multiplies the growth rate of crops when ticked.");
         map.put("entityBreedingBlacklist", "Blacklist specific mobs from breeding.");

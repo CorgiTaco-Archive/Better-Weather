@@ -13,6 +13,7 @@
     "access.GameRulesBooleanValueAccess",
     "access.RegistryAccess",
     "access.ServerChunkProviderAccess",
+    "access.Vector3dAccess",
     "biome.MixinBiome",
     "biome.MixinBiomeClimate",
     "block.MixinAbstractBlockstate",

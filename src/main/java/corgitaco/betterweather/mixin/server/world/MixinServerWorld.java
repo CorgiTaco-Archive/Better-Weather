@@ -148,7 +148,7 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
 
     @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 1))
     private int takeAdvantageOfExistingChunkIterator(Random random, int bound, Chunk chunk, int randomTickSpeed) {
-        return weatherContext != null ? -1 : ((ServerWorld) (Object) this).rand.nextInt(16);
+        return weatherContext != null ? -1 : ((ServerWorld) (Object) this).rand.nextInt(bound);
     }
 
     @Nullable
