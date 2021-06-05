@@ -5,8 +5,10 @@ import corgitaco.betterweather.data.network.NetworkHandler;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import corgitaco.betterweather.weather.event.Blizzard;
 import corgitaco.betterweather.weather.event.None;
+import corgitaco.betterweather.weather.event.Rain;
 import corgitaco.betterweather.weather.event.client.BlizzardClientSettings;
 import corgitaco.betterweather.weather.event.client.NoneClientSettings;
+import corgitaco.betterweather.weather.event.client.RainClientSettings;
 import net.minecraft.util.LazyValue;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
@@ -52,8 +54,11 @@ public class BetterWeather {
         NetworkHandler.init();
 
         Registry.register(BetterWeatherRegistry.CLIENT_WEATHER_EVENT_SETTINGS, new ResourceLocation(MOD_ID, "blizzard"), BlizzardClientSettings.CODEC);
+        Registry.register(BetterWeatherRegistry.CLIENT_WEATHER_EVENT_SETTINGS, new ResourceLocation(MOD_ID, "rain"), RainClientSettings.CODEC);
         Registry.register(BetterWeatherRegistry.CLIENT_WEATHER_EVENT_SETTINGS, new ResourceLocation(MOD_ID, "none"), NoneClientSettings.CODEC);
+
         Registry.register(BetterWeatherRegistry.WEATHER_EVENT, new ResourceLocation(MOD_ID, "blizzard"), Blizzard.CODEC);
+        Registry.register(BetterWeatherRegistry.WEATHER_EVENT, new ResourceLocation(MOD_ID, "rain"), Rain.CODEC);
         Registry.register(BetterWeatherRegistry.WEATHER_EVENT, new ResourceLocation(MOD_ID, "none"), None.CODEC);
     }
 

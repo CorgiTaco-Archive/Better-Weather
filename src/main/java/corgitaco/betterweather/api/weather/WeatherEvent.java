@@ -248,6 +248,8 @@ public abstract class WeatherEvent implements WeatherEventSettings {
         this.clientSettings.clientTick(world, tickSpeed, worldTime, mc, this::isValidBiome);
     }
 
+    public void onWeatherEnd() {
+    }
 
     public static boolean conditionPasses(String conditionString, RegistryKey<Biome> biomeKey, Biome biome) {
         if (conditionString.isEmpty()) {
