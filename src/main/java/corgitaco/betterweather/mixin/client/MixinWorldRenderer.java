@@ -48,7 +48,7 @@ public abstract class MixinWorldRenderer {
     private void stopRainParticles(ActiveRenderInfo activeRenderInfoIn, CallbackInfo ci) {
         BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) this.world).getWeatherEventContext();
         if (mc.world != null && weatherEventContext != null) {
-            if (weatherEventContext.getCurrentEvent().weatherParticlesAndSound(activeRenderInfoIn, this.mc)) {
+            if (weatherEventContext.getCurrentEvent().weatherParticlesAndSound(activeRenderInfoIn, this.ticks, this.mc)) {
                 ci.cancel();
             }
         }

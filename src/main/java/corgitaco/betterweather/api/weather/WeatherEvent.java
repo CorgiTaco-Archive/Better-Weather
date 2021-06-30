@@ -12,8 +12,10 @@ import corgitaco.betterweather.season.client.ColorSettings;
 import corgitaco.betterweather.util.client.ColorUtil;
 import corgitaco.betterweather.weather.event.Blizzard;
 import corgitaco.betterweather.weather.event.None;
+import corgitaco.betterweather.weather.event.Rain;
 import corgitaco.betterweather.weather.event.client.BlizzardClientSettings;
 import corgitaco.betterweather.weather.event.client.NoneClientSettings;
+import corgitaco.betterweather.weather.event.client.RainClientSettings;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
@@ -65,10 +67,12 @@ public abstract class WeatherEvent implements WeatherEventSettings {
 
     public static final None NONE = new None(new NoneClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)));
     public static final Blizzard BLIZZARD = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), new ResourceLocation("minecraft:textures/environment/snow.png"), SoundRegistry.BLIZZARD_LOOP2, 0.6F, 0.6F, 0.2F), "!#DESERT#SAVANNA", 0.0D, -0.5, 0.1, 2, 10, Blocks.SNOW, true, true, Util.make(new HashMap<>(), ((stringListHashMap) -> stringListHashMap.put(Registry.ENTITY_TYPE.getKey(EntityType.PLAYER).toString(), ImmutableList.of(Registry.EFFECTS.getKey(Effects.SLOWNESS).toString())))), NO_SEASON_CHANCES);
+    public static final Rain RAIN = new Rain(new RainClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), new ResourceLocation("minecraft:textures/environment/rain.png"), new ResourceLocation("minecraft:textures/environment/snow.png")), "!#DESERT#SAVANNA", 0.0D, -0.5, 0.1, NO_SEASON_CHANCES);
 
     public static final Set<WeatherEvent> DEFAULT_EVENTS = Util.make(new ReferenceArraySet<>(), (set) -> {
         set.add(BLIZZARD);
         set.add(NONE);
+        set.add(RAIN);
     });
 
     private WeatherEventClientSettings clientSettings;
@@ -107,7 +111,9 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     public void livingEntityUpdate(LivingEntity entity) {
     }
 
-    public boolean weatherParticlesAndSound(ActiveRenderInfo renderInfo, Minecraft mc) {
+    @OnlyIn(Dist.CLIENT)
+    public boolean weatherParticlesAndSound(ActiveRenderInfo renderInfo, float ticks, Minecraft mc) {
+        this.clientSettings.weatherParticlesAndSound(renderInfo, mc, ticks, this::isValidBiome);
         return true;
     }
 
