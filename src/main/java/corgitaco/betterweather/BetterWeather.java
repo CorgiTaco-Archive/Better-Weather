@@ -3,12 +3,8 @@ package corgitaco.betterweather;
 import corgitaco.betterweather.api.BetterWeatherRegistry;
 import corgitaco.betterweather.data.network.NetworkHandler;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
-import corgitaco.betterweather.weather.event.Blizzard;
-import corgitaco.betterweather.weather.event.None;
-import corgitaco.betterweather.weather.event.Rain;
-import corgitaco.betterweather.weather.event.client.BlizzardClientSettings;
-import corgitaco.betterweather.weather.event.client.NoneClientSettings;
-import corgitaco.betterweather.weather.event.client.RainClientSettings;
+import corgitaco.betterweather.weather.event.*;
+import corgitaco.betterweather.weather.event.client.*;
 import net.minecraft.util.LazyValue;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
@@ -53,13 +49,18 @@ public class BetterWeather {
         event.enqueueWork(BetterWeatherGameRules::init);
         NetworkHandler.init();
 
+        Registry.register(BetterWeatherRegistry.CLIENT_WEATHER_EVENT_SETTINGS, new ResourceLocation(MOD_ID, "acid_rain"), AcidRainClientSettings.CODEC);
         Registry.register(BetterWeatherRegistry.CLIENT_WEATHER_EVENT_SETTINGS, new ResourceLocation(MOD_ID, "blizzard"), BlizzardClientSettings.CODEC);
-        Registry.register(BetterWeatherRegistry.CLIENT_WEATHER_EVENT_SETTINGS, new ResourceLocation(MOD_ID, "rain"), RainClientSettings.CODEC);
+        Registry.register(BetterWeatherRegistry.CLIENT_WEATHER_EVENT_SETTINGS, new ResourceLocation(MOD_ID, "cloudy"), CloudyClientSettings.CODEC);
         Registry.register(BetterWeatherRegistry.CLIENT_WEATHER_EVENT_SETTINGS, new ResourceLocation(MOD_ID, "none"), NoneClientSettings.CODEC);
+        Registry.register(BetterWeatherRegistry.CLIENT_WEATHER_EVENT_SETTINGS, new ResourceLocation(MOD_ID, "rain"), RainClientSettings.CODEC);
 
+        Registry.register(BetterWeatherRegistry.WEATHER_EVENT, new ResourceLocation(MOD_ID, "acid_rain"), AcidRain.CODEC);
         Registry.register(BetterWeatherRegistry.WEATHER_EVENT, new ResourceLocation(MOD_ID, "blizzard"), Blizzard.CODEC);
-        Registry.register(BetterWeatherRegistry.WEATHER_EVENT, new ResourceLocation(MOD_ID, "rain"), Rain.CODEC);
+        Registry.register(BetterWeatherRegistry.WEATHER_EVENT, new ResourceLocation(MOD_ID, "cloudy"), Cloudy.CODEC);
         Registry.register(BetterWeatherRegistry.WEATHER_EVENT, new ResourceLocation(MOD_ID, "none"), None.CODEC);
+        Registry.register(BetterWeatherRegistry.WEATHER_EVENT, new ResourceLocation(MOD_ID, "rain"), Rain.CODEC);
+
     }
 
     private void clientSetup(FMLClientSetupEvent event) {

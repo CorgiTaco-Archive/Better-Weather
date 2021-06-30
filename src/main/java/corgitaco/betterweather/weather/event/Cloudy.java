@@ -8,15 +8,16 @@ import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
 import net.minecraft.util.IStringSerializable;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
 
+import java.util.HashMap;
 import java.util.Map;
 
-public class Rain extends WeatherEvent {
+public class Cloudy extends WeatherEvent {
 
-    public static final Codec<Rain> CODEC = RecordCodecBuilder.create((builder) -> {
+    public static final Codec<Cloudy> CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(WeatherEventClientSettings.CODEC.fieldOf("clientSettings").forGetter((rain) -> {
             return rain.getClientSettings();
         }), Codec.STRING.fieldOf("biomeCondition").forGetter(rain -> {
@@ -31,22 +32,21 @@ public class Rain extends WeatherEvent {
             return rain.isThundering();
         }), Codec.INT.fieldOf("lightningChance").forGetter(rain -> {
             return rain.getLightningChance();
-        }), Codec.simpleMap(Season.Key.CODEC, Codec.unboundedMap(Season.Phase.CODEC, Codec.DOUBLE), IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasonChances").forGetter(rain -> {
-            return rain.getSeasonChances();
-        })).apply(builder, Rain::new);
+        }), Codec.simpleMap(Season.Key.CODEC, Codec.unboundedMap(Season.Phase.CODEC, Codec.DOUBLE), IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasonChances").forGetter(blizzard -> {
+            return blizzard.getSeasonChances();
+        })).apply(builder, Cloudy::new);
     });
 
-    public Rain(WeatherEventClientSettings clientSettings, String biomeCondition, double defaultChance, double temperatureOffsetRaw, double humidityOffsetRaw, boolean isThundering, int lightningFrequency, Map<Season.Key, Map<Season.Phase, Double>> seasonChance) {
-        super(clientSettings, biomeCondition, defaultChance, temperatureOffsetRaw, humidityOffsetRaw, isThundering, lightningFrequency, seasonChance);
+    public static final TomlCommentedConfigOps CONFIG_OPS = new TomlCommentedConfigOps(Util.make(new HashMap<>(WeatherEvent.VALUE_COMMENTS), (map) -> {
+    }), true);
+
+
+    public Cloudy(WeatherEventClientSettings clientSettings, String biomeCondition, double defaultChance, double temperatureOffsetRaw, double humidityOffsetRaw, boolean isThundering, int lightningFrequency, Map<Season.Key, Map<Season.Phase, Double>> map) {
+        super(clientSettings, biomeCondition, defaultChance, temperatureOffsetRaw, humidityOffsetRaw, isThundering, lightningFrequency, NO_SEASON_CHANCES);
     }
 
     @Override
     public void worldTick(ServerWorld world, int tickSpeed, long worldTime) {
-    }
-
-    @Override
-    public void chunkTick(Chunk chunk, ServerWorld world) {
-        super.chunkTick(chunk, world);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class Rain extends WeatherEvent {
 
     @Override
     public DynamicOps<?> configOps() {
-        return TomlCommentedConfigOps.INSTANCE;
+        return CONFIG_OPS;
     }
 
     @Override

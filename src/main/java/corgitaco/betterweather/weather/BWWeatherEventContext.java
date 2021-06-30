@@ -146,6 +146,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
         ((BiomeUpdate) world).updateBiomeData();
         save(world);
         if (world instanceof ServerWorld) {
+            ((IServerWorldInfo) world.getWorldInfo()).setThundering(this.currentEvent.isThundering());
             sendPackets((ServerWorld) world);
         }
     }
@@ -209,6 +210,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
             worldInfo.setClearWeatherTime(0);
             worldInfo.setRainTime(weatherEventLength);
             worldInfo.setRaining(true);
+            worldInfo.setThundering(this.currentEvent.isThundering());
         }
 
         onWeatherChange(world);
@@ -334,7 +336,8 @@ public class BWWeatherEventContext implements WeatherEventContext {
             Optional<RegistryKey<Codec<? extends WeatherEvent>>> optionalKey = BetterWeatherRegistry.WEATHER_EVENT.getOptionalKey(defaultEvent.codec());
 
             if (optionalKey.isPresent()) {
-                ResourceLocation location = optionalKey.get().getLocation();
+                ResourceLocation codecLocation = optionalKey.get().getLocation();
+                ResourceLocation location = defaultEvent.isThundering() ? new ResourceLocation(codecLocation.getNamespace(), codecLocation.getPath() + "_thundering") : codecLocation;
                 if (BetterWeatherConfig.SERIALIZE_AS_JSON) {
                     createJsonEventConfig(defaultEvent, location);
                 } else {

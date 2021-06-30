@@ -12,21 +12,28 @@ import net.minecraft.world.biome.Biome;
 
 import java.util.function.Predicate;
 
-public class NoneClientSettings extends WeatherEventClientSettings {
-    public static final Codec<NoneClientSettings> CODEC = RecordCodecBuilder.create((builder) -> {
-        return builder.group(ColorSettings.CODEC.fieldOf("colorSettings").forGetter(blizzardClient -> {
-            return blizzardClient.getColorSettings();
-        })).apply(builder, NoneClientSettings::new);
+public class CloudyClientSettings extends WeatherEventClientSettings {
+
+    public static final Codec<CloudyClientSettings> CODEC = RecordCodecBuilder.create((builder) -> {
+        return builder.group(ColorSettings.CODEC.fieldOf("colorSettings").forGetter(rainClientSettings -> {
+            return rainClientSettings.getColorSettings();
+        }), Codec.FLOAT.fieldOf("skyOpacity").forGetter(blizzardClientSettings -> {
+            return blizzardClientSettings.skyOpacity();
+        }), Codec.FLOAT.fieldOf("fogDensity").forGetter(blizzardClientSettings -> {
+            return blizzardClientSettings.fogDensity();
+        }), Codec.BOOL.fieldOf("sunsetSunriseColor").forGetter(blizzardClientSettings -> {
+            return blizzardClientSettings.sunsetSunriseColor();
+        })).apply(builder, CloudyClientSettings::new);
     });
 
 
-    public NoneClientSettings(ColorSettings colorSettings) {
-        super(colorSettings, 1.0F, -1.0F, true);
+    public CloudyClientSettings(ColorSettings colorSettings, float skyOpacity, float fogDensity, boolean sunsetSunriseColor) {
+        super(colorSettings, skyOpacity, fogDensity, sunsetSunriseColor);
     }
 
     @Override
     public boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z, Predicate<Biome> biomePredicate) {
-        return false;
+        return true;
     }
 
     @Override
@@ -36,5 +43,6 @@ public class NoneClientSettings extends WeatherEventClientSettings {
 
     @Override
     public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc, Predicate<Biome> biomePredicate) {
+
     }
 }

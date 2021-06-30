@@ -29,6 +29,12 @@ public class BlizzardClientSettings extends WeatherEventClientSettings implement
     public static final Codec<BlizzardClientSettings> CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(ColorSettings.CODEC.fieldOf("colorSettings").forGetter(blizzardClientSettings -> {
             return blizzardClientSettings.getColorSettings();
+        }), Codec.FLOAT.fieldOf("skyOpacity").forGetter(blizzardClientSettings -> {
+            return blizzardClientSettings.skyOpacity();
+        }), Codec.FLOAT.fieldOf("fogDensity").forGetter(blizzardClientSettings -> {
+            return blizzardClientSettings.fogDensity();
+        }), Codec.BOOL.fieldOf("sunsetSunriseColor").forGetter(blizzardClientSettings -> {
+            return blizzardClientSettings.sunsetSunriseColor();
         }), ResourceLocation.CODEC.fieldOf("rendererTexture").forGetter(blizzardClientSettings -> {
             return blizzardClientSettings.textureLocation;
         }), SoundEvent.CODEC.fieldOf("audioLocation").forGetter(blizzardClientSettings -> {
@@ -37,8 +43,6 @@ public class BlizzardClientSettings extends WeatherEventClientSettings implement
             return blizzardClientSettings.audioVolume;
         }), Codec.FLOAT.fieldOf("audioPitch").forGetter(blizzardClientSettings -> {
             return blizzardClientSettings.audioPitch;
-        }), Codec.FLOAT.fieldOf("fogDensity").forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.fogDensity;
         })).apply(builder, BlizzardClientSettings::new);
     });
 
@@ -48,17 +52,15 @@ public class BlizzardClientSettings extends WeatherEventClientSettings implement
     private final SoundEvent audio;
     private final float audioVolume;
     private final float audioPitch;
-    private final float fogDensity;
 
     private ShaderProgram program;
 
-    public BlizzardClientSettings(ColorSettings colorSettings, ResourceLocation textureLocation, SoundEvent audio, float audioVolume, float audioPitch, float fogDensity) {
-        super(colorSettings);
+    public BlizzardClientSettings(ColorSettings colorSettings, float skyOpacity, float fogDensity, boolean sunsetSunriseColor, ResourceLocation textureLocation, SoundEvent audio, float audioVolume, float audioPitch) {
+        super(colorSettings, skyOpacity, fogDensity, sunsetSunriseColor);
         this.textureLocation = textureLocation;
         this.audio = audio;
         this.audioVolume = audioVolume;
         this.audioPitch = audioPitch;
-        this.fogDensity = fogDensity;
 
         for (int i = 0; i < 32; ++i) {
             for (int j = 0; j < 32; ++j) {
@@ -199,11 +201,6 @@ public class BlizzardClientSettings extends WeatherEventClientSettings implement
 
     @Override
     public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc, Predicate<Biome> biomePredicate) {
-    }
-
-    @Override
-    public float fogDensity() {
-        return this.fogDensity;
     }
 
     @Override

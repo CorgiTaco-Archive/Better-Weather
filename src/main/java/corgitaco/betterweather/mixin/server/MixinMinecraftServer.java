@@ -33,6 +33,8 @@ public abstract class MixinMinecraftServer {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void readConfigsAtWorldCreation(Thread serverThread, DynamicRegistries.Impl registries, SaveFormat.LevelSave anvilConverterForAnvilFile, IServerConfiguration serverConfig, ResourcePackList dataPacks, Proxy serverProxy, DataFixer dataFixer, DataPackRegistries dataRegistries, MinecraftSessionService sessionService, GameProfileRepository profileRepo, PlayerProfileCache profileCache, IChunkStatusListenerFactory chunkStatusListenerFactory, CallbackInfo ci) {
+
+
         BetterWeatherConfig.serialize();
     }
 }

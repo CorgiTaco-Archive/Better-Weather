@@ -25,9 +25,15 @@ public abstract class WeatherEventClientSettings {
     public static final Codec<WeatherEventClientSettings> CODEC = BetterWeatherRegistry.CLIENT_WEATHER_EVENT_SETTINGS.dispatchStable(WeatherEventClientSettings::codec, Function.identity());
 
     private final ColorSettings colorSettings;
+    private final float skyOpacity;
+    private final float fogDensity;
+    private final boolean sunsetSunriseColor;
 
-    public WeatherEventClientSettings(ColorSettings colorSettings) {
+    public WeatherEventClientSettings(ColorSettings colorSettings, float skyOpacity, float fogDensity, boolean sunsetSunriseColor) {
         this.colorSettings = colorSettings;
+        this.skyOpacity = skyOpacity;
+        this.fogDensity = fogDensity;
+        this.sunsetSunriseColor = sunsetSunriseColor;
     }
 
     public abstract boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z, Predicate<Biome> biomePredicate);
@@ -37,15 +43,15 @@ public abstract class WeatherEventClientSettings {
     public abstract void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc, Predicate<Biome> biomePredicate);
 
     public boolean sunsetSunriseColor() {
-        return true;
+        return sunsetSunriseColor;
     }
 
     public float skyOpacity() {
-        return 1.0F;
+        return MathHelper.clamp(skyOpacity, 0.0F, 1.0F);
     }
 
     public float dayLightDarkness() {
-        return 1.0F;
+        return fogDensity;
     }
 
     public boolean drippingLeaves() {
@@ -53,7 +59,7 @@ public abstract class WeatherEventClientSettings {
     }
 
     public float fogDensity() {
-        return -1.0f;
+        return fogDensity;
     }
 
     public ColorSettings getColorSettings() {

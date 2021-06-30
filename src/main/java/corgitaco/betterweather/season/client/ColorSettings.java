@@ -28,6 +28,10 @@ public class ColorSettings {
             return colorSettings.targetFogHexColor == Integer.MAX_VALUE ? "" : Integer.toHexString(colorSettings.targetFogHexColor);
         }), Codec.DOUBLE.fieldOf("fogColorBlendStrength").orElse(0.0).forGetter((colorSettings) -> {
             return colorSettings.fogColorBlendStrength;
+        }), Codec.STRING.fieldOf("cloudTargetHexColor").orElse("").forGetter((colorSettings) -> {
+            return colorSettings.targetFogHexColor == Integer.MAX_VALUE ? "" : Integer.toHexString(colorSettings.targetFogHexColor);
+        }), Codec.DOUBLE.fieldOf("cloudColorBlendStrength").orElse(0.0).forGetter((colorSettings) -> {
+            return colorSettings.fogColorBlendStrength;
         })).apply(seasonClientSettingsInstance, ColorSettings::new);
     });
 
@@ -52,6 +56,8 @@ public class ColorSettings {
     private final double grassColorBlendStrength;
     private final int targetSkyHexColor;
     private final double skyColorBlendStrength;
+    private final int targetCloudHexColor;
+    private final double cloudColorBlendStrength;
     private final int targetFogHexColor;
     private final double fogColorBlendStrength;
 
@@ -60,18 +66,18 @@ public class ColorSettings {
     }
 
     public ColorSettings(String targetFoliageHexColor, double foliageColorBlendStrength, String targetGrassColor, double grassColorBlendStrength) {
-        this(targetFoliageHexColor, foliageColorBlendStrength, targetGrassColor, grassColorBlendStrength, targetGrassColor, 0, targetGrassColor, 0);
+        this(targetFoliageHexColor, foliageColorBlendStrength, targetGrassColor, grassColorBlendStrength, targetGrassColor, 0, targetGrassColor, 0, targetGrassColor, 0);
     }
 
-    public ColorSettings(String targetFoliageHexColor, double foliageColorBlendStrength, String targetGrassColor, double grassColorBlendStrength, String targetSkyHexColor, double skyColorBlendStrength, String targetFogHexColor, double fogColorBlendStrength) {
-        this(tryParseColor(targetFoliageHexColor), foliageColorBlendStrength, tryParseColor(targetGrassColor), grassColorBlendStrength, tryParseColor(targetSkyHexColor), skyColorBlendStrength, tryParseColor(targetFogHexColor), fogColorBlendStrength);
+    public ColorSettings(String targetFoliageHexColor, double foliageColorBlendStrength, String targetGrassColor, double grassColorBlendStrength, String targetSkyHexColor, double skyColorBlendStrength, String targetFogHexColor, double fogColorBlendStrength, String targetCloudHexColor, double cloudColorBlendStrength) {
+        this(tryParseColor(targetFoliageHexColor), foliageColorBlendStrength, tryParseColor(targetGrassColor), grassColorBlendStrength, tryParseColor(targetSkyHexColor), skyColorBlendStrength, tryParseColor(targetFogHexColor), fogColorBlendStrength, tryParseColor(targetCloudHexColor), skyColorBlendStrength);
     }
 
     public ColorSettings(int targetFoliageHexColor, double foliageColorBlendStrength, int targetGrassColor, double grassColorBlendStrength) {
-        this(targetFoliageHexColor, foliageColorBlendStrength, targetGrassColor, grassColorBlendStrength, targetFoliageHexColor, 0, targetFoliageHexColor, 0);
+        this(targetFoliageHexColor, foliageColorBlendStrength, targetGrassColor, grassColorBlendStrength, targetFoliageHexColor, 0, targetFoliageHexColor, 0, targetFoliageHexColor, 0);
     }
 
-    public ColorSettings(int targetFoliageHexColor, double foliageColorBlendStrength, int targetGrassColor, double grassColorBlendStrength, int targetSkyHexColor, double skyColorBlendStrength, int targetFogHexColor, double fogColorBlendStrength) {
+    public ColorSettings(int targetFoliageHexColor, double foliageColorBlendStrength, int targetGrassColor, double grassColorBlendStrength, int targetSkyHexColor, double skyColorBlendStrength, int targetFogHexColor, double fogColorBlendStrength, int targetCloudHexColor, double cloudColorBlendStrength) {
         this.targetFoliageHexColor = targetFoliageHexColor;
         this.foliageColorBlendStrength = foliageColorBlendStrength;
         this.targetGrassHexColor = targetGrassColor;
@@ -80,6 +86,8 @@ public class ColorSettings {
         this.targetFogHexColor = targetFogHexColor;
         this.fogColorBlendStrength = fogColorBlendStrength;
         this.skyColorBlendStrength = skyColorBlendStrength;
+        this.targetCloudHexColor = targetCloudHexColor;
+        this.cloudColorBlendStrength = cloudColorBlendStrength;
     }
 
     public int getTargetFoliageHexColor() {
@@ -112,5 +120,13 @@ public class ColorSettings {
 
     public double getFogColorBlendStrength() {
         return fogColorBlendStrength;
+    }
+
+    public int getTargetCloudHexColor() {
+        return targetCloudHexColor;
+    }
+
+    public double getCloudColorBlendStrength() {
+        return cloudColorBlendStrength;
     }
 }

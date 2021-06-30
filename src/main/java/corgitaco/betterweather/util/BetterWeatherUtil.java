@@ -16,10 +16,9 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 
-import java.util.Collection;
-import java.util.IdentityHashMap;
-import java.util.Map;
+import java.util.*;
 
+@SuppressWarnings("deprecation")
 public class BetterWeatherUtil {
 
     public static boolean filterRegistryID(ResourceLocation id, Registry<?> registry, String registryTypeName) {
@@ -66,6 +65,26 @@ public class BetterWeatherUtil {
             } else {
                 BetterWeather.LOGGER.error("The value: \"" + resourceLocation.toString() + "\" is not a valid block ID...");
             }
+        });
+        return newMap;
+    }
+
+    public static IdentityHashMap<Block, Block> transformBlockBlockResourceLocations(Map<ResourceLocation, ResourceLocation> blockBlockMap) {
+        IdentityHashMap<Block, Block> newMap = new IdentityHashMap<>();
+        blockBlockMap.forEach((resourceLocation, resourceLocation2) -> {
+            if (Registry.BLOCK.keySet().contains(resourceLocation) && Registry.BLOCK.keySet().contains(resourceLocation2)) {
+                newMap.put(Registry.BLOCK.getOrDefault(resourceLocation), Registry.BLOCK.getOrDefault(resourceLocation2));
+            } else {
+                BetterWeather.LOGGER.error("The value: \"" + resourceLocation.toString() + "\" is not a valid block ID...");
+            }
+        });
+        return newMap;
+    }
+
+    public static TreeMap<ResourceLocation, ResourceLocation> transformBlockBlocksToResourceLocations(Map<Block, Block> blockBlockMap) {
+        TreeMap<ResourceLocation, ResourceLocation> newMap = new TreeMap<>(Comparator.comparing(ResourceLocation::toString));
+        blockBlockMap.forEach((resourceLocation, resourceLocation2) -> {
+            newMap.put(Registry.BLOCK.getKey(resourceLocation), Registry.BLOCK.getKey(resourceLocation2));
         });
         return newMap;
     }

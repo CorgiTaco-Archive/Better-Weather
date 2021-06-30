@@ -36,20 +36,26 @@ public class RainClientSettings extends WeatherEventClientSettings {
     public static final Codec<RainClientSettings> CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(ColorSettings.CODEC.fieldOf("colorSettings").forGetter(rainClientSettings -> {
             return rainClientSettings.getColorSettings();
+        }), Codec.FLOAT.fieldOf("skyOpacity").forGetter(blizzardClientSettings -> {
+            return blizzardClientSettings.skyOpacity();
+        }), Codec.FLOAT.fieldOf("fogDensity").forGetter(blizzardClientSettings -> {
+            return blizzardClientSettings.fogDensity();
+        }), Codec.BOOL.fieldOf("sunsetSunriseColor").forGetter(blizzardClientSettings -> {
+            return blizzardClientSettings.sunsetSunriseColor();
         }), ResourceLocation.CODEC.fieldOf("rainTexture").forGetter(blizzardClientSettings -> {
             return blizzardClientSettings.rainTexture;
         }), ResourceLocation.CODEC.fieldOf("snowTexture").forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.rainTexture;
+            return blizzardClientSettings.snowTexture;
         })).apply(builder, RainClientSettings::new);
     });
-    private final ResourceLocation rainTexture;
-    private final ResourceLocation snowTexture;
+    protected final ResourceLocation rainTexture;
+    protected final ResourceLocation snowTexture;
     private final float[] rainSizeX = new float[1024];
     private final float[] rainSizeZ = new float[1024];
     private int rainSoundTime;
 
-    public RainClientSettings(ColorSettings colorSettings, ResourceLocation rainTexture, ResourceLocation snowTexture) {
-        super(colorSettings);
+    public RainClientSettings(ColorSettings colorSettings, float skyOpacity, float fogDensity, boolean sunsetSunriseColor, ResourceLocation rainTexture, ResourceLocation snowTexture) {
+        super(colorSettings, skyOpacity, fogDensity, sunsetSunriseColor);
         this.rainTexture = rainTexture;
         this.snowTexture = snowTexture;
 
@@ -108,8 +114,7 @@ public class RainClientSettings extends WeatherEventClientSettings {
                     double voxelShapeMax = voxelshape.max(Direction.Axis.Y, randDouble, randDouble2);
                     double fluidstateActualHeight = fluidstate.getActualHeight(worldReader, motionBlockingHeightMinus1);
                     double particleMaxAddedY = Math.max(voxelShapeMax, fluidstateActualHeight);
-                    IParticleData iparticledata = !fluidstate.isTagged(FluidTags.LAVA) && !blockstate.matchesBlock(Blocks.MAGMA_BLOCK) && !CampfireBlock.isLit(blockstate) ? ParticleTypes.RAIN : ParticleTypes.SMOKE;
-                    mc.world.addParticle(iparticledata, (double)motionBlockingHeightMinus1.getX() + randDouble, (double)motionBlockingHeightMinus1.getY() + particleMaxAddedY, (double)motionBlockingHeightMinus1.getZ() + randDouble2, 0.0D, 0.0D, 0.0D);
+                    addParticlesToWorld(mc, motionBlockingHeightMinus1, randDouble, randDouble2, blockstate, fluidstate, particleMaxAddedY);
                 }
             }
 
@@ -123,6 +128,11 @@ public class RainClientSettings extends WeatherEventClientSettings {
             }
         }
         return true;
+    }
+
+    protected void addParticlesToWorld(Minecraft mc, BlockPos motionBlockingHeightMinus1, double randDouble, double randDouble2, BlockState blockstate, FluidState fluidstate, double particleMaxAddedY) {
+        IParticleData iparticledata = !fluidstate.isTagged(FluidTags.LAVA) && !blockstate.matchesBlock(Blocks.MAGMA_BLOCK) && !CampfireBlock.isLit(blockstate) ? ParticleTypes.RAIN : ParticleTypes.SMOKE;
+        mc.world.addParticle(iparticledata, (double) motionBlockingHeightMinus1.getX() + randDouble, (double) motionBlockingHeightMinus1.getY() + particleMaxAddedY, (double) motionBlockingHeightMinus1.getZ() + randDouble2, 0.0D, 0.0D, 0.0D);
     }
 
     @Override

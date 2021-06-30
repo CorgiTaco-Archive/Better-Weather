@@ -137,7 +137,7 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     @Inject(method = "tickEnvironment", at = @At("HEAD"), cancellable = true)
     private void tickLiveChunks(Chunk chunkIn, int randomTickSpeed, CallbackInfo ci) {
         if (weatherContext != null) {
-            weatherContext.getCurrentEvent().tickLiveChunks(chunkIn, (ServerWorld) (Object) this);
+            weatherContext.getCurrentEvent().doChunkTick(chunkIn, (ServerWorld) (Object) this);
         }
     }
 
