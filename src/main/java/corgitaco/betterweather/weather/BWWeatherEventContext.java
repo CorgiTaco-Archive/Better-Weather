@@ -315,7 +315,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
     }
 
     private void createJsonEventConfig(WeatherEvent weatherEvent, ResourceLocation weatherEventID) {
-        Path configFile = this.weatherEventsConfigPath.resolve(weatherEventID.getPath() + ".json");
+        Path configFile = this.weatherEventsConfigPath.resolve(weatherEventID.toString().replace(":", "-") + ".json");
         CommentedConfig readConfig = configFile.toFile().exists() ? CommentedFileConfig.builder(configFile).sync().autosave().writingMode(WritingMode.REPLACE).build() : CommentedConfig.inMemory();
         if (readConfig instanceof CommentedFileConfig) {
             ((CommentedFileConfig) readConfig).load();
@@ -332,19 +332,20 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
 
     public void createDefaultEventConfigs() {
-        for (WeatherEvent defaultEvent : WeatherEvent.DEFAULT_EVENTS) {
-            Optional<RegistryKey<Codec<? extends WeatherEvent>>> optionalKey = BetterWeatherRegistry.WEATHER_EVENT.getOptionalKey(defaultEvent.codec());
+
+        for (Map.Entry<ResourceLocation, WeatherEvent> entry : WeatherEvent.DEFAULT_EVENTS.entrySet()) {
+            ResourceLocation location = entry.getKey();
+            WeatherEvent event = entry.getValue();
+            Optional<RegistryKey<Codec<? extends WeatherEvent>>> optionalKey = BetterWeatherRegistry.WEATHER_EVENT.getOptionalKey(event.codec());
 
             if (optionalKey.isPresent()) {
-                ResourceLocation codecLocation = optionalKey.get().getLocation();
-                ResourceLocation location = defaultEvent.isThundering() ? new ResourceLocation(codecLocation.getNamespace(), codecLocation.getPath() + "_thundering") : codecLocation;
                 if (BetterWeatherConfig.SERIALIZE_AS_JSON) {
-                    createJsonEventConfig(defaultEvent, location);
+                    createJsonEventConfig(event, location);
                 } else {
-                    createTomlEventConfig(defaultEvent, location);
+                    createTomlEventConfig(event, location);
                 }
             } else {
-                throw new IllegalStateException("Weather Event Key not there when requested: " + defaultEvent.getClass().getSimpleName());
+                throw new IllegalStateException("Weather Event Key for codec not there when requested: " + event.getClass().getSimpleName());
             }
         }
     }

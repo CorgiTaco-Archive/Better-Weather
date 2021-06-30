@@ -156,7 +156,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
                 }
             }));
 
-    public static final Rain RAIN = new Rain(new RainClientSettings(RAIN_COLORS, 0.0F, -1.0F, true, RAIN_LOCATION, SNOW_LOCATION), "!#DESERT#SAVANNA", 0.7D, -0.5, 0.1, false, 0,
+    public static final Rain RAIN = new Rain(new RainClientSettings(RAIN_COLORS, 0.0F, -1.0F, true, RAIN_LOCATION, SNOW_LOCATION), "!#DESERT#SAVANNA", 0.7D, -0.1, 0.1, false, 0,
             Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
                 seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
                     phases.put(Season.Phase.START, 0.7);
@@ -275,17 +275,18 @@ public abstract class WeatherEvent implements WeatherEventSettings {
                 }));
             }));
 
-    public static final Set<WeatherEvent> DEFAULT_EVENTS = Util.make(new ReferenceArraySet<>(), (set) -> {
-        set.add(NONE);
-        set.add(ACID_RAIN);
-        set.add(BLIZZARD);
-        set.add(CLOUDY);
-        set.add(RAIN);
+    // TODO: Make this a registry similar to those of world gen registries.
+    public static final Map<ResourceLocation, WeatherEvent> DEFAULT_EVENTS = Util.make(new HashMap<>(), (map) -> {
+        map.put(new ResourceLocation(BetterWeather.MOD_ID, "none"), NONE);
+        map.put(new ResourceLocation(BetterWeather.MOD_ID, "acid_rain"), ACID_RAIN);
+        map.put(new ResourceLocation(BetterWeather.MOD_ID, "blizzard"), BLIZZARD);
+        map.put(new ResourceLocation(BetterWeather.MOD_ID, "cloudy"), CLOUDY);
+        map.put(new ResourceLocation(BetterWeather.MOD_ID, "rain"), RAIN);
 
-        set.add(ACID_RAIN_THUNDERING);
-        set.add(BLIZZARD_THUNDERING);
-        set.add(CLOUDY_THUNDERING);
-        set.add(THUNDERING);
+        map.put(new ResourceLocation(BetterWeather.MOD_ID, "acid_rain_thundering"), ACID_RAIN_THUNDERING);
+        map.put(new ResourceLocation(BetterWeather.MOD_ID, "blizzard_thundering"), BLIZZARD_THUNDERING);
+        map.put(new ResourceLocation(BetterWeather.MOD_ID, "cloudy_thundering"), CLOUDY_THUNDERING);
+        map.put(new ResourceLocation(BetterWeather.MOD_ID, "thundering"), THUNDERING);
     });
 
     private WeatherEventClientSettings clientSettings;
