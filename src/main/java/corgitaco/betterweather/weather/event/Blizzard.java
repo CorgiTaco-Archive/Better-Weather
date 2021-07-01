@@ -27,6 +27,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.LightType;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.Heightmap;
@@ -214,17 +215,20 @@ public class Blizzard extends WeatherEvent {
 
     @Override
     public void livingEntityUpdate(LivingEntity entity) {
-        if (!isValidBiome(entity.world.getBiome(entity.getPosition()))) {
-            return;
-        }
-
-        if (entityTypeToEffectMap.containsKey(entity.getType())) {
-            for (EffectInstance effectInstance : entityTypeToEffectMap.get(entity.getType())) {
-                if (!entity.isPotionActive(effectInstance.getPotion())) {
-                    entity.addPotionEffect(effectInstance);
-                }
-            }
-        }
+//        World world = entity.world;
+//        if (!isValidBiome(world.getBiome(entity.getPosition()))) {
+//            return;
+//        }
+//
+//        if(world.getWorldInfo().getGameTime() % 20 == 0) {
+//            if (entityTypeToEffectMap.containsKey(entity.getType())) {
+//                for (EffectInstance effectInstance : entityTypeToEffectMap.get(entity.getType())) {
+//                    if (!entity.isPotionActive(effectInstance.getPotion())) {
+//                        entity.addPotionEffect(effectInstance);
+//                    }
+//                }
+//            }
+//        }
     }
 
     @Override
