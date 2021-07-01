@@ -9,7 +9,13 @@ import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class BetterWeatherRegistry {
+
+    // TODO: Make this a registry similar to those of world gen registries.
+    public static final Map<ResourceLocation, WeatherEvent> DEFAULT_EVENTS = new HashMap<>();
 
     public static final RegistryKey<Registry<Codec<? extends WeatherEvent>>> WEATHER_EVENT_KEY = RegistryKey.getOrCreateRootKey(new ResourceLocation(BetterWeather.MOD_ID, "weather_event"));
 

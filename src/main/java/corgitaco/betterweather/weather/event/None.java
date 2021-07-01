@@ -5,7 +5,9 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
+import corgitaco.betterweather.api.client.ColorSettings;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
+import corgitaco.betterweather.weather.event.client.NoneClientSettings;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
@@ -19,6 +21,9 @@ public class None extends WeatherEvent {
             return none.getClientSettings();
         })).apply(builder, None::new);
     });
+
+    public static final None DEFAULT = new None(new NoneClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)));
+
 
     public static final TomlCommentedConfigOps CONFIG_OPS = new TomlCommentedConfigOps(Util.make(new HashMap<>(WeatherEvent.VALUE_COMMENTS), (map) -> {
     }), true);

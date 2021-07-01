@@ -7,11 +7,13 @@ import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
+import corgitaco.betterweather.weather.event.client.CloudyClientSettings;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +38,28 @@ public class Cloudy extends WeatherEvent {
             return blizzard.getSeasonChances();
         })).apply(builder, Cloudy::new);
     });
+
+    public static final Cloudy DEFAULT = new Cloudy(new CloudyClientSettings(Rain.RAIN_COLORS, 0.0F, -1.0F, true), "ALL", 0.7D, -0.05, 0.07, false, 0,
+            Util.make(new EnumMap<>(Season.Key.class), (map) -> {
+                for (Season.Key value : Season.Key.values()) {
+                    Map<Season.Phase, Double> phaseDoubleMap = new EnumMap<>(Season.Phase.class);
+                    for (Season.Phase phase : Season.Phase.values()) {
+                        phaseDoubleMap.put(phase, 0.3D);
+                    }
+                    map.put(value, phaseDoubleMap);
+                }
+            }));
+
+    public static final Cloudy DEFAULT_THUNDERING = new Cloudy(new CloudyClientSettings(Rain.THUNDER_COLORS, 0.0F, -0.09F, true), "ALL", 0.1D, -0.05, 0.07, true, 100000,
+            Util.make(new EnumMap<>(Season.Key.class), (map) -> {
+                for (Season.Key value : Season.Key.values()) {
+                    Map<Season.Phase, Double> phaseDoubleMap = new EnumMap<>(Season.Phase.class);
+                    for (Season.Phase phase : Season.Phase.values()) {
+                        phaseDoubleMap.put(phase, 0.1D);
+                    }
+                    map.put(value, phaseDoubleMap);
+                }
+            }));
 
     public static final TomlCommentedConfigOps CONFIG_OPS = new TomlCommentedConfigOps(Util.make(new HashMap<>(WeatherEvent.VALUE_COMMENTS), (map) -> {
     }), true);

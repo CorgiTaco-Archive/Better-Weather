@@ -4,7 +4,7 @@ import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.season.BWSubseasonSettings;
 import corgitaco.betterweather.season.SeasonContext;
-import corgitaco.betterweather.season.client.ColorSettings;
+import corgitaco.betterweather.api.client.ColorSettings;
 import corgitaco.betterweather.weather.BWWeatherEventContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;

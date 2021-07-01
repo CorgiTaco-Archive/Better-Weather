@@ -1,4 +1,4 @@
-package corgitaco.betterweather.season.client;
+package corgitaco.betterweather.api.client;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

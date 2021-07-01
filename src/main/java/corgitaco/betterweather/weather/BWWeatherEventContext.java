@@ -25,6 +25,7 @@ import corgitaco.betterweather.data.network.packet.weather.WeatherDataPacket;
 import corgitaco.betterweather.data.storage.WeatherEventSavedData;
 import corgitaco.betterweather.helpers.BiomeUpdate;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
+import corgitaco.betterweather.weather.event.None;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.RegistryKey;
@@ -93,7 +94,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
         this.weatherConfigPath = BetterWeather.CONFIG_PATH.resolve(worldID.getNamespace()).resolve(worldID.getPath()).resolve("weather");
         this.weatherEventsConfigPath = this.weatherConfigPath.resolve("events");
         this.weatherConfigFile = this.weatherConfigPath.resolve(CONFIG_NAME).toFile();
-        this.weatherEvents.put(DEFAULT, WeatherEvent.NONE.setName(DEFAULT));
+        this.weatherEvents.put(DEFAULT, None.DEFAULT.setName(DEFAULT));
         this.weatherForced = weatherForced;
         boolean isClient = weatherEvents != null;
         boolean isPacket = biomeRegistry == null;
@@ -107,7 +108,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
 
         WeatherEvent currentWeatherEvent = this.weatherEvents.get(currentEvent);
-        this.currentEvent = this.weatherEvents.getOrDefault(currentEvent, WeatherEvent.NONE);
+        this.currentEvent = this.weatherEvents.getOrDefault(currentEvent, None.DEFAULT);
 
         if (currentEvent != null && currentWeatherEvent == null) {
             BetterWeather.LOGGER.error("The last weather event for the world: \"" + worldID.toString() + "\" was not found in: \"" + this.weatherEventsConfigPath.toString() + "\".\nDefaulting to weather event: \"" + DEFAULT + "\".");
@@ -340,7 +341,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
 
     public void createDefaultEventConfigs() {
-        for (Map.Entry<ResourceLocation, WeatherEvent> entry : WeatherEvent.DEFAULT_EVENTS.entrySet()) {
+        for (Map.Entry<ResourceLocation, WeatherEvent> entry : BetterWeatherRegistry.DEFAULT_EVENTS.entrySet()) {
             ResourceLocation location = entry.getKey();
             WeatherEvent event = entry.getValue();
             Optional<RegistryKey<Codec<? extends WeatherEvent>>> optionalKey = BetterWeatherRegistry.WEATHER_EVENT.getOptionalKey(event.codec());

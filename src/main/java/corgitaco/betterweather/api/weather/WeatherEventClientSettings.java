@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
 import corgitaco.betterweather.api.BetterWeatherRegistry;
 import corgitaco.betterweather.graphics.Graphics;
-import corgitaco.betterweather.season.client.ColorSettings;
+import corgitaco.betterweather.api.client.ColorSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;

@@ -1,25 +1,14 @@
 package corgitaco.betterweather.api.weather;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
-import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.BetterWeatherRegistry;
 import corgitaco.betterweather.api.season.Season;
-import corgitaco.betterweather.core.SoundRegistry;
 import corgitaco.betterweather.graphics.Graphics;
 import corgitaco.betterweather.mixin.access.ServerWorldAccess;
-import corgitaco.betterweather.season.client.ColorSettings;
-import corgitaco.betterweather.util.client.ColorUtil;
-import corgitaco.betterweather.weather.event.*;
-import corgitaco.betterweather.weather.event.client.BlizzardClientSettings;
-import corgitaco.betterweather.weather.event.client.CloudyClientSettings;
-import corgitaco.betterweather.weather.event.client.NoneClientSettings;
-import corgitaco.betterweather.weather.event.client.RainClientSettings;
+import corgitaco.betterweather.api.client.ColorSettings;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
-import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.LightTexture;
@@ -28,9 +17,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.LightningBoltEntity;
 import net.minecraft.entity.passive.horse.SkeletonHorseEntity;
-import net.minecraft.potion.Effects;
 import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -46,11 +33,14 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.BiomeDictionary;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.function.Function;
 
 public abstract class WeatherEvent implements WeatherEventSettings {
+    public static final Logger LOGGER = LogManager.getLogger();
 
     public static final Codec<WeatherEvent> CODEC = BetterWeatherRegistry.WEATHER_EVENT.dispatchStable(WeatherEvent::codec, Function.identity());
 
@@ -71,225 +61,6 @@ public abstract class WeatherEvent implements WeatherEventSettings {
         map.put("biomeCondition", "Better Weather uses a prefix system for what biomes weather is allowed to function in.\n Prefix Guide:\n \"#\" - Biome category representable.\n \"$\" - Biome dictionary representable.\n \",\" - Creates a new condition, separate from the previous.\n \"ALL\" - Spawn in all biomes(no condition).\n \"!\" - Negates/flips/does the reverse of the condition.\n \"\" - No prefix serves as a biome ID OR Mod ID representable.\n\n Here are a few examples:\n1. \"byg#THE_END, $OCEAN\" would mean that the ore may spawn in biomes with the name space \"byg\" AND in the \"END\" biome category, OR all biomes in the \"OCEAN\" dictionary.\n2. \"byg:guiana_shield, #MESA\" would mean that the ore may spawn in the \"byg:guiana_shield\" OR all biomes in the \"MESA\" category.\n3. \"byg#ICY$MOUNTAIN\" would mean that the ore may only spawn in biomes from byg in the \"ICY\" category and \"MOUNTAIN\" dictionary type.\n4. \"!byg#DESERT\" would mean that the ore may only spawn in biomes that are NOT from byg and NOT in the \"DESERT\" category.\n5. \"ALL\", spawn everywhere. \n6. \"\" Don't spawn anywhere.");
     });
 
-    public static final IdentityHashMap<ResourceLocation, ResourceLocation> ACID_RAIN_DECAYER = Util.make(new IdentityHashMap<>(), (map) -> {
-        for (Block block : Registry.BLOCK) {
-            Material material = block.getDefaultState().getMaterial();
-            if (material == Material.LEAVES || material == Material.PLANTS) {
-                map.put(Registry.BLOCK.getKey(block), (Registry.BLOCK.getKey(Blocks.AIR)));
-            }
-        }
-        map.put(Registry.BLOCK.getKey(Blocks.GRASS_BLOCK), Registry.BLOCK.getKey(Blocks.DIRT));
-        map.put(Registry.BLOCK.getKey(Blocks.PODZOL), Registry.BLOCK.getKey(Blocks.DIRT));
-        map.put(Registry.BLOCK.getKey(Blocks.MYCELIUM), Registry.BLOCK.getKey(Blocks.DIRT));
-    });
-
-    public static final ColorSettings THUNDER_COLORS = new ColorSettings(Integer.MAX_VALUE, 0.1, Integer.MAX_VALUE, 0.0, ColorUtil.DEFAULT_THUNDER_SKY, 1.0F, ColorUtil.DEFAULT_THUNDER_FOG, 1.0F, ColorUtil.DEFAULT_THUNDER_CLOUDS, 1.0F);
-    public static final ColorSettings RAIN_COLORS = new ColorSettings(Integer.MAX_VALUE, 0.1, Integer.MAX_VALUE, 0.0, ColorUtil.DEFAULT_RAIN_SKY, 1.0F, ColorUtil.DEFAULT_RAIN_FOG, 1.0F, ColorUtil.DEFAULT_RAIN_CLOUDS, 1.0F);
-
-    public static final ResourceLocation RAIN_LOCATION = new ResourceLocation("minecraft:textures/environment/rain.png");
-    public static final ResourceLocation SNOW_LOCATION = new ResourceLocation("minecraft:textures/environment/snow.png");
-    public static final ResourceLocation ACID_RAIN_LOCATION = new ResourceLocation(BetterWeather.MOD_ID, "textures/environment/acid_rain.png");
-
-    public static final None NONE = new None(new NoneClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)));
-    public static final Rain ACID_RAIN = new AcidRain(new RainClientSettings(RAIN_COLORS, 0.0F, -1.0F, true, ACID_RAIN_LOCATION, SNOW_LOCATION), "!#DESERT#SAVANNA", 0.25D, -0.1, 0.1, 150, 100, ACID_RAIN_DECAYER, false, 0,
-            Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
-                seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.23);
-                    phases.put(Season.Phase.MID, 0.26);
-                    phases.put(Season.Phase.END, 0.16);
-                }));
-
-                seasons.put(Season.Key.SUMMER, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.03);
-                    phases.put(Season.Phase.MID, 0.0);
-                    phases.put(Season.Phase.END, 0.0);
-                }));
-
-                seasons.put(Season.Key.AUTUMN, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.03);
-                    phases.put(Season.Phase.MID, 0.03);
-                    phases.put(Season.Phase.END, 0.03);
-                }));
-
-                seasons.put(Season.Key.WINTER, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.03);
-                    phases.put(Season.Phase.MID, 0.03);
-                    phases.put(Season.Phase.END, 0.06);
-                }));
-            }));
-
-    public static final Blizzard BLIZZARD = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), 0.0F, 0.2F, false, SNOW_LOCATION, SoundRegistry.BLIZZARD_LOOP2, 0.6F, 0.6F), "!#DESERT#SAVANNA", 0.1D, -0.5, 0.1, 2, 10, Blocks.SNOW, true, true, Util.make(new HashMap<>(), ((stringListHashMap) -> stringListHashMap.put(Registry.ENTITY_TYPE.getKey(EntityType.PLAYER).toString(), ImmutableList.of(Registry.EFFECTS.getKey(Effects.SLOWNESS).toString())))), false, 0,
-            Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
-                seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.1);
-                    phases.put(Season.Phase.MID, 0.01);
-                    phases.put(Season.Phase.END, 0.0);
-                }));
-
-                seasons.put(Season.Key.SUMMER, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.0);
-                    phases.put(Season.Phase.MID, 0.0);
-                    phases.put(Season.Phase.END, 0.0);
-                }));
-
-                seasons.put(Season.Key.AUTUMN, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.0);
-                    phases.put(Season.Phase.MID, 0.01);
-                    phases.put(Season.Phase.END, 0.1);
-                }));
-
-                seasons.put(Season.Key.WINTER, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.3);
-                    phases.put(Season.Phase.MID, 0.5);
-                    phases.put(Season.Phase.END, 0.45);
-                }));
-            }));
-
-    public static final Cloudy CLOUDY = new Cloudy(new CloudyClientSettings(RAIN_COLORS, 0.0F, -1.0F, true), "ALL", 0.7D, -0.05, 0.07, false, 0,
-            Util.make(new EnumMap<>(Season.Key.class), (map) -> {
-                for (Season.Key value : Season.Key.values()) {
-                    Map<Season.Phase, Double> phaseDoubleMap = new EnumMap<>(Season.Phase.class);
-                    for (Season.Phase phase : Season.Phase.values()) {
-                        phaseDoubleMap.put(phase, 0.3D);
-                    }
-                    map.put(value, phaseDoubleMap);
-                }
-            }));
-
-    public static final Rain RAIN = new Rain(new RainClientSettings(RAIN_COLORS, 0.0F, -1.0F, true, RAIN_LOCATION, SNOW_LOCATION), "!#DESERT#SAVANNA", 0.7D, -0.1, 0.1, false, 0,
-            Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
-                seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.7);
-                    phases.put(Season.Phase.MID, 0.8);
-                    phases.put(Season.Phase.END, 0.5);
-                }));
-
-                seasons.put(Season.Key.SUMMER, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.1);
-                    phases.put(Season.Phase.MID, 0.0);
-                    phases.put(Season.Phase.END, 0.0);
-                }));
-
-                seasons.put(Season.Key.AUTUMN, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.1);
-                    phases.put(Season.Phase.MID, 0.1);
-                    phases.put(Season.Phase.END, 0.1);
-                }));
-
-                seasons.put(Season.Key.WINTER, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.1);
-                    phases.put(Season.Phase.MID, 0.1);
-                    phases.put(Season.Phase.END, 0.2);
-                }));
-            }));
-
-    public static final Rain ACID_RAIN_THUNDERING = new AcidRain(new RainClientSettings(THUNDER_COLORS, 0.0F, -1.0F, true, ACID_RAIN_LOCATION, SNOW_LOCATION), "!#DESERT#SAVANNA", 0.125D, -0.1, 0.1, 150, 100, ACID_RAIN_DECAYER, true, 100000,
-            Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
-                seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.115);
-                    phases.put(Season.Phase.MID, 0.13);
-                    phases.put(Season.Phase.END, 0.08);
-                }));
-
-                seasons.put(Season.Key.SUMMER, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.0115);
-                    phases.put(Season.Phase.MID, 0.0);
-                    phases.put(Season.Phase.END, 0.0);
-                }));
-
-                seasons.put(Season.Key.AUTUMN, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.0115);
-                    phases.put(Season.Phase.MID, 0.0115);
-                    phases.put(Season.Phase.END, 0.0115);
-                }));
-
-                seasons.put(Season.Key.WINTER, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.0115);
-                    phases.put(Season.Phase.MID, 0.0115);
-                    phases.put(Season.Phase.END, 0.03);
-                }));
-            }));
-
-    public static final Blizzard BLIZZARD_THUNDERING = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), 0.0F, 0.2F, false, SNOW_LOCATION, SoundRegistry.BLIZZARD_LOOP2, 0.6F, 0.6F), "!#DESERT#SAVANNA", 0.05D, -0.5, 0.1, 2, 10, Blocks.SNOW, true, true, Util.make(new HashMap<>(), ((stringListHashMap) -> stringListHashMap.put(Registry.ENTITY_TYPE.getKey(EntityType.PLAYER).toString(), ImmutableList.of(Registry.EFFECTS.getKey(Effects.SLOWNESS).toString())))), true, 100000,
-            Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
-                seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.05);
-                    phases.put(Season.Phase.MID, 0.005);
-                    phases.put(Season.Phase.END, 0.0);
-                }));
-
-                seasons.put(Season.Key.SUMMER, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.0);
-                    phases.put(Season.Phase.MID, 0.0);
-                    phases.put(Season.Phase.END, 0.0);
-                }));
-
-                seasons.put(Season.Key.AUTUMN, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.0);
-                    phases.put(Season.Phase.MID, 0.005);
-                    phases.put(Season.Phase.END, 0.05);
-                }));
-
-                seasons.put(Season.Key.WINTER, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.15);
-                    phases.put(Season.Phase.MID, 0.25);
-                    phases.put(Season.Phase.END, 0.225);
-                }));
-            }));
-
-    public static final Cloudy CLOUDY_THUNDERING = new Cloudy(new CloudyClientSettings(THUNDER_COLORS, 0.0F, -0.09F, true), "ALL", 0.1D, -0.05, 0.07, true, 100000,
-            Util.make(new EnumMap<>(Season.Key.class), (map) -> {
-                for (Season.Key value : Season.Key.values()) {
-                    Map<Season.Phase, Double> phaseDoubleMap = new EnumMap<>(Season.Phase.class);
-                    for (Season.Phase phase : Season.Phase.values()) {
-                        phaseDoubleMap.put(phase, 0.1D);
-                    }
-                    map.put(value, phaseDoubleMap);
-                }
-            }));
-
-    public static final Rain THUNDERING = new Rain(new RainClientSettings(THUNDER_COLORS, 0.0F, -1.0F, true, RAIN_LOCATION, SNOW_LOCATION), "!#DESERT#SAVANNA", 0.3D, -0.5, 0.1, true, 100000,
-            Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
-                seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.35);
-                    phases.put(Season.Phase.MID, 0.4);
-                    phases.put(Season.Phase.END, 0.25);
-                }));
-
-                seasons.put(Season.Key.SUMMER, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.05);
-                    phases.put(Season.Phase.MID, 0.0);
-                    phases.put(Season.Phase.END, 0.0);
-                }));
-
-                seasons.put(Season.Key.AUTUMN, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.05);
-                    phases.put(Season.Phase.MID, 0.05);
-                    phases.put(Season.Phase.END, 0.05);
-                }));
-
-                seasons.put(Season.Key.WINTER, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
-                    phases.put(Season.Phase.START, 0.05);
-                    phases.put(Season.Phase.MID, 0.05);
-                    phases.put(Season.Phase.END, 0.1);
-                }));
-            }));
-
-    // TODO: Make this a registry similar to those of world gen registries.
-    public static final Map<ResourceLocation, WeatherEvent> DEFAULT_EVENTS = Util.make(new HashMap<>(), (map) -> {
-        map.put(new ResourceLocation(BetterWeather.MOD_ID, "none"), NONE);
-        map.put(new ResourceLocation(BetterWeather.MOD_ID, "acid_rain"), ACID_RAIN);
-        map.put(new ResourceLocation(BetterWeather.MOD_ID, "blizzard"), BLIZZARD);
-        map.put(new ResourceLocation(BetterWeather.MOD_ID, "cloudy"), CLOUDY);
-        map.put(new ResourceLocation(BetterWeather.MOD_ID, "rain"), RAIN);
-
-        map.put(new ResourceLocation(BetterWeather.MOD_ID, "acid_rain_thundering"), ACID_RAIN_THUNDERING);
-        map.put(new ResourceLocation(BetterWeather.MOD_ID, "blizzard_thundering"), BLIZZARD_THUNDERING);
-        map.put(new ResourceLocation(BetterWeather.MOD_ID, "cloudy_thundering"), CLOUDY_THUNDERING);
-        map.put(new ResourceLocation(BetterWeather.MOD_ID, "thundering"), THUNDERING);
-    });
-
-    private WeatherEventClientSettings clientSettings;
     private final String biomeCondition;
     private final double defaultChance;
     private final double temperatureOffsetRaw;
@@ -297,9 +68,9 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     private final boolean isThundering;
     private final int lightningFrequency;
     private final Map<Season.Key, Map<Season.Phase, Double>> seasonChances;
-
-    private String name;
     private final ReferenceArraySet<Biome> validBiomes = new ReferenceArraySet<>();
+    private WeatherEventClientSettings clientSettings;
+    private String name;
 
     public WeatherEvent(WeatherEventClientSettings clientSettings, String biomeCondition, double defaultChance, double temperatureOffsetRaw, double humidityOffsetRaw, boolean isThundering, int lightningFrequency, Map<Season.Key, Map<Season.Phase, Double>> seasonChance) {
         this.clientSettings = clientSettings;
@@ -523,7 +294,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
                     String categoryString = result.substring(1);
                     categoryExists = Arrays.stream(Biome.Category.values()).anyMatch(bc -> bc.toString().equalsIgnoreCase(categoryString));
                     if (!categoryExists) {
-                        BetterWeather.LOGGER.error("\"" + categoryString + "\" is not a valid biome category!");
+                        LOGGER.error("\"" + categoryString + "\" is not a valid biome category!");
                     }
                 }
             }

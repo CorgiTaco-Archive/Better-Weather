@@ -1,5 +1,6 @@
 package corgitaco.betterweather.weather.event;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -7,7 +8,10 @@ import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
+import corgitaco.betterweather.core.SoundRegistry;
+import corgitaco.betterweather.api.client.ColorSettings;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
+import corgitaco.betterweather.weather.event.client.BlizzardClientSettings;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceArrayMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -17,6 +21,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
+import net.minecraft.potion.Effects;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;
@@ -78,6 +83,61 @@ public class Blizzard extends WeatherEvent {
         });
     });
 
+    public static final Blizzard DEFAULT = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), 0.0F, 0.2F, false, Rain.SNOW_LOCATION, SoundRegistry.BLIZZARD_LOOP2, 0.6F, 0.6F), "!#DESERT#SAVANNA", 0.1D, -0.5, 0.1, 2, 10, Blocks.SNOW, true, true, Util.make(new HashMap<>(), ((stringListHashMap) -> stringListHashMap.put(Registry.ENTITY_TYPE.getKey(EntityType.PLAYER).toString(), ImmutableList.of(Registry.EFFECTS.getKey(Effects.SLOWNESS).toString())))), false, 0,
+            Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
+                seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
+                    phases.put(Season.Phase.START, 0.1);
+                    phases.put(Season.Phase.MID, 0.01);
+                    phases.put(Season.Phase.END, 0.0);
+                }));
+
+                seasons.put(Season.Key.SUMMER, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
+                    phases.put(Season.Phase.START, 0.0);
+                    phases.put(Season.Phase.MID, 0.0);
+                    phases.put(Season.Phase.END, 0.0);
+                }));
+
+                seasons.put(Season.Key.AUTUMN, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
+                    phases.put(Season.Phase.START, 0.0);
+                    phases.put(Season.Phase.MID, 0.01);
+                    phases.put(Season.Phase.END, 0.1);
+                }));
+
+                seasons.put(Season.Key.WINTER, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
+                    phases.put(Season.Phase.START, 0.3);
+                    phases.put(Season.Phase.MID, 0.5);
+                    phases.put(Season.Phase.END, 0.45);
+                }));
+            }));
+
+    public static final Blizzard DEFAULT_THUNDERING = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), 0.0F, 0.2F, false, Rain.SNOW_LOCATION, SoundRegistry.BLIZZARD_LOOP2, 0.6F, 0.6F), "!#DESERT#SAVANNA", 0.05D, -0.5, 0.1, 2, 10, Blocks.SNOW, true, true, Util.make(new HashMap<>(), ((stringListHashMap) -> stringListHashMap.put(Registry.ENTITY_TYPE.getKey(EntityType.PLAYER).toString(), ImmutableList.of(Registry.EFFECTS.getKey(Effects.SLOWNESS).toString())))), true, 100000,
+            Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
+                seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
+                    phases.put(Season.Phase.START, 0.05);
+                    phases.put(Season.Phase.MID, 0.005);
+                    phases.put(Season.Phase.END, 0.0);
+                }));
+
+                seasons.put(Season.Key.SUMMER, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
+                    phases.put(Season.Phase.START, 0.0);
+                    phases.put(Season.Phase.MID, 0.0);
+                    phases.put(Season.Phase.END, 0.0);
+                }));
+
+                seasons.put(Season.Key.AUTUMN, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
+                    phases.put(Season.Phase.START, 0.0);
+                    phases.put(Season.Phase.MID, 0.005);
+                    phases.put(Season.Phase.END, 0.05);
+                }));
+
+                seasons.put(Season.Key.WINTER, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
+                    phases.put(Season.Phase.START, 0.15);
+                    phases.put(Season.Phase.MID, 0.25);
+                    phases.put(Season.Phase.END, 0.225);
+                }));
+            }));
+
+
     public static final Map<EntityClassification, List<EntityType<?>>> CLASSIFICATION_ENTITY_TYPES = Util.make(new EnumMap<>(EntityClassification.class), (map) -> {
         for (EntityType<?> entityType : Registry.ENTITY_TYPE) {
             map.computeIfAbsent(entityType.getClassification(), (mobCategory -> new ArrayList<>())).add(entityType);
@@ -92,7 +152,6 @@ public class Blizzard extends WeatherEvent {
     private final boolean snowLayers;
     private final boolean waterFreezes;
     private final Map<String, List<String>> entityOrCategoryToEffectsMap;
-
     private final Map<EntityType<?>, List<EffectInstance>> entityTypeToEffectMap = new Reference2ReferenceArrayMap<>();
 
 
@@ -113,7 +172,7 @@ public class Blizzard extends WeatherEvent {
 
                 EntityClassification[] values = EntityClassification.values();
                 if (Arrays.stream(values).noneMatch(difficulty -> difficulty.toString().equals(mobCategory))) {
-                    BetterWeather.LOGGER.error("\"" + mobCategory + "\" is not a valid mob category value. mob category entry...\nValid Mob Categories: " + Arrays.toString(values));
+                    BetterWeather.LOGGER.error("\"" + mobCategory + "\" is not a valid mob category value. Skipping mob category entry...\nValid Mob Categories: " + Arrays.toString(values));
                     continue;
                 }
 

@@ -3,7 +3,7 @@ package corgitaco.betterweather.weather.event.client;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
-import corgitaco.betterweather.season.client.ColorSettings;
+import corgitaco.betterweather.api.client.ColorSettings;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.fluid.FluidState;

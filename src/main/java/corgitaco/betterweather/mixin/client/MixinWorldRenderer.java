@@ -3,7 +3,7 @@ package corgitaco.betterweather.mixin.client;
 import corgitaco.betterweather.graphics.Graphics;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.mixin.access.Vector3dAccess;
-import corgitaco.betterweather.season.client.ColorSettings;
+import corgitaco.betterweather.api.client.ColorSettings;
 import corgitaco.betterweather.weather.BWWeatherEventContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
