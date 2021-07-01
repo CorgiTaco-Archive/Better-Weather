@@ -2,7 +2,7 @@ package corgitaco.betterweather.mixin.network;
 
 import com.mojang.authlib.GameProfile;
 import corgitaco.betterweather.data.network.NetworkHandler;
-import corgitaco.betterweather.data.network.packet.season.SeasonPacket;
+import corgitaco.betterweather.data.network.packet.season.SeasonContextConstructingPacket;
 import corgitaco.betterweather.data.network.packet.weather.WeatherContextConstructingPacket;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.season.SeasonContext;
@@ -45,7 +45,7 @@ public abstract class MixinPlayerList {
     private void sendContext(ServerPlayerEntity playerIn, ServerWorld worldIn, CallbackInfo ci) {
         SeasonContext seasonContext = ((BetterWeatherWorldData) worldIn).getSeasonContext();
         if (seasonContext != null) {
-            NetworkHandler.sendToPlayer(playerIn, new SeasonPacket(seasonContext));
+            NetworkHandler.sendToPlayer(playerIn, new SeasonContextConstructingPacket(seasonContext));
         }
 
         BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) worldIn).getWeatherEventContext();

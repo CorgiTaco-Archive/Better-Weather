@@ -15,7 +15,7 @@ import corgitaco.betterweather.api.season.SubseasonSettings;
 import corgitaco.betterweather.config.season.SeasonConfigHolder;
 import corgitaco.betterweather.config.season.overrides.BiomeOverrideJsonHandler;
 import corgitaco.betterweather.data.network.NetworkHandler;
-import corgitaco.betterweather.data.network.packet.season.SeasonPacket;
+import corgitaco.betterweather.data.network.packet.season.SeasonContextConstructingPacket;
 import corgitaco.betterweather.data.network.packet.season.SeasonTimePacket;
 import corgitaco.betterweather.data.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.data.storage.SeasonSavedData;
@@ -210,7 +210,7 @@ public class SeasonContext implements Season {
     }
 
     public void updatePacket(List<ServerPlayerEntity> players) {
-        NetworkHandler.sendToAllPlayers(players, new SeasonPacket(this));
+        NetworkHandler.sendToAllPlayers(players, new SeasonContextConstructingPacket(this));
         NetworkHandler.sendToAllPlayers(players, new RefreshRenderersPacket());
     }
 

@@ -18,7 +18,6 @@ import static net.minecraft.util.registry.Registry.BIOME_KEY;
 
 /*
 Notes:
-
 - Biome colors don't use alpha, so really no need to blend the alpha.
 - The American English spelling of "colour" is normalised so much, on the internet in general.
  */

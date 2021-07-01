@@ -1,7 +1,7 @@
 package corgitaco.betterweather.data.network;
 
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.data.network.packet.season.SeasonPacket;
+import corgitaco.betterweather.data.network.packet.season.SeasonContextConstructingPacket;
 import corgitaco.betterweather.data.network.packet.season.SeasonTimePacket;
 import corgitaco.betterweather.data.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.data.network.packet.weather.WeatherContextConstructingPacket;
@@ -24,7 +24,7 @@ public class NetworkHandler {
     );
 
     public static void init() {
-        SIMPLE_CHANNEL.registerMessage(0, SeasonPacket.class, SeasonPacket::writeToPacket, SeasonPacket::readFromPacket, SeasonPacket::handle);
+        SIMPLE_CHANNEL.registerMessage(0, SeasonContextConstructingPacket.class, SeasonContextConstructingPacket::writeToPacket, SeasonContextConstructingPacket::readFromPacket, SeasonContextConstructingPacket::handle);
         SIMPLE_CHANNEL.registerMessage(1, WeatherContextConstructingPacket.class, WeatherContextConstructingPacket::writeToPacket, WeatherContextConstructingPacket::readFromPacket, WeatherContextConstructingPacket::handle);
         SIMPLE_CHANNEL.registerMessage(2, WeatherDataPacket.class, WeatherDataPacket::writeToPacket, WeatherDataPacket::readFromPacket, WeatherDataPacket::handle);
         SIMPLE_CHANNEL.registerMessage(3, RefreshRenderersPacket.class, RefreshRenderersPacket::writeToPacket, RefreshRenderersPacket::readFromPacket, RefreshRenderersPacket::handle);

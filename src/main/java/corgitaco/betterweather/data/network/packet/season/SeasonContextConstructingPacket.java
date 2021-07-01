@@ -12,15 +12,15 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import java.io.IOException;
 import java.util.function.Supplier;
 
-public class SeasonPacket {
+public class SeasonContextConstructingPacket {
 
     private final SeasonContext seasonContext;
 
-    public SeasonPacket(SeasonContext seasonContext) {
+    public SeasonContextConstructingPacket(SeasonContext seasonContext) {
         this.seasonContext = seasonContext;
     }
 
-    public static void writeToPacket(SeasonPacket packet, PacketBuffer buf) {
+    public static void writeToPacket(SeasonContextConstructingPacket packet, PacketBuffer buf) {
         try {
             buf.func_240629_a_(SeasonContext.PACKET_CODEC, packet.seasonContext);
         } catch (IOException e) {
@@ -29,15 +29,15 @@ public class SeasonPacket {
         }
     }
 
-    public static SeasonPacket readFromPacket(PacketBuffer buf) {
+    public static SeasonContextConstructingPacket readFromPacket(PacketBuffer buf) {
         try {
-            return new SeasonPacket(buf.func_240628_a_(SeasonContext.PACKET_CODEC));
+            return new SeasonContextConstructingPacket(buf.func_240628_a_(SeasonContext.PACKET_CODEC));
         } catch (IOException e) {
             throw new IllegalStateException("Season packet could not be read. This is really really bad...\n\n" + e.getMessage());
         }
     }
 
-    public static void handle(SeasonPacket message, Supplier<NetworkEvent.Context> ctx) {
+    public static void handle(SeasonContextConstructingPacket message, Supplier<NetworkEvent.Context> ctx) {
         if (ctx.get().getDirection().getReceptionSide().isClient()) {
             ctx.get().enqueueWork(() -> {
                 Minecraft minecraft = Minecraft.getInstance();
