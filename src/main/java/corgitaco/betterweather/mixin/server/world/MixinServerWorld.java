@@ -46,6 +46,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Mixin(ServerWorld.class)
@@ -67,12 +69,12 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     @Inject(method = "<init>", at = @At("RETURN"))
     private void storeUpgradablePerWorldRegistry(MinecraftServer server, Executor executor, SaveFormat.LevelSave save, IServerWorldInfo worldInfo, RegistryKey<World> key, DimensionType dimensionType, IChunkStatusListener statusListener, ChunkGenerator generator, boolean b, long seed, List<ISpecialSpawner> specialSpawners, boolean b1, CallbackInfo ci) {
         ResourceLocation worldKeyLocation = key.getLocation();
-        boolean perWorldRegistry = BetterWeatherConfig.WEATHER_EVENT_DIMENSIONS.size() >= 1 && BetterWeatherConfig.SEASON_DIMENSIONS.size() >= 1;
+        boolean hasPerWorldRegistry = Stream.concat(BetterWeatherConfig.WEATHER_EVENT_DIMENSIONS.stream(), BetterWeatherConfig.SEASON_DIMENSIONS.stream()).collect(Collectors.toSet()).size() > 1;
 
         boolean isValidWeatherEventDimension = BetterWeatherConfig.WEATHER_EVENT_DIMENSIONS.contains(worldKeyLocation.toString());
         boolean isValidSeasonDimension = BetterWeatherConfig.SEASON_DIMENSIONS.contains(worldKeyLocation.toString());
 
-        if (perWorldRegistry && (isValidWeatherEventDimension || isValidSeasonDimension)) {
+        if (hasPerWorldRegistry && (isValidWeatherEventDimension || isValidSeasonDimension)) {
             this.registry = new WorldDynamicRegistry((DynamicRegistries.Impl) server.getDynamicRegistries());
             BetterWeather.LOGGER.warn("Swapping server world gen datapack registry for \"" + key.getLocation().toString() + "\" to a per world registry... This may have unintended side effects like mod incompatibilities in this world...");
 
