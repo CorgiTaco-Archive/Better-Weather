@@ -27,7 +27,6 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.LightType;
-import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.Heightmap;
@@ -79,6 +78,12 @@ public class Blizzard extends WeatherEvent {
         });
     });
 
+    public static final Map<EntityClassification, List<EntityType<?>>> CLASSIFICATION_ENTITY_TYPES = Util.make(new EnumMap<>(EntityClassification.class), (map) -> {
+        for (EntityType<?> entityType : Registry.ENTITY_TYPE) {
+            map.computeIfAbsent(entityType.getClassification(), (mobCategory -> new ArrayList<>())).add(entityType);
+        }
+    });
+
     public static final TomlCommentedConfigOps CONFIG_OPS = new TomlCommentedConfigOps(Util.make(new HashMap<>(WeatherEvent.VALUE_COMMENTS), (map) -> {
     }), true);
     private final int tickChance;
@@ -99,11 +104,6 @@ public class Blizzard extends WeatherEvent {
         this.snowLayers = snowLayers;
         this.waterFreezes = waterFreezes;
         this.entityOrCategoryToEffectsMap = entityOrCategoryToEffectsMap;
-        Map<EntityClassification, List<EntityType<?>>> mobCategoryEntityTypes = new EnumMap<>(EntityClassification.class);
-
-        for (EntityType<?> entityType : Registry.ENTITY_TYPE) {
-            mobCategoryEntityTypes.computeIfAbsent(entityType.getClassification(), (mobCategory -> new ArrayList<>())).add(entityType);
-        }
 
         for (Map.Entry<String, List<String>> entry : entityOrCategoryToEffectsMap.entrySet()) {
             String key = entry.getKey();
@@ -117,7 +117,7 @@ public class Blizzard extends WeatherEvent {
                     continue;
                 }
 
-                for (EntityType<?> entityType : mobCategoryEntityTypes.get(EntityClassification.valueOf(mobCategory))) {
+                for (EntityType<?> entityType : CLASSIFICATION_ENTITY_TYPES.get(EntityClassification.valueOf(mobCategory))) {
                     addEntry(value, entityType);
                 }
                 continue;
