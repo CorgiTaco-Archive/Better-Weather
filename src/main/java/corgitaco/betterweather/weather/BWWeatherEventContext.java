@@ -119,7 +119,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
         WeatherEvent currentWeatherEvent = this.weatherEvents.get(currentEvent);
         this.currentEvent = this.weatherEvents.getOrDefault(currentEvent, None.DEFAULT);
-        if (isClient) {
+        if (isClient && !isPacket) {
             this.currentClientEvent = this.clientWeatherEvents.get(this.currentEvent);
         }
         if (currentEvent != null && currentWeatherEvent == null) {

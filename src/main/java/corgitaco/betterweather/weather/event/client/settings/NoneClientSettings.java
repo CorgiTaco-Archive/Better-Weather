@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.api.client.ColorSettings;
 import corgitaco.betterweather.api.client.WeatherEventClient;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
+import corgitaco.betterweather.weather.event.client.NoneClient;
 
 public class NoneClientSettings extends WeatherEventClientSettings {
     public static final Codec<NoneClientSettings> CODEC = RecordCodecBuilder.create((builder) -> {
@@ -20,7 +21,7 @@ public class NoneClientSettings extends WeatherEventClientSettings {
 
     @Override
     public WeatherEventClient<?> createClientSettings() {
-        return null;
+        return new NoneClient(this);
     }
 
     @Override
