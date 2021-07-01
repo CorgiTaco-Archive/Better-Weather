@@ -49,7 +49,6 @@ public class WeatherContextConstructingPacket {
                         weatherEventContext = ((BetterWeatherWorldData) world).setWeatherEventContext(new BWWeatherEventContext(message.bwWeatherEventContext.getCurrentWeatherEventKey(),
                                 message.bwWeatherEventContext.isWeatherForced(), world.getDimensionKey().getLocation(), world.func_241828_r().getRegistry(Registry.BIOME_KEY), message.bwWeatherEventContext.getWeatherEvents()));
                         weatherEventContext.setCurrentEvent(message.bwWeatherEventContext.getCurrentEvent());
-                        weatherEventContext.setCurrentClientEvent(weatherEventContext.getClientWeatherEvents().get(weatherEventContext.getCurrentEvent()));
                         ((BiomeUpdate) world).updateBiomeData();
                     } else {
                         throw new UnsupportedOperationException("This should only ever be called for constructing the Weather Context!");

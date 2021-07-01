@@ -319,7 +319,9 @@ public class SeasonContext implements Season {
             Map<Season.Phase, BWSubseasonSettings> phaseSettings = seasonKeySeasonEntry.getValue().getPhaseSettings();
             for (Map.Entry<Season.Phase, BWSubseasonSettings> phaseSubSeasonSettingsEntry : phaseSettings.entrySet()) {
                 String mapKey = seasonKey + "-" + phaseSubSeasonSettingsEntry.getKey();
-                phaseSubSeasonSettingsEntry.getValue().setCropTags(BWSeason.ENHANCED_CROPS.get(mapKey), BWSeason.UNENHANCED_CROPS.get(mapKey));
+                if (!isClient) {
+                    phaseSubSeasonSettingsEntry.getValue().setCropTags(BWSeason.ENHANCED_CROPS.get(mapKey), BWSeason.UNENHANCED_CROPS.get(mapKey));
+                }
 
                 BiomeOverrideJsonHandler.handleOverrideJsonConfigs(this.seasonOverridesPath.resolve(seasonKeySeasonEntry.getKey().toString() + "-" + phaseSubSeasonSettingsEntry.getKey() + ".json"), seasonKeySeasonEntry.getKey() == Season.Key.WINTER ? BWSubseasonSettings.WINTER_OVERRIDE : new IdentityHashMap<>(), phaseSubSeasonSettingsEntry.getValue(), this.biomeRegistry, isClient);
             }

@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import corgitaco.betterweather.api.BetterWeatherRegistry;
 import corgitaco.betterweather.api.client.ColorSettings;
+import corgitaco.betterweather.api.client.WeatherEventClient;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.mixin.access.ServerWorldAccess;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
@@ -65,6 +66,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     private final Map<Season.Key, Map<Season.Phase, Double>> seasonChances;
     private final ReferenceArraySet<Biome> validBiomes = new ReferenceArraySet<>();
     private WeatherEventClientSettings clientSettings;
+    private WeatherEventClient<?> client;
     private String name;
 
     public WeatherEvent(WeatherEventClientSettings clientSettings, String biomeCondition, double defaultChance, double temperatureOffsetRaw, double humidityOffsetRaw, boolean isThundering, int lightningFrequency, Map<Season.Key, Map<Season.Phase, Double>> seasonChance) {
@@ -290,5 +292,15 @@ public abstract class WeatherEvent implements WeatherEventSettings {
 
     public int getLightningChance() {
         return lightningFrequency;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public WeatherEventClient<?> getClient() {
+        return client;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public void setClient(WeatherEventClient<?> client) {
+        this.client = client;
     }
 }
