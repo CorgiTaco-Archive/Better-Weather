@@ -4,7 +4,7 @@ license = "LGPLv3"
 issueTrackerURL = "https://github.com/CorgiTaco/Better-Weather/issues"
 [[mods]]
 modId = "betterweather"
-version = "2.0-BETA-2"
+version = "2.0-BETA-3"
 displayName = "Better Weather"
 displayURL = "https://www.curseforge.com/minecraft/mc-mods/better-weather/"
 logoFile = "logo_text.png"
