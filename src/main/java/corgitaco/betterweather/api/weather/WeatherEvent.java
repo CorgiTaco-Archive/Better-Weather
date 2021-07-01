@@ -3,16 +3,11 @@ package corgitaco.betterweather.api.weather;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import corgitaco.betterweather.api.BetterWeatherRegistry;
-import corgitaco.betterweather.api.season.Season;
-import corgitaco.betterweather.graphics.Graphics;
-import corgitaco.betterweather.mixin.access.ServerWorldAccess;
 import corgitaco.betterweather.api.client.ColorSettings;
+import corgitaco.betterweather.api.season.Season;
+import corgitaco.betterweather.mixin.access.ServerWorldAccess;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.LightningBoltEntity;
@@ -98,12 +93,6 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     public abstract DynamicOps<?> configOps();
 
     public void livingEntityUpdate(LivingEntity entity) {
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public boolean weatherParticlesAndSound(ActiveRenderInfo renderInfo, float ticks, Minecraft mc) {
-        this.clientSettings.weatherParticlesAndSound(renderInfo, mc, ticks, this::isValidBiome);
-        return true;
     }
 
     /**
@@ -219,55 +208,6 @@ public abstract class WeatherEvent implements WeatherEventSettings {
 
     public boolean isValidBiome(Biome biome) {
         return this.validBiomes.contains(biome);
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z) {
-        return this.clientSettings.renderWeather(graphics, mc, world, lightTexture, ticks, partialTicks, x, y, z, (this::isValidBiome));
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public float skyOpacity(ClientWorld world, BlockPos playerPos) {
-        return mixer(world, playerPos, 12, 2.0F, 1.0F - this.clientSettings.skyOpacity());
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public float fogDensity(ClientWorld world, BlockPos playerPos) {
-        return mixer(world, playerPos, 12, 0.1F, this.clientSettings.fogDensity());
-    }
-
-
-    private float mixer(ClientWorld world, BlockPos playerPos, int transitionRange, float weight, float targetMaxValue) {
-        int x = playerPos.getX();
-        int z = playerPos.getZ();
-        float accumulated = 0.0F;
-
-        BlockPos.Mutable pos = new BlockPos.Mutable();
-        for (int sampleX = x - transitionRange; sampleX <= x + transitionRange; ++sampleX) {
-            pos.setX(sampleX);
-
-            for (int sampleZ = z - transitionRange; sampleZ <= z + transitionRange; ++sampleZ) {
-                pos.setZ(sampleZ);
-
-                Biome biome = world.getBiome(pos);
-                if (validBiomes.contains(biome)) {
-
-                    accumulated += weight * weight;
-                }
-            }
-        }
-        float transitionSmoothness = 33 * 33;
-        return Math.min(targetMaxValue, (float) Math.sqrt(accumulated / transitionSmoothness));
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public float cloudBlendStrength(ClientWorld world, BlockPos playerPos) {
-        return mixer(world, playerPos, 15, 1.2F, (float) this.clientSettings.getColorSettings().getCloudColorBlendStrength());
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc) {
-        this.clientSettings.clientTick(world, tickSpeed, worldTime, mc, this::isValidBiome);
     }
 
     public static boolean conditionPasses(String conditionString, RegistryKey<Biome> biomeKey, Biome biome) {

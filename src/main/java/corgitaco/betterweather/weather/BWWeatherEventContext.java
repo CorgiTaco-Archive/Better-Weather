@@ -14,6 +14,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.BetterWeatherRegistry;
 import corgitaco.betterweather.api.Climate;
+import corgitaco.betterweather.api.client.WeatherEventClient;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.api.weather.WeatherEventContext;
@@ -37,6 +38,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.IServerWorldInfo;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -68,6 +71,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
 
     private final Map<String, WeatherEvent> weatherEvents = new HashMap<>();
+    private final IdentityHashMap<WeatherEvent, WeatherEventClient<?>> clientWeatherEvents = new IdentityHashMap<>();
     private final ResourceLocation worldID;
     private final Registry<Biome> biomeRegistry;
     private final Path weatherConfigPath;
@@ -76,6 +80,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
     private boolean refreshRenderers;
     private WeatherEvent currentEvent;
+    private WeatherEventClient<?> currentClientEvent;
     private boolean weatherForced;
 
     //Packet Constructor
@@ -101,6 +106,11 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
         if (isClient) {
             this.weatherEvents.putAll(weatherEvents);
+
+            this.weatherEvents.forEach((key, weatherEvent) -> {
+                this.clientWeatherEvents.put(weatherEvent, weatherEvent.getClientSettings().createClientSettings());
+            });
+
         }
         if (!isPacket) {
             this.handleConfig(isClient);
@@ -109,7 +119,9 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
         WeatherEvent currentWeatherEvent = this.weatherEvents.get(currentEvent);
         this.currentEvent = this.weatherEvents.getOrDefault(currentEvent, None.DEFAULT);
-
+        if (isClient) {
+            this.currentClientEvent = this.clientWeatherEvents.get(this.currentEvent);
+        }
         if (currentEvent != null && currentWeatherEvent == null) {
             BetterWeather.LOGGER.error("The last weather event for the world: \"" + worldID.toString() + "\" was not found in: \"" + this.weatherEventsConfigPath.toString() + "\".\nDefaulting to weather event: \"" + DEFAULT + "\".");
         } else {
@@ -144,7 +156,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
             this.currentEvent.worldTick((ServerWorld) world, world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED), world.getGameTime());
         }
         if (world.isRemote) {
-            this.currentEvent.clientTick((ClientWorld) world, world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED), world.getGameTime(), Minecraft.getInstance());
+            this.currentClientEvent.clientTick((ClientWorld) world, world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED), world.getGameTime(), Minecraft.getInstance(), currentEvent::isValidBiome);
         }
     }
 
@@ -399,6 +411,21 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
     public boolean isRefreshRenderers() {
         return refreshRenderers;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public WeatherEventClient<?> getCurrentClientEvent() {
+        return currentClientEvent;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public IdentityHashMap<WeatherEvent, WeatherEventClient<?>> getClientWeatherEvents() {
+        return clientWeatherEvents;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public void setCurrentClientEvent(WeatherEventClient<?> currentClientEvent) {
+        this.currentClientEvent = currentClientEvent;
     }
 
     private static class WeatherEventConfig {

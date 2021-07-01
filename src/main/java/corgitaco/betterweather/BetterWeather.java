@@ -4,7 +4,7 @@ import corgitaco.betterweather.api.BetterWeatherRegistry;
 import corgitaco.betterweather.data.network.NetworkHandler;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import corgitaco.betterweather.weather.event.*;
-import corgitaco.betterweather.weather.event.client.*;
+import corgitaco.betterweather.weather.event.client.settings.*;
 import net.minecraft.util.LazyValue;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;

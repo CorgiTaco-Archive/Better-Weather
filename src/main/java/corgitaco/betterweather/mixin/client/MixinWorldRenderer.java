@@ -1,9 +1,9 @@
 package corgitaco.betterweather.mixin.client;
 
+import corgitaco.betterweather.api.client.ColorSettings;
 import corgitaco.betterweather.graphics.Graphics;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.mixin.access.Vector3dAccess;
-import corgitaco.betterweather.api.client.ColorSettings;
 import corgitaco.betterweather.weather.BWWeatherEventContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
@@ -40,7 +40,7 @@ public abstract class MixinWorldRenderer {
     private void renderWeather(LightTexture lightmapIn, float partialTicks, double x, double y, double z, CallbackInfo ci) {
         BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) this.world).getWeatherEventContext();
         if (weatherEventContext != null) {
-            if (weatherEventContext.getCurrentEvent().renderWeather(graphics, mc, this.world, lightmapIn, ticks, partialTicks, x, y, z)) {
+            if (weatherEventContext.getCurrentClientEvent().renderWeather(graphics, mc, this.world, lightmapIn, ticks, partialTicks, x, y, z, weatherEventContext.getCurrentEvent()::isValidBiome)) {
                 ci.cancel();
             }
         }
@@ -50,7 +50,7 @@ public abstract class MixinWorldRenderer {
     private void stopRainParticles(ActiveRenderInfo activeRenderInfoIn, CallbackInfo ci) {
         BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) this.world).getWeatherEventContext();
         if (mc.world != null && weatherEventContext != null) {
-            if (weatherEventContext.getCurrentEvent().weatherParticlesAndSound(activeRenderInfoIn, this.ticks, this.mc)) {
+            if (weatherEventContext.getCurrentClientEvent().weatherParticlesAndSound(activeRenderInfoIn, this.mc, this.ticks, weatherEventContext.getCurrentEvent()::isValidBiome)) {
                 ci.cancel();
             }
         }
@@ -60,7 +60,7 @@ public abstract class MixinWorldRenderer {
     public float sunRemoval(ClientWorld clientWorld, float delta) {
         float rainStrength = this.world.getRainStrength(delta);
         BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) this.world).getWeatherEventContext();
-        return weatherEventContext != null ? rainStrength * weatherEventContext.getCurrentEvent().skyOpacity(clientWorld, this.mc.player.getPosition()) : rainStrength;
+        return weatherEventContext != null ? rainStrength * weatherEventContext.getCurrentClientEvent().skyOpacity(clientWorld, this.mc.player.getPosition(), weatherEventContext.getCurrentEvent()::isValidBiome) : rainStrength;
     }
 
     @Inject(method = "drawClouds", at = @At(value = "HEAD"), cancellable = true)
@@ -79,7 +79,7 @@ public abstract class MixinWorldRenderer {
             float g = (float) (targetCloudHexColor >> 8 & 255) / 255.0F;
             float b = (float) (targetCloudHexColor & 255) / 255.0F;
 
-            float blendStrengthAtLocation = weatherEventContext.getCurrentEvent().cloudBlendStrength(this.world, new BlockPos(cloudsX, cloudsY, cloudsZ));
+            float blendStrengthAtLocation = weatherEventContext.getCurrentClientEvent().cloudBlendStrength(this.world, new BlockPos(cloudsX, cloudsY, cloudsZ), weatherEventContext.getCurrentEvent()::isValidBiome);
             float rainStrength = this.world.getRainStrength(Minecraft.getInstance().getRenderPartialTicks());
 
             float blend = (float) Math.min(cloudColorBlendStrength, rainStrength * blendStrengthAtLocation);

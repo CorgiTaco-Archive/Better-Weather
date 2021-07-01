@@ -2,8 +2,8 @@ package corgitaco.betterweather.season;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import corgitaco.betterweather.api.season.SubseasonSettings;
 import corgitaco.betterweather.api.client.ColorSettings;
+import corgitaco.betterweather.api.season.SubseasonSettings;
 import corgitaco.betterweather.season.storage.OverrideStorage;
 import corgitaco.betterweather.util.BetterWeatherUtil;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;

@@ -30,7 +30,7 @@ public abstract class MixinFogRenderer {
         if (weatherEventContext != null) {
             WeatherEvent currentEvent = weatherEventContext.getCurrentEvent();
             float currentFogDensity = currentEvent.getClientSettings().fogDensity();
-            float blendedFogDensity = currentEvent.fogDensity(world, activeRenderInfoIn.getBlockPos());
+            float blendedFogDensity = weatherEventContext.getCurrentClientEvent().fogDensity(world, activeRenderInfoIn.getBlockPos(), currentEvent::isValidBiome);
 
             if (currentFogDensity != -1.0F && blendedFogDensity > 0.0F) {
                 RenderSystem.fogDensity(MathHelper.lerp(activeRenderInfoIn.getRenderViewEntity().world.getRainStrength(Minecraft.getInstance().getRenderPartialTicks()), 0.0F, blendedFogDensity));

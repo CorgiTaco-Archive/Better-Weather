@@ -1,13 +1,11 @@
 package corgitaco.betterweather.weather.event.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import corgitaco.betterweather.api.client.WeatherEventClient;
 import corgitaco.betterweather.api.weather.WeatherEventAudio;
-import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
 import corgitaco.betterweather.graphics.Graphics;
 import corgitaco.betterweather.graphics.ShaderProgram;
-import corgitaco.betterweather.api.client.ColorSettings;
+import corgitaco.betterweather.weather.event.client.settings.BlizzardClientSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.LightTexture;
@@ -25,53 +23,7 @@ import net.minecraft.world.gen.Heightmap;
 import java.util.Random;
 import java.util.function.Predicate;
 
-public class BlizzardClientSettings extends WeatherEventClientSettings implements WeatherEventAudio {
-    public static final Codec<BlizzardClientSettings> CODEC = RecordCodecBuilder.create((builder) -> {
-        return builder.group(ColorSettings.CODEC.fieldOf("colorSettings").forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.getColorSettings();
-        }), Codec.FLOAT.fieldOf("skyOpacity").forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.skyOpacity();
-        }), Codec.FLOAT.fieldOf("fogDensity").forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.fogDensity();
-        }), Codec.BOOL.fieldOf("sunsetSunriseColor").forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.sunsetSunriseColor();
-        }), ResourceLocation.CODEC.fieldOf("rendererTexture").forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.textureLocation;
-        }), SoundEvent.CODEC.fieldOf("audioLocation").forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.audio;
-        }), Codec.FLOAT.fieldOf("audioVolume").forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.audioVolume;
-        }), Codec.FLOAT.fieldOf("audioPitch").forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.audioPitch;
-        })).apply(builder, BlizzardClientSettings::new);
-    });
-
-    private final float[] rainSizeX = new float[1024];
-    private final float[] rainSizeZ = new float[1024];
-    private final ResourceLocation textureLocation;
-    private final SoundEvent audio;
-    private final float audioVolume;
-    private final float audioPitch;
-
-    private ShaderProgram program;
-
-    public BlizzardClientSettings(ColorSettings colorSettings, float skyOpacity, float fogDensity, boolean sunsetSunriseColor, ResourceLocation textureLocation, SoundEvent audio, float audioVolume, float audioPitch) {
-        super(colorSettings, skyOpacity, fogDensity, sunsetSunriseColor);
-        this.textureLocation = textureLocation;
-        this.audio = audio;
-        this.audioVolume = audioVolume;
-        this.audioPitch = audioPitch;
-
-        for (int i = 0; i < 32; ++i) {
-            for (int j = 0; j < 32; ++j) {
-                float f = (float) (j - 16);
-                float f1 = (float) (i - 16);
-                float f2 = MathHelper.sqrt(f * f + f1 * f1);
-                this.rainSizeX[i << 5 | j] = -f1 / f2;
-                this.rainSizeZ[i << 5 | j] = f / f2;
-            }
-        }
-    }
+public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> implements WeatherEventAudio {
 
     public static final String DEBUG_FRAGMENT =
             "#version 120\n" +
@@ -86,6 +38,33 @@ public class BlizzardClientSettings extends WeatherEventClientSettings implement
                     "void main() {\n" +
                     "\n" +
                     "}";
+
+    private final float[] rainSizeX = new float[1024];
+    private final float[] rainSizeZ = new float[1024];
+    private final ResourceLocation textureLocation;
+    private final SoundEvent audio;
+    private final float audioVolume;
+    private final float audioPitch;
+
+    private ShaderProgram program;
+
+    public BlizzardClient(BlizzardClientSettings clientSettings) {
+        super(clientSettings);
+        this.textureLocation = clientSettings.textureLocation;
+        this.audio = clientSettings.getSound();
+        this.audioVolume = clientSettings.getVolume();
+        this.audioPitch = clientSettings.getPitch();
+
+        for (int i = 0; i < 32; ++i) {
+            for (int j = 0; j < 32; ++j) {
+                float f = (float) (j - 16);
+                float f1 = (float) (i - 16);
+                float f2 = MathHelper.sqrt(f * f + f1 * f1);
+                this.rainSizeX[i << 5 | j] = -f1 / f2;
+                this.rainSizeZ[i << 5 | j] = f / f2;
+            }
+        }
+    }
 
     @Override
     public boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z, Predicate<Biome> biomePredicate) {
@@ -192,11 +171,6 @@ public class BlizzardClientSettings extends WeatherEventClientSettings implement
 //        }
 
         return true;
-    }
-
-    @Override
-    public Codec<? extends WeatherEventClientSettings> codec() {
-        return CODEC;
     }
 
     @Override

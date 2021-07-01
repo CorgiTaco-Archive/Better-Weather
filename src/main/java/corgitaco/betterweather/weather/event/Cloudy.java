@@ -7,7 +7,7 @@ import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
-import corgitaco.betterweather.weather.event.client.CloudyClientSettings;
+import corgitaco.betterweather.weather.event.client.settings.CloudyClientSettings;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;

@@ -39,11 +39,12 @@ public class WeatherDataPacket {
 
                 ClientWorld world = minecraft.world;
                 if (world != null && minecraft.player != null) {
-                    BWWeatherEventContext BWWeatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
-                    if (BWWeatherEventContext == null) {
+                    BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
+                    if (weatherEventContext == null) {
                         throw new UnsupportedOperationException("There is no weather event context constructed for this world!");
                     } else {
-                        BWWeatherEventContext.setCurrentEvent(message.weatherEvent);
+                        weatherEventContext.setCurrentEvent(message.weatherEvent);
+                        weatherEventContext.setCurrentClientEvent(weatherEventContext.getClientWeatherEvents().get(weatherEventContext.getCurrentEvent()));
                     }
                 }
             });

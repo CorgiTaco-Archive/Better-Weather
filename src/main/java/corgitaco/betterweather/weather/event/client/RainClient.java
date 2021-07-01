@@ -1,10 +1,8 @@
 package corgitaco.betterweather.weather.event.client;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
+import corgitaco.betterweather.api.client.WeatherEventClient;
 import corgitaco.betterweather.graphics.Graphics;
-import corgitaco.betterweather.api.client.ColorSettings;
+import corgitaco.betterweather.weather.event.client.settings.RainClientSettings;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CampfireBlock;
@@ -31,33 +29,18 @@ import net.minecraft.world.gen.Heightmap;
 import java.util.Random;
 import java.util.function.Predicate;
 
-public class RainClientSettings extends WeatherEventClientSettings {
+public class RainClient extends WeatherEventClient<RainClientSettings> {
 
-    public static final Codec<RainClientSettings> CODEC = RecordCodecBuilder.create((builder) -> {
-        return builder.group(ColorSettings.CODEC.fieldOf("colorSettings").forGetter(rainClientSettings -> {
-            return rainClientSettings.getColorSettings();
-        }), Codec.FLOAT.fieldOf("skyOpacity").forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.skyOpacity();
-        }), Codec.FLOAT.fieldOf("fogDensity").forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.fogDensity();
-        }), Codec.BOOL.fieldOf("sunsetSunriseColor").forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.sunsetSunriseColor();
-        }), ResourceLocation.CODEC.fieldOf("rainTexture").forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.rainTexture;
-        }), ResourceLocation.CODEC.fieldOf("snowTexture").forGetter(blizzardClientSettings -> {
-            return blizzardClientSettings.snowTexture;
-        })).apply(builder, RainClientSettings::new);
-    });
     protected final ResourceLocation rainTexture;
     protected final ResourceLocation snowTexture;
     private final float[] rainSizeX = new float[1024];
     private final float[] rainSizeZ = new float[1024];
     private int rainSoundTime;
 
-    public RainClientSettings(ColorSettings colorSettings, float skyOpacity, float fogDensity, boolean sunsetSunriseColor, ResourceLocation rainTexture, ResourceLocation snowTexture) {
-        super(colorSettings, skyOpacity, fogDensity, sunsetSunriseColor);
-        this.rainTexture = rainTexture;
-        this.snowTexture = snowTexture;
+    public RainClient(RainClientSettings clientSettings) {
+        super(clientSettings);
+        this.rainTexture = clientSettings.rainTexture;
+        this.snowTexture = clientSettings.snowTexture;
 
         for (int i = 0; i < 32; ++i) {
             for (int j = 0; j < 32; ++j) {
@@ -74,11 +57,6 @@ public class RainClientSettings extends WeatherEventClientSettings {
     public boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z, Predicate<Biome> biomePredicate) {
         renderVanillaWeather(mc, partialTicks, x, y, z, lightTexture, rainSizeX, rainSizeZ, this.rainTexture, this.snowTexture, ticks, biomePredicate);
         return true;
-    }
-
-    @Override
-    public Codec<? extends WeatherEventClientSettings> codec() {
-        return CODEC;
     }
 
     @Override

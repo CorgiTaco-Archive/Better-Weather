@@ -7,7 +7,7 @@ import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
 import corgitaco.betterweather.util.BetterWeatherUtil;
-import corgitaco.betterweather.weather.event.client.RainClientSettings;
+import corgitaco.betterweather.weather.event.client.settings.RainClientSettings;
 import it.unimi.dsi.fastutil.objects.Object2FloatArrayMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;

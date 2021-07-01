@@ -1,15 +1,12 @@
-package corgitaco.betterweather.weather.event.client;
+package corgitaco.betterweather.weather.event.client.settings;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
 import corgitaco.betterweather.api.client.ColorSettings;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.particles.ParticleTypes;
+import corgitaco.betterweather.api.client.WeatherEventClient;
+import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
+import corgitaco.betterweather.weather.event.client.AcidRainClient;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 
 public class AcidRainClientSettings extends RainClientSettings {
 
@@ -31,7 +28,7 @@ public class AcidRainClientSettings extends RainClientSettings {
         })).apply(builder, AcidRainClientSettings::new);
     });
 
-    private final boolean addSmokeParticles;
+    public final boolean addSmokeParticles;
 
     public AcidRainClientSettings(ColorSettings colorSettings, float skyOpacity, float fogDensity, boolean sunsetSunriseColor, ResourceLocation rainTexture, ResourceLocation snowTexture, boolean addSmokeParticles) {
         super(colorSettings, skyOpacity, fogDensity, sunsetSunriseColor, rainTexture, snowTexture);
@@ -39,11 +36,8 @@ public class AcidRainClientSettings extends RainClientSettings {
     }
 
     @Override
-    protected void addParticlesToWorld(Minecraft mc, BlockPos motionBlockingHeightMinus1, double randDouble, double randDouble2, BlockState blockstate, FluidState fluidstate, double particleMaxAddedY) {
-        if (addSmokeParticles) {
-            mc.world.addParticle(ParticleTypes.SMOKE, (double) motionBlockingHeightMinus1.getX() + randDouble, (double) motionBlockingHeightMinus1.getY() + particleMaxAddedY, (double) motionBlockingHeightMinus1.getZ() + randDouble2, 0.0D, 0.0D, 0.0D);
-        }
-        super.addParticlesToWorld(mc, motionBlockingHeightMinus1, randDouble, randDouble2, blockstate, fluidstate, particleMaxAddedY);
+    public WeatherEventClient<?> createClientSettings() {
+        return new AcidRainClient(this);
     }
 
     @Override
