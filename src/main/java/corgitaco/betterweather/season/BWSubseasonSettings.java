@@ -9,6 +9,7 @@ import corgitaco.betterweather.util.BetterWeatherUtil;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ITag;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
@@ -192,7 +193,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
     }
 
     public void setCropTags(ITag.INamedTag<Block> enhancedCrops, ITag.INamedTag<Block> unenhancedCrops) {
-        this.enhancedCrops = enhancedCrops;
+        this.enhancedCrops = enhancedCrops.getAllElements().isEmpty() ? BlockTags.CROPS : enhancedCrops;
         this.unenhancedCrops = unenhancedCrops;
     }
 
