@@ -48,8 +48,9 @@ public class Rain extends WeatherEvent {
     public static final ColorSettings THUNDER_COLORS = new ColorSettings(Integer.MAX_VALUE, 0.1, Integer.MAX_VALUE, 0.0, ColorUtil.DEFAULT_THUNDER_SKY, 1.0F, ColorUtil.DEFAULT_THUNDER_FOG, 1.0F, ColorUtil.DEFAULT_THUNDER_CLOUDS, 1.0F);
     public static final ColorSettings RAIN_COLORS = new ColorSettings(Integer.MAX_VALUE, 0.1, Integer.MAX_VALUE, 0.0, ColorUtil.DEFAULT_RAIN_SKY, 1.0F, ColorUtil.DEFAULT_RAIN_FOG, 1.0F, ColorUtil.DEFAULT_RAIN_CLOUDS, 1.0F);
 
+    public static final String DEFAULT_BIOME_CONDITION = "!#DESERT#SAVANNA#NETHER#END";
 
-    public static final Rain DEFAULT = new Rain(new RainClientSettings(RAIN_COLORS, 0.0F, -1.0F, true, RAIN_LOCATION, SNOW_LOCATION), "!#DESERT#SAVANNA", 0.7D, -0.1, 0.1, false, 0,
+    public static final Rain DEFAULT = new Rain(new RainClientSettings(RAIN_COLORS, 0.0F, -1.0F, true, RAIN_LOCATION, SNOW_LOCATION), DEFAULT_BIOME_CONDITION, 0.7D, -0.1, 0.1, false, 0,
             Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
                 seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
                     phases.put(Season.Phase.START, 0.7);
@@ -76,7 +77,7 @@ public class Rain extends WeatherEvent {
                 }));
             }));
 
-    public static final Rain DEFAULT_THUNDERING = new Rain(new RainClientSettings(THUNDER_COLORS, 0.0F, -1.0F, true, RAIN_LOCATION, SNOW_LOCATION), "!#DESERT#SAVANNA", 0.3D, -0.5, 0.1, true, 100000,
+    public static final Rain DEFAULT_THUNDERING = new Rain(new RainClientSettings(THUNDER_COLORS, 0.0F, -1.0F, true, RAIN_LOCATION, SNOW_LOCATION), DEFAULT_BIOME_CONDITION, 0.3D, -0.5, 0.1, true, 100000,
             Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
                 seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
                     phases.put(Season.Phase.START, 0.35);

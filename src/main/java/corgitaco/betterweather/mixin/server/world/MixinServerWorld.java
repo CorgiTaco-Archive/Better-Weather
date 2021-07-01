@@ -67,26 +67,36 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     @Inject(method = "<init>", at = @At("RETURN"))
     private void storeUpgradablePerWorldRegistry(MinecraftServer server, Executor executor, SaveFormat.LevelSave save, IServerWorldInfo worldInfo, RegistryKey<World> key, DimensionType dimensionType, IChunkStatusListener statusListener, ChunkGenerator generator, boolean b, long seed, List<ISpecialSpawner> specialSpawners, boolean b1, CallbackInfo ci) {
         ResourceLocation worldKeyLocation = key.getLocation();
-        BetterWeather.LOGGER.info("Swapping server world gen datapack registry for \"" + key.getLocation().toString() + "\" to per world registry...");
-        this.registry = new WorldDynamicRegistry((DynamicRegistries.Impl) server.getDynamicRegistries());
+        boolean perWorldRegistry = BetterWeatherConfig.WEATHER_EVENT_DIMENSIONS.size() >= 1 && BetterWeatherConfig.SEASON_DIMENSIONS.size() >= 1;
 
-        //Reload the world settings import with OUR implementation of the registry.
-        WorldSettingsImport<INBT> worldSettingsImport = WorldSettingsImport.create(NBTDynamicOps.INSTANCE, server.getDataPackRegistries().getResourceManager(), (DynamicRegistries.Impl) this.registry);
-        ChunkGenerator dimensionChunkGenerator = save.readServerConfiguration(worldSettingsImport, server.getServerConfiguration().getDatapackCodec()).getDimensionGeneratorSettings().func_236224_e_().getOptional(worldKeyLocation).get().getChunkGenerator();
-        // Reset the chunk generator fields in both the chunk provider and chunk manager. This is required for chunk generators to return the current biome object type required by our registry. //TODO: Do this earlier so mods mixing here can capture our version of the chunk generator.
+        boolean isValidWeatherEventDimension = BetterWeatherConfig.WEATHER_EVENT_DIMENSIONS.contains(worldKeyLocation.toString());
+        boolean isValidSeasonDimension = BetterWeatherConfig.SEASON_DIMENSIONS.contains(worldKeyLocation.toString());
 
-        BetterWeather.LOGGER.info("Swapping chunk generator for \"" + key.getLocation().toString() + "\" to use the per world registry...");
-        ((ServerChunkProviderAccess) this.serverChunkProvider).setGenerator(dimensionChunkGenerator);
-        ((ChunkManagerAccess) this.serverChunkProvider.chunkManager).setGenerator(dimensionChunkGenerator);
-        BetterWeather.LOGGER.info("Swapped the chunk generator for \"" + key.getLocation().toString() + "\" to use the per world registry!");
+        if (perWorldRegistry && (isValidWeatherEventDimension || isValidSeasonDimension)) {
+            this.registry = new WorldDynamicRegistry((DynamicRegistries.Impl) server.getDynamicRegistries());
+            BetterWeather.LOGGER.warn("Swapping server world gen datapack registry for \"" + key.getLocation().toString() + "\" to a per world registry... This may have unintended side effects like mod incompatibilities in this world...");
 
-        BetterWeather.LOGGER.info("Swapped world gen datapack regsitry for \"" + key.getLocation().toString() + "\" to the per world registry!");
+            // Reload the world settings import with OUR implementation of the registry.
+            WorldSettingsImport<INBT> worldSettingsImport = WorldSettingsImport.create(NBTDynamicOps.INSTANCE, server.getDataPackRegistries().getResourceManager(), (DynamicRegistries.Impl) this.registry);
+            ChunkGenerator dimensionChunkGenerator = save.readServerConfiguration(worldSettingsImport, server.getServerConfiguration().getDatapackCodec()).getDimensionGeneratorSettings().func_236224_e_().getOptional(worldKeyLocation).get().getChunkGenerator();
 
-        if (BetterWeatherConfig.WEATHER_EVENT_DIMENSIONS.contains(worldKeyLocation.toString()) || BetterWeatherConfig.WEATHER_EVENT_DIMENSIONS.contains(worldKeyLocation.getNamespace())) {
+            // Reset the chunk generator fields in both the chunk provider and chunk manager. This is required for chunk generators to return the current biome object type required by our registry.
+            // TODO: Do this earlier so mods mixing here can capture our version of the chunk generator.
+            BetterWeather.LOGGER.warn("Swapping chunk generator for \"" + key.getLocation().toString() + "\" to use the per world registry... This may have unintended side effects like mod incompatibilities in this world...");
+            ((ServerChunkProviderAccess) this.serverChunkProvider).setGenerator(dimensionChunkGenerator);
+            ((ChunkManagerAccess) this.serverChunkProvider.chunkManager).setGenerator(dimensionChunkGenerator);
+            BetterWeather.LOGGER.info("Swapped the chunk generator for \"" + key.getLocation().toString() + "\" to use the per world registry!");
+
+            BetterWeather.LOGGER.info("Swapped world gen datapack regsitry for \"" + key.getLocation().toString() + "\" to the per world registry!");
+        } else {
+            this.registry = server.getDynamicRegistries();
+        }
+
+        if (isValidWeatherEventDimension) {
             this.weatherContext = new BWWeatherEventContext(WeatherEventSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));
         }
 
-        if (BetterWeatherConfig.SEASON_DIMENSIONS.contains(worldKeyLocation.toString()) || BetterWeatherConfig.SEASON_DIMENSIONS.contains(worldKeyLocation.getNamespace())) {
+        if (isValidSeasonDimension) {
             this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));
         }
 

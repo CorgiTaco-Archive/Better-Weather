@@ -47,6 +47,9 @@ public class ColorSettings {
 
         map.put("skyColorBlendStrength", "The strength of this world's sky color blend towards the value of \"skyTargetHexColor\".\nRange: 0 - 1.0");
         map.put("skyTargetHexColor", "Blends this world's grass color towards this value. Blend strength is determined by the value of \"skyColorBlendStrength\".");
+
+        map.put("cloudColorBlendStrength", "The strength of this world's cloud color blend towards the value of \"cloudTargetHexColor\".\nRange: 0 - 1.0");
+        map.put("cloudTargetHexColor", "Blends this world's grass color towards this value. Blend strength is determined by the value of \"cloudColorBlendStrength\".");
     });
 
 
