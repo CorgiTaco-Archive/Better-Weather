@@ -23,7 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 @Mixin(DataPackRegistries.class)
-public class MixinDatapackRegistries {
+public class MixinDataPackRegistries {
 
     @Inject(method = "func_240961_a_", at = @At("HEAD"))
     private static void readConfigAndAddTags(List<IResourcePack> resourcePacks, Commands.EnvironmentType environmentType, int i, Executor executor, Executor executor1, CallbackInfoReturnable<CompletableFuture<DataPackRegistries>> cir) {

@@ -47,7 +47,7 @@ import java.util.*;
 public class BWWeatherEventContext implements WeatherEventContext {
 
     public static final String CONFIG_NAME = "weather-settings.toml";
-    private static final String DEFAULT = "none";
+    private static final String DEFAULT = "betterweather-none";
 
     public static final Codec<BWWeatherEventContext> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(Codec.STRING.fieldOf("currentEvent").forGetter((weatherEventContext) -> {
@@ -290,7 +290,14 @@ public class BWWeatherEventContext implements WeatherEventContext {
             } else if (absolutePath.endsWith(".json")) {
                 try {
                     String name = configFile.getName().replace(".json", "").toLowerCase();
-                    this.weatherEvents.put(name, WeatherEvent.CODEC.decode(JsonOps.INSTANCE, new JsonParser().parse(new FileReader(configFile))).resultOrPartial(BetterWeather.LOGGER::error).get().getFirst().setName(name));
+                    WeatherEvent decodedValue = WeatherEvent.CODEC.decode(JsonOps.INSTANCE, new JsonParser().parse(new FileReader(configFile))).resultOrPartial(BetterWeather.LOGGER::error).get().getFirst().setName(name);
+                    if (isClient) {
+                        if (this.weatherEvents.containsKey(name)) {
+                            this.weatherEvents.get(name).setClientSettings(decodedValue.getClientSettings());
+                        }
+                    } else {
+                        this.weatherEvents.put(name, decodedValue);
+                    }
                 } catch (FileNotFoundException e) {
                     BetterWeather.LOGGER.error(e.toString());
                 }
@@ -299,7 +306,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
     }
 
     private void createTomlEventConfig(WeatherEvent weatherEvent, ResourceLocation weatherEventID) {
-        Path configFile = this.weatherEventsConfigPath.resolve(weatherEventID.getPath() + ".toml");
+        Path configFile = this.weatherEventsConfigPath.resolve(weatherEventID.toString().replace(":", "-") + ".json");
         CommentedConfig readConfig = configFile.toFile().exists() ? CommentedFileConfig.builder(configFile).sync().autosave().writingMode(WritingMode.REPLACE).build() : CommentedConfig.inMemory();
         if (readConfig instanceof CommentedFileConfig) {
             ((CommentedFileConfig) readConfig).load();

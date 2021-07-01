@@ -4,7 +4,7 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "betterweather.refmap.json",
   "mixins": [
-    "MixinDatapackRegistries",
+    "MixinDataPackRegistries",
     "MixinWorld",
     "access.BiomeAccess",
     "access.ChunkManagerAccess",

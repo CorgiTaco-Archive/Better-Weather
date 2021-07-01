@@ -73,7 +73,7 @@ public class RainClientSettings extends WeatherEventClientSettings {
     @Override
     public boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z, Predicate<Biome> biomePredicate) {
         renderVanillaWeather(mc, partialTicks, x, y, z, lightTexture, rainSizeX, rainSizeZ, this.rainTexture, this.snowTexture, ticks, biomePredicate);
-        return false;
+        return true;
     }
 
     @Override
