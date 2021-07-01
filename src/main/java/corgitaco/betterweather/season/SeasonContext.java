@@ -26,7 +26,6 @@ import corgitaco.betterweather.util.TomlCommentedConfigOps;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
@@ -169,7 +168,7 @@ public class SeasonContext implements Season {
      * Called every block random tick.
      */
     public void enhanceCropRandomTick(ServerWorld world, BlockPos pos, Block block, BlockState self, CallbackInfo ci) {
-        if (BlockTags.CROPS.contains(block) || BlockTags.BEE_GROWABLES.contains(block) || BlockTags.SAPLINGS.contains(block)) {
+        if (this.getCurrentSeason().getCurrentSettings().getEnhancedCrops().contains(block)) {
             Block block1 = block;
             //Collect the crop multiplier for the given subseason.
             double cropGrowthMultiplier = getCurrentSubSeasonSettings().getCropGrowthMultiplier(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(world.getBiome(pos)).get(), block1);
@@ -252,7 +251,7 @@ public class SeasonContext implements Season {
         }
 
         SeasonConfigHolder configHolder = read(isClient);
-        fillSubSeasonOverrideStorage(isClient);
+        fillSubSeasonOverrideStorageAndSetCropTags(isClient);
         return configHolder;
     }
 
@@ -313,12 +312,15 @@ public class SeasonContext implements Season {
         return SeasonConfigHolder.DEFAULT_CONFIG_HOLDER; // We should never hit this ever.
     }
 
-    private void fillSubSeasonOverrideStorage(boolean isClient) {
+    private void fillSubSeasonOverrideStorageAndSetCropTags(boolean isClient) {
         for (Map.Entry<Season.Key, BWSeason> seasonKeySeasonEntry : this.seasons.entrySet()) {
-            Key key = seasonKeySeasonEntry.getKey();
-            seasonKeySeasonEntry.getValue().setSeasonKey(key);
+            Key seasonKey = seasonKeySeasonEntry.getKey();
+            seasonKeySeasonEntry.getValue().setSeasonKey(seasonKey);
             Map<Season.Phase, BWSubseasonSettings> phaseSettings = seasonKeySeasonEntry.getValue().getPhaseSettings();
             for (Map.Entry<Season.Phase, BWSubseasonSettings> phaseSubSeasonSettingsEntry : phaseSettings.entrySet()) {
+                String mapKey = seasonKey + "-" + phaseSubSeasonSettingsEntry.getKey();
+                phaseSubSeasonSettingsEntry.getValue().setCropTags(BWSeason.ENHANCED_CROPS.get(mapKey), BWSeason.UNENHANCED_CROPS.get(mapKey));
+
                 BiomeOverrideJsonHandler.handleOverrideJsonConfigs(this.seasonOverridesPath.resolve(seasonKeySeasonEntry.getKey().toString() + "-" + phaseSubSeasonSettingsEntry.getKey() + ".json"), seasonKeySeasonEntry.getKey() == Season.Key.WINTER ? BWSubseasonSettings.WINTER_OVERRIDE : new IdentityHashMap<>(), phaseSubSeasonSettingsEntry.getValue(), this.biomeRegistry, isClient);
             }
         }

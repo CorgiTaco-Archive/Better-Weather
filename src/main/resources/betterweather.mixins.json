@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "betterweather.refmap.json",
   "mixins": [
+    "MixinDatapackRegistries",
     "MixinWorld",
     "access.BiomeAccess",
     "access.ChunkManagerAccess",
@@ -22,7 +23,6 @@
     "entity.MixinLivingEntity",
     "network.MixinPlayerList",
     "server.MixinCommands",
-    "server.MixinMinecraftServer",
     "server.commands.MixinLocateBiomeCommand",
     "server.commands.MixinWeatherCommand",
     "server.world.MixinServerWorld"

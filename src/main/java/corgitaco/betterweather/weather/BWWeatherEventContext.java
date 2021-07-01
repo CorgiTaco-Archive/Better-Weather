@@ -332,7 +332,6 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
 
     public void createDefaultEventConfigs() {
-
         for (Map.Entry<ResourceLocation, WeatherEvent> entry : WeatherEvent.DEFAULT_EVENTS.entrySet()) {
             ResourceLocation location = entry.getKey();
             WeatherEvent event = entry.getValue();

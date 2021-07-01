@@ -9,6 +9,7 @@ import corgitaco.betterweather.util.BetterWeatherUtil;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
+import net.minecraft.tags.ITag;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
@@ -153,11 +154,12 @@ public class BWSubseasonSettings implements SubseasonSettings {
     private final double weatherEventChanceMultiplier;
     private final double cropGrowthChanceMultiplier; //Final Fallback
     private final HashMap<String, Double> weatherEventController;
-    private ColorSettings clientSettings;
     private final IdentityHashMap<Block, Double> cropToMultiplierStorage;
     private final IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage;
     private final ObjectOpenHashSet<EntityType<?>> entityTypeBreedingBlacklist;
-
+    private ColorSettings clientSettings;
+    private ITag.INamedTag<Block> enhancedCrops;
+    private ITag.INamedTag<Block> unenhancedCrops;
 
     public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, ColorSettings clientSettings) {
         this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, new ObjectOpenHashSet<>(), new IdentityHashMap<>(), new IdentityHashMap<>());
@@ -187,6 +189,11 @@ public class BWSubseasonSettings implements SubseasonSettings {
 
     public void setClient(ColorSettings clientSettings) {
         this.clientSettings = clientSettings;
+    }
+
+    public void setCropTags(ITag.INamedTag<Block> enhancedCrops, ITag.INamedTag<Block> unenhancedCrops) {
+        this.enhancedCrops = enhancedCrops;
+        this.unenhancedCrops = unenhancedCrops;
     }
 
     public IdentityHashMap<Block, Double> getCropToMultiplierStorage() {
@@ -332,5 +339,13 @@ public class BWSubseasonSettings implements SubseasonSettings {
 
     public ObjectOpenHashSet<EntityType<?>> getEntityTypeBreedingBlacklist() {
         return entityTypeBreedingBlacklist;
+    }
+
+    public ITag.INamedTag<Block> getEnhancedCrops() {
+        return enhancedCrops;
+    }
+
+    public ITag.INamedTag<Block> getUnenhancedCrops() {
+        return unenhancedCrops;
     }
 }
