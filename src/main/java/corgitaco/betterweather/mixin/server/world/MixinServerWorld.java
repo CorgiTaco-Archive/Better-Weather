@@ -1,5 +1,6 @@
 package corgitaco.betterweather.mixin.server.world;
 
+import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.Climate;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.config.BetterWeatherConfig;
@@ -66,14 +67,20 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     @Inject(method = "<init>", at = @At("RETURN"))
     private void storeUpgradablePerWorldRegistry(MinecraftServer server, Executor executor, SaveFormat.LevelSave save, IServerWorldInfo worldInfo, RegistryKey<World> key, DimensionType dimensionType, IChunkStatusListener statusListener, ChunkGenerator generator, boolean b, long seed, List<ISpecialSpawner> specialSpawners, boolean b1, CallbackInfo ci) {
         ResourceLocation worldKeyLocation = key.getLocation();
+        BetterWeather.LOGGER.info("Swapping server world gen datapack registry for \"" + key.getLocation().toString() + "\" to per world registry...");
         this.registry = new WorldDynamicRegistry((DynamicRegistries.Impl) server.getDynamicRegistries());
 
         //Reload the world settings import with OUR implementation of the registry.
         WorldSettingsImport<INBT> worldSettingsImport = WorldSettingsImport.create(NBTDynamicOps.INSTANCE, server.getDataPackRegistries().getResourceManager(), (DynamicRegistries.Impl) this.registry);
         ChunkGenerator dimensionChunkGenerator = save.readServerConfiguration(worldSettingsImport, server.getServerConfiguration().getDatapackCodec()).getDimensionGeneratorSettings().func_236224_e_().getOptional(worldKeyLocation).get().getChunkGenerator();
         // Reset the chunk generator fields in both the chunk provider and chunk manager. This is required for chunk generators to return the current biome object type required by our registry. //TODO: Do this earlier so mods mixing here can capture our version of the chunk generator.
+
+        BetterWeather.LOGGER.info("Swapping chunk generator for \"" + key.getLocation().toString() + "\" to use the per world registry...");
         ((ServerChunkProviderAccess) this.serverChunkProvider).setGenerator(dimensionChunkGenerator);
         ((ChunkManagerAccess) this.serverChunkProvider.chunkManager).setGenerator(dimensionChunkGenerator);
+        BetterWeather.LOGGER.info("Swapped the chunk generator for \"" + key.getLocation().toString() + "\" to use the per world registry!");
+
+        BetterWeather.LOGGER.info("Swapped world gen datapack regsitry for \"" + key.getLocation().toString() + "\" to the per world registry!");
 
         if (BetterWeatherConfig.WEATHER_EVENT_DIMENSIONS.contains(worldKeyLocation.toString()) || BetterWeatherConfig.WEATHER_EVENT_DIMENSIONS.contains(worldKeyLocation.getNamespace())) {
             this.weatherContext = new BWWeatherEventContext(WeatherEventSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));
