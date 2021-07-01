@@ -277,6 +277,10 @@ public class BWWeatherEventContext implements WeatherEventContext {
             createDefaultEventConfigs();
         }
 
+        if (isClient) {
+            addSettingsIfMissing();
+        }
+
         iterateAndReadConfiguredEvents(eventsDirectory.listFiles(), isClient);
     }
 
@@ -329,8 +333,8 @@ public class BWWeatherEventContext implements WeatherEventContext {
         }
     }
 
-    private void createTomlEventConfig(WeatherEvent weatherEvent, ResourceLocation weatherEventID) {
-        Path configFile = this.weatherEventsConfigPath.resolve(weatherEventID.toString().replace(":", "-") + ".toml");
+    private void createTomlEventConfig(WeatherEvent weatherEvent, String weatherEventID) {
+        Path configFile = this.weatherEventsConfigPath.resolve(weatherEventID.replace(":", "-") + ".toml");
         CommentedConfig readConfig = configFile.toFile().exists() ? CommentedFileConfig.builder(configFile).sync().autosave().writingMode(WritingMode.REPLACE).build() : CommentedConfig.inMemory();
         if (readConfig instanceof CommentedFileConfig) {
             ((CommentedFileConfig) readConfig).load();
@@ -345,8 +349,8 @@ public class BWWeatherEventContext implements WeatherEventContext {
         }
     }
 
-    private void createJsonEventConfig(WeatherEvent weatherEvent, ResourceLocation weatherEventID) {
-        Path configFile = this.weatherEventsConfigPath.resolve(weatherEventID.toString().replace(":", "-") + ".json");
+    private void createJsonEventConfig(WeatherEvent weatherEvent, String weatherEventID) {
+        Path configFile = this.weatherEventsConfigPath.resolve(weatherEventID.replace(":", "-") + ".json");
         JsonElement jsonElement = WeatherEvent.CODEC.encodeStart(JsonOps.INSTANCE, weatherEvent).result().get();
 
         try {
@@ -366,9 +370,32 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
             if (optionalKey.isPresent()) {
                 if (BetterWeatherConfig.SERIALIZE_AS_JSON) {
-                    createJsonEventConfig(event, location);
+                    createJsonEventConfig(event, location.toString());
                 } else {
-                    createTomlEventConfig(event, location);
+                    createTomlEventConfig(event, location.toString());
+                }
+            } else {
+                throw new IllegalStateException("Weather Event Key for codec not there when requested: " + event.getClass().getSimpleName());
+            }
+        }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public void addSettingsIfMissing() {
+        for (Map.Entry<String, WeatherEvent> entry : this.weatherEvents.entrySet()) {
+            WeatherEvent event = entry.getValue();
+            String key = entry.getKey();
+            String fileName = key + ".toml";
+            File file = this.weatherEventsConfigPath.resolve(fileName).toFile();
+            Optional<RegistryKey<Codec<? extends WeatherEvent>>> optionalKey = BetterWeatherRegistry.WEATHER_EVENT.getOptionalKey(event.codec());
+
+            if (optionalKey.isPresent()) {
+                if (!file.exists()) {
+                    if (BetterWeatherConfig.SERIALIZE_AS_JSON) {
+                        createJsonEventConfig(event, key);
+                    } else {
+                        createTomlEventConfig(event, key);
+                    }
                 }
             } else {
                 throw new IllegalStateException("Weather Event Key for codec not there when requested: " + event.getClass().getSimpleName());
