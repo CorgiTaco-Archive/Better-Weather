@@ -125,6 +125,11 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
 
     public void tick(World world) {
+        //TODO: Remove this check and figure out what could possibly be causing this and prevent it.
+        if (this.weatherEvents.get(DEFAULT) == this.currentEvent && world.isRaining()) {
+            world.getWorldInfo().setRaining(false);
+        }
+
         WeatherEvent prevEvent = this.currentEvent;
         boolean wasForced = this.weatherForced;
         if (world instanceof ServerWorld) {
