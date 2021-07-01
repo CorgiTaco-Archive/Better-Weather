@@ -136,6 +136,11 @@ public class RainClientSettings extends WeatherEventClientSettings {
     }
 
     @Override
+    public boolean drippingLeaves() {
+        return true;
+    }
+
+    @Override
     public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc, Predicate<Biome> biomePredicate) {
 
     }

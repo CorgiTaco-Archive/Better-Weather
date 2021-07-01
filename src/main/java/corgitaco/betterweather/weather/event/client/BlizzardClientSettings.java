@@ -204,21 +204,6 @@ public class BlizzardClientSettings extends WeatherEventClientSettings implement
     }
 
     @Override
-    public boolean sunsetSunriseColor() {
-        return false;
-    }
-
-    @Override
-    public float skyOpacity() {
-        return 1.0F;
-    }
-
-    @Override
-    public boolean drippingLeaves() {
-        return false;
-    }
-
-    @Override
     public float getVolume() {
         return this.audioVolume;
     }

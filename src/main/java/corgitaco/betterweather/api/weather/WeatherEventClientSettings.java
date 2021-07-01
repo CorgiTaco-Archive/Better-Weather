@@ -205,5 +205,4 @@ public abstract class WeatherEventClientSettings {
         bufferbuilder.pos((double) dx - x - d0 + 0.5D, (double) j2 - y, (double) dz - z - d1 + 0.5D).tex(0.0F, (float) k2 * 0.25F + f3).color(1.0F, 1.0F, 1.0F, alpha).lightmap(combinedLight).endVertex();
         return i1;
     }
-
 }
