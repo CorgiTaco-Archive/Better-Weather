@@ -44,7 +44,6 @@ public class WeatherDataPacket {
                         throw new UnsupportedOperationException("There is no weather event context constructed for this world!");
                     } else {
                         weatherEventContext.setCurrentEvent(message.weatherEvent);
-                        weatherEventContext.setCurrentClientEvent(weatherEventContext.getClientWeatherEvents().get(weatherEventContext.getCurrentEvent()));
                     }
                 }
             });

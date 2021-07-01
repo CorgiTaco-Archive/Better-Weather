@@ -1,6 +1,7 @@
 package corgitaco.betterweather;
 
 import corgitaco.betterweather.api.BetterWeatherRegistry;
+import corgitaco.betterweather.config.BetterWeatherClientConfig;
 import corgitaco.betterweather.data.network.NetworkHandler;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import corgitaco.betterweather.weather.event.*;
@@ -26,6 +27,8 @@ public class BetterWeather {
     public static final String MOD_ID = "betterweather";
     public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
     public static final Logger LOGGER = LogManager.getLogger();
+
+    public static final BetterWeatherClientConfig CLIENT_CONFIG = new BetterWeatherClientConfig();
 
     public static final boolean USING_OPTIFINE = new LazyValue<>(() -> {
         try {
