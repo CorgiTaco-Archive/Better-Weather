@@ -111,7 +111,7 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
         }
     }
 
-    @Inject(method = "tick", at = @At("HEAD"))
+    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/DimensionType;hasSkyLight()Z"))
     private void tick(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
         if (seasonContext != null) {
             this.seasonContext.tick((ServerWorld) (Object) this);
