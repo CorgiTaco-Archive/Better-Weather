@@ -91,7 +91,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     public static final ResourceLocation ACID_RAIN_LOCATION = new ResourceLocation(BetterWeather.MOD_ID, "textures/environment/acid_rain.png");
 
     public static final None NONE = new None(new NoneClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0)));
-    public static final Rain ACID_RAIN = new AcidRain(new RainClientSettings(RAIN_COLORS, 0.0F, -1.0F, true, ACID_RAIN_LOCATION, SNOW_LOCATION), "!#DESERT#SAVANNA", 0.25D, -0.1, 0.1, 16, 8, ACID_RAIN_DECAYER, false, 0,
+    public static final Rain ACID_RAIN = new AcidRain(new RainClientSettings(RAIN_COLORS, 0.0F, -1.0F, true, ACID_RAIN_LOCATION, SNOW_LOCATION), "!#DESERT#SAVANNA", 0.25D, -0.1, 0.1, 150, 100, ACID_RAIN_DECAYER, false, 0,
             Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
                 seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
                     phases.put(Season.Phase.START, 0.23);
@@ -183,7 +183,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
                 }));
             }));
 
-    public static final Rain ACID_RAIN_THUNDERING = new AcidRain(new RainClientSettings(THUNDER_COLORS, 0.0F, -1.0F, true, ACID_RAIN_LOCATION, SNOW_LOCATION), "!#DESERT#SAVANNA", 0.125D, -0.1, 0.1, 16, 8, ACID_RAIN_DECAYER, true, 100000,
+    public static final Rain ACID_RAIN_THUNDERING = new AcidRain(new RainClientSettings(THUNDER_COLORS, 0.0F, -1.0F, true, ACID_RAIN_LOCATION, SNOW_LOCATION), "!#DESERT#SAVANNA", 0.125D, -0.1, 0.1, 150, 100, ACID_RAIN_DECAYER, true, 100000,
             Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
                 seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
                     phases.put(Season.Phase.START, 0.115);
@@ -403,7 +403,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     }
 
     public boolean spawnSnowInFreezingClimates() {
-        return false;
+        return true;
     }
 
     public final TranslationTextComponent successTranslationTextComponent(String key) {
@@ -490,25 +490,13 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public Vector3d cloudColor(ClientWorld world, BlockPos playerPos, Vector3d previous) {
-        float lerpWeight = mixer(world, playerPos, 12, 0.1F, 1.0F);
-
-        int[] prevColor = ColorUtil.transformFloatColor(previous);
-        int mix = ColorUtil.mix(prevColor, ColorUtil.unpack(this.clientSettings.getColorSettings().getTargetSkyHexColor()), Math.min(this.clientSettings.getColorSettings().getSkyColorBlendStrength(), Math.min(world.getRainStrength(Minecraft.getInstance().getRenderPartialTicks()), lerpWeight)));
-
-        float r = (float) (mix >> 16 & 255) / 255.0F;
-        float g = (float) (mix >> 8 & 255) / 255.0F;
-        float b = (float) (mix & 255) / 255.0F;
-
-        return new Vector3d(r, g, b);
+    public float cloudBlendStrength(ClientWorld world, BlockPos playerPos) {
+        return mixer(world, playerPos, 15, 1.2F, (float) this.clientSettings.getColorSettings().getCloudColorBlendStrength());
     }
 
     @OnlyIn(Dist.CLIENT)
     public void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc) {
         this.clientSettings.clientTick(world, tickSpeed, worldTime, mc, this::isValidBiome);
-    }
-
-    public void onWeatherEnd() {
     }
 
     public static boolean conditionPasses(String conditionString, RegistryKey<Biome> biomeKey, Biome biome) {

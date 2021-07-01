@@ -306,7 +306,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
     }
 
     private void createTomlEventConfig(WeatherEvent weatherEvent, ResourceLocation weatherEventID) {
-        Path configFile = this.weatherEventsConfigPath.resolve(weatherEventID.toString().replace(":", "-") + ".json");
+        Path configFile = this.weatherEventsConfigPath.resolve(weatherEventID.toString().replace(":", "-") + ".toml");
         CommentedConfig readConfig = configFile.toFile().exists() ? CommentedFileConfig.builder(configFile).sync().autosave().writingMode(WritingMode.REPLACE).build() : CommentedConfig.inMemory();
         if (readConfig instanceof CommentedFileConfig) {
             ((CommentedFileConfig) readConfig).load();
@@ -323,10 +323,6 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
     private void createJsonEventConfig(WeatherEvent weatherEvent, ResourceLocation weatherEventID) {
         Path configFile = this.weatherEventsConfigPath.resolve(weatherEventID.toString().replace(":", "-") + ".json");
-        CommentedConfig readConfig = configFile.toFile().exists() ? CommentedFileConfig.builder(configFile).sync().autosave().writingMode(WritingMode.REPLACE).build() : CommentedConfig.inMemory();
-        if (readConfig instanceof CommentedFileConfig) {
-            ((CommentedFileConfig) readConfig).load();
-        }
         JsonElement jsonElement = WeatherEvent.CODEC.encodeStart(JsonOps.INSTANCE, weatherEvent).result().get();
 
         try {

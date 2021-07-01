@@ -3,11 +3,13 @@ package corgitaco.betterweather.mixin.client;
 import corgitaco.betterweather.graphics.Graphics;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.mixin.access.Vector3dAccess;
+import corgitaco.betterweather.season.client.ColorSettings;
 import corgitaco.betterweather.weather.BWWeatherEventContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -65,11 +67,25 @@ public abstract class MixinWorldRenderer {
     private void modifyCloudColor(BufferBuilder bufferIn, double cloudsX, double cloudsY, double cloudsZ, Vector3d cloudsColor, CallbackInfo ci) {
         BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) this.world).getWeatherEventContext();
         if (weatherEventContext != null) {
-            Vector3d transformedColor = weatherEventContext.getCurrentEvent().cloudColor(this.world, new BlockPos(cloudsX, cloudsY, cloudsZ), cloudsColor);
+            ColorSettings colorSettings = weatherEventContext.getCurrentEvent().getClientSettings().getColorSettings();
+            double cloudColorBlendStrength = colorSettings.getCloudColorBlendStrength();
+            if (cloudColorBlendStrength <= 0.0) {
+                return;
+            }
 
-            ((Vector3dAccess) cloudsColor).setX(transformedColor.x);
-            ((Vector3dAccess) cloudsColor).setY(transformedColor.y);
-            ((Vector3dAccess) cloudsColor).setZ(transformedColor.z);
+            int targetCloudHexColor = colorSettings.getTargetCloudHexColor();
+
+            float r = (float) (targetCloudHexColor >> 16 & 255) / 255.0F;
+            float g = (float) (targetCloudHexColor >> 8 & 255) / 255.0F;
+            float b = (float) (targetCloudHexColor & 255) / 255.0F;
+
+            float blendStrengthAtLocation = weatherEventContext.getCurrentEvent().cloudBlendStrength(this.world, new BlockPos(cloudsX, cloudsY, cloudsZ));
+            float rainStrength = this.world.getRainStrength(Minecraft.getInstance().getRenderPartialTicks());
+
+            float blend = (float) Math.min(cloudColorBlendStrength, rainStrength * blendStrengthAtLocation);
+            ((Vector3dAccess) cloudsColor).setX(MathHelper.lerp(blend, cloudsColor.x, r));
+            ((Vector3dAccess) cloudsColor).setY(MathHelper.lerp(blend, cloudsColor.y, g));
+            ((Vector3dAccess) cloudsColor).setZ(MathHelper.lerp(blend, cloudsColor.z, b));
         }
     }
 }

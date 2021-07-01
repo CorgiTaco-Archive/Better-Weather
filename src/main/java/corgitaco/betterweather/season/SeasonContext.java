@@ -124,7 +124,7 @@ public class SeasonContext implements Season {
         }
         if (!isPacket) {
             this.tickSeasonTimeWhenNoPlayersOnline = this.handleConfig(isClient).isTickSeasonTimeWhenNoPlayersOnline();
-            this.currentSeason = this.seasons.get(Season.getSeasonFromTime(currentYearTime, yearLength));
+            this.currentSeason = this.seasons.get(Season.getSeasonFromTime(this.currentYearTime, this.yearLength));
             this.currentSeason.setPhaseForTime(this.currentYearTime, this.yearLength);
         }
     }

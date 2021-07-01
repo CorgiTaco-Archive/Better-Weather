@@ -92,16 +92,22 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
         for (Map.Entry<RegistryKey<Biome>, Biome> entry : this.registry.getRegistry(Registry.BIOME_KEY).getEntries()) {
             Biome biome = entry.getValue();
             RegistryKey<Biome> biomeKey = entry.getKey();
-            float seasonHumidityModifier = seasonContext == null ? 0.0F : (float) this.seasonContext.getCurrentSubSeasonSettings().getHumidityModifier(biomeKey);
-            float seasonTemperatureModifier = seasonContext == null ? 0.0F : (float) this.seasonContext.getCurrentSubSeasonSettings().getTemperatureModifier(biomeKey);
-            float weatherHumidityModifier = weatherContext == null ? 0.0F : (float) this.weatherContext.getCurrentEvent().getHumidityModifierAtPosition(null);
-            float weatherTemperatureModifier = weatherContext == null ? 0.0F : (float) this.weatherContext.getCurrentWeatherEventSettings().getTemperatureModifierAtPosition(null);
+
+            if (seasonContext != null) {
+                float seasonHumidityModifier = (float) this.seasonContext.getCurrentSubSeasonSettings().getHumidityModifier(biomeKey);
+                float seasonTemperatureModifier = (float) this.seasonContext.getCurrentSubSeasonSettings().getTemperatureModifier(biomeKey);
+                ((BiomeModifier) (Object) biome).setSeasonTempModifier(seasonTemperatureModifier);
+                ((BiomeModifier) (Object) biome).setSeasonHumidityModifier(seasonHumidityModifier);
+            }
+
+            if (weatherContext != null && weatherContext.getCurrentEvent().isValidBiome(biome)) {
+                float weatherHumidityModifier = (float) this.weatherContext.getCurrentEvent().getHumidityModifierAtPosition(null);
+                float weatherTemperatureModifier = (float) this.weatherContext.getCurrentWeatherEventSettings().getTemperatureModifierAtPosition(null);
+                ((BiomeModifier) (Object) biome).setWeatherTempModifier(weatherTemperatureModifier);
+                ((BiomeModifier) (Object) biome).setWeatherHumidityModifier(weatherHumidityModifier);
+            }
 
 
-            ((BiomeModifier) (Object) biome).setSeasonTempModifier(seasonTemperatureModifier);
-            ((BiomeModifier) (Object) biome).setSeasonHumidityModifier(seasonHumidityModifier);
-            ((BiomeModifier) (Object) biome).setWeatherTempModifier(weatherTemperatureModifier);
-            ((BiomeModifier) (Object) biome).setWeatherHumidityModifier(weatherHumidityModifier);
         }
     }
 
