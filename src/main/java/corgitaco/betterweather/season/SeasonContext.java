@@ -129,11 +129,15 @@ public class SeasonContext implements Season {
         }
     }
 
-    public void setSeason(List<ServerPlayerEntity> players, Season.Key newSeason, Season.Phase phase) {
+    public void setSeason(ServerWorld world, List<ServerPlayerEntity> players, Season.Key newSeason, Season.Phase phase) {
+        BWSubseasonSettings prevSettings = this.getCurrentSubSeasonSettings();
         this.currentYearTime = Season.getSeasonAndPhaseStartTime(newSeason, phase, this.yearLength);
         this.currentSeason = seasons.get(newSeason);
         this.currentSeason.setPhaseForTime(currentYearTime, yearLength);
-        this.updatePacket(players);
+        BWSubseasonSettings currentSubSeasonSettings = this.getCurrentSubSeasonSettings();
+        if (prevSettings != currentSubSeasonSettings) {
+            onSeasonChange(world, prevSettings, currentSubSeasonSettings);
+        }
     }
 
     public void tick(World world) {
@@ -146,11 +150,15 @@ public class SeasonContext implements Season {
         boolean changedPhaseFlag = prevPhase != this.currentSeason.getCurrentPhase();
 
         if (changedSeasonFlag || changedPhaseFlag) {
-            ((BiomeUpdate) world).updateBiomeData();
-            if (!world.isRemote) {
-                updateWeatherMultiplier(world, prevSettings.getWeatherEventChanceMultiplier(), this.currentSeason.getCurrentSettings().getWeatherEventChanceMultiplier());
-                updatePacket(((ServerWorld) world).getPlayers());
-            }
+            onSeasonChange(world, prevSettings, this.currentSeason.getCurrentSettings());
+        }
+    }
+
+    private void onSeasonChange(World world, BWSubseasonSettings prevSettings, BWSubseasonSettings currentSettings) {
+        ((BiomeUpdate) world).updateBiomeData();
+        if (!world.isRemote) {
+            updateWeatherMultiplier(world, prevSettings.getWeatherEventChanceMultiplier(), currentSettings.getWeatherEventChanceMultiplier());
+            updatePacket(((ServerWorld) world).getPlayers());
         }
     }
 

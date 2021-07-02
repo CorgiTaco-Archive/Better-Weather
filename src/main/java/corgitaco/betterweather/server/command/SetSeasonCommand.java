@@ -37,7 +37,7 @@ public class SetSeasonCommand {
             return 0;
         }
 
-        seasonContext.setSeason(source.getWorld().getPlayers(), Season.Key.valueOf(seasonKey), Season.Phase.valueOf(phaseString));
+        seasonContext.setSeason(source.getWorld(), source.getWorld().getPlayers(), Season.Key.valueOf(seasonKey), Season.Phase.valueOf(phaseString));
         source.sendFeedback(new TranslationTextComponent("commands.bw.setseason.success." + seasonKey.toLowerCase() + "_" + phaseString.toLowerCase()), true);
         return 1;
     }
