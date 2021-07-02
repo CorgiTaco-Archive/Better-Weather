@@ -3,13 +3,14 @@ package corgitaco.betterweather.data.storage;
 import corgitaco.betterweather.BetterWeather;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.DimensionSavedDataManager;
 import net.minecraft.world.storage.WorldSavedData;
 
 public class SeasonSavedData extends WorldSavedData {
-    private static final String DATA_NAME = BetterWeather.MOD_ID + ":season_data";
+    private static final String DATA_NAME = new ResourceLocation(BetterWeather.MOD_ID, "season_data").toString();
 
     //TODO: 1.17, Change keys to be "currentYearTime" & "yearLength"
     private static final String CURRENT_YEAR_TIME_KEY = "seasontime";

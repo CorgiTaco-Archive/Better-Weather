@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[33,)"
+loaderVersion = "[36,)"
 license = "LGPLv3"
 issueTrackerURL = "https://github.com/CorgiTaco/Better-Weather/issues"
 [[mods]]
@@ -16,6 +16,6 @@ A mod that adds more weather events! Some audio from: https://freesfx.co.uk/
 [[dependencies.betterweather]]
 modId = "forge"
 mandatory = true
-versionRange = "[33.0.0,)"
+versionRange = "[36.0.5,)"
 ordering = "NONE"
 side = "BOTH"

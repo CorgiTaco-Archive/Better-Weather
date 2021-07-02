@@ -3,13 +3,14 @@ package corgitaco.betterweather.data.storage;
 import corgitaco.betterweather.BetterWeather;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.DimensionSavedDataManager;
 import net.minecraft.world.storage.WorldSavedData;
 
 public class WeatherEventSavedData extends WorldSavedData {
-    public static String DATA_NAME = BetterWeather.MOD_ID + ":weather_event_data";
+    public static String DATA_NAME = new ResourceLocation(BetterWeather.MOD_ID, "weather_event_data").toString();
     private boolean isWeatherForced;
     private boolean modified;
     private String event;

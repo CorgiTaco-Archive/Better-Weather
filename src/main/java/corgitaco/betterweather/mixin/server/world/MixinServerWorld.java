@@ -89,7 +89,7 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
             ((ChunkManagerAccess) this.serverChunkProvider.chunkManager).setGenerator(dimensionChunkGenerator);
             BetterWeather.LOGGER.info("Swapped the chunk generator for \"" + key.getLocation().toString() + "\" to use the per world registry!");
 
-            BetterWeather.LOGGER.info("Swapped world gen datapack regsitry for \"" + key.getLocation().toString() + "\" to the per world registry!");
+            BetterWeather.LOGGER.info("Swapped world gen datapack registry for \"" + key.getLocation().toString() + "\" to the per world registry!");
         } else {
             this.registry = server.getDynamicRegistries();
         }
@@ -108,18 +108,19 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     @SuppressWarnings("ConstantConditions")
     @Override
     public void updateBiomeData() {
+        List<Biome> validBiomes = this.serverChunkProvider.getChunkGenerator().getBiomeProvider().getBiomes();
         for (Map.Entry<RegistryKey<Biome>, Biome> entry : this.registry.getRegistry(Registry.BIOME_KEY).getEntries()) {
             Biome biome = entry.getValue();
             RegistryKey<Biome> biomeKey = entry.getKey();
 
-            if (seasonContext != null) {
+            if (seasonContext != null && validBiomes.contains(biome)) {
                 float seasonHumidityModifier = (float) this.seasonContext.getCurrentSubSeasonSettings().getHumidityModifier(biomeKey);
                 float seasonTemperatureModifier = (float) this.seasonContext.getCurrentSubSeasonSettings().getTemperatureModifier(biomeKey);
                 ((BiomeModifier) (Object) biome).setSeasonTempModifier(seasonTemperatureModifier);
                 ((BiomeModifier) (Object) biome).setSeasonHumidityModifier(seasonHumidityModifier);
             }
 
-            if (weatherContext != null && weatherContext.getCurrentEvent().isValidBiome(biome)) {
+            if (weatherContext != null && validBiomes.contains(biome) && weatherContext.getCurrentEvent().isValidBiome(biome)) {
                 float weatherHumidityModifier = (float) this.weatherContext.getCurrentEvent().getHumidityModifierAtPosition(null);
                 float weatherTemperatureModifier = (float) this.weatherContext.getCurrentWeatherEventSettings().getTemperatureModifierAtPosition(null);
                 ((BiomeModifier) (Object) biome).setWeatherTempModifier(weatherTemperatureModifier);
