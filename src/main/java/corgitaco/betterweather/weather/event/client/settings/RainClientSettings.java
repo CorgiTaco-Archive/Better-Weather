@@ -7,6 +7,10 @@ import corgitaco.betterweather.api.client.WeatherEventClient;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
 import corgitaco.betterweather.weather.event.client.RainClient;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class RainClientSettings extends WeatherEventClientSettings {
 
@@ -27,6 +31,11 @@ public class RainClientSettings extends WeatherEventClientSettings {
     });
     public final ResourceLocation rainTexture;
     public final ResourceLocation snowTexture;
+
+    public static final Map<String, String> VALUE_COMMENTS = Util.make(new HashMap<>(WeatherEventClientSettings.VALUE_COMMENTS), (map) -> {
+        map.put("rainTexture", "Texture path to the rain texture.");
+        map.put("snowTexture", "Texture path to the rain texture.");
+    });
 
     public RainClientSettings(ColorSettings colorSettings, float skyOpacity, float fogDensity, boolean sunsetSunriseColor, ResourceLocation rainTexture, ResourceLocation snowTexture) {
         super(colorSettings, skyOpacity, fogDensity, sunsetSunriseColor);

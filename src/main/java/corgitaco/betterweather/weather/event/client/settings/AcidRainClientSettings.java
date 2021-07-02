@@ -7,6 +7,10 @@ import corgitaco.betterweather.api.client.WeatherEventClient;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
 import corgitaco.betterweather.weather.event.client.AcidRainClient;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class AcidRainClientSettings extends RainClientSettings {
 
@@ -23,9 +27,13 @@ public class AcidRainClientSettings extends RainClientSettings {
             return blizzardClientSettings.rainTexture;
         }), ResourceLocation.CODEC.fieldOf("snowTexture").forGetter(blizzardClientSettings -> {
             return blizzardClientSettings.snowTexture;
-        }), Codec.BOOL.fieldOf("snowTexture").forGetter(blizzardClientSettings -> {
+        }), Codec.BOOL.fieldOf("smokeParticles").forGetter(blizzardClientSettings -> {
             return blizzardClientSettings.addSmokeParticles;
         })).apply(builder, AcidRainClientSettings::new);
+    });
+
+    public static final Map<String, String> VALUE_COMMENTS = Util.make(new HashMap<>(RainClientSettings.VALUE_COMMENTS), (map) -> {
+        map.put("smokeParticles", "Do smoke particles appear on the ground?");
     });
 
     public final boolean addSmokeParticles;

@@ -18,6 +18,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Rain extends WeatherEvent {
@@ -41,6 +42,15 @@ public class Rain extends WeatherEvent {
             return rain.getSeasonChances();
         })).apply(builder, Rain::new);
     });
+
+    public static final Map<String, String> VALUE_COMMENTS = Util.make(new HashMap<>(WeatherEvent.VALUE_COMMENTS), (map) -> {
+        map.put("defaultChance", "What is the default chance for this weather event to occur? This value is only used when Seasons are NOT present in the given dimension.");
+        map.put("type", "Target Weather Event's Registry ID to configure settings for in this config.");
+        map.put("seasonChances", "What is the chance for this weather event to occur for the given season (phase)?");
+        map.put("biomeCondition", "Better Weather uses a prefix system for what biomes weather is allowed to function in.\n Prefix Guide:\n \"#\" - Biome category representable.\n \"$\" - Biome dictionary representable.\n \",\" - Creates a new condition, separate from the previous.\n \"ALL\" - Spawn in all biomes(no condition).\n \"!\" - Negates/flips/does the reverse of the condition.\n \"\" - No prefix serves as a biome ID OR Mod ID representable.\n\n Here are a few examples:\n1. \"byg#THE_END, $OCEAN\" would mean that the ore may spawn in biomes with the name space \"byg\" AND in the \"END\" biome category, OR all biomes in the \"OCEAN\" dictionary.\n2. \"byg:guiana_shield, #MESA\" would mean that the ore may spawn in the \"byg:guiana_shield\" OR all biomes in the \"MESA\" category.\n3. \"byg#ICY$MOUNTAIN\" would mean that the ore may only spawn in biomes from byg in the \"ICY\" category and \"MOUNTAIN\" dictionary type.\n4. \"!byg#DESERT\" would mean that the ore may only spawn in biomes that are NOT from byg and NOT in the \"DESERT\" category.\n5. \"ALL\", spawn everywhere. \n6. \"\" Don't spawn anywhere.");
+    });
+
+    public static final TomlCommentedConfigOps CONFIG_OPS = new TomlCommentedConfigOps(VALUE_COMMENTS, true);
 
     public static final ResourceLocation RAIN_LOCATION = new ResourceLocation("minecraft:textures/environment/rain.png");
     public static final ResourceLocation SNOW_LOCATION = new ResourceLocation("minecraft:textures/environment/snow.png");
@@ -124,7 +134,7 @@ public class Rain extends WeatherEvent {
 
     @Override
     public DynamicOps<?> configOps() {
-        return TomlCommentedConfigOps.INSTANCE;
+        return CONFIG_OPS;
     }
 
     @Override

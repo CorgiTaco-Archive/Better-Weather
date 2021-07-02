@@ -56,15 +56,15 @@ public class Blizzard extends WeatherEvent {
             return blizzard.getDefaultChance();
         }), Codec.INT.fieldOf("blockLightThreshold").forGetter(blizzard -> {
             return blizzard.blockLightThreshold;
-        }), Codec.INT.fieldOf("tickChance").forGetter(blizzard -> {
-            return blizzard.tickChance;
+        }), Codec.INT.fieldOf("chunkTickChance").forGetter(blizzard -> {
+            return blizzard.chunkTickChance;
         }), ResourceLocation.CODEC.fieldOf("snowBlock").forGetter(blizzard -> {
             return Registry.BLOCK.getKey(blizzard.snowBlock);
         }), Codec.BOOL.fieldOf("snowLayering").forGetter(blizzard -> {
             return blizzard.snowLayers;
         }), Codec.BOOL.fieldOf("waterFreezes").forGetter(blizzard -> {
             return blizzard.waterFreezes;
-        }), Codec.unboundedMap(Codec.STRING, Codec.list(Codec.STRING)).fieldOf("entityEffectsMap").forGetter(blizzard -> {
+        }), Codec.unboundedMap(Codec.STRING, Codec.list(Codec.STRING)).fieldOf("entityEffects").forGetter(blizzard -> {
             return blizzard.entityOrCategoryToEffectsMap;
         }), Codec.BOOL.fieldOf("isThundering").forGetter(rain -> {
             return rain.isThundering();
@@ -82,6 +82,19 @@ public class Blizzard extends WeatherEvent {
             return new Blizzard(clientSettings, biomeCondition, defaultChance, temperatureOffsetRaw, humidityOffsetRaw, tickRate, blockLightThreshold, blockOptional.orElse(Blocks.SNOW), snowLayers, waterFreezes, entityOrCategoryToEffectsMap, isThundering, lightningChance, map);
         });
     });
+
+    public static final Map<String, String> VALUE_COMMENTS = Util.make(new HashMap<>(WeatherEvent.VALUE_COMMENTS), (map) -> {
+        map.putAll(BlizzardClientSettings.VALUE_COMMENTS);
+        map.put("blockLightThreshold", "The max sky brightness to allow snow to generate.");
+        map.put("snowBlock", "What block generates when chunks are ticking? If this block has the layers property & \"snowLayering\" is true, this block will layer.");
+        map.put("snowLayer", "Does the \"snowBlock\" layer when chunks are ticking? Only works if the\"snowBlock\" has a layers property!");
+        map.put("waterFreezes", "Does water freeze?");
+        map.put("entityEffects", "Entity/Category(left) effect(s)(right).");
+        map.put("chunkTickChance", "The chance of a chunk being ticked for this tick.");
+    });
+
+    public static final TomlCommentedConfigOps CONFIG_OPS = new TomlCommentedConfigOps(VALUE_COMMENTS, true);
+
 
     public static final Blizzard DEFAULT = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), 0.0F, 0.2F, false, Rain.SNOW_LOCATION, SoundRegistry.BLIZZARD_LOOP2, 0.6F, 0.6F), Rain.DEFAULT_BIOME_CONDITION, 0.1D, -0.5, 0.1, 2, 10, Blocks.SNOW, true, true, Util.make(new HashMap<>(), ((stringListHashMap) -> stringListHashMap.put(Registry.ENTITY_TYPE.getKey(EntityType.PLAYER).toString(), ImmutableList.of(Registry.EFFECTS.getKey(Effects.SLOWNESS).toString())))), false, 0,
             Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
@@ -144,9 +157,7 @@ public class Blizzard extends WeatherEvent {
         }
     });
 
-    public static final TomlCommentedConfigOps CONFIG_OPS = new TomlCommentedConfigOps(Util.make(new HashMap<>(WeatherEvent.VALUE_COMMENTS), (map) -> {
-    }), true);
-    private final int tickChance;
+    private final int chunkTickChance;
     private final int blockLightThreshold;
     private final Block snowBlock;
     private final boolean snowLayers;
@@ -155,9 +166,9 @@ public class Blizzard extends WeatherEvent {
     private final Map<EntityType<?>, List<EffectInstance>> entityTypeToEffectMap = new Reference2ReferenceArrayMap<>();
 
 
-    public Blizzard(WeatherEventClientSettings clientSettings, String biomeCondition, double defaultChance, double temperatureOffsetRaw, double humidityOffsetRaw, int tickChance, int blockLightThreshold, Block snowBlock, boolean snowLayers, boolean waterFreezes, Map<String, List<String>> entityOrCategoryToEffectsMap, boolean isThundering, int lightningChance, Map<Season.Key, Map<Season.Phase, Double>> map) {
+    public Blizzard(WeatherEventClientSettings clientSettings, String biomeCondition, double defaultChance, double temperatureOffsetRaw, double humidityOffsetRaw, int chunkTickChance, int blockLightThreshold, Block snowBlock, boolean snowLayers, boolean waterFreezes, Map<String, List<String>> entityOrCategoryToEffectsMap, boolean isThundering, int lightningChance, Map<Season.Key, Map<Season.Phase, Double>> map) {
         super(clientSettings, biomeCondition, defaultChance, temperatureOffsetRaw, humidityOffsetRaw, isThundering, lightningChance, map);
-        this.tickChance = tickChance;
+        this.chunkTickChance = chunkTickChance;
         this.blockLightThreshold = blockLightThreshold;
         this.snowBlock = snowBlock;
         this.snowLayers = snowLayers;
@@ -211,10 +222,10 @@ public class Blizzard extends WeatherEvent {
 
     @Override
     public void chunkTick(Chunk chunk, ServerWorld world) {
-        if (this.tickChance < 1) {
+        if (this.chunkTickChance < 1) {
             return;
         }
-        if (world.rand.nextInt(tickChance) == 0) {
+        if (world.rand.nextInt(chunkTickChance) == 0) {
             ChunkPos chunkpos = chunk.getPos();
             int xStart = chunkpos.getXStart();
             int zStart = chunkpos.getZStart();

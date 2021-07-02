@@ -10,6 +10,10 @@ import corgitaco.betterweather.graphics.ShaderProgram;
 import corgitaco.betterweather.weather.event.client.BlizzardClient;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.Util;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class BlizzardClientSettings extends WeatherEventClientSettings implements WeatherEventAudio {
 
@@ -31,6 +35,13 @@ public class BlizzardClientSettings extends WeatherEventClientSettings implement
         }), Codec.FLOAT.fieldOf("audioPitch").forGetter(blizzardClientSettings -> {
             return blizzardClientSettings.audioPitch;
         })).apply(builder, BlizzardClientSettings::new);
+    });
+
+    public static final Map<String, String> VALUE_COMMENTS = Util.make(new HashMap<>(WeatherEventClientSettings.VALUE_COMMENTS), (map) -> {
+        map.put("rendererTexture", "The texture used by the weather renderer.");
+        map.put("audioLocation", "The audio played by the weather.");
+        map.put("audioVolume", "The volume of the audio played by the weather.");
+        map.put("audioPitch", "The pitch of the audio played by the weather.");
     });
 
     public final ResourceLocation textureLocation;

@@ -4,8 +4,11 @@ import com.mojang.serialization.Codec;
 import corgitaco.betterweather.api.BetterWeatherRegistry;
 import corgitaco.betterweather.api.client.ColorSettings;
 import corgitaco.betterweather.api.client.WeatherEventClient;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 public abstract class WeatherEventClientSettings {
@@ -16,6 +19,12 @@ public abstract class WeatherEventClientSettings {
     private final float skyOpacity;
     private final float fogDensity;
     private final boolean sunsetSunriseColor;
+
+    public static final Map<String, String> VALUE_COMMENTS = Util.make(new HashMap<>(ColorSettings.VALUE_COMMENTS), (map) -> {
+        map.put("skyOpacity", "What is the opacity of the sky? 0.0 means hidden, 1.0 is fully visible.\n#Range 0.0-1.0");
+        map.put("fogDensity", "How dense is fog?");
+        map.put("sunsetSunriseColor", "Do sunsets/sunrises modify fog/sky color?");
+    });
 
     public WeatherEventClientSettings(ColorSettings colorSettings, float skyOpacity, float fogDensity, boolean sunsetSunriseColor) {
         this.colorSettings = colorSettings;

@@ -1,12 +1,14 @@
 package corgitaco.betterweather.weather.event;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
 import corgitaco.betterweather.util.BetterWeatherUtil;
+import corgitaco.betterweather.util.TomlCommentedConfigOps;
 import corgitaco.betterweather.weather.event.client.settings.RainClientSettings;
 import it.unimi.dsi.fastutil.objects.Object2FloatArrayMap;
 import net.minecraft.block.Block;
@@ -59,6 +61,16 @@ public class AcidRain extends Rain {
             return rain.getSeasonChances();
         })).apply(builder, AcidRain::new);
     });
+
+    public static final Map<String, String> VALUE_COMMENTS = Util.make(new HashMap<>(WeatherEvent.VALUE_COMMENTS), (map) -> {
+        map.putAll(RainClientSettings.VALUE_COMMENTS);
+        map.put("entityDamageChance", "The chance of an entity getting damaged every tick when acid rain is on the player's position.");
+        map.put("decayer", "What the specified block(left) \"decays\" into(right).");
+        map.put("entityDamage", "Entity/Category(left) damage strength(right).");
+        map.put("chunkTickChance", "The chance of a chunk being ticked for this tick.");
+    });
+
+    public static final TomlCommentedConfigOps CONFIG_OPS = new TomlCommentedConfigOps(VALUE_COMMENTS, true);
 
     public static final ResourceLocation ACID_RAIN_LOCATION = new ResourceLocation(BetterWeather.MOD_ID, "textures/environment/acid_rain.png");
 
@@ -224,5 +236,10 @@ public class AcidRain extends Rain {
     @Override
     public Codec<? extends WeatherEvent> codec() {
         return CODEC;
+    }
+
+    @Override
+    public DynamicOps<?> configOps() {
+        return CONFIG_OPS;
     }
 }

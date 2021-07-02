@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class TomlCommentedConfigOps implements DynamicOps<Object> {
-    public static final TomlCommentedConfigOps INSTANCE = new TomlCommentedConfigOps(new HashMap<>(), false);
+    public static final TomlCommentedConfigOps INSTANCE = new TomlCommentedConfigOps(new HashMap<>(), true);
     private final Map<String, String> keyCommentMap;
     private final boolean isAlphabeticallySorted;
 
