@@ -200,7 +200,7 @@ public class AcidRain extends Rain {
             BlockPos randomPosDown = randomPos.down();
             Biome biome = world.getBiome(randomPos);
 
-            if (isValidBiome(biome)) {
+            if (isValidBiome(biome) && !biome.doesSnowGenerate(world, randomPos)) {
                 Block currentBlock = world.getBlockState(randomPos).getBlock();
                 Block currentBlockDown = world.getBlockState(randomPosDown).getBlock();
 
@@ -223,7 +223,8 @@ public class AcidRain extends Rain {
         World world = entity.world;
         if (world.rand.nextInt(entityDamageChance) == 0) {
             BlockPos entityPosition = entity.getPosition();
-            if (world.getHeight(Heightmap.Type.MOTION_BLOCKING, entityPosition.getX(), entityPosition.getZ()) > entityPosition.getY()) {
+            Biome biome = world.getBiome(entityPosition);
+            if (world.getHeight(Heightmap.Type.MOTION_BLOCKING, entityPosition.getX(), entityPosition.getZ()) > entityPosition.getY() || !isValidBiome(biome) || biome.doesSnowGenerate(world, entityPosition)) {
                 return;
             }
 
