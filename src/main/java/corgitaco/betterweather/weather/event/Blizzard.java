@@ -87,7 +87,7 @@ public class Blizzard extends WeatherEvent {
         map.putAll(BlizzardClientSettings.VALUE_COMMENTS);
         map.put("blockLightThreshold", "The max sky brightness to allow snow to generate.");
         map.put("snowBlock", "What block generates when chunks are ticking? If this block has the layers property & \"snowLayering\" is true, this block will layer.");
-        map.put("snowLayer", "Does the \"snowBlock\" layer when chunks are ticking? Only works if the\"snowBlock\" has a layers property!");
+        map.put("snowLayering", "Does the \"snowBlock\" layer when chunks are ticking? Only works if the\"snowBlock\" has a layers property!");
         map.put("waterFreezes", "Does water freeze?");
         map.put("entityEffects", "Entity/Category(left) effect(s)(right).");
         map.put("chunkTickChance", "The chance of a chunk being ticked for this tick.");
