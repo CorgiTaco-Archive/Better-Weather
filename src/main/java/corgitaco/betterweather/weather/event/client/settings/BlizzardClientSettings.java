@@ -6,7 +6,6 @@ import corgitaco.betterweather.api.client.ColorSettings;
 import corgitaco.betterweather.api.client.WeatherEventClient;
 import corgitaco.betterweather.api.weather.WeatherEventAudio;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
-import corgitaco.betterweather.graphics.ShaderProgram;
 import corgitaco.betterweather.weather.event.client.BlizzardClient;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -48,8 +47,6 @@ public class BlizzardClientSettings extends WeatherEventClientSettings implement
     private final SoundEvent audio;
     private final float audioVolume;
     private final float audioPitch;
-
-    private ShaderProgram program;
 
     public BlizzardClientSettings(ColorSettings colorSettings, float skyOpacity, float fogDensity, boolean sunsetSunriseColor, ResourceLocation textureLocation, SoundEvent audio, float audioVolume, float audioPitch) {
         super(colorSettings, skyOpacity, fogDensity, sunsetSunriseColor);

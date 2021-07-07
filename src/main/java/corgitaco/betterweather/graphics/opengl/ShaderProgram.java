@@ -17,7 +17,7 @@ public final class ShaderProgram extends Program {
 
     private final ShaderProgramBuilder builder;
 
-    public ShaderProgram(ShaderProgramBuilder builder) {
+    protected ShaderProgram(ShaderProgramBuilder builder) {
         this.builder = builder;
 
         Queue<Integer> queue = builder.getQueue();
@@ -26,7 +26,9 @@ public final class ShaderProgram extends Program {
             queue.forEach(shader -> glAttachShader(shader, program));
 
             glLinkProgram(program);
-            logStatusError(GL_LINK_STATUS, BetterWeather.LOGGER::error);
+            logStatusError(GL_LINK_STATUS, info -> {
+                throw new RuntimeException(info);
+            });
 
             queue.forEach(shader -> glDetachShader(shader, program));
 
