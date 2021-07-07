@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Queue;
 import java.util.concurrent.LinkedTransferQueue;
+import java.util.function.Consumer;
 
 import static org.lwjgl.opengl.GL20.*;
 
@@ -58,7 +59,14 @@ public final class ShaderProgramBuilder {
         return new ShaderProgram(this);
     }
 
-    public Queue<Integer> getQueue() {
-        return queue;
+    public void forEach(Consumer<Integer> consumer) {
+        queue.forEach(consumer);
+    }
+
+    public void clean() {
+        Integer shader;
+        while ((shader = queue.poll()) != null) {
+            glDeleteShader(shader);
+        }
     }
 }

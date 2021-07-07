@@ -3,10 +3,12 @@ package corgitaco.betterweather.graphics.opengl;
 import corgitaco.betterweather.BetterWeather;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.lwjgl.system.MemoryStack;
 
-import java.util.Queue;
+import java.nio.FloatBuffer;
 import java.util.function.Consumer;
 
 import static org.lwjgl.opengl.GL20.*;
@@ -20,17 +22,15 @@ public final class ShaderProgram extends Program {
     protected ShaderProgram(ShaderProgramBuilder builder) {
         this.builder = builder;
 
-        Queue<Integer> queue = builder.getQueue();
-
         try {
-            queue.forEach(shader -> glAttachShader(shader, program));
+            builder.forEach(shader -> glAttachShader(shader, program));
 
             glLinkProgram(program);
             logStatusError(GL_LINK_STATUS, info -> {
                 throw new RuntimeException(info);
             });
 
-            queue.forEach(shader -> glDetachShader(shader, program));
+            builder.forEach(shader -> glDetachShader(shader, program));
 
             glValidateProgram(program);
             logStatusError(GL_VALIDATE_STATUS, BetterWeather.LOGGER::warn);
@@ -47,14 +47,26 @@ public final class ShaderProgram extends Program {
         }
     }
 
+    public int getOrMapUniform(String uniform) {
+        return uniforms.computeIfAbsent(uniform, key -> glGetUniformLocation(program, key));
+    }
+
+    public void uploadFloat(String uniform, float f) {
+        glUniform1f(getOrMapUniform(uniform), f);
+    }
+
+    public void uploadMatrix4f(String uniform, Matrix4f matrix4f) {
+        try (MemoryStack memoryStack = MemoryStack.stackPush()) {
+            FloatBuffer buffer = memoryStack.mallocFloat(16);
+            matrix4f.write(buffer);
+
+            glUniformMatrix4fv(getOrMapUniform(uniform), false, buffer);
+        }
+    }
+
     @Override
     public void destroy() {
-        Integer shader;
-        while ((shader = builder.getQueue().poll()) != null) {
-            glDetachShader(shader, program);
-
-            glDeleteShader(shader);
-        }
+        builder.clean();
 
         super.destroy();
     }
