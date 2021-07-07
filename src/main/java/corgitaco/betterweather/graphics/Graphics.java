@@ -2,6 +2,7 @@ package corgitaco.betterweather.graphics;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.config.BetterWeatherConfig;
+import corgitaco.betterweather.graphics.opengl.ShaderProgramBuilder;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;

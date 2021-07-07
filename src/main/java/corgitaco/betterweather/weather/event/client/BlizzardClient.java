@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.api.client.WeatherEventClient;
 import corgitaco.betterweather.api.weather.WeatherEventAudio;
 import corgitaco.betterweather.graphics.Graphics;
-import corgitaco.betterweather.graphics.ShaderProgram;
+import corgitaco.betterweather.graphics.opengl.ShaderProgram;
 import corgitaco.betterweather.weather.event.client.settings.BlizzardClientSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
