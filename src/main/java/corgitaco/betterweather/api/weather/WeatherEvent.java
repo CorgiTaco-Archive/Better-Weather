@@ -3,25 +3,17 @@ package corgitaco.betterweather.api.weather;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import corgitaco.betterweather.api.BetterWeatherRegistry;
-import corgitaco.betterweather.api.client.ColorSettings;
 import corgitaco.betterweather.api.client.WeatherEventClient;
 import corgitaco.betterweather.api.season.Season;
-import corgitaco.betterweather.mixin.access.ServerWorldAccess;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import net.minecraft.block.Blocks;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.LightningBoltEntity;
-import net.minecraft.entity.passive.horse.SkeletonHorseEntity;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.Heightmap;
@@ -131,37 +123,6 @@ public abstract class WeatherEvent implements WeatherEventSettings {
 
     public final void doChunkTick(Chunk chunk, ServerWorld world) {
         chunkTick(chunk, world);
-        ChunkPos chunkpos = chunk.getPos();
-
-        if (lightningFrequency < 1) {
-            return;
-        }
-        doLightning(world, chunkpos);
-    }
-
-    private void doLightning(ServerWorld world, ChunkPos chunkpos) {
-        int xStart = chunkpos.getXStart();
-        int zStart = chunkpos.getZStart();
-        if (isThundering && world.rand.nextInt(lightningFrequency) == 0) {
-            BlockPos blockpos = ((ServerWorldAccess) world).invokeAdjustPosToNearbyEntity(world.getBlockRandomPos(xStart, 0, zStart, 15));
-            Biome biome = world.getBiome(blockpos);
-            if (isValidBiome(biome)) {
-                DifficultyInstance difficultyinstance = world.getDifficultyForLocation(blockpos);
-                boolean flag1 = world.getGameRules().getBoolean(GameRules.DO_MOB_SPAWNING) && world.rand.nextDouble() < (double) difficultyinstance.getAdditionalDifficulty() * 0.01D;
-                if (flag1) {
-                    SkeletonHorseEntity skeletonhorseentity = EntityType.SKELETON_HORSE.create(world);
-                    skeletonhorseentity.setTrap(true);
-                    skeletonhorseentity.setGrowingAge(0);
-                    skeletonhorseentity.setPosition((double) blockpos.getX(), (double) blockpos.getY(), (double) blockpos.getZ());
-                    world.addEntity(skeletonhorseentity);
-                }
-
-                LightningBoltEntity lightningboltentity = EntityType.LIGHTNING_BOLT.create(world);
-                lightningboltentity.moveForced(Vector3d.copyCenteredHorizontally(blockpos));
-                lightningboltentity.setEffectOnly(flag1);
-                world.addEntity(lightningboltentity);
-            }
-        }
     }
 
     public boolean fillBlocksWithWater() {

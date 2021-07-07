@@ -385,12 +385,12 @@ public class BWWeatherEventContext implements WeatherEventContext {
         for (Map.Entry<String, WeatherEvent> entry : this.weatherEvents.entrySet()) {
             WeatherEvent event = entry.getValue();
             String key = entry.getKey();
-            String fileName = key + ".toml";
-            File file = this.weatherEventsConfigPath.resolve(fileName).toFile();
+            File tomlFile = this.weatherEventsConfigPath.resolve(key + ".toml").toFile();
+            File jsonFile = this.weatherEventsConfigPath.resolve(key + ".json").toFile();
             Optional<RegistryKey<Codec<? extends WeatherEvent>>> optionalKey = BetterWeatherRegistry.WEATHER_EVENT.getOptionalKey(event.codec());
 
             if (optionalKey.isPresent()) {
-                if (!file.exists()) {
+                if (!tomlFile.exists() && !jsonFile.exists()) {
                     if (BetterWeatherConfig.SERIALIZE_AS_JSON) {
                         createJsonEventConfig(event, key);
                     } else {

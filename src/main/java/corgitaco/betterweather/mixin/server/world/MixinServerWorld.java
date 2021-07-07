@@ -3,6 +3,7 @@ package corgitaco.betterweather.mixin.server.world;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.Climate;
 import corgitaco.betterweather.api.season.Season;
+import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.data.storage.SeasonSavedData;
 import corgitaco.betterweather.data.storage.WeatherEventSavedData;
@@ -11,18 +12,27 @@ import corgitaco.betterweather.helpers.BiomeModifier;
 import corgitaco.betterweather.helpers.BiomeUpdate;
 import corgitaco.betterweather.mixin.access.ChunkManagerAccess;
 import corgitaco.betterweather.mixin.access.ServerChunkProviderAccess;
+import corgitaco.betterweather.mixin.access.ServerWorldAccess;
 import corgitaco.betterweather.season.SeasonContext;
 import corgitaco.betterweather.util.WorldDynamicRegistry;
 import corgitaco.betterweather.weather.BWWeatherEventContext;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.effect.LightningBoltEntity;
+import net.minecraft.entity.passive.horse.SkeletonHorseEntity;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.WorldSettingsImport;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.DimensionType;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
@@ -164,8 +174,40 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     private void tickLiveChunks(Chunk chunkIn, int randomTickSpeed, CallbackInfo ci) {
         if (weatherContext != null) {
             weatherContext.getCurrentEvent().doChunkTick(chunkIn, (ServerWorld) (Object) this);
+            doLightning((ServerWorld) (Object) this, chunkIn.getPos());
         }
     }
+
+    private void doLightning(ServerWorld world, ChunkPos chunkpos) {
+        if (weatherContext == null) {
+            return;
+        }
+
+        int xStart = chunkpos.getXStart();
+        int zStart = chunkpos.getZStart();
+        WeatherEvent currentEvent = weatherContext.getCurrentEvent();
+        if (currentEvent.isThundering() && world.rand.nextInt(currentEvent.getLightningChance()) == 0) {
+            BlockPos blockpos = ((ServerWorldAccess) world).invokeAdjustPosToNearbyEntity(world.getBlockRandomPos(xStart, 0, zStart, 15));
+            Biome biome = world.getBiome(blockpos);
+            if (currentEvent.isValidBiome(biome)) {
+                DifficultyInstance difficultyinstance = world.getDifficultyForLocation(blockpos);
+                boolean flag1 = world.getGameRules().getBoolean(GameRules.DO_MOB_SPAWNING) && world.rand.nextDouble() < (double) difficultyinstance.getAdditionalDifficulty() * 0.01D;
+                if (flag1) {
+                    SkeletonHorseEntity skeletonhorseentity = EntityType.SKELETON_HORSE.create(world);
+                    skeletonhorseentity.setTrap(true);
+                    skeletonhorseentity.setGrowingAge(0);
+                    skeletonhorseentity.setPosition((double) blockpos.getX(), (double) blockpos.getY(), (double) blockpos.getZ());
+                    world.addEntity(skeletonhorseentity);
+                }
+
+                LightningBoltEntity lightningboltentity = EntityType.LIGHTNING_BOLT.create(world);
+                lightningboltentity.moveForced(Vector3d.copyCenteredHorizontally(blockpos));
+                lightningboltentity.setEffectOnly(flag1);
+                world.addEntity(lightningboltentity);
+            }
+        }
+    }
+
 
     @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 0))
     private int neverSpawnLightning(Random random, int bound) {
