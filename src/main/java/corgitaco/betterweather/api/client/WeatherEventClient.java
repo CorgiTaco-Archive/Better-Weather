@@ -1,8 +1,11 @@
 package corgitaco.betterweather.api.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
 import corgitaco.betterweather.graphics.Graphics;
+import corgitaco.betterweather.graphics.opengl.ShaderProgram;
+import corgitaco.betterweather.graphics.opengl.ShaderProgramBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -17,6 +20,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.Random;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public abstract class WeatherEventClient<T extends WeatherEventClientSettings> {
@@ -26,6 +30,7 @@ public abstract class WeatherEventClient<T extends WeatherEventClientSettings> {
     private final float fogDensity;
     private final boolean sunsetSunriseColor;
 
+    private ShaderProgram program;
 
     public WeatherEventClient(T clientSettings) {
         this.colorSettings = clientSettings.getColorSettings();
@@ -34,7 +39,13 @@ public abstract class WeatherEventClient<T extends WeatherEventClientSettings> {
         this.sunsetSunriseColor = clientSettings.sunsetSunriseColor();
     }
 
-    public abstract boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z, Predicate<Biome> biomePredicate);
+    public boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z, Predicate<Biome> biomePredicate) {
+        return graphics.isSupported() ? renderWeatherShaders() : renderWeatherLegacy(mc, world, lightTexture, ticks, partialTicks, x, y, z, biomePredicate);
+    }
+
+    public abstract boolean renderWeatherShaders();
+
+    public abstract boolean renderWeatherLegacy(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y,  double z, Predicate<Biome> biomePredicate);
 
     public abstract void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc, Predicate<Biome> biomePredicate);
 
@@ -239,5 +250,23 @@ public abstract class WeatherEventClient<T extends WeatherEventClientSettings> {
         bufferbuilder.pos((double) dx - x + d0 + 0.5D, (double) j2 - y, (double) dz - z + d1 + 0.5D).tex(1.0F, (float) k2 * 0.25F + f3).color(1.0F, 1.0F, 1.0F, alpha).lightmap(combinedLight).endVertex();
         bufferbuilder.pos((double) dx - x - d0 + 0.5D, (double) j2 - y, (double) dz - z - d1 + 0.5D).tex(0.0F, (float) k2 * 0.25F + f3).color(1.0F, 1.0F, 1.0F, alpha).lightmap(combinedLight).endVertex();
         return i1;
+    }
+
+    public ShaderProgram buildOrGetProgram(Consumer<ShaderProgramBuilder> consumer) {
+        if (program == null) {
+            ShaderProgramBuilder builder = ShaderProgramBuilder.create();
+
+            try {
+                consumer.accept(builder);
+            } catch (Exception e) {
+                BetterWeather.LOGGER.error(e);
+
+                builder.clean();
+            }
+
+            return program = builder.build();
+        }
+
+        return program;
     }
 }

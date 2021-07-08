@@ -5,6 +5,7 @@ import corgitaco.betterweather.api.client.WeatherEventClient;
 import corgitaco.betterweather.api.weather.WeatherEventAudio;
 import corgitaco.betterweather.graphics.Graphics;
 import corgitaco.betterweather.graphics.opengl.ShaderProgram;
+import corgitaco.betterweather.graphics.opengl.ShaderProgramBuilder;
 import corgitaco.betterweather.weather.event.client.settings.BlizzardClientSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -21,24 +22,10 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.Heightmap;
 
 import java.util.Random;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> implements WeatherEventAudio {
-
-    public static final String DEBUG_FRAGMENT =
-            "#version 120\n" +
-                    "\n" +
-                    "void main() {\n" +
-                    "\n" +
-                    "}";
-
-    public static final String DEBUG_VERTEX =
-            "#version 120\n" +
-                    "\n" +
-                    "void main() {\n" +
-                    "\n" +
-                    "}";
-
     private final float[] rainSizeX = new float[1024];
     private final float[] rainSizeZ = new float[1024];
     private final ResourceLocation textureLocation;
@@ -46,7 +33,9 @@ public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> i
     private final float audioVolume;
     private final float audioPitch;
 
-    private ShaderProgram program;
+    private final Consumer<ShaderProgramBuilder> builder = builder -> {
+        // TODO: read file paths from within assets
+    };
 
     public BlizzardClient(BlizzardClientSettings clientSettings) {
         super(clientSettings);
@@ -67,15 +56,18 @@ public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> i
     }
 
     @Override
-    public boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z, Predicate<Biome> biomePredicate) {
-//        if (graphics.isSupported()) {
-//            (program == null ? program = new ShaderProgram(compiler -> {
-//                compiler.compile(GL_FRAGMENT_SHADER, DEBUG_FRAGMENT);
-//                compiler.compile(GL_VERTEX_SHADER, DEBUG_VERTEX);
-//            }) : program).bind();
-//
-//            program.unbind();
-//        } else {
+    public boolean renderWeatherShaders() {
+        ShaderProgram program = buildOrGetProgram(builder);
+
+        program.bind();
+
+        program.unbind();
+
+        return true;
+    }
+
+    @Override
+    public boolean renderWeatherLegacy(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y,  double z, Predicate<Biome> biomePredicate) {
         float rainStrength = world.getRainStrength(partialTicks);
         lightTexture.enableLightmap();
         int floorX = MathHelper.floor(x);
@@ -168,8 +160,6 @@ public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> i
         RenderSystem.defaultAlphaFunc();
         RenderSystem.disableAlphaTest();
         lightTexture.disableLightmap();
-//        }
-
         return true;
     }
 
