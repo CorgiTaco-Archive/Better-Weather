@@ -16,7 +16,7 @@ public class NoneClient extends WeatherEventClient<NoneClientSettings> {
     }
 
     @Override
-    public boolean renderWeatherShaders() {
+    public boolean renderWeatherShaders(Graphics graphics, ClientWorld world, double x, double y, double z) {
         return false;
     }
 

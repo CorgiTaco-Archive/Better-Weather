@@ -54,7 +54,7 @@ public class RainClient extends WeatherEventClient<RainClientSettings> {
     }
 
     @Override
-    public boolean renderWeatherShaders() {
+    public boolean renderWeatherShaders(Graphics graphics, ClientWorld world, double x, double y, double z) {
         return false;
     }
 

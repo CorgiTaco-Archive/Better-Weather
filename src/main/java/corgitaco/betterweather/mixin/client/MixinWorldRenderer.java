@@ -19,8 +19,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 @Mixin(WorldRenderer.class)
 public abstract class MixinWorldRenderer implements Graphics {
+    private final ThreadLocalRandom random = ThreadLocalRandom.current();
 
     @Shadow
     private int ticks;
@@ -81,5 +84,10 @@ public abstract class MixinWorldRenderer implements Graphics {
             ((Vector3dAccess) cloudsColor).setY(MathHelper.lerp(blend, cloudsColor.y, g));
             ((Vector3dAccess) cloudsColor).setZ(MathHelper.lerp(blend, cloudsColor.z, b));
         }
+    }
+
+    @Override
+    public ThreadLocalRandom getLocalRandom() {
+        return random;
     }
 }

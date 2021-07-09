@@ -4,8 +4,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
 import corgitaco.betterweather.graphics.Graphics;
-import corgitaco.betterweather.graphics.opengl.ShaderProgram;
-import corgitaco.betterweather.graphics.opengl.ShaderProgramBuilder;
+import corgitaco.betterweather.graphics.opengl.program.ShaderProgram;
+import corgitaco.betterweather.graphics.opengl.program.ShaderProgramBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -32,6 +32,8 @@ public abstract class WeatherEventClient<T extends WeatherEventClientSettings> {
 
     private ShaderProgram program;
 
+    protected final BlockPos.Mutable mutable = new BlockPos.Mutable();
+
     public WeatherEventClient(T clientSettings) {
         this.colorSettings = clientSettings.getColorSettings();
         this.skyOpacity = clientSettings.skyOpacity();
@@ -40,10 +42,12 @@ public abstract class WeatherEventClient<T extends WeatherEventClientSettings> {
     }
 
     public boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z, Predicate<Biome> biomePredicate) {
-        return graphics.isSupported() ? renderWeatherShaders() : renderWeatherLegacy(mc, world, lightTexture, ticks, partialTicks, x, y, z, biomePredicate);
+        return graphics.isSupported() ?
+                renderWeatherShaders(graphics, world, x, y, z) :
+                renderWeatherLegacy(mc, world, lightTexture, ticks, partialTicks, x, y, z, biomePredicate);
     }
 
-    public abstract boolean renderWeatherShaders();
+    public abstract boolean renderWeatherShaders(Graphics graphics, ClientWorld world, double x, double y, double z);
 
     public abstract boolean renderWeatherLegacy(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y,  double z, Predicate<Biome> biomePredicate);
 

@@ -17,7 +17,7 @@ public class CloudyClient extends WeatherEventClient<CloudyClientSettings> {
     }
 
     @Override
-    public boolean renderWeatherShaders() {
+    public boolean renderWeatherShaders(Graphics graphics, ClientWorld world, double x, double y, double z) {
         return false;
     }
 

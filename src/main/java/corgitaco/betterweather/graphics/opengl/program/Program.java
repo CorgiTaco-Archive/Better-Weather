@@ -1,5 +1,6 @@
-package corgitaco.betterweather.graphics.opengl;
+package corgitaco.betterweather.graphics.opengl.program;
 
+import corgitaco.betterweather.graphics.opengl.Destructible;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
