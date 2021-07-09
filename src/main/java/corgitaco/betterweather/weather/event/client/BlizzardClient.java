@@ -5,10 +5,13 @@ import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.client.WeatherEventClient;
 import corgitaco.betterweather.api.weather.WeatherEventAudio;
 import corgitaco.betterweather.graphics.Graphics;
+import corgitaco.betterweather.graphics.opengl.mesh.HorizontalPlaneMesh;
+import corgitaco.betterweather.graphics.opengl.mesh.Mesh;
 import corgitaco.betterweather.graphics.opengl.program.ShaderProgram;
 import corgitaco.betterweather.graphics.opengl.program.ShaderProgramBuilder;
 import corgitaco.betterweather.weather.event.client.settings.BlizzardClientSettings;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.Tessellator;
@@ -20,8 +23,11 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.Heightmap;
+import org.lwjgl.system.CallbackI;
 
 import java.io.IOException;
 import java.util.Random;
@@ -40,6 +46,11 @@ public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> i
     private final float audioPitch;
 
     private final Consumer<ShaderProgramBuilder> builder;
+
+    // debug
+    private final Mesh plane;
+
+    private final Matrix4f modelMatrix = new Matrix4f();
 
     public BlizzardClient(BlizzardClientSettings clientSettings) {
         super(clientSettings);
@@ -71,6 +82,8 @@ public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> i
                 builder1.clean();
             }
         };
+
+        plane = new HorizontalPlaneMesh();
     }
 
     @Override
@@ -84,6 +97,13 @@ public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> i
         int radius = 5;
 
         program.bind();
+
+        modelMatrix.setIdentity();
+        modelMatrix.translate(new Vector3f((float) x, (float) y, (float) z));
+
+        plane.draw();
+
+        program.uploadMatrix4f("pos", modelMatrix);
 
         /**
          * Imagine a horizontal plane.
