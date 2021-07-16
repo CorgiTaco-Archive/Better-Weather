@@ -1,4 +1,4 @@
-package corgitaco.betterweather.graphics.opengl;
+package corgitaco.betterweather.graphics.opengl.program;
 
 import corgitaco.betterweather.BetterWeather;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
@@ -23,14 +23,14 @@ public final class ShaderProgram extends Program {
         this.builder = builder;
 
         try {
-            builder.forEach(shader -> glAttachShader(shader, program));
+            builder.forEach(shader -> glAttachShader(program, shader));
 
             glLinkProgram(program);
             logStatusError(GL_LINK_STATUS, info -> {
                 throw new RuntimeException(info);
             });
 
-            builder.forEach(shader -> glDetachShader(shader, program));
+            builder.forEach(shader -> glDetachShader(program, shader));
 
             glValidateProgram(program);
             logStatusError(GL_VALIDATE_STATUS, BetterWeather.LOGGER::warn);

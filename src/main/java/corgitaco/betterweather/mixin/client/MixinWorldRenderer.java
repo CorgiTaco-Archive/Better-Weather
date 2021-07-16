@@ -19,14 +19,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(WorldRenderer.class)
-public abstract class MixinWorldRenderer {
-    private Graphics graphics;
+import java.util.concurrent.ThreadLocalRandom;
 
-    @Inject(at = @At("RETURN"), method = "<init>")
-    public void init(Minecraft mcIn, RenderTypeBuffers rainTimeBuffersIn, CallbackInfo ci) {
-        graphics = new Graphics();
-    }
+@Mixin(WorldRenderer.class)
+public abstract class MixinWorldRenderer implements Graphics {
+    private final ThreadLocalRandom random = ThreadLocalRandom.current();
 
     @Shadow
     private int ticks;
@@ -40,7 +37,7 @@ public abstract class MixinWorldRenderer {
     private void renderWeather(LightTexture lightmapIn, float partialTicks, double x, double y, double z, CallbackInfo ci) {
         BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) this.world).getWeatherEventContext();
         if (weatherEventContext != null) {
-            if (weatherEventContext.getCurrentClientEvent().renderWeather(graphics, mc, this.world, lightmapIn, ticks, partialTicks, x, y, z, weatherEventContext.getCurrentEvent()::isValidBiome)) {
+            if (weatherEventContext.getCurrentClientEvent().renderWeather((Graphics) (WorldRenderer) (Object) this, mc, this.world, lightmapIn, ticks, partialTicks, x, y, z, weatherEventContext.getCurrentEvent()::isValidBiome)) {
                 ci.cancel();
             }
         }
@@ -87,5 +84,10 @@ public abstract class MixinWorldRenderer {
             ((Vector3dAccess) cloudsColor).setY(MathHelper.lerp(blend, cloudsColor.y, g));
             ((Vector3dAccess) cloudsColor).setZ(MathHelper.lerp(blend, cloudsColor.z, b));
         }
+    }
+
+    @Override
+    public ThreadLocalRandom getLocalRandom() {
+        return random;
     }
 }

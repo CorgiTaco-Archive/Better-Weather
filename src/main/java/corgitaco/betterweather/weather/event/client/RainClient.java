@@ -54,7 +54,12 @@ public class RainClient extends WeatherEventClient<RainClientSettings> {
     }
 
     @Override
-    public boolean renderWeather(Graphics graphics, Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z, Predicate<Biome> biomePredicate) {
+    public boolean renderWeatherShaders(Graphics graphics, ClientWorld world, double x, double y, double z) {
+        return false;
+    }
+
+    @Override
+    public boolean renderWeatherLegacy(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z, Predicate<Biome> biomePredicate) {
         renderVanillaWeather(mc, partialTicks, x, y, z, lightTexture, rainSizeX, rainSizeZ, this.rainTexture, this.snowTexture, ticks, biomePredicate);
         return true;
     }
