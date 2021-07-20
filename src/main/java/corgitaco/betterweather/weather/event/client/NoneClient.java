@@ -1,7 +1,7 @@
 package corgitaco.betterweather.weather.event.client;
 
 import corgitaco.betterweather.api.client.WeatherEventClient;
-import corgitaco.betterweather.graphics.Graphics;
+import corgitaco.betterweather.api.client.graphics.Graphics;
 import corgitaco.betterweather.weather.event.client.settings.NoneClientSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;

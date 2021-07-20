@@ -1,7 +1,7 @@
 package corgitaco.betterweather.weather.event.client;
 
 import corgitaco.betterweather.api.client.WeatherEventClient;
-import corgitaco.betterweather.graphics.Graphics;
+import corgitaco.betterweather.api.client.graphics.Graphics;
 import corgitaco.betterweather.weather.event.client.settings.RainClientSettings;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;

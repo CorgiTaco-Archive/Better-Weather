@@ -1,11 +1,9 @@
-package corgitaco.betterweather.graphics.opengl.program;
+package corgitaco.betterweather.api.client.graphics.opengl.program;
 
-import corgitaco.betterweather.BetterWeather;
 import net.minecraft.resources.IResource;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Contract;
-import org.lwjgl.system.CallbackI;
 
 import java.io.BufferedReader;
 import java.io.IOException;

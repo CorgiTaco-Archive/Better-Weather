@@ -1,10 +1,10 @@
-package corgitaco.betterweather.graphics.opengl;
+package corgitaco.betterweather.api.client.graphics.opengl;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-public interface Destructible {
+public interface Destroyable {
 
     void bind();
 

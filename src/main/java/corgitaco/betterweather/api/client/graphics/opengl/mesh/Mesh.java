@@ -1,13 +1,13 @@
-package corgitaco.betterweather.graphics.opengl.mesh;
+package corgitaco.betterweather.api.client.graphics.opengl.mesh;
 
-import corgitaco.betterweather.graphics.opengl.Destructible;
+import corgitaco.betterweather.api.client.graphics.opengl.Destroyable;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import static org.lwjgl.opengl.GL30.*;
 
 @OnlyIn(Dist.CLIENT)
-public abstract class Mesh implements Destructible {
+public abstract class Mesh implements Destroyable {
     private final int vao = glGenVertexArrays();
 
     public abstract void draw();

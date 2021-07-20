@@ -1,13 +1,13 @@
-package corgitaco.betterweather.graphics.opengl.program;
+package corgitaco.betterweather.api.client.graphics.opengl.program;
 
-import corgitaco.betterweather.graphics.opengl.Destructible;
+import corgitaco.betterweather.api.client.graphics.opengl.Destroyable;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import static org.lwjgl.opengl.GL20.*;
 
 @OnlyIn(Dist.CLIENT)
-public abstract class Program implements Destructible {
+public abstract class Program implements Destroyable {
     protected final int program = glCreateProgram();
 
     @Override

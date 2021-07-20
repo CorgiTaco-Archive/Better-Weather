@@ -1,4 +1,4 @@
-package corgitaco.betterweather.graphics.opengl.program;
+package corgitaco.betterweather.api.client.graphics.opengl.program;
 
 import corgitaco.betterweather.BetterWeather;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;

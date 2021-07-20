@@ -1,7 +1,7 @@
 package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.api.client.ColorSettings;
-import corgitaco.betterweather.graphics.Graphics;
+import corgitaco.betterweather.api.client.graphics.Graphics;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.mixin.access.Vector3dAccess;
 import corgitaco.betterweather.weather.BWWeatherEventContext;
@@ -23,8 +23,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Mixin(WorldRenderer.class)
 public abstract class MixinWorldRenderer implements Graphics {
-    private final ThreadLocalRandom random = ThreadLocalRandom.current();
-
     @Shadow
     private int ticks;
     @Shadow
@@ -84,10 +82,5 @@ public abstract class MixinWorldRenderer implements Graphics {
             ((Vector3dAccess) cloudsColor).setY(MathHelper.lerp(blend, cloudsColor.y, g));
             ((Vector3dAccess) cloudsColor).setZ(MathHelper.lerp(blend, cloudsColor.z, b));
         }
-    }
-
-    @Override
-    public ThreadLocalRandom getLocalRandom() {
-        return random;
     }
 }
