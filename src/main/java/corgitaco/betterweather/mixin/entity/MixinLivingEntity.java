@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LivingEntity.class)
-public class MixinLivingEntity {
+public abstract class MixinLivingEntity {
 
 
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)

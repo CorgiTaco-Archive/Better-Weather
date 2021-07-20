@@ -6,17 +6,13 @@ import corgitaco.betterweather.api.BetterWeatherRegistry;
 import corgitaco.betterweather.api.client.WeatherEventClient;
 import corgitaco.betterweather.api.season.Season;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -97,32 +93,18 @@ public abstract class WeatherEvent implements WeatherEventSettings {
      * This is called in the chunk ticking iterator.
      */
     public void chunkTick(Chunk chunk, ServerWorld world) {
-        if (world.rand.nextInt(16) == 0) {
-            ChunkPos chunkpos = chunk.getPos();
-            int xStart = chunkpos.getXStart();
-            int zStart = chunkpos.getZStart();
-            BlockPos randomPos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(xStart, 0, zStart, 15));
-            BlockPos randomPosDown = randomPos.down();
-
-            Biome biome = world.getBiome(randomPos);
-            if (isValidBiome(biome)) {
-                if (spawnSnowInFreezingClimates() && biome.doesWaterFreeze(world, randomPosDown)) {
-                    world.setBlockState(randomPosDown, Blocks.ICE.getDefaultState());
-                }
-
-                if (spawnSnowInFreezingClimates() && biome.doesSnowGenerate(world, randomPos)) {
-                    world.setBlockState(randomPos, Blocks.SNOW.getDefaultState());
-                }
-
-                if (world.isRainingAt(randomPos.up(25)) && fillBlocksWithWater()) {
-                    world.getBlockState(randomPosDown).getBlock().fillWithRain(world, randomPosDown);
-                }
-            }
-        }
     }
 
     public final void doChunkTick(Chunk chunk, ServerWorld world) {
         chunkTick(chunk, world);
+    }
+
+    public void onChunkLoad(Chunk chunk, ServerWorld world) {
+
+    }
+
+    public final void doChunkLoad(Chunk chunk, ServerWorld world) {
+        onChunkLoad(chunk, world);
     }
 
     public boolean fillBlocksWithWater() {

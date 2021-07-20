@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import java.util.function.Supplier;
 
 @Mixin(Biome.Climate.class)
-public class MixinBiomeClimate implements BiomeModifier, BiomeClimate {
+public abstract class MixinBiomeClimate implements BiomeModifier, BiomeClimate {
 
     private Supplier<Float> seasonTempModifier = () -> 0.0F;
     private Supplier<Float> seasonHumidityModifier = () -> 0.0F;

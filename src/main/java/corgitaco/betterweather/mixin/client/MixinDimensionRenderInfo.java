@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(DimensionRenderInfo.class)
-public class MixinDimensionRenderInfo {
+public abstract class MixinDimensionRenderInfo {
     Minecraft minecraft = Minecraft.getInstance();
 
     @Inject(method = "func_230492_a_", at = @At("HEAD"), cancellable = true)

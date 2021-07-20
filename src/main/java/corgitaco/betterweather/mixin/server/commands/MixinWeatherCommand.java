@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(WeatherCommand.class)
-public class MixinWeatherCommand {
+public abstract class MixinWeatherCommand {
 
     @Inject(method = "setRain", at = @At("HEAD"), cancellable = true)
     private static void cancelRain(CommandSource source, int time, CallbackInfoReturnable<Integer> cir) {

@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 
 @Mixin(ClientPlayerEntity.class)
-public class MixinClientPlayerEntity {
+public abstract class MixinClientPlayerEntity {
 
     @Shadow
     @Final

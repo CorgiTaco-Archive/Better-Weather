@@ -19,6 +19,8 @@
     "biome.MixinBiome",
     "biome.MixinBiomeClimate",
     "block.MixinAbstractBlockstate",
+    "chunk.MixinChunk",
+    "chunk.MixinChunkHolder",
     "entity.MixinBreedGoal",
     "entity.MixinLivingEntity",
     "network.MixinPlayerList",
