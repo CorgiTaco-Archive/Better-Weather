@@ -20,17 +20,27 @@ import corgitaco.betterweather.data.network.packet.season.SeasonTimePacket;
 import corgitaco.betterweather.data.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.data.storage.SeasonSavedData;
 import corgitaco.betterweather.helpers.BiomeUpdate;
+import corgitaco.betterweather.mixin.access.ClientChunkArrayAccess;
+import corgitaco.betterweather.mixin.access.ClientChunkSourceAccess;
+import corgitaco.betterweather.mixin.access.WorldRendererAccess;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import corgitaco.betterweather.util.BetterWeatherUtil;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientChunkProvider;
+import net.minecraft.client.renderer.ViewFrustum;
+import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.ServerWorldInfo;
 import net.minecraftforge.common.Tags;
@@ -44,6 +54,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.stream.Collectors;
 
 public class SeasonContext implements Season {
@@ -223,6 +234,40 @@ public class SeasonContext implements Season {
     }
 
     private void tickSeasonTime(World world) {
+        if (world.isRemote) {
+            int subSeasonTime = Season.getCurrentSubseasonTime(yearLength, currentYearTime);
+
+            if (subSeasonTime > 0) {
+                int totalTries = subSeasonTime / 50;
+
+                if (totalTries != 0) {
+
+
+                    if (Math.floorMod(subSeasonTime, totalTries) == 0) {
+//                        ClientChunkProvider.ChunkArray array = ((ClientChunkSourceAccess) world.getChunkProvider()).getArray();
+//                    AtomicReferenceArray<Chunk> chunks = ((ClientChunkArrayAccess) (Object) array).getChunks();
+//
+//                    for (int idx = 0; idx < chunks.length(); idx++) {
+//                        Chunk chunk = chunks.get(idx);
+//                        if (chunk == null || chunk.isEmpty()) {
+//                            continue;
+//                        }
+
+                        WorldRenderer worldRenderer = Minecraft.getInstance().worldRenderer;
+
+                        ViewFrustum viewFrustum = ((WorldRendererAccess) worldRenderer).getViewFrustum();
+
+
+                        for (ChunkRenderDispatcher.ChunkRender renderChunk : viewFrustum.renderChunks) {
+                            renderChunk.setNeedsUpdate(false);
+                        }
+
+//                        worldRenderer.loadRenderers();
+                    }
+                }
+            }
+        }
+
         if (world instanceof ServerWorld) {
             if (!this.tickSeasonTimeWhenNoPlayersOnline && world.getPlayers().isEmpty()) {
                 return;
@@ -345,7 +390,7 @@ public class SeasonContext implements Season {
     }
 
     @Override
-    public Key getKey() {
+    public Key getCurrentSeasonKey() {
         return this.currentSeason.getSeasonKey();
     }
 

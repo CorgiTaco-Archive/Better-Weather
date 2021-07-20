@@ -2,7 +2,9 @@ package corgitaco.betterweather.util.client;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.client.ColorSettings;
+import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
+import corgitaco.betterweather.season.BWSeason;
 import corgitaco.betterweather.season.BWSubseasonSettings;
 import corgitaco.betterweather.season.SeasonContext;
 import corgitaco.betterweather.weather.BWWeatherEventContext;
@@ -118,7 +120,19 @@ public final class ColorUtil {
             }
         }
 
+        // This is very wrong lol
         int seasonMix = mix(unpack(previous), unpack(seasonTarget), seasonBlend);
+        if (seasonContext != null) {
+            Season.Key currentSeasonKey = seasonContext.getCurrentSeasonKey();
+            Season.Key next = seasonContext.getCurrentSeason().getCurrentPhase() == Season.Phase.END ? Season.getNextSeason(currentSeasonKey) : currentSeasonKey;
+            BWSeason nextSeason = seasonContext.getSeasons().get(next);
+            Season.Phase nextPhase = Season.getNextSeasonPhase(nextSeason.getCurrentPhase());
+            BWSubseasonSettings bwSubseasonSettings = nextSeason.getPhaseSettings().get(nextPhase);
+
+            seasonMix = mix(unpack(seasonMix), unpack(seasonTarget), Season.getSubseasonLerpStrength(Season.getCurrentSubseasonTime(seasonContext.getYearLength(), seasonContext.getCurrentYearTime()), Season.getSubSeasonLength(seasonContext.getYearLength())));
+        }
+
+
         int weatherMix = weatherEventContext != null && weatherEventContext.getCurrentEvent().isValidBiome(biome) ? mix(unpack(seasonContext != null ? seasonMix : previous), unpack(weatherTarget), weatherBlend) : Integer.MAX_VALUE;
         return weatherMix == Integer.MAX_VALUE ? seasonMix : weatherMix;
     }

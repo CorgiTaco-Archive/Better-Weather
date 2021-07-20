@@ -17,6 +17,7 @@ public interface Season {
 
     /**
      * If null, seasons are not enabled for this world.
+     *
      * @param world Should be either or extenders of {@link net.minecraft.client.world.ClientWorld} or {@link net.minecraft.world.server.ServerWorld}
      * @return Season
      */
@@ -38,7 +39,7 @@ public interface Season {
     /**
      * @return current season's key.
      */
-    Key getKey();
+    Key getCurrentSeasonKey();
 
     /**
      * @return current season's phase/subseason
@@ -55,14 +56,14 @@ public interface Season {
      * @return start time for this season in the given year.
      */
     default int getSeasonStartTime() {
-        return getSeasonStartTime(getKey(), getYearLength());
+        return getSeasonStartTime(getCurrentSeasonKey(), getYearLength());
     }
 
     /**
      * @return start time for this season's phase in the given year.
      */
     default int getSeasonAndPhaseStartTime() {
-        return getSeasonAndPhaseStartTime(getKey(), getPhase(), getYearLength());
+        return getSeasonAndPhaseStartTime(getCurrentSeasonKey(), getPhase(), getYearLength());
     }
 
     /**
@@ -176,5 +177,30 @@ public interface Season {
             return Key.AUTUMN;
         } else
             return Key.WINTER;
+    }
+
+    /**
+     * @return Returns a number between 0 and 1.0(a percentage) that represents how far along a subseason is.
+     */
+    static double getSubseasonLerpStrength(int currentSubseasonTime, int subSeasonLength) {
+        return (double) currentSubseasonTime / subSeasonLength;
+    }
+
+    static Season.Key getNextSeason(Season.Key currentSeason) {
+        return Season.Key.values()[currentSeason.ordinal() + 1 % Key.values().length];
+    }
+
+    static Season.Phase getNextSeasonPhase(Season.Phase currentPhase) {
+        return Season.Phase.values()[currentPhase.ordinal() + 1 % Phase.values().length];
+    }
+
+    static int getCurrentSubseasonTime(int yearLength, int currentYearTime) {
+        int subSeasonLength = getSubSeasonLength(yearLength);
+        return currentYearTime % subSeasonLength;
+    }
+
+    static int getSubSeasonLength(int yearLength) {
+        int seasonLength = Season.getSeasonLength(yearLength);
+        return seasonLength / Phase.values().length;
     }
 }

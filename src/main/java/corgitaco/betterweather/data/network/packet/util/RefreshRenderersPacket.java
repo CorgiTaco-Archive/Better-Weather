@@ -21,7 +21,7 @@ public class RefreshRenderersPacket {
             ctx.get().enqueueWork(() -> {
                 Minecraft minecraft = Minecraft.getInstance();
                 if (minecraft.world != null && minecraft.player != null) {
-                    minecraft.worldRenderer.loadRenderers();
+//                    minecraft.worldRenderer.loadRenderers();
                 }
             });
         }

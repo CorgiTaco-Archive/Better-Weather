@@ -2,16 +2,23 @@ package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.api.Climate;
 import corgitaco.betterweather.api.season.Season;
+import corgitaco.betterweather.chunk.BlockColors;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.helpers.BiomeModifier;
 import corgitaco.betterweather.helpers.BiomeUpdate;
 import corgitaco.betterweather.season.SeasonContext;
 import corgitaco.betterweather.weather.BWWeatherEventContext;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.LeavesBlock;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.RegistryKey;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.ChunkSection;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,7 +31,10 @@ import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 @Mixin(ClientWorld.class)
-public abstract class MixinClientWorld implements BetterWeatherWorldData, Climate, BiomeUpdate {
+public abstract class MixinClientWorld implements BetterWeatherWorldData, Climate, BiomeUpdate, BlockColors {
+
+    private final Map<BlockPos, BlockState> coloredBlocks = new Object2ObjectArrayMap<>();
+
 
     @Shadow
     public abstract DynamicRegistries func_241828_r();
@@ -109,5 +119,10 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
         float rainStrength = ((ClientWorld) (Object) this).getRainStrength(delta);
         BWWeatherEventContext weatherContext = this.weatherContext;
         return weatherContext != null ? rainStrength * weatherContext.getCurrentEvent().getClientSettings().dayLightDarkness() : rainStrength;
+    }
+
+    @Override
+    public Map<BlockPos, BlockState> getColoredBlocks() {
+        return coloredBlocks;
     }
 }

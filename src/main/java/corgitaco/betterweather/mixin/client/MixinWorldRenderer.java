@@ -1,16 +1,25 @@
 package corgitaco.betterweather.mixin.client;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import corgitaco.betterweather.api.client.ColorSettings;
 import corgitaco.betterweather.api.client.graphics.Graphics;
+import corgitaco.betterweather.chunk.BlockColors;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.mixin.access.Vector3dAccess;
 import corgitaco.betterweather.weather.BWWeatherEventContext;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.culling.ClippingHelper;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.profiler.IProfiler;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.SectionPos;
+import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.chunk.Chunk;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,8 +27,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Map;
 
 @Mixin(WorldRenderer.class)
 public abstract class MixinWorldRenderer implements Graphics {
@@ -30,6 +40,7 @@ public abstract class MixinWorldRenderer implements Graphics {
     private Minecraft mc;
     @Shadow
     private ClientWorld world;
+
 
     @Inject(at = @At("HEAD"), method = "renderRainSnow(Lnet/minecraft/client/renderer/LightTexture;FDDD)V", cancellable = true)
     private void renderWeather(LightTexture lightmapIn, float partialTicks, double x, double y, double z, CallbackInfo ci) {
