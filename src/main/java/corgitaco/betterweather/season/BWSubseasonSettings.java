@@ -42,6 +42,8 @@ public class BWSubseasonSettings implements SubseasonSettings {
             return subSeasonSettings.clientSettings;
         }), Codec.list(Codec.STRING).optionalFieldOf("entityBreedingBlacklist", new ArrayList<>()).forGetter(subSeasonSettings -> {
             return !subSeasonSettings.entityTypeBreedingBlacklist.isEmpty() ? subSeasonSettings.entityTypeBreedingBlacklist.stream().map(Registry.ENTITY_TYPE::getKey).map(ResourceLocation::toString).collect(Collectors.toList()) : Arrays.asList(new ResourceLocation("modid", "dummymob").toString(), new ResourceLocation("modid", "dummymob2").toString());
+        }), SubseasonSnowSettings.CODEC.fieldOf("snowSettings").forGetter((subSeasonSettings) -> {
+            return subSeasonSettings.snowSettings;
         })).apply(subSeasonSettingsInstance, BWSubseasonSettings::new);
     }));
 
@@ -72,10 +74,12 @@ public class BWSubseasonSettings implements SubseasonSettings {
                 newMap.put(biomeKey.getLocation(), overrideStorage);
             });
             return newMap;
+        }), SubseasonSnowSettings.CODEC.fieldOf("snowSettings").forGetter((subSeasonSettings) -> {
+            return subSeasonSettings.snowSettings;
         })).apply(subSeasonSettingsInstance, (tempModifier, humidityModifier, weatherEventMultiplier, cropGrowthChanceMultiplier,
-                                              weatherEventController, clientSettings, entityTypeBreedingBlacklist, cropToMultiplierStorage, biomeToOverrideStorage) ->
+                                              weatherEventController, clientSettings, entityTypeBreedingBlacklist, cropToMultiplierStorage, biomeToOverrideStorage, snowSettings) ->
                 new BWSubseasonSettings(tempModifier, humidityModifier, weatherEventMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, entityTypeBreedingBlacklist,
-                        transformBlockResourceLocations(cropToMultiplierStorage), transformBiomeResourceLocationsToKeys(biomeToOverrideStorage)));
+                        transformBlockResourceLocations(cropToMultiplierStorage), transformBiomeResourceLocationsToKeys(biomeToOverrideStorage), snowSettings));
     }));
 
     public static final String RAIN = "RAIN";
@@ -132,18 +136,18 @@ public class BWSubseasonSettings implements SubseasonSettings {
         map.put(RAIN, 1.0);
         map.put(THUNDER, 0.75);
     });
-    public static final BWSubseasonSettings DEFAULT_SPRING_START = new BWSubseasonSettings(-0.15, 0.5, 1.5, 1.3, SPRING_START_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(51, 97, 50), 0.5, pack(51, 97, 50), 0.5));
-    public static final BWSubseasonSettings DEFAULT_SPRING_MID = new BWSubseasonSettings(0.1, 0.5, 2.0, 2.0, SPRING_MID_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(41, 87, 2), 0.5, pack(41, 87, 2), 0.5));
-    public static final BWSubseasonSettings DEFAULT_SPRING_END = new BWSubseasonSettings(0.25, 0.4, 1.5, 1.7, SPRING_END_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(20, 87, 2), 0.5, pack(20, 87, 2), 0.5));
-    public static final BWSubseasonSettings DEFAULT_SUMMER_START = new BWSubseasonSettings(0.35, -0.1, 0.75, 1.15, SUMMER_START_WEATHER_EVENT_CONTROLLER, new ColorSettings());
-    public static final BWSubseasonSettings DEFAULT_SUMMER_MID = new BWSubseasonSettings(0.5, -0.3, 0.2, 1.0, SUMMER_MID_WEATHER_EVENT_CONTROLLER, new ColorSettings());
-    public static final BWSubseasonSettings DEFAULT_SUMMER_END = new BWSubseasonSettings(0.15, -0.1, 0.5, 1.0, SUMMER_END_WEATHER_EVENT_CONTROLLER, new ColorSettings());
-    public static final BWSubseasonSettings DEFAULT_AUTUMN_START = new BWSubseasonSettings(-0.1, 0, 0.7, 0.8, AUTUMN_START_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(155, 103, 60), 0.5, pack(155, 103, 60), 0.5));
-    public static final BWSubseasonSettings DEFAULT_AUTUMN_MID = new BWSubseasonSettings(-0.2, 0, 0.7, 0.75, AUTUMN_MID_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(155, 103, 60), 0.5, pack(155, 103, 60), 0.5));
-    public static final BWSubseasonSettings DEFAULT_AUTUMN_END = new BWSubseasonSettings(-0.3, 0.1, 0.75, 0.65, AUTUMN_END_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(155, 103, 60), 0.5, pack(155, 103, 60), 0.5));
-    public static final BWSubseasonSettings DEFAULT_WINTER_START = new BWSubseasonSettings(-0.4, 0.2, 1.0, 0.6, WINTER_START_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(165, 42, 42), 0.5, pack(165, 42, 42), 0.5));
-    public static final BWSubseasonSettings DEFAULT_WINTER_MID = new BWSubseasonSettings(-0.5, 0.2, 1.0, 0.5, WINTER_MID_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(165, 42, 42), 0.5, pack(165, 42, 42), 0.5));
-    public static final BWSubseasonSettings DEFAULT_WINTER_END = new BWSubseasonSettings(-0.35, 0.2, 1.25, 0.75, WINTER_END_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(165, 42, 42), 0.5, pack(165, 42, 42), 0.5));
+    public static final BWSubseasonSettings DEFAULT_SPRING_START = new BWSubseasonSettings(-0.15, 0.5, 1.5, 1.3, SPRING_START_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(51, 97, 50), 0.5, pack(51, 97, 50), 0.5), new SubseasonSnowSettings(SubseasonSnowSettings.SnowType.DECAY, 0.3));
+    public static final BWSubseasonSettings DEFAULT_SPRING_MID = new BWSubseasonSettings(0.1, 0.5, 2.0, 2.0, SPRING_MID_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(41, 87, 2), 0.5, pack(41, 87, 2), 0.5), new SubseasonSnowSettings(SubseasonSnowSettings.SnowType.DECAY, 0.5));
+    public static final BWSubseasonSettings DEFAULT_SPRING_END = new BWSubseasonSettings(0.25, 0.4, 1.5, 1.7, SPRING_END_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(20, 87, 2), 0.5, pack(20, 87, 2), 0.5), new SubseasonSnowSettings(SubseasonSnowSettings.SnowType.DECAY, 1.0));
+    public static final BWSubseasonSettings DEFAULT_SUMMER_START = new BWSubseasonSettings(0.35, -0.1, 0.75, 1.15, SUMMER_START_WEATHER_EVENT_CONTROLLER, new ColorSettings(), new SubseasonSnowSettings(SubseasonSnowSettings.SnowType.DECAY, 1.0));
+    public static final BWSubseasonSettings DEFAULT_SUMMER_MID = new BWSubseasonSettings(0.5, -0.3, 0.2, 1.0, SUMMER_MID_WEATHER_EVENT_CONTROLLER, new ColorSettings(), new SubseasonSnowSettings(SubseasonSnowSettings.SnowType.DECAY, 1.0));
+    public static final BWSubseasonSettings DEFAULT_SUMMER_END = new BWSubseasonSettings(0.15, -0.1, 0.5, 1.0, SUMMER_END_WEATHER_EVENT_CONTROLLER, new ColorSettings(), new SubseasonSnowSettings(SubseasonSnowSettings.SnowType.DECAY, 1.0));
+    public static final BWSubseasonSettings DEFAULT_AUTUMN_START = new BWSubseasonSettings(-0.1, 0, 0.7, 0.8, AUTUMN_START_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(155, 103, 60), 0.5, pack(155, 103, 60), 0.5), new SubseasonSnowSettings(SubseasonSnowSettings.SnowType.SPAWN, 0));
+    public static final BWSubseasonSettings DEFAULT_AUTUMN_MID = new BWSubseasonSettings(-0.2, 0, 0.7, 0.75, AUTUMN_MID_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(155, 103, 60), 0.5, pack(155, 103, 60), 0.5), new SubseasonSnowSettings(SubseasonSnowSettings.SnowType.SPAWN, 0));
+    public static final BWSubseasonSettings DEFAULT_AUTUMN_END = new BWSubseasonSettings(-0.3, 0.1, 0.75, 0.65, AUTUMN_END_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(155, 103, 60), 0.5, pack(155, 103, 60), 0.5), new SubseasonSnowSettings(SubseasonSnowSettings.SnowType.SPAWN, 0.0));
+    public static final BWSubseasonSettings DEFAULT_WINTER_START = new BWSubseasonSettings(-0.4, 0.2, 1.0, 0.6, WINTER_START_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(165, 42, 42), 0.5, pack(165, 42, 42), 0.5), new SubseasonSnowSettings(SubseasonSnowSettings.SnowType.SPAWN, 0.1));
+    public static final BWSubseasonSettings DEFAULT_WINTER_MID = new BWSubseasonSettings(-0.5, 0.2, 1.0, 0.5, WINTER_MID_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(165, 42, 42), 0.5, pack(165, 42, 42), 0.5), new SubseasonSnowSettings(SubseasonSnowSettings.SnowType.SPAWN, 1.0));
+    public static final BWSubseasonSettings DEFAULT_WINTER_END = new BWSubseasonSettings(-0.35, 0.2, 1.25, 0.75, WINTER_END_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(165, 42, 42), 0.5, pack(165, 42, 42), 0.5), new SubseasonSnowSettings(SubseasonSnowSettings.SnowType.SPAWN, 1.0));
     public static final IdentityHashMap<Object, OverrideStorage> WINTER_OVERRIDE = Util.make((new IdentityHashMap<>()), (map) -> {
         OverrideStorage overrideStorage = new OverrideStorage();
         overrideStorage.getClientStorage().setTargetFoliageHexColor("#964B00").setTargetGrassHexColor("#964B00"); //Target brown instead of red.
@@ -158,25 +162,26 @@ public class BWSubseasonSettings implements SubseasonSettings {
     private final IdentityHashMap<Block, Double> cropToMultiplierStorage;
     private final IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage;
     private final ObjectOpenHashSet<EntityType<?>> entityTypeBreedingBlacklist;
+    private final SubseasonSnowSettings snowSettings;
     private ColorSettings clientSettings;
     private ITag.INamedTag<Block> enhancedCrops;
     private ITag.INamedTag<Block> unenhancedCrops;
 
-    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, ColorSettings clientSettings) {
-        this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, new ObjectOpenHashSet<>(), new IdentityHashMap<>(), new IdentityHashMap<>());
+    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, ColorSettings clientSettings, SubseasonSnowSettings snowSettings) {
+        this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, new ObjectOpenHashSet<>(), new IdentityHashMap<>(), new IdentityHashMap<>(), snowSettings);
     }
 
     //Codec constructor
-    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, ColorSettings clientSettings, List<String> entityBreedingBlacklist) {
-        this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, new HashSet<>(entityBreedingBlacklist), new IdentityHashMap<>(), new IdentityHashMap<>());
+    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, ColorSettings clientSettings, List<String> entityBreedingBlacklist, SubseasonSnowSettings snowSettings) {
+        this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, new HashSet<>(entityBreedingBlacklist), new IdentityHashMap<>(), new IdentityHashMap<>(), snowSettings);
     }
 
     //Packet Codec Constructor
-    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, ColorSettings clientSettings, List<String> entityBreedingBlacklist, Map<Block, Double> cropToMultiplierStorage, Map<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage) {
-        this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, new HashSet<>(entityBreedingBlacklist), new IdentityHashMap<>(cropToMultiplierStorage), new IdentityHashMap<>(biomeToOverrideStorage));
+    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, ColorSettings clientSettings, List<String> entityBreedingBlacklist, Map<Block, Double> cropToMultiplierStorage, Map<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage, SubseasonSnowSettings snowSettings) {
+        this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, new HashSet<>(entityBreedingBlacklist), new IdentityHashMap<>(cropToMultiplierStorage), new IdentityHashMap<>(biomeToOverrideStorage), snowSettings);
     }
 
-    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, ColorSettings clientSettings, Set<String> entityBreedingBlacklist, IdentityHashMap<Block, Double> cropToMultiplierStorage, IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage) {
+    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, ColorSettings clientSettings, Set<String> entityBreedingBlacklist, IdentityHashMap<Block, Double> cropToMultiplierStorage, IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage, SubseasonSnowSettings snowSettings) {
         this.tempModifier = tempModifier;
         this.humidityModifier = humidityModifier;
         this.weatherEventChanceMultiplier = weatherEventChanceMultiplier;
@@ -186,6 +191,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
         this.entityTypeBreedingBlacklist = new ObjectOpenHashSet<>(entityBreedingBlacklist.stream().map(ResourceLocation::new).filter((resourceLocation) -> (BetterWeatherUtil.filterRegistryID(resourceLocation, Registry.ENTITY_TYPE, "Entity"))).map(Registry.ENTITY_TYPE::getOptional).map(Optional::get).collect(Collectors.toSet()));
         this.cropToMultiplierStorage = cropToMultiplierStorage;
         this.biomeToOverrideStorage = biomeToOverrideStorage;
+        this.snowSettings = snowSettings;
     }
 
     public void setClient(ColorSettings clientSettings) {
@@ -334,8 +340,8 @@ public class BWSubseasonSettings implements SubseasonSettings {
             return defaultValue;
         }
 
-        double overrideFogColorBlendStrangth = this.getBiomeToOverrideStorage().get(biomeKey).getClientStorage().getFogColorBlendStrength();
-        return overrideFogColorBlendStrangth == Double.MAX_VALUE ? defaultValue : overrideFogColorBlendStrangth;
+        double fogColorBlendStrength = this.getBiomeToOverrideStorage().get(biomeKey).getClientStorage().getFogColorBlendStrength();
+        return fogColorBlendStrength == Double.MAX_VALUE ? defaultValue : fogColorBlendStrength;
     }
 
     public ObjectOpenHashSet<EntityType<?>> getEntityTypeBreedingBlacklist() {
@@ -348,5 +354,9 @@ public class BWSubseasonSettings implements SubseasonSettings {
 
     public ITag.INamedTag<Block> getUnenhancedCrops() {
         return unenhancedCrops;
+    }
+
+    public SubseasonSnowSettings getSnowSettings() {
+        return snowSettings;
     }
 }
