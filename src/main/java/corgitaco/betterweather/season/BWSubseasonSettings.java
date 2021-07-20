@@ -27,8 +27,10 @@ import static corgitaco.betterweather.util.client.ColorUtil.pack;
 
 public class BWSubseasonSettings implements SubseasonSettings {
 
+    public static final boolean MODIFY_TEMPERATURE = false;
+
     public static final Codec<BWSubseasonSettings> CODEC = RecordCodecBuilder.create((subSeasonSettingsInstance -> {
-        return subSeasonSettingsInstance.group(Codec.DOUBLE.optionalFieldOf("tempModifier", 0.0).forGetter((subSeasonSettings) -> {
+        return subSeasonSettingsInstance.group(Codec.DOUBLE.fieldOf("tempModifier").orElse(0.0).forGetter((subSeasonSettings) -> {
             return subSeasonSettings.tempModifier;
         }), Codec.DOUBLE.optionalFieldOf("humidityModifier", 0.0).forGetter((subSeasonSettings) -> {
             return subSeasonSettings.humidityModifier;
@@ -132,18 +134,18 @@ public class BWSubseasonSettings implements SubseasonSettings {
         map.put(RAIN, 1.0);
         map.put(THUNDER, 0.75);
     });
-    public static final BWSubseasonSettings DEFAULT_SPRING_START = new BWSubseasonSettings(-0.15, 0.5, 1.5, 1.3, SPRING_START_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(51, 97, 50), 0.5, pack(51, 97, 50), 0.5));
-    public static final BWSubseasonSettings DEFAULT_SPRING_MID = new BWSubseasonSettings(0.1, 0.5, 2.0, 2.0, SPRING_MID_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(41, 87, 2), 0.5, pack(41, 87, 2), 0.5));
-    public static final BWSubseasonSettings DEFAULT_SPRING_END = new BWSubseasonSettings(0.25, 0.4, 1.5, 1.7, SPRING_END_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(20, 87, 2), 0.5, pack(20, 87, 2), 0.5));
-    public static final BWSubseasonSettings DEFAULT_SUMMER_START = new BWSubseasonSettings(0.35, -0.1, 0.75, 1.15, SUMMER_START_WEATHER_EVENT_CONTROLLER, new ColorSettings());
-    public static final BWSubseasonSettings DEFAULT_SUMMER_MID = new BWSubseasonSettings(0.5, -0.3, 0.2, 1.0, SUMMER_MID_WEATHER_EVENT_CONTROLLER, new ColorSettings());
-    public static final BWSubseasonSettings DEFAULT_SUMMER_END = new BWSubseasonSettings(0.15, -0.1, 0.5, 1.0, SUMMER_END_WEATHER_EVENT_CONTROLLER, new ColorSettings());
-    public static final BWSubseasonSettings DEFAULT_AUTUMN_START = new BWSubseasonSettings(-0.1, 0, 0.7, 0.8, AUTUMN_START_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(155, 103, 60), 0.5, pack(155, 103, 60), 0.5));
-    public static final BWSubseasonSettings DEFAULT_AUTUMN_MID = new BWSubseasonSettings(-0.2, 0, 0.7, 0.75, AUTUMN_MID_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(155, 103, 60), 0.5, pack(155, 103, 60), 0.5));
-    public static final BWSubseasonSettings DEFAULT_AUTUMN_END = new BWSubseasonSettings(-0.3, 0.1, 0.75, 0.65, AUTUMN_END_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(155, 103, 60), 0.5, pack(155, 103, 60), 0.5));
-    public static final BWSubseasonSettings DEFAULT_WINTER_START = new BWSubseasonSettings(-0.4, 0.2, 1.0, 0.6, WINTER_START_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(165, 42, 42), 0.5, pack(165, 42, 42), 0.5));
-    public static final BWSubseasonSettings DEFAULT_WINTER_MID = new BWSubseasonSettings(-0.5, 0.2, 1.0, 0.5, WINTER_MID_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(165, 42, 42), 0.5, pack(165, 42, 42), 0.5));
-    public static final BWSubseasonSettings DEFAULT_WINTER_END = new BWSubseasonSettings(-0.35, 0.2, 1.25, 0.75, WINTER_END_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(165, 42, 42), 0.5, pack(165, 42, 42), 0.5));
+    public static final BWSubseasonSettings DEFAULT_SPRING_START = new BWSubseasonSettings(!MODIFY_TEMPERATURE ? 0.0 : -0.15, 0.5, 1.5, 1.3, SPRING_START_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(51, 97, 50), 0.5, pack(51, 97, 50), 0.5));
+    public static final BWSubseasonSettings DEFAULT_SPRING_MID = new BWSubseasonSettings(!MODIFY_TEMPERATURE ? 0 : 0.1, 0.5, 2.0, 2.0, SPRING_MID_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(41, 87, 2), 0.5, pack(41, 87, 2), 0.5));
+    public static final BWSubseasonSettings DEFAULT_SPRING_END = new BWSubseasonSettings(!MODIFY_TEMPERATURE ? 0 : 0.25, 0.4, 1.5, 1.7, SPRING_END_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(20, 87, 2), 0.5, pack(20, 87, 2), 0.5));
+    public static final BWSubseasonSettings DEFAULT_SUMMER_START = new BWSubseasonSettings(!MODIFY_TEMPERATURE ? 0 : 0.35, -0.1, 0.75, 1.15, SUMMER_START_WEATHER_EVENT_CONTROLLER, new ColorSettings());
+    public static final BWSubseasonSettings DEFAULT_SUMMER_MID = new BWSubseasonSettings(!MODIFY_TEMPERATURE ? 0 : 0.5, -0.3, 0.2, 1.0, SUMMER_MID_WEATHER_EVENT_CONTROLLER, new ColorSettings());
+    public static final BWSubseasonSettings DEFAULT_SUMMER_END = new BWSubseasonSettings(!MODIFY_TEMPERATURE ? 0 : 0.15, -0.1, 0.5, 1.0, SUMMER_END_WEATHER_EVENT_CONTROLLER, new ColorSettings());
+    public static final BWSubseasonSettings DEFAULT_AUTUMN_START = new BWSubseasonSettings(!MODIFY_TEMPERATURE ? 0 : -0.1, 0, 0.7, 0.8, AUTUMN_START_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(155, 103, 60), 0.5, pack(155, 103, 60), 0.5));
+    public static final BWSubseasonSettings DEFAULT_AUTUMN_MID = new BWSubseasonSettings(!MODIFY_TEMPERATURE ? 0 : -0.2, 0, 0.7, 0.75, AUTUMN_MID_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(155, 103, 60), 0.5, pack(155, 103, 60), 0.5));
+    public static final BWSubseasonSettings DEFAULT_AUTUMN_END = new BWSubseasonSettings(!MODIFY_TEMPERATURE ? 0 : -0.3, 0.1, 0.75, 0.65, AUTUMN_END_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(155, 103, 60), 0.5, pack(155, 103, 60), 0.5));
+    public static final BWSubseasonSettings DEFAULT_WINTER_START = new BWSubseasonSettings(!MODIFY_TEMPERATURE ? 0 : -0.4, 0.2, 1.0, 0.6, WINTER_START_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(165, 42, 42), 0.5, pack(165, 42, 42), 0.5));
+    public static final BWSubseasonSettings DEFAULT_WINTER_MID = new BWSubseasonSettings(!MODIFY_TEMPERATURE ? 0 : -0.5, 0.2, 1.0, 0.5, WINTER_MID_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(165, 42, 42), 0.5, pack(165, 42, 42), 0.5));
+    public static final BWSubseasonSettings DEFAULT_WINTER_END = new BWSubseasonSettings(!MODIFY_TEMPERATURE ? 0 : -0.35, 0.2, 1.25, 0.75, WINTER_END_WEATHER_EVENT_CONTROLLER, new ColorSettings(pack(165, 42, 42), 0.5, pack(165, 42, 42), 0.5));
     public static final IdentityHashMap<Object, OverrideStorage> WINTER_OVERRIDE = Util.make((new IdentityHashMap<>()), (map) -> {
         OverrideStorage overrideStorage = new OverrideStorage();
         overrideStorage.getClientStorage().setTargetFoliageHexColor("#964B00").setTargetGrassHexColor("#964B00"); //Target brown instead of red.
