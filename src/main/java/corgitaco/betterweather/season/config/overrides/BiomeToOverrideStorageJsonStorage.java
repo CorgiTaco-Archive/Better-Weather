@@ -1,4 +1,4 @@
-package corgitaco.betterweather.config.season.overrides;
+package corgitaco.betterweather.season.config.overrides;
 
 import corgitaco.betterweather.season.storage.OverrideStorage;
 import net.minecraft.block.Block;

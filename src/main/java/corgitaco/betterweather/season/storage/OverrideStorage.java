@@ -15,6 +15,7 @@ import static corgitaco.betterweather.util.client.ColorUtil.tryParseColor;
 public class OverrideStorage {
     private double tempModifier;
     private double humidityModifier;
+    @Deprecated
     private final IdentityHashMap<Block, Double> blockToCropGrowthMultiplierMap;
     private double fallBack;
     private OverrideClientStorage clientStorage = new OverrideClientStorage();
@@ -40,18 +41,19 @@ public class OverrideStorage {
     }
 
     public OverrideStorage(Map<Block, Double> blockToCropGrowthMultiplierMap, double tempModifier, double humidityModifier, double fallBack) {
-        this.blockToCropGrowthMultiplierMap = new IdentityHashMap<>(blockToCropGrowthMultiplierMap);
+        this.blockToCropGrowthMultiplierMap = new IdentityHashMap<>();
         this.tempModifier = tempModifier;
         this.humidityModifier = humidityModifier;
         this.fallBack = fallBack;
     }
 
+    @Deprecated
     public IdentityHashMap<Block, Double> getBlockToCropGrowthMultiplierMap() {
         return blockToCropGrowthMultiplierMap;
     }
 
+    @Deprecated
     public OverrideStorage setBlockToCropGrowthMultiplierMap(IdentityHashMap<Block, Double> blockToCropGrowthMultiplierMap) {
-        this.blockToCropGrowthMultiplierMap.putAll(blockToCropGrowthMultiplierMap);
         return this;
     }
 

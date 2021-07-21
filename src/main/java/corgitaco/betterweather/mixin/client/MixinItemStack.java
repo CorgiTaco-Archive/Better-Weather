@@ -5,6 +5,7 @@ import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.season.BWSeason;
 import corgitaco.betterweather.season.BWSubseasonSettings;
 import corgitaco.betterweather.season.SeasonContext;
+import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
@@ -14,12 +15,10 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.RegistryKey;
+import net.minecraft.util.Util;
 import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.text.*;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,6 +27,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Mixin(ItemStack.class)
@@ -67,6 +67,17 @@ public abstract class MixinItemStack {
 
                 List<ITextComponent> toolTips = cir.getReturnValue();
                 if (InputMappings.isKeyDown(mc.getMainWindow().getHandle(), mc.gameSettings.keyBindSneak.getKey().getKeyCode())) {
+                    if(seasonContext.getCropToFavoriteBiomes().containsKey(block)) {
+                        Object2DoubleArrayMap<RegistryKey<Biome>> favoriteBiomes = seasonContext.getCropToFavoriteBiomes().get(block);
+                        if (!favoriteBiomes.isEmpty()) {
+
+                            StringTextComponent favBiomes = new StringTextComponent(Arrays.toString(favoriteBiomes.keySet().stream().map(RegistryKey::getLocation).map(location -> new TranslationTextComponent(Util.makeTranslationKey("biome", location)).getString()).toArray()));
+                            toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.favoritebiomes", favBiomes.mergeStyle(TextFormatting.AQUA)));
+
+                        }
+
+                    }
+
                     toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.season", currentSeasonCropGrowthMultiplier));
                     toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.current", currentSeasonBiomeCropGrowthMultiplier));
                 }

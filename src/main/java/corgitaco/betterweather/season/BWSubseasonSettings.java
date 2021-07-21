@@ -161,7 +161,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
     private final IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage;
     private final ObjectOpenHashSet<EntityType<?>> entityTypeBreedingBlacklist;
     private ColorSettings clientSettings;
-    private ITag.INamedTag<Block> enhancedCrops;
+    private ITag.INamedTag<Block> enhancedCrops = BlockTags.CROPS;
     private ITag.INamedTag<Block> unenhancedCrops;
 
     public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, ColorSettings clientSettings) {

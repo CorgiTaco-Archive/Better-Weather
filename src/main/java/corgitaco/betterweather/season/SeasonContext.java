@@ -12,8 +12,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.season.SubseasonSettings;
-import corgitaco.betterweather.config.season.SeasonConfigHolder;
-import corgitaco.betterweather.config.season.overrides.BiomeOverrideJsonHandler;
+import corgitaco.betterweather.season.config.SeasonConfigHolder;
+import corgitaco.betterweather.season.config.cropfavoritebiomes.CropFavoriteBiomesConfigHandler;
+import corgitaco.betterweather.season.config.overrides.BiomeOverrideJsonHandler;
 import corgitaco.betterweather.data.network.NetworkHandler;
 import corgitaco.betterweather.data.network.packet.season.SeasonContextConstructingPacket;
 import corgitaco.betterweather.data.network.packet.season.SeasonTimePacket;
@@ -23,8 +24,10 @@ import corgitaco.betterweather.helpers.BiomeUpdate;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import corgitaco.betterweather.util.BetterWeatherUtil;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
+import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
@@ -61,6 +64,12 @@ public class SeasonContext implements Season {
         })).apply(builder, (currentYearTime, yearLength, worldID, seasonMap) -> new SeasonContext(currentYearTime, yearLength, worldID, new IdentityHashMap<>(seasonMap)));
     });
 
+    public static final IdentityHashMap<Block, Object2DoubleArrayMap<Object>> BLOCK_TO_FAVORITE_BIOMES_DEFAULT = Util.make(new IdentityHashMap<>(), (map) -> {
+        map.put(Blocks.MELON_STEM, Util.make(new Object2DoubleArrayMap<>(), (favoriteBiomes) -> {
+            favoriteBiomes.put(Biome.Category.JUNGLE, 0.4);
+        }));
+    });
+
     public static final TomlCommentedConfigOps CONFIG_OPS = new TomlCommentedConfigOps(Util.make(new HashMap<>(), (map) -> {
         map.put("yearLength", "Represents this world's year length in ticks(a minecraft day is 24000 ticks). Season length is 1/4 of this value. Sub season length is 1/12(or 1/3 of season length) of this value.");
         map.put("tickSeasonTimeWhenNoPlayersOnline", "Does Season Time tick in this world when no players are online?");
@@ -91,6 +100,7 @@ public class SeasonContext implements Season {
     private final File seasonConfigFile;
     private final Path seasonOverridesPath;
     private final IdentityHashMap<Season.Key, BWSeason> seasons = new IdentityHashMap<>();
+    private final IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> cropToFavoriteBiomes = new IdentityHashMap<>();
     private boolean tickSeasonTimeWhenNoPlayersOnline = true;
 
     private BWSeason currentSeason;
@@ -126,7 +136,10 @@ public class SeasonContext implements Season {
             this.tickSeasonTimeWhenNoPlayersOnline = this.handleConfig(isClient).isTickSeasonTimeWhenNoPlayersOnline();
             this.currentSeason = this.seasons.get(Season.getSeasonFromTime(this.currentYearTime, this.yearLength));
             this.currentSeason.setPhaseForTime(this.currentYearTime, this.yearLength);
+            cropToFavoriteBiomes.putAll(CropFavoriteBiomesConfigHandler.handle(seasonsFolderPath.resolve("crop-favorite-biomes.json"), BLOCK_TO_FAVORITE_BIOMES_DEFAULT, biomeRegistry));
         }
+
+
     }
 
     public void setSeason(ServerWorld world, List<ServerPlayerEntity> players, Season.Key newSeason, Season.Phase phase) {
@@ -379,5 +392,9 @@ public class SeasonContext implements Season {
 
     public IdentityHashMap<Key, BWSeason> getSeasons() {
         return seasons;
+    }
+
+    public IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> getCropToFavoriteBiomes() {
+        return cropToFavoriteBiomes;
     }
 }

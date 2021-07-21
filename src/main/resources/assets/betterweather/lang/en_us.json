@@ -24,7 +24,7 @@
   "bwseason.season.phase.mid": "Mid",
   "bwseason.season.phase.start": "Start",
   "commands.bw.reload.success": "BW: Reloaded Configs!",
-  "bwseason.cropfertility.tooltip.favoritebiomes": "Current Season favorite biomes: %s",
+  "bwseason.cropfertility.tooltip.favoritebiomes": "Favorite biomes: %s",
   "commands.bw.setseason.success.autumn_end": "BW: Set the season to Autumn | End.",
   "commands.bw.setseason.success.autumn_mid": "BW: Set the season to Autumn | Mid.",
   "commands.bw.setseason.success.autumn_start": "BW: Set the season to Autumn | Start.",

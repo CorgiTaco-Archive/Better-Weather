@@ -1,4 +1,4 @@
-package corgitaco.betterweather.config.season.overrides;
+package corgitaco.betterweather.season.config.overrides;
 
 import com.google.gson.*;
 import com.mojang.datafixers.util.Pair;
@@ -12,6 +12,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -202,14 +203,15 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
         return cropToMultiplierMap;
     }
 
-    private Object extractKey(StringBuilder errorBuilder, String key, Registry<Biome> biomeRegistry) {
+    @Nullable
+    public static Object extractKey(StringBuilder errorBuilder, String key, Registry<Biome> biomeRegistry) {
         String lowerCaseKey = key.toLowerCase();
         Object value;
         if (lowerCaseKey.startsWith("category/")) {
             try {
                 value = Biome.Category.valueOf(lowerCaseKey.substring("category/".length()).toUpperCase());
             } catch (IllegalArgumentException e) {
-                errorBuilder.append(key.substring("category/".length())).append(" is not a Biome Category Value!\n");
+                errorBuilder.append(key.substring("category/".length())).append(" is not a Biome Category Value! Valid category values: " + Arrays.toString(Biome.Category.values()) + "\n");
                 return null;
             }
         } else if (lowerCaseKey.startsWith("forge/")) {
