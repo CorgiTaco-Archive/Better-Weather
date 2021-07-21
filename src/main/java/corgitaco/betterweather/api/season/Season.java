@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import corgitaco.betterweather.api.Climate;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.Util;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -73,8 +74,6 @@ public interface Season {
         SUMMER,
         AUTUMN,
         WINTER;
-
-
         public static final Codec<Key> CODEC = IStringSerializable.createEnumCodec(Key::values, Key::getTypeFromId);
 
         private static final Map<String, Key> BY_ID = Util.make(Maps.newHashMap(), (nameToTypeMap) -> {
@@ -83,6 +82,7 @@ public interface Season {
             }
         });
 
+        private final TranslationTextComponent translationTextComponent = new TranslationTextComponent("bwseason.season.key." + name().toLowerCase());
 
         @Nullable
         public static Key getTypeFromId(String idIn) {
@@ -96,6 +96,10 @@ public interface Season {
         @Override
         public String getString() {
             return this.name();
+        }
+
+        public final TranslationTextComponent translationTextComponent() {
+            return this.translationTextComponent;
         }
     }
 
@@ -115,6 +119,8 @@ public interface Season {
             }
         });
 
+        private final TranslationTextComponent translationTextComponent = new TranslationTextComponent("bwseason.season.phase." + name().toLowerCase());
+
         @Nullable
         public static Phase getTypeFromId(String idIn) {
             return BY_ID.get(idIn);
@@ -127,6 +133,10 @@ public interface Season {
         @Override
         public String getString() {
             return this.name();
+        }
+
+        public final TranslationTextComponent translationTextComponent() {
+            return this.translationTextComponent;
         }
     }
 

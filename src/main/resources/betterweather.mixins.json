@@ -21,6 +21,7 @@
     "block.MixinAbstractBlockstate",
     "chunk.MixinChunk",
     "chunk.MixinChunkHolder",
+    "client.MixinItemStack",
     "entity.MixinBreedGoal",
     "entity.MixinLivingEntity",
     "network.MixinPlayerList",
