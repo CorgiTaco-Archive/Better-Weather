@@ -56,6 +56,11 @@ public class CropFavoriteBiomesDeserializer implements JsonSerializer<IdentityHa
                 }
 
                 double asDouble = favBiomeEntry.getValue().getAsDouble();
+                if (asDouble <= 0.0) {
+                    BetterWeather.LOGGER.warn("Bonus must be above 0.0. You put \"" + asDouble + "\" for biome entry \"" + key + "\" at crop \"" + key + "\".");
+                    continue;
+                }
+
                 if (type instanceof Biome) {
                     cropToFavoriteBiome.computeIfAbsent(block, (block1 -> new Object2DoubleArrayMap<>())).put(this.biomeRegistry.getOptionalKey((Biome) type).orElse(null), asDouble);
                 } else if (type instanceof Biome.Category) {

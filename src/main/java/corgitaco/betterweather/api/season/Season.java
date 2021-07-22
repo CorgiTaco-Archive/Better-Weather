@@ -3,12 +3,17 @@ package corgitaco.betterweather.api.season;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
 import corgitaco.betterweather.api.Climate;
+import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
+import net.minecraft.block.Block;
 import net.minecraft.util.IStringSerializable;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 
 import javax.annotation.Nullable;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 /**
@@ -51,6 +56,11 @@ public interface Season {
      * In the current implementation, each season has 3 (length of {@link Phase}) subseason settings for each phase.
      */
     SubseasonSettings getSettings();
+
+    /**
+     * @return Returns a crop's favorite biome(s) and the explicit bonus for this biome.
+     */
+    IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> getCropFavoriteBiomeBonuses();
 
     /**
      * @return start time for this season in the given year.

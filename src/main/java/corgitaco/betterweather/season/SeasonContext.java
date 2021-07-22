@@ -1,10 +1,8 @@
 package corgitaco.betterweather.season;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
-import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
-import com.electronwill.nightconfig.toml.TomlFormat;
 import com.electronwill.nightconfig.toml.TomlParser;
 import com.electronwill.nightconfig.toml.TomlWriter;
 import com.mojang.serialization.Codec;
@@ -12,15 +10,15 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.season.SubseasonSettings;
-import corgitaco.betterweather.season.config.SeasonConfigHolder;
-import corgitaco.betterweather.season.config.cropfavoritebiomes.CropFavoriteBiomesConfigHandler;
-import corgitaco.betterweather.season.config.overrides.BiomeOverrideJsonHandler;
 import corgitaco.betterweather.data.network.NetworkHandler;
 import corgitaco.betterweather.data.network.packet.season.SeasonContextConstructingPacket;
 import corgitaco.betterweather.data.network.packet.season.SeasonTimePacket;
 import corgitaco.betterweather.data.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.data.storage.SeasonSavedData;
 import corgitaco.betterweather.helpers.BiomeUpdate;
+import corgitaco.betterweather.season.config.SeasonConfigHolder;
+import corgitaco.betterweather.season.config.cropfavoritebiomes.CropFavoriteBiomesConfigHandler;
+import corgitaco.betterweather.season.config.overrides.BiomeOverrideJsonHandler;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import corgitaco.betterweather.util.BetterWeatherUtil;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
@@ -47,7 +45,6 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class SeasonContext implements Season {
     public static final String CONFIG_NAME = "season-settings.toml";
@@ -67,6 +64,10 @@ public class SeasonContext implements Season {
     public static final IdentityHashMap<Block, Object2DoubleArrayMap<Object>> BLOCK_TO_FAVORITE_BIOMES_DEFAULT = Util.make(new IdentityHashMap<>(), (map) -> {
         map.put(Blocks.MELON_STEM, Util.make(new Object2DoubleArrayMap<>(), (favoriteBiomes) -> {
             favoriteBiomes.put(Biome.Category.JUNGLE, 0.4);
+        }));
+
+        map.put(Blocks.SWEET_BERRY_BUSH, Util.make(new Object2DoubleArrayMap<>(), (favoriteBiomes) -> {
+            favoriteBiomes.put(Biome.Category.TAIGA, 0.4);
         }));
     });
 
@@ -138,8 +139,6 @@ public class SeasonContext implements Season {
             this.currentSeason.setPhaseForTime(this.currentYearTime, this.yearLength);
             cropToFavoriteBiomes.putAll(CropFavoriteBiomesConfigHandler.handle(seasonsFolderPath.resolve("crop-favorite-biomes.json"), BLOCK_TO_FAVORITE_BIOMES_DEFAULT, biomeRegistry));
         }
-
-
     }
 
     public void setSeason(ServerWorld world, List<ServerPlayerEntity> players, Season.Key newSeason, Season.Phase phase) {
@@ -192,7 +191,10 @@ public class SeasonContext implements Season {
         if (this.getCurrentSeason().getCurrentSettings().getEnhancedCrops().contains(block)) {
             Block block1 = block;
             //Collect the crop multiplier for the given subseason.
-            double cropGrowthMultiplier = getCurrentSubSeasonSettings().getCropGrowthMultiplier(world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(world.getBiome(pos)).get(), block1);
+            RegistryKey<Biome> currentBiomeKey = world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(world.getBiome(pos)).get();
+            double cropBonus = this.cropToFavoriteBiomes.containsKey(block1) ? this.cropToFavoriteBiomes.get(block1).getOrDefault(currentBiomeKey, 0.0) : 0.0;
+
+            double cropGrowthMultiplier = getCurrentSubSeasonSettings().getCropGrowthMultiplier(currentBiomeKey, block1) + cropBonus;
             if (cropGrowthMultiplier == 1) {
                 return;
             }
@@ -291,18 +293,6 @@ public class SeasonContext implements Season {
         }
     }
 
-    public CommentedConfig organizeConfig(CommentedConfig config) {
-        CommentedConfig newConfig = CommentedConfig.of(Config.getDefaultMapCreator(false, true), TomlFormat.instance());
-
-        List<Map.Entry<String, Object>> organizedCollection = config.valueMap().entrySet().stream().sorted(Comparator.comparing(Objects::toString)).collect(Collectors.toList());
-        organizedCollection.forEach((stringObjectEntry -> {
-            newConfig.set(stringObjectEntry.getKey(), stringObjectEntry.getValue());
-        }));
-
-        newConfig.commentMap().putAll(config.commentMap());
-        return newConfig;
-    }
-
     private SeasonConfigHolder read(boolean isClient) {
         try (Reader reader = new FileReader(seasonConfigFile)) {
             Optional<SeasonConfigHolder> configHolder = SeasonConfigHolder.CODEC.parse(CONFIG_OPS, new TomlParser().parse(reader)).resultOrPartial(BetterWeather.LOGGER::error);
@@ -382,19 +372,16 @@ public class SeasonContext implements Season {
         return this.currentSeason.getCurrentSettings();
     }
 
+    @Override
+    public IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> getCropFavoriteBiomeBonuses() {
+        return this.cropToFavoriteBiomes;
+    }
+
     public void setCurrentYearTime(int currentYearTime) {
         this.currentYearTime = currentYearTime;
     }
 
-    public void setYearLength(int yearLength) {
-        this.yearLength = yearLength;
-    }
-
     public IdentityHashMap<Key, BWSeason> getSeasons() {
         return seasons;
-    }
-
-    public IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> getCropToFavoriteBiomes() {
-        return cropToFavoriteBiomes;
     }
 }

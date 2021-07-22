@@ -67,8 +67,8 @@ public abstract class MixinItemStack {
 
                 List<ITextComponent> toolTips = cir.getReturnValue();
                 if (InputMappings.isKeyDown(mc.getMainWindow().getHandle(), mc.gameSettings.keyBindSneak.getKey().getKeyCode())) {
-                    if(seasonContext.getCropToFavoriteBiomes().containsKey(block)) {
-                        Object2DoubleArrayMap<RegistryKey<Biome>> favoriteBiomes = seasonContext.getCropToFavoriteBiomes().get(block);
+                    if(seasonContext.getCropFavoriteBiomeBonuses().containsKey(block)) {
+                        Object2DoubleArrayMap<RegistryKey<Biome>> favoriteBiomes = seasonContext.getCropFavoriteBiomeBonuses().get(block);
                         if (!favoriteBiomes.isEmpty()) {
 
                             StringTextComponent favBiomes = new StringTextComponent(Arrays.toString(favoriteBiomes.keySet().stream().map(RegistryKey::getLocation).map(location -> new TranslationTextComponent(Util.makeTranslationKey("biome", location)).getString()).toArray()));

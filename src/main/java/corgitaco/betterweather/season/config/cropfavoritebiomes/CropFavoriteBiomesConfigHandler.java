@@ -23,13 +23,13 @@ public class CropFavoriteBiomesConfigHandler {
     public static IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> handle(Path path, IdentityHashMap<Block, Object2DoubleArrayMap<Object>> objectToOverrideStorageDefault, Registry<Biome> biomeRegistry) {
         Gson gson = new GsonBuilder().registerTypeAdapter(IdentityHashMap.class, new CropFavoriteBiomesDeserializer(biomeRegistry)).setPrettyPrinting().disableHtmlEscaping().create();
 
-        final File CONFIG_FILE = path.toFile();
+        final File file = path.toFile();
 
-        if (!CONFIG_FILE.exists() && !objectToOverrideStorageDefault.isEmpty()) {
+        if (!file.exists() && !objectToOverrideStorageDefault.isEmpty()) {
             create(path, biomeRegistry, objectToOverrideStorageDefault);
         }
 
-        if (CONFIG_FILE.exists()) {
+        if (file.exists()) {
             try (Reader reader = new FileReader(path.toString())) {
                 IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> cropToFavoriteBiome = gson.fromJson(reader, IdentityHashMap.class);
                 if (cropToFavoriteBiome != null) {
@@ -61,6 +61,4 @@ public class CropFavoriteBiomesConfigHandler {
             BetterWeather.LOGGER.error("\"" + path.toString() + "\" could not be created..." + e.toString());
         }
     }
-
-
 }
