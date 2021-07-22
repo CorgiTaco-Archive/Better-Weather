@@ -23,6 +23,7 @@ import corgitaco.betterweather.server.BetterWeatherGameRules;
 import corgitaco.betterweather.util.BetterWeatherUtil;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -46,6 +47,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+@SuppressWarnings("deprecation")
 public class SeasonContext implements Season {
     public static final String CONFIG_NAME = "season-settings.toml";
 
@@ -56,9 +58,33 @@ public class SeasonContext implements Season {
             return seasonContext.yearLength;
         }), ResourceLocation.CODEC.fieldOf("worldID").forGetter((seasonContext) -> {
             return seasonContext.worldID;
-        }), Codec.simpleMap(Season.Key.CODEC, BWSeason.PACKET_CODEC, IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasons").forGetter((seasonContext) -> {
+        }), Codec.simpleMap(Key.CODEC, BWSeason.PACKET_CODEC, IStringSerializable.createKeyable(Key.values())).fieldOf("seasons").forGetter((seasonContext) -> {
             return seasonContext.seasons;
-        })).apply(builder, (currentYearTime, yearLength, worldID, seasonMap) -> new SeasonContext(currentYearTime, yearLength, worldID, new IdentityHashMap<>(seasonMap)));
+        }), Codec.unboundedMap(ResourceLocation.CODEC, Codec.unboundedMap(ResourceLocation.CODEC, Codec.DOUBLE)).fieldOf("cropFavoriteBiomes").forGetter((seasonContext) -> {
+            Map<ResourceLocation, Map<ResourceLocation, Double>> serialized = new HashMap<>();
+            for (Map.Entry<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> blockToFavoriteBiome : seasonContext.cropToFavoriteBiomes.entrySet()) {
+                Map<ResourceLocation, Double> favBiomeSerialized = new HashMap<>();
+                for (Object2DoubleMap.Entry<RegistryKey<Biome>> favBiomeToBonus : blockToFavoriteBiome.getValue().object2DoubleEntrySet()) {
+                    favBiomeSerialized.put(favBiomeToBonus.getKey().getLocation(), favBiomeToBonus.getDoubleValue());
+                }
+                serialized.put(Registry.BLOCK.getKey(blockToFavoriteBiome.getKey()), favBiomeSerialized);
+            }
+            return serialized;
+        })).apply(builder, (currentYearTime, yearLength, worldID, seasonMap, cropFavoriteBiomesSerialized) -> {
+            IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> cropFavoriteBiomes = new IdentityHashMap<>();
+            for (Map.Entry<ResourceLocation, Map<ResourceLocation, Double>> serializedCropEntry : cropFavoriteBiomesSerialized.entrySet()) {
+                Object2DoubleArrayMap<RegistryKey<Biome>> favBiomes = new Object2DoubleArrayMap<>();
+                for (Map.Entry<ResourceLocation, Double> value : serializedCropEntry.getValue().entrySet()) {
+                    favBiomes.put(RegistryKey.getOrCreateKey(Registry.BIOME_KEY, value.getKey()), value.getValue().doubleValue());
+                }
+                Optional<Block> optional = Registry.BLOCK.getOptional(serializedCropEntry.getKey());
+                if (!optional.isPresent()) {
+                    throw new IllegalArgumentException("\"" + serializedCropEntry.getKey() + "\" is not a crop in the CLIENT registry! Failing packet serialization....");
+                }
+                cropFavoriteBiomes.put(optional.get(), favBiomes);
+            }
+            return new SeasonContext(currentYearTime, yearLength, cropFavoriteBiomes, worldID, new IdentityHashMap<>(seasonMap));
+        });
     });
 
     public static final IdentityHashMap<Block, Object2DoubleArrayMap<Object>> BLOCK_TO_FAVORITE_BIOMES_DEFAULT = Util.make(new IdentityHashMap<>(), (map) -> {
@@ -99,9 +125,10 @@ public class SeasonContext implements Season {
     private final ResourceLocation worldID;
     private final Registry<Biome> biomeRegistry;
     private final File seasonConfigFile;
+    private final Path seasonsPath;
     private final Path seasonOverridesPath;
     private final IdentityHashMap<Season.Key, BWSeason> seasons = new IdentityHashMap<>();
-    private final IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> cropToFavoriteBiomes = new IdentityHashMap<>();
+    private final IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> cropToFavoriteBiomes;
     private boolean tickSeasonTimeWhenNoPlayersOnline = true;
 
     private BWSeason currentSeason;
@@ -109,23 +136,26 @@ public class SeasonContext implements Season {
     private int yearLength;
 
     //Packet Constructor
-    public SeasonContext(int currentYearTime, int yearLength, ResourceLocation worldID, IdentityHashMap<Season.Key, BWSeason> seasons) {
-        this(currentYearTime, yearLength, worldID, null, seasons);
+    public SeasonContext(int currentYearTime, int yearLength, IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> cropToFavoriteBiomes, ResourceLocation worldID, IdentityHashMap<Season.Key, BWSeason> seasons) {
+        this(currentYearTime, yearLength, worldID, cropToFavoriteBiomes, null, seasons);
     }
 
     //Server world constructor
     public SeasonContext(SeasonSavedData seasonData, RegistryKey<World> worldID, Registry<Biome> biomeRegistry) {
-        this(seasonData.getCurrentYearTime(), seasonData.getYearLength(), worldID.getLocation(), biomeRegistry, null);
+        this(seasonData.getCurrentYearTime(), seasonData.getYearLength(), worldID.getLocation(), new IdentityHashMap<>(), biomeRegistry, null);
+        this.cropToFavoriteBiomes.putAll(CropFavoriteBiomesConfigHandler.handle(seasonsPath.resolve("crop-favorite-biomes.json"), BLOCK_TO_FAVORITE_BIOMES_DEFAULT, biomeRegistry));
     }
 
-    public SeasonContext(int currentYearTime, int yearLength, ResourceLocation worldID, @Nullable Registry<Biome> biomeRegistry, @Nullable IdentityHashMap<Season.Key, BWSeason> seasons) {
+    //Client Constructor
+    public SeasonContext(int currentYearTime, int yearLength, ResourceLocation worldID, IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> cropToFavoriteBiomes, @Nullable Registry<Biome> biomeRegistry, @Nullable IdentityHashMap<Season.Key, BWSeason> seasons) {
         this.currentYearTime = currentYearTime;
         this.yearLength = yearLength;
         this.worldID = worldID;
         this.biomeRegistry = biomeRegistry;
-        Path seasonsFolderPath = BetterWeather.CONFIG_PATH.resolve(worldID.getNamespace()).resolve(worldID.getPath()).resolve("seasons");
-        this.seasonConfigFile = seasonsFolderPath.resolve(CONFIG_NAME).toFile();
-        this.seasonOverridesPath = seasonsFolderPath.resolve("overrides");
+        this.seasonsPath = BetterWeather.CONFIG_PATH.resolve(worldID.getNamespace()).resolve(worldID.getPath()).resolve("seasons");
+        this.seasonConfigFile = seasonsPath.resolve(CONFIG_NAME).toFile();
+        this.seasonOverridesPath = seasonsPath.resolve("overrides");
+        this.cropToFavoriteBiomes = cropToFavoriteBiomes;
 
         boolean isClient = seasons != null;
         boolean isPacket = biomeRegistry == null;
@@ -137,7 +167,6 @@ public class SeasonContext implements Season {
             this.tickSeasonTimeWhenNoPlayersOnline = this.handleConfig(isClient).isTickSeasonTimeWhenNoPlayersOnline();
             this.currentSeason = this.seasons.get(Season.getSeasonFromTime(this.currentYearTime, this.yearLength));
             this.currentSeason.setPhaseForTime(this.currentYearTime, this.yearLength);
-            cropToFavoriteBiomes.putAll(CropFavoriteBiomesConfigHandler.handle(seasonsFolderPath.resolve("crop-favorite-biomes.json"), BLOCK_TO_FAVORITE_BIOMES_DEFAULT, biomeRegistry));
         }
     }
 

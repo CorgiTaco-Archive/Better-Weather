@@ -27,6 +27,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -58,8 +59,6 @@ public abstract class MixinItemStack {
             BWSubseasonSettings currentSubSeasonSettings = seasonContext.getCurrentSubSeasonSettings();
             MutableRegistry<Biome> biomeRegistry = world.func_241828_r().getRegistry(Registry.BIOME_KEY);
             RegistryKey<Biome> currentBiomeKey = biomeRegistry.getOptionalKey(world.getBiome(playerIn.getPosition())).get();
-
-            double currentSeasonCropGrowthMultiplier = currentSubSeasonSettings.getCropGrowthMultiplier(null, block);
             double currentSeasonBiomeCropGrowthMultiplier = currentSubSeasonSettings.getCropGrowthMultiplier(currentBiomeKey, block);
 
             if (currentSubSeasonSettings.getEnhancedCrops().contains(block)) {
@@ -73,28 +72,44 @@ public abstract class MixinItemStack {
 
                             StringTextComponent favBiomes = new StringTextComponent(Arrays.toString(favoriteBiomes.keySet().stream().map(RegistryKey::getLocation).map(location -> new TranslationTextComponent(Util.makeTranslationKey("biome", location)).getString()).toArray()));
                             toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.favoritebiomes", favBiomes.mergeStyle(TextFormatting.AQUA)));
-
                         }
-
                     }
 
-                    toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.season", currentSeasonCropGrowthMultiplier));
-                    toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.current", currentSeasonBiomeCropGrowthMultiplier));
+                    toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.season", getFertilityString(currentSeasonBiomeCropGrowthMultiplier)));
+                } else {
+                    toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.hint.favbiomes", new TranslationTextComponent(mc.gameSettings.keyBindSneak.getTranslationKey())).mergeStyle(TextFormatting.DARK_GRAY, TextFormatting.ITALIC));
                 }
 
                 if (InputMappings.isKeyDown(mc.getMainWindow().getHandle(), mc.gameSettings.keyBindSprint.getKey().getKeyCode())) {
+                    IFormattableTextComponent favoriteSeason = null;
+                    IFormattableTextComponent favoritePhase = null;
+                    double bestMultiplier = Double.MIN_VALUE;
+
+                    List<TranslationTextComponent> seasonFertilityTips = new ArrayList<>();
                     for (Season.Key key : Season.Key.values()) {
                         TranslationTextComponent keyTranslationTextComponent = key.translationTextComponent();
+
                         for (Season.Phase phase : Season.Phase.values()) {
                             TranslationTextComponent phaseTranslationTextComponent = phase.translationTextComponent();
                             BWSeason currentSeason = seasonContext.getSeasons().get(key);
                             BWSubseasonSettings bwSubseasonSettings = currentSeason.getPhaseSettings().get(phase);
                             double cropGrowthMultiplier = bwSubseasonSettings.getCropGrowthMultiplier(null, block);
+                            if (cropGrowthMultiplier > bestMultiplier) {
+                                bestMultiplier = cropGrowthMultiplier;
+                                favoriteSeason = new TranslationTextComponent(keyTranslationTextComponent.getKey()).mergeStyle(TextFormatting.GREEN);
+                                favoritePhase = new TranslationTextComponent(phaseTranslationTextComponent.getKey()).mergeStyle(TextFormatting.GREEN);
+                            }
 
-
-                            toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.seasons", keyTranslationTextComponent.mergeStyle(TextFormatting.AQUA), phaseTranslationTextComponent.mergeStyle(TextFormatting.AQUA), getFertilityString(cropGrowthMultiplier)));
+                            seasonFertilityTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.seasons", keyTranslationTextComponent.mergeStyle(TextFormatting.AQUA), phaseTranslationTextComponent.mergeStyle(TextFormatting.AQUA), getFertilityString(cropGrowthMultiplier)));
                         }
                     }
+
+                    if (favoriteSeason != null && favoritePhase != null) {
+                        toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.favoriteseason", favoriteSeason, favoritePhase));
+                    }
+                    toolTips.addAll(seasonFertilityTips);
+                } else {
+                    toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.hint.seasonfertilities", new TranslationTextComponent(mc.gameSettings.keyBindSprint.getTranslationKey())).mergeStyle(TextFormatting.DARK_GRAY, TextFormatting.ITALIC));
                 }
             }
         }

@@ -18,10 +18,9 @@
     "access.Vector3dAccess",
     "biome.MixinBiome",
     "biome.MixinBiomeClimate",
-    "block.MixinAbstractBlockstate",
+    "block.MixinAbstractBlockState",
     "chunk.MixinChunk",
     "chunk.MixinChunkHolder",
-    "client.MixinItemStack",
     "entity.MixinBreedGoal",
     "entity.MixinLivingEntity",
     "network.MixinPlayerList",
@@ -38,7 +37,8 @@
     "client.MixinDimensionRenderInfo",
     "client.MixinFogRenderer",
     "client.MixinWorldRenderer",
-    "client.block.MixinLeavesBlock"
+    "client.block.MixinLeavesBlock",
+    "client.MixinItemStack"
   ],
   "injectors": {
     "defaultRequire": 1

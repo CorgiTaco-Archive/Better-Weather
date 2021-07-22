@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Random;
 
 @Mixin(AbstractBlock.AbstractBlockState.class)
-public abstract class MixinAbstractBlockstate {
+public abstract class MixinAbstractBlockState {
 
     @Shadow
     public abstract Block getBlock();
