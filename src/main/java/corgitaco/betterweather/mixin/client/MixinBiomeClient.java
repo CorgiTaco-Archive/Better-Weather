@@ -31,4 +31,9 @@ public abstract class MixinBiomeClient {
     private void getFogColor(CallbackInfoReturnable<Integer> info) {
         info.setReturnValue(getBiomeColor((Biome) (Object) this, FOG, info.getReturnValue()));
     }
+
+    @Inject(method = "getWaterColor", at = @At("RETURN"), cancellable = true)
+    private void getWaterColor(CallbackInfoReturnable<Integer> cir) {
+        cir.setReturnValue(getBiomeColor((Biome) (Object) this, FOG, cir.getReturnValue()));
+    }
 }

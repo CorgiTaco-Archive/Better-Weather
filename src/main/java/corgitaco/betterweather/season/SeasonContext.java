@@ -20,27 +20,33 @@ import corgitaco.betterweather.data.network.packet.season.SeasonTimePacket;
 import corgitaco.betterweather.data.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.data.storage.SeasonSavedData;
 import corgitaco.betterweather.helpers.BiomeUpdate;
-import corgitaco.betterweather.mixin.access.ClientChunkArrayAccess;
-import corgitaco.betterweather.mixin.access.ClientChunkSourceAccess;
+import corgitaco.betterweather.helpers.MutableReflector;
+import corgitaco.betterweather.helpers.RebuildTaskMaker;
+import corgitaco.betterweather.mixin.ChunkRenderDispatcherAccess;
+import corgitaco.betterweather.mixin.access.ChunkRenderAccess;
+import corgitaco.betterweather.mixin.access.RebuildTaskAccess;
 import corgitaco.betterweather.mixin.access.WorldRendererAccess;
+import corgitaco.betterweather.mixin.client.MixinChunkRenderDispatcher;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import corgitaco.betterweather.util.BetterWeatherUtil;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientChunkProvider;
 import net.minecraft.client.renderer.ViewFrustum;
 import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.chunk.ChunkRenderCache;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.ServerWorldInfo;
 import net.minecraftforge.common.Tags;
@@ -54,7 +60,6 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.stream.Collectors;
 
 public class SeasonContext implements Season {
@@ -243,7 +248,7 @@ public class SeasonContext implements Season {
                 if (totalTries != 0) {
 
 
-                    if (Math.floorMod(subSeasonTime, totalTries) == 0) {
+                    if (subSeasonTime % 200 == 0) {
 //                        ClientChunkProvider.ChunkArray array = ((ClientChunkSourceAccess) world.getChunkProvider()).getArray();
 //                    AtomicReferenceArray<Chunk> chunks = ((ClientChunkArrayAccess) (Object) array).getChunks();
 //
@@ -253,13 +258,43 @@ public class SeasonContext implements Season {
 //                            continue;
 //                        }
 
-                        WorldRenderer worldRenderer = Minecraft.getInstance().worldRenderer;
+                        Minecraft mc = Minecraft.getInstance();
+                        WorldRenderer worldRenderer = mc.worldRenderer;
 
                         ViewFrustum viewFrustum = ((WorldRendererAccess) worldRenderer).getViewFrustum();
 
+                        ChunkRenderDispatcher renderDispatcher = ((WorldRendererAccess) worldRenderer).getRenderDispatcher();
+                        ViewFrustum newFrustum = new ViewFrustum(renderDispatcher, world, mc.gameSettings.renderDistanceChunks, worldRenderer);
 
-                        for (ChunkRenderDispatcher.ChunkRender renderChunk : viewFrustum.renderChunks) {
-                            renderChunk.setNeedsUpdate(false);
+
+                        Entity renderViewEntity = mc.renderViewEntity;
+                        newFrustum.updateChunkPositions(renderViewEntity.getPosX(), renderViewEntity.getPosZ());
+
+                        ChunkRenderDispatcher.ChunkRender[] renderChunks = viewFrustum.renderChunks;
+                        for (int i = 0; i < renderChunks.length; i++) {
+                            ChunkRenderDispatcher.ChunkRender renderChunk = renderChunks[i];
+                            ChunkRenderDispatcher.CompiledChunk compiledChunk = renderChunk.getCompiledChunk();
+                            if (compiledChunk.isEmpty()) {
+                                continue;
+                            }
+
+                            ChunkRenderDispatcher.ChunkRender newRenderChunk = newFrustum.renderChunks[i];
+                            ChunkRenderDispatcher.CompiledChunk newCompiledChunk = newRenderChunk.getCompiledChunk();
+
+                            Vector3d vector3d = renderDispatcher.getRenderPosition();
+                            float f = (float)vector3d.x;
+                            float f1 = (float)vector3d.y;
+                            float f2 = (float)vector3d.z;
+
+                            newRenderChunk.rebuildChunk();
+
+//                            ChunkRenderDispatcher.ChunkRender.RebuildTask rebuildTask = ((RebuildTaskMaker) newRenderChunk).createRebuildTask(newRenderChunk);
+//
+//
+//                            Set<TileEntity> set = ((RebuildTaskAccess) rebuildTask).invokeCompile(f, f1, f2, newCompiledChunk, ((ChunkRenderDispatcherAccess) renderDispatcher).getFixedBuilder());
+//
+                            ((MutableReflector) compiledChunk).mutate(newCompiledChunk);
+
                         }
 
 //                        worldRenderer.loadRenderers();

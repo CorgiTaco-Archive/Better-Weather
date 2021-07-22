@@ -13,5 +13,8 @@ public interface WorldRendererAccess {
     ViewFrustum getViewFrustum();
 
     @Accessor
+    void setViewFrustum(ViewFrustum frustum);
+
+    @Accessor
     ChunkRenderDispatcher getRenderDispatcher();
 }

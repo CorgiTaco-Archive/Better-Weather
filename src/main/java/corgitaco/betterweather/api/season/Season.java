@@ -187,11 +187,11 @@ public interface Season {
     }
 
     static Season.Key getNextSeason(Season.Key currentSeason) {
-        return Season.Key.values()[currentSeason.ordinal() + 1 % Key.values().length];
+        return Season.Key.values()[currentSeason.ordinal() % Key.values().length];
     }
 
     static Season.Phase getNextSeasonPhase(Season.Phase currentPhase) {
-        return Season.Phase.values()[currentPhase.ordinal() + 1 % Phase.values().length];
+        return Season.Phase.values()[currentPhase.ordinal() % Phase.values().length];
     }
 
     static int getCurrentSubseasonTime(int yearLength, int currentYearTime) {
