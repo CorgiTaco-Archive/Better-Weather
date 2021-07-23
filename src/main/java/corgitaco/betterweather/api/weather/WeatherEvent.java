@@ -26,6 +26,8 @@ import java.util.function.Function;
 public abstract class WeatherEvent implements WeatherEventSettings {
     public static final Logger LOGGER = LogManager.getLogger();
 
+    public static final boolean MODIFY_TEMPERATURE = false;
+
     public static final Codec<WeatherEvent> CODEC = BetterWeatherRegistry.WEATHER_EVENT.dispatchStable(WeatherEvent::codec, Function.identity());
 
     public static final Map<Season.Key, Map<Season.Phase, Double>> NO_SEASON_CHANCES = Util.make(new IdentityHashMap<>(), (map) -> {

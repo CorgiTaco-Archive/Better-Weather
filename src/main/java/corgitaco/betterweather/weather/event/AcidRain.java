@@ -91,7 +91,7 @@ public class AcidRain extends Rain {
         map.put("minecraft:player", 0.5F);
     });
 
-    public static final AcidRain DEFAULT = new AcidRain(new RainClientSettings(RAIN_COLORS, 0.0F, -1.0F, true, ACID_RAIN_LOCATION, SNOW_LOCATION), DEFAULT_BIOME_CONDITION, 0.25D, -0.1, 0.1, 150, 100, AcidRain.DEFAULT_DECAYER, AcidRain.DEFAULT_ENTITY_DAMAGE, false, 0,
+    public static final AcidRain DEFAULT = new AcidRain(new RainClientSettings(RAIN_COLORS, 0.0F, -1.0F, true, ACID_RAIN_LOCATION, SNOW_LOCATION), DEFAULT_BIOME_CONDITION, 0.25D, !MODIFY_TEMPERATURE ? 0.0 : -0.1, 0.1, 150, 100, AcidRain.DEFAULT_DECAYER, AcidRain.DEFAULT_ENTITY_DAMAGE, false, 0,
             Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
                 seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
                     phases.put(Season.Phase.START, 0.23);
@@ -118,7 +118,7 @@ public class AcidRain extends Rain {
                 }));
             }));
 
-    public static final AcidRain DEFAULT_THUNDERING = new AcidRain(new RainClientSettings(THUNDER_COLORS, 0.0F, -1.0F, true, ACID_RAIN_LOCATION, SNOW_LOCATION), DEFAULT_BIOME_CONDITION, 0.125D, -0.1, 0.1, 150, 100, DEFAULT_DECAYER, DEFAULT_ENTITY_DAMAGE, true, 100000,
+    public static final AcidRain DEFAULT_THUNDERING = new AcidRain(new RainClientSettings(THUNDER_COLORS, 0.0F, -1.0F, true, ACID_RAIN_LOCATION, SNOW_LOCATION), DEFAULT_BIOME_CONDITION, 0.125D, !MODIFY_TEMPERATURE ? 0.0 : -0.1, 0.1, 150, 100, DEFAULT_DECAYER, DEFAULT_ENTITY_DAMAGE, true, 100000,
             Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
                 seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
                     phases.put(Season.Phase.START, 0.115);

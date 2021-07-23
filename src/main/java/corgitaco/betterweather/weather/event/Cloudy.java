@@ -39,7 +39,7 @@ public class Cloudy extends WeatherEvent {
         })).apply(builder, Cloudy::new);
     });
 
-    public static final Cloudy DEFAULT = new Cloudy(new CloudyClientSettings(Rain.RAIN_COLORS, 0.0F, -1.0F, true), "ALL", 0.7D, -0.05, 0.07, false, 0,
+    public static final Cloudy DEFAULT = new Cloudy(new CloudyClientSettings(Rain.RAIN_COLORS, 0.0F, -1.0F, true), "ALL", 0.7D, !MODIFY_TEMPERATURE ? 0.0 : -0.05, 0.07, false, 0,
             Util.make(new EnumMap<>(Season.Key.class), (map) -> {
                 for (Season.Key value : Season.Key.values()) {
                     Map<Season.Phase, Double> phaseDoubleMap = new EnumMap<>(Season.Phase.class);
@@ -50,7 +50,7 @@ public class Cloudy extends WeatherEvent {
                 }
             }));
 
-    public static final Cloudy DEFAULT_THUNDERING = new Cloudy(new CloudyClientSettings(Rain.THUNDER_COLORS, 0.0F, -0.09F, true), "ALL", 0.1D, -0.05, 0.07, true, 100000,
+    public static final Cloudy DEFAULT_THUNDERING = new Cloudy(new CloudyClientSettings(Rain.THUNDER_COLORS, 0.0F, -0.09F, true), "ALL", 0.1D, !MODIFY_TEMPERATURE ? 0.0 :-0.05, 0.07, true, 100000,
             Util.make(new EnumMap<>(Season.Key.class), (map) -> {
                 for (Season.Key value : Season.Key.values()) {
                     Map<Season.Phase, Double> phaseDoubleMap = new EnumMap<>(Season.Phase.class);
