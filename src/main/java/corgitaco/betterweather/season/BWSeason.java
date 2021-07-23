@@ -14,8 +14,8 @@ import java.util.Map;
 
 public final class BWSeason {
 
-    public static final Map<String, ITag.INamedTag<Block>> ENHANCED_CROPS = new HashMap<>();
-    public static final Map<String, ITag.INamedTag<Block>> UNENHANCED_CROPS = new HashMap<>();
+    public static final Map<String, ITag.INamedTag<Block>> AFFECTED_CROPS = new HashMap<>();
+    public static final Map<String, ITag.INamedTag<Block>> UNAFFECTED_CROPS = new HashMap<>();
 
     public static final IdentityHashMap<Season.Phase, BWSubseasonSettings> DEFAULT_SPRING_PHASES = Util.make(new IdentityHashMap<>(), (map) -> {
         map.put(Season.Phase.START, BWSubseasonSettings.DEFAULT_SPRING_START);

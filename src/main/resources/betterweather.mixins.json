@@ -7,6 +7,7 @@
     "MixinDataPackRegistries",
     "MixinWorld",
     "access.BiomeAccess",
+    "access.BlockTagsAccess",
     "access.ChunkManagerAccess",
     "access.DynamicRegistriesAccess",
     "access.DynamicRegistriesImplAccess",
@@ -36,9 +37,9 @@
     "client.MixinDebugOverlayGui",
     "client.MixinDimensionRenderInfo",
     "client.MixinFogRenderer",
+    "client.MixinItemStack",
     "client.MixinWorldRenderer",
-    "client.block.MixinLeavesBlock",
-    "client.MixinItemStack"
+    "client.block.MixinLeavesBlock"
   ],
   "injectors": {
     "defaultRequire": 1

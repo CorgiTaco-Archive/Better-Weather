@@ -28,6 +28,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ITag;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
@@ -50,6 +52,8 @@ import java.util.*;
 @SuppressWarnings("deprecation")
 public class SeasonContext implements Season {
     public static final String CONFIG_NAME = "season-settings.toml";
+
+    public static final ITag.INamedTag<Block> GLOBAL_AFFECTED_CROPS = BlockTags.createOptional(new ResourceLocation(BetterWeather.MOD_ID, "global.affected_crops"));
 
     public static final Codec<SeasonContext> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(Codec.INT.fieldOf("currentYearTime").forGetter((seasonContext) -> {
@@ -360,9 +364,12 @@ public class SeasonContext implements Season {
             for (Map.Entry<Season.Phase, BWSubseasonSettings> phaseSubSeasonSettingsEntry : phaseSettings.entrySet()) {
                 String mapKey = seasonKey + "-" + phaseSubSeasonSettingsEntry.getKey();
                 if (!isClient) {
-                    phaseSubSeasonSettingsEntry.getValue().setCropTags(BWSeason.ENHANCED_CROPS.get(mapKey), BWSeason.UNENHANCED_CROPS.get(mapKey));
+                    String worldKey = worldID.toString().replace(":", ".");
+                    ITag.INamedTag<Block> unenhancedCrops = BWSeason.UNAFFECTED_CROPS.get(mapKey);
+                    phaseSubSeasonSettingsEntry.getValue().setCropTags(
+                            BWSeason.AFFECTED_CROPS.get(mapKey).getAllElements().isEmpty() ? BWSeason.AFFECTED_CROPS.get(worldKey).getAllElements().isEmpty() ? GLOBAL_AFFECTED_CROPS : BWSeason.AFFECTED_CROPS.get(worldKey) : GLOBAL_AFFECTED_CROPS,
+                            unenhancedCrops.getAllElements().isEmpty() ? BWSeason.UNAFFECTED_CROPS.get(worldKey).getAllElements().isEmpty() ? unenhancedCrops : unenhancedCrops : unenhancedCrops);
                 }
-
                 BiomeOverrideJsonHandler.handleOverrideJsonConfigs(this.seasonOverridesPath.resolve(seasonKeySeasonEntry.getKey().toString() + "-" + phaseSubSeasonSettingsEntry.getKey() + ".json"), seasonKeySeasonEntry.getKey() == Season.Key.WINTER ? BWSubseasonSettings.WINTER_OVERRIDE : new IdentityHashMap<>(), phaseSubSeasonSettingsEntry.getValue(), this.biomeRegistry, isClient);
             }
         }
