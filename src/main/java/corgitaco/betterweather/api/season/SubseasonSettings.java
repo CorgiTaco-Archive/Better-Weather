@@ -51,6 +51,8 @@ public interface SubseasonSettings {
      * 3. Subseason(Crop is present, Biome is not present)
      * <p></p>
      * 4. Subseason Default(Neither Crop or Biome is present)
+     * <p></p>
+     * NOTE: This does not take into account the bonus from {@link Season#getCropFavoriteBiomeBonuses()} when using the crop argument.
      */
     double getCropGrowthMultiplier(@Nullable RegistryKey<Biome> biomeKey, @Nullable Block crop);
 
@@ -66,6 +68,8 @@ public interface SubseasonSettings {
      * <p></p>
      * 1. Subseason
      * 2. Subseason Default
+     * <p></p>
+     * NOTE: This does not take into account the bonus from {@link Season#getCropFavoriteBiomeBonuses()}.
      */
     default double getBlockCropGrowthMultiplier(Block crop) {
         return getCropGrowthMultiplier(null, crop);

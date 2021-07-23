@@ -1,4 +1,4 @@
-package corgitaco.betterweather.config.season.overrides;
+package corgitaco.betterweather.season.config.overrides;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

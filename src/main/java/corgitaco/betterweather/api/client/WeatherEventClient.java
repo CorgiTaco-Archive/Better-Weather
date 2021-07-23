@@ -2,10 +2,10 @@ package corgitaco.betterweather.api.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
 import corgitaco.betterweather.api.client.graphics.Graphics;
 import corgitaco.betterweather.api.client.graphics.opengl.program.ShaderProgram;
 import corgitaco.betterweather.api.client.graphics.opengl.program.ShaderProgramBuilder;
+import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;

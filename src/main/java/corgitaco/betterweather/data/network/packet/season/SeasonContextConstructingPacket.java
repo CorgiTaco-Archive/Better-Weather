@@ -47,7 +47,7 @@ public class SeasonContextConstructingPacket {
                     SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
                     if (seasonContext == null) {
                         seasonContext = ((BetterWeatherWorldData) world).setSeasonContext(new SeasonContext(message.seasonContext.getCurrentYearTime(), message.seasonContext.getYearLength(),
-                                world.getDimensionKey().getLocation(), world.func_241828_r().getRegistry(Registry.BIOME_KEY), message.seasonContext.getSeasons()));
+                                world.getDimensionKey().getLocation(), message.seasonContext.getCropFavoriteBiomeBonuses(), world.func_241828_r().getRegistry(Registry.BIOME_KEY), message.seasonContext.getSeasons()));
                         ((BiomeUpdate) world).updateBiomeData();
                     }
 

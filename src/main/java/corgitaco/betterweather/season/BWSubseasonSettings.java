@@ -4,12 +4,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.api.client.ColorSettings;
 import corgitaco.betterweather.api.season.SubseasonSettings;
+import corgitaco.betterweather.mixin.access.BlockTagsAccess;
 import corgitaco.betterweather.season.storage.OverrideStorage;
 import corgitaco.betterweather.util.BetterWeatherUtil;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ITag;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
@@ -74,10 +74,31 @@ public class BWSubseasonSettings implements SubseasonSettings {
                 newMap.put(biomeKey.getLocation(), overrideStorage);
             });
             return newMap;
+        }), ResourceLocation.CODEC.fieldOf("enhanced_crops").forGetter((settings) -> {
+            return settings.enhancedCropsTag.getName();
+        }), ResourceLocation.CODEC.fieldOf("unenhanced_crops").forGetter((settings) -> {
+            return settings.unenhancedCropsTag.getName();
         })).apply(subSeasonSettingsInstance, (tempModifier, humidityModifier, weatherEventMultiplier, cropGrowthChanceMultiplier,
-                                              weatherEventController, clientSettings, entityTypeBreedingBlacklist, cropToMultiplierStorage, biomeToOverrideStorage) ->
-                new BWSubseasonSettings(tempModifier, humidityModifier, weatherEventMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, entityTypeBreedingBlacklist,
-                        transformBlockResourceLocations(cropToMultiplierStorage), transformBiomeResourceLocationsToKeys(biomeToOverrideStorage)));
+                                              weatherEventController, clientSettings, entityTypeBreedingBlacklist, cropToMultiplierStorage, biomeToOverrideStorage, enhancedCrops, unenhancedCrops) ->
+        {
+            BWSubseasonSettings bwSubseasonSettings = new BWSubseasonSettings(tempModifier, humidityModifier, weatherEventMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, entityTypeBreedingBlacklist,
+                    transformBlockResourceLocations(cropToMultiplierStorage), transformBiomeResourceLocationsToKeys(biomeToOverrideStorage));
+
+            for (ITag.INamedTag<Block> tag : BlockTagsAccess.getREGISTRY().getTags()) {
+                if (bwSubseasonSettings.getEnhancedCropsTag() != null && bwSubseasonSettings.getUnenhancedCropsTag() != null) {
+                    break;
+                }
+                if (tag.getName().equals(enhancedCrops)) {
+                    bwSubseasonSettings.setEnhancedCropsTag(tag);
+                }
+
+                if (tag.getName().equals(unenhancedCrops)) {
+                    bwSubseasonSettings.setUnEnhancedCropsTag(tag);
+                }
+            }
+
+            return bwSubseasonSettings;
+        });
     }));
 
     public static final String RAIN = "RAIN";
@@ -160,9 +181,10 @@ public class BWSubseasonSettings implements SubseasonSettings {
     private final IdentityHashMap<Block, Double> cropToMultiplierStorage;
     private final IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage;
     private final ObjectOpenHashSet<EntityType<?>> entityTypeBreedingBlacklist;
+    private final ObjectOpenHashSet<Block> enhancedCrops = new ObjectOpenHashSet<>();
     private ColorSettings clientSettings;
-    private ITag.INamedTag<Block> enhancedCrops;
-    private ITag.INamedTag<Block> unenhancedCrops;
+    private ITag.INamedTag<Block> enhancedCropsTag;
+    private ITag.INamedTag<Block> unenhancedCropsTag;
 
     public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, ColorSettings clientSettings) {
         this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, new ObjectOpenHashSet<>(), new IdentityHashMap<>(), new IdentityHashMap<>());
@@ -194,9 +216,19 @@ public class BWSubseasonSettings implements SubseasonSettings {
         this.clientSettings = clientSettings;
     }
 
+    public void setEnhancedCropsTag(ITag.INamedTag<Block> enhancedCrops) {
+        this.enhancedCropsTag = enhancedCrops;
+        this.enhancedCrops.addAll(enhancedCrops.getAllElements());
+    }
+
+    public void setUnEnhancedCropsTag(ITag.INamedTag<Block> unenhancedCropsTag) {
+        this.unenhancedCropsTag = unenhancedCropsTag;
+        this.enhancedCrops.removeAll(unenhancedCropsTag.getAllElements());
+    }
+
     public void setCropTags(ITag.INamedTag<Block> enhancedCrops, ITag.INamedTag<Block> unenhancedCrops) {
-        this.enhancedCrops = enhancedCrops.getAllElements().isEmpty() ? BlockTags.CROPS : enhancedCrops;
-        this.unenhancedCrops = unenhancedCrops;
+        setEnhancedCropsTag(enhancedCrops);
+        setUnEnhancedCropsTag(unenhancedCrops);
     }
 
     public IdentityHashMap<Block, Double> getCropToMultiplierStorage() {
@@ -344,11 +376,15 @@ public class BWSubseasonSettings implements SubseasonSettings {
         return entityTypeBreedingBlacklist;
     }
 
-    public ITag.INamedTag<Block> getEnhancedCrops() {
+    public ObjectOpenHashSet<Block> getEnhancedCrops() {
         return enhancedCrops;
     }
 
-    public ITag.INamedTag<Block> getUnenhancedCrops() {
-        return unenhancedCrops;
+    public ITag.INamedTag<Block> getEnhancedCropsTag() {
+        return enhancedCropsTag;
+    }
+
+    public ITag.INamedTag<Block> getUnenhancedCropsTag() {
+        return unenhancedCropsTag;
     }
 }
