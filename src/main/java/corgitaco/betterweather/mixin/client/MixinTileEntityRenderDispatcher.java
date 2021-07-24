@@ -1,7 +1,7 @@
 package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.blockentity.BetterWeatherBlockEntityTypes;
-import corgitaco.betterweather.client.tileentity.WeatherVaneTileEntityRenderer;
+import corgitaco.betterweather.client.tileentity.WeatherVaneBlockEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.tileentity.TileEntity;
@@ -20,6 +20,6 @@ public abstract class MixinTileEntityRenderDispatcher {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void addBetterWeatherBlockEntities(CallbackInfo ci) {
-        this.register(BetterWeatherBlockEntityTypes.WEATHER_VANE_TILE_ENTITY, new WeatherVaneTileEntityRenderer((TileEntityRendererDispatcher) (Object) this));
+        this.register(BetterWeatherBlockEntityTypes.WEATHER_VANE_TILE_ENTITY, new WeatherVaneBlockEntityRenderer((TileEntityRendererDispatcher) (Object) this));
     }
 }

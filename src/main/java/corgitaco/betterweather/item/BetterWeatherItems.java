@@ -17,7 +17,8 @@ public class BetterWeatherItems {
 
     public static final List<Item> ITEMS = new ArrayList<>();
 
-    public static final Item WEATHER_VANE = register(new BlockItem(BetterWeatherBlocks.WEATHER_VANE, new Item.Properties().group(ItemGroup.MISC)));
+    public static final Item IRON_WEATHER_VANE = register(new BlockItem(BetterWeatherBlocks.IRON_WEATHER_VANE, new Item.Properties().group(ItemGroup.MISC)));
+    public static final Item IRON_WEATHER_VANE_ROD = register(new BlockItem(BetterWeatherBlocks.IRON_WEATHER_VANE_ROD, new Item.Properties().group(ItemGroup.MISC)));
 
     public static <T extends Item> T register(String key, T item) {
         item.setRegistryName(new ResourceLocation(BetterWeather.MOD_ID, key));

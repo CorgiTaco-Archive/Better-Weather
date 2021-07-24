@@ -35,7 +35,7 @@ public class WeatherVaneModel extends Model {
         bb_main.render(matrixStack, buffer, packedLight, packedOverlay);
     }
 
-    public void setRotationAngle(ModelRenderer modelRenderer, float x, float y, float z) {
-        this.rotational.rotateAngleY = 180;
+    public void setRotationAngle(float x, float y, float z) {
+        this.rotational.rotateAngleY = y;
     }
 }

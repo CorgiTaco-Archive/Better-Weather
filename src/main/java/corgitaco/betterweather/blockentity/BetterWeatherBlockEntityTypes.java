@@ -17,7 +17,7 @@ public class BetterWeatherBlockEntityTypes {
 
     public static final List<TileEntityType<?>> BLOCK_ENTITIES = new ArrayList<>();
 
-    public static final TileEntityType<WeatherVaneTileEntity> WEATHER_VANE_TILE_ENTITY = register("weather_vane", TileEntityType.Builder.create(WeatherVaneTileEntity::new, BetterWeatherBlocks.WEATHER_VANE));
+    public static final TileEntityType<WeatherVaneBlockEntity> WEATHER_VANE_TILE_ENTITY = register("weather_vane", TileEntityType.Builder.create(WeatherVaneBlockEntity::new, BetterWeatherBlocks.IRON_WEATHER_VANE));
 
 
     private static <T extends TileEntity> TileEntityType<T> register(String key, TileEntityType.Builder<T> builder) {
