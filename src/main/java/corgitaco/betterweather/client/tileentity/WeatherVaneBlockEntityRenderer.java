@@ -7,6 +7,7 @@ import corgitaco.betterweather.blockentity.WeatherVaneBlockEntity;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.util.math.vector.Vector3f;
 
 public class WeatherVaneBlockEntityRenderer extends TileEntityRenderer<WeatherVaneBlockEntity> {
 
@@ -19,7 +20,8 @@ public class WeatherVaneBlockEntityRenderer extends TileEntityRenderer<WeatherVa
     @Override
     public void render(WeatherVaneBlockEntity weatherVane, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
         matrixStackIn.push();
-        matrixStackIn.translate(0.5, -0.5, 0.5);
+        matrixStackIn.translate(0.5, 1.5, 0.5);
+        matrixStackIn.rotate(Vector3f.XN.rotationDegrees(180.0F));
         WeatherVane block = (WeatherVane) weatherVane.getBlockState().getBlock();
         IVertexBuilder buffer = bufferIn.getBuffer(this.model.getRenderType(block.getWeatherVaneType().getTextureLocation()));
         model.render(matrixStackIn, buffer, combinedLightIn, combinedOverlayIn, 1, 1, 1, 1);
