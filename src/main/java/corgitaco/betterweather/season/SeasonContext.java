@@ -266,7 +266,7 @@ public class SeasonContext implements Season {
     }
 
     public void updatePacket(List<ServerPlayerEntity> players) {
-        NetworkHandler.sendToAllPlayers(players, new SeasonContextConstructingPacket(this));
+//        NetworkHandler.sendToAllPlayers(players, new SeasonContextConstructingPacket(this));
         NetworkHandler.sendToAllPlayers(players, new RefreshRenderersPacket());
     }
 

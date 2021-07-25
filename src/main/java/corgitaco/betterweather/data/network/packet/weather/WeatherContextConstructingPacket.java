@@ -51,7 +51,6 @@ public class WeatherContextConstructingPacket {
                         weatherEventContext.setCurrentEvent(message.bwWeatherEventContext.getCurrentEvent());
                         ((BiomeUpdate) world).updateBiomeData();
                     } else {
-                        throw new UnsupportedOperationException("This should only ever be called for constructing the Weather Context!");
                     }
                 }
             });
