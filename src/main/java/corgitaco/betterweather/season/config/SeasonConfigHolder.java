@@ -18,12 +18,12 @@ public class SeasonConfigHolder {
         map.put(Season.Key.WINTER, BWSeason.DEFAULT_WINTER);
     });
 
-    public static final SeasonConfigHolder DEFAULT_CONFIG_HOLDER = new SeasonConfigHolder(true, 240000, DEFAULT_SEASONS);
+    public static final SeasonConfigHolder DEFAULT_CONFIG_HOLDER = new SeasonConfigHolder(true, 2400000, DEFAULT_SEASONS);
 
     public static final Codec<SeasonConfigHolder> CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(Codec.BOOL.fieldOf("tickSeasonTimeWhenNoPlayersOnline").orElse(true).forGetter((seasonConfigHolder) -> {
             return seasonConfigHolder.tickSeasonTimeWhenNoPlayersOnline;
-        }), Codec.INT.fieldOf("yearLength").orElse(240000).forGetter((seasonConfigHolder) -> {
+        }), Codec.INT.fieldOf("yearLength").orElse(2400000).forGetter((seasonConfigHolder) -> {
             return seasonConfigHolder.seasonCycleLength;
         }), Codec.simpleMap(Season.Key.CODEC, BWSeason.CODEC, IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasons").forGetter((seasonConfigHolder) -> {
             return seasonConfigHolder.seasonKeySeasonMap;
