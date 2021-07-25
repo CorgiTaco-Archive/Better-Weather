@@ -4,9 +4,11 @@ import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.block.BetterWeatherBlocks;
 import corgitaco.betterweather.blockentity.BetterWeatherBlockEntityTypes;
 import corgitaco.betterweather.data.network.NetworkHandler;
+import corgitaco.betterweather.entity.BetterWeatherEntityTypes;
 import corgitaco.betterweather.item.BetterWeatherItems;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import net.minecraft.block.Block;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.event.RegistryEvent;
@@ -51,5 +53,13 @@ public class ForgeEntryPoint {
         BetterWeather.LOGGER.debug(BetterWeather.MOD_ID + ": Registering block entities...");
         BetterWeatherBlockEntityTypes.BLOCK_ENTITIES.forEach(entityType -> event.getRegistry().register(entityType));
         BetterWeather.LOGGER.info(BetterWeather.MOD_ID + ": Block entities registered!");
+    }
+
+    @SubscribeEvent
+    public static void registerEntities(RegistryEvent.Register<EntityType<?>> event) {
+        BetterWeather.LOGGER.debug(BetterWeather.MOD_ID + ": Registering entities...");
+        BetterWeatherEntityTypes.ENTITY_TYPES.forEach(entityType -> event.getRegistry().register(entityType));
+        BetterWeather.LOGGER.info(BetterWeather.MOD_ID + ": Entities registered!");
+
     }
 }

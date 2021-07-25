@@ -23,6 +23,7 @@
     "block.MixinAbstractBlockState",
     "chunk.MixinChunk",
     "chunk.MixinChunkHolder",
+    "client.MixinEntityRendererManager",
     "client.MixinTileEntityRenderDispatcher",
     "entity.MixinBreedGoal",
     "entity.MixinLivingEntity",
