@@ -1,5 +1,6 @@
 package corgitaco.betterweather.entity;
 
+import corgitaco.betterweather.util.MutableVec3d;
 import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -13,6 +14,7 @@ import net.minecraft.network.IPacket;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.api.distmarker.Dist;
@@ -54,40 +56,17 @@ public class TornadoEntity extends Entity {
             StateRotatable capturedState = capturedStates.get(i);
             double randXZDegrees = MathHelper.clampedLerp(0.4, 0.8, world.rand.nextDouble());
 
-            if (capturedState.xOffset < 20) {
-                capturedState.setXDegrees(capturedState.xOffset += randXZDegrees);
-            }
-
-            double randYDegrees = MathHelper.clampedLerp(0.05, 1.2, world.rand.nextDouble());
-
-            if (capturedState.yOffset > 10) {
-
-                double x = (double) this.getPosition().getX() + capturedState.xOffset;
-                double y = (double) this.getPosition().getY() + capturedState.yOffset;
-                double z = (double) this.getPosition().getZ() + capturedState.zOffset;
-                if (!world.isRemote) {
-                    FallingBlockEntity fallingblockentity = new FallingBlockEntity(world, x, y, z, Blocks.DIAMOND_BLOCK.getDefaultState());
-                    world.addEntity(fallingblockentity);
-
-                    world.addEntity(new FireworkRocketEntity(world, x, y, z, new ItemStack(Items.FIREWORK_ROCKET)));
-                }
-                capturedStates.remove(i);
-                continue;
-            }
 
 
-            capturedState.setYDegrees(capturedState.yOffset += randYDegrees);
-            if (capturedState.zOffset < 20) {
+            capturedState.worldPos.y += 0.01;
 
-                capturedState.setZDegrees(capturedState.zOffset += randXZDegrees);
-            }
+            capturedState.setRotationDegrees(capturedState.rotationDegrees > 360.0 ? 0 : (capturedState.rotationDegrees += 5.0F));
 
-            capturedState.setRotationDegrees(capturedState.rotationDegrees > 360.0 ? 0 : (capturedState.rotationDegrees += 6.0F));
 
         }
 
 
-        int limit = 500;
+        int limit = 5;
         if (capturedStates.size() > limit) {
             return;
         }
@@ -106,12 +85,17 @@ public class TornadoEntity extends Entity {
                         return;
                     }
 
-                    capturedStates.add(new StateRotatable(state, rand.nextFloat(), rand.nextFloat(), rand.nextFloat(), (float) MathHelper.clampedLerp(0.0, 360.0F, rand.nextFloat())));
+                    capturedStates.add(new StateRotatable(state, new MutableVec3d(mutable.getX(), mutable.getY(), mutable.getZ()), 0));
                     world.setBlockState(mutable, Blocks.AIR.getDefaultState());
                 }
             }
         }
     }
+
+    public static double angleBetween2Points(double endX, double endZ, double startX, double startZ) {
+        return Math.atan2(endX - startX, endZ - startZ);
+    }
+
 
     @Override
     protected void registerData() {
@@ -165,46 +149,34 @@ public class TornadoEntity extends Entity {
     public static class StateRotatable {
 
         private final BlockState state;
-        private float xOffset;
-        private float yOffset;
-        private float zOffset;
+        private final MutableVec3d worldPos;
         private float rotationDegrees;
 
-        public StateRotatable(BlockState state, float xOffset, float yOffset, float zOffset, float rotationDegrees) {
+        public StateRotatable(BlockState state, MutableVec3d worldPos, float rotationDegrees) {
             this.state = state;
-            this.xOffset = xOffset;
-            this.yOffset = yOffset;
-            this.zOffset = zOffset;
+            this.worldPos = worldPos;
             this.rotationDegrees = rotationDegrees;
         }
 
 
+        public MutableVec3d getWorldPos() {
+            return worldPos;
+        }
+
+        public double getXDistanceFrom(double x) {
+           return worldPos.x - x;
+        }
+
+        public double getYDistanceFrom(double y) {
+            return worldPos.y - y;
+        }
+
+        public double getZDistanceFrom(double z) {
+            return worldPos.z - z;
+        }
+
         public BlockState getState() {
             return state;
-        }
-
-        public float getXOffset() {
-            return xOffset;
-        }
-
-        public void setXDegrees(float xDegrees) {
-            this.xOffset = xDegrees;
-        }
-
-        public float getYOffset() {
-            return yOffset;
-        }
-
-        public void setYDegrees(float yDegrees) {
-            this.yOffset = yDegrees;
-        }
-
-        public float getZOffset() {
-            return zOffset;
-        }
-
-        public void setZDegrees(float zDegrees) {
-            this.zOffset = zDegrees;
         }
 
         public float getRotationDegrees() {

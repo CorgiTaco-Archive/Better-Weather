@@ -41,9 +41,12 @@ public class TornadoRenderer extends EntityRenderer<TornadoEntity> {
 
             TornadoEntity.StateRotatable stateRotatable = capturedStates.get(i);
             BlockState blockstate = stateRotatable.getState();
-            matrixStackIn.rotate(Vector3f.YN.rotationDegrees(stateRotatable.getRotationDegrees()));
+//            matrixStackIn.rotate(Vector3f.YN.rotationDegrees(stateRotatable.getRotationDegrees()));
 
-            matrixStackIn.translate(stateRotatable.getXOffset(), stateRotatable.getYOffset(), stateRotatable.getZOffset());
+            double x = stateRotatable.getWorldPos().x - entityIn.getPosX();
+            double y = stateRotatable.getWorldPos().y - entityIn.getPosY();
+            double z = stateRotatable.getWorldPos().z - entityIn.getPosZ();
+            matrixStackIn.translate(x, y, z);
             Minecraft.getInstance().getBlockRendererDispatcher().renderBlock(blockstate, matrixStackIn, bufferIn, packedLightIn, OverlayTexture.NO_OVERLAY);
             matrixStackIn.pop();
 
