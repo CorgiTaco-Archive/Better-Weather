@@ -47,7 +47,7 @@ public class WeatherContextConstructingPacket {
                     BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
                     if (weatherEventContext == null) {
                         weatherEventContext = ((BetterWeatherWorldData) world).setWeatherEventContext(new BWWeatherEventContext(message.bwWeatherEventContext.getCurrentWeatherEventKey(),
-                                message.bwWeatherEventContext.isWeatherForced(), world.getDimensionKey().getLocation(), world.func_241828_r().getRegistry(Registry.BIOME_KEY), message.bwWeatherEventContext.getWeatherEvents()));
+                                message.bwWeatherEventContext.isWeatherForced(), message.bwWeatherEventContext.getForecast(), world.getDimensionKey().getLocation(), world.func_241828_r().getRegistry(Registry.BIOME_KEY), message.bwWeatherEventContext.getWeatherEvents()));
                         weatherEventContext.setCurrentEvent(message.bwWeatherEventContext.getCurrentEvent());
                         ((BiomeUpdate) world).updateBiomeData();
                     } else {

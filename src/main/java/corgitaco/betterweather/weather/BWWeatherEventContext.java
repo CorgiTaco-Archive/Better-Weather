@@ -58,6 +58,8 @@ public class BWWeatherEventContext implements WeatherEventContext {
             return weatherEventContext.currentEvent.getName();
         }), Codec.BOOL.fieldOf("weatherForced").forGetter((weatherEventContext) -> {
             return weatherEventContext.weatherForced;
+        }), Codec.list(WeatherInstance.PACKET_CODEC).fieldOf("forecast").forGetter((weatherEventContext) -> {
+            return weatherEventContext.forecast;
         }), ResourceLocation.CODEC.fieldOf("worldID").forGetter((weatherEventContext) -> {
             return weatherEventContext.worldID;
         }), Codec.unboundedMap(Codec.STRING, WeatherEvent.CODEC).fieldOf("weatherEvents").forGetter((weatherEventContext) -> {
@@ -71,6 +73,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
 
     private final Map<String, WeatherEvent> weatherEvents = new HashMap<>();
+    private final List<WeatherInstance> forecast;
     private final ResourceLocation worldID;
     private final Registry<Biome> biomeRegistry;
     private final Path weatherConfigPath;
@@ -82,16 +85,16 @@ public class BWWeatherEventContext implements WeatherEventContext {
     private boolean weatherForced;
 
     //Packet Constructor
-    public BWWeatherEventContext(String currentEvent, boolean weatherForced, ResourceLocation worldID, Map<String, WeatherEvent> weatherEvents) {
-        this(currentEvent, weatherForced, worldID, null, weatherEvents);
+    public BWWeatherEventContext(String currentEvent, boolean weatherForced, List<WeatherInstance> forecast, ResourceLocation worldID, Map<String, WeatherEvent> weatherEvents) {
+        this(currentEvent, weatherForced, forecast, worldID, null, weatherEvents);
     }
 
     //Server world constructor
     public BWWeatherEventContext(WeatherEventSavedData weatherEventSavedData, RegistryKey<World> worldID, Registry<Biome> biomeRegistry) {
-        this(weatherEventSavedData.getEvent(), weatherEventSavedData.isWeatherForced(), worldID.getLocation(), biomeRegistry, null);
+        this(weatherEventSavedData.getEvent(), weatherEventSavedData.isWeatherForced(), weatherEventSavedData.getForecast(), worldID.getLocation(), biomeRegistry, null);
     }
 
-    public BWWeatherEventContext(String currentEvent, boolean weatherForced, ResourceLocation worldID, @Nullable Registry<Biome> biomeRegistry, @Nullable Map<String, WeatherEvent> weatherEvents) {
+    public BWWeatherEventContext(String currentEvent, boolean weatherForced, List<WeatherInstance> forecast, ResourceLocation worldID, @Nullable Registry<Biome> biomeRegistry, @Nullable Map<String, WeatherEvent> weatherEvents) {
         this.worldID = worldID;
         this.biomeRegistry = biomeRegistry;
         this.weatherConfigPath = BetterWeather.CONFIG_PATH.resolve(worldID.getNamespace()).resolve(worldID.getPath()).resolve("weather");
@@ -101,6 +104,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
         this.weatherForced = weatherForced;
         boolean isClient = weatherEvents != null;
         boolean isPacket = biomeRegistry == null;
+        this.forecast = forecast;
 
         if (isClient) {
             this.weatherEvents.putAll(weatherEvents);
@@ -112,7 +116,6 @@ public class BWWeatherEventContext implements WeatherEventContext {
         if (!isPacket) {
             this.handleConfig(isClient);
         }
-
 
         WeatherEvent currentWeatherEvent = this.weatherEvents.get(currentEvent);
         this.currentEvent = this.weatherEvents.getOrDefault(currentEvent, None.DEFAULT);
@@ -131,6 +134,60 @@ public class BWWeatherEventContext implements WeatherEventContext {
     }
 
 
+    public void updateForecast(ServerWorld world) {
+        long totalTimeUntil = -1L;
+        for (int i = 0; i <= 100; i++) {
+            if (this.forecast.size() <= i) {
+                Random random = new Random(world.getSeed() + ((i == 0) ? world.getGameTime() : totalTimeUntil));
+
+                WeatherEvent randomEvent = getRandomEvent(world, random);
+
+                while (randomEvent == null) {
+                    randomEvent = getRandomEvent(world, random);
+                }
+
+                WeatherInstance weatherInstance = new WeatherInstance(randomEvent.getName(), totalTimeUntil += (random.nextInt(168000) + 12000), random.nextInt(12000) + 12000);
+                this.forecast.add(weatherInstance);
+                totalTimeUntil += weatherInstance.getEventTime();
+                continue;
+            }
+            @Nullable
+            WeatherInstance lastWeatherInstance = i == 0 ? null : this.forecast.get(i - 1);
+
+            WeatherInstance weatherInstance = this.forecast.get(i);
+
+            if (lastWeatherInstance != null) {
+                totalTimeUntil = lastWeatherInstance.getEventTime() - 1L;
+
+            } else {
+            }
+
+        }
+    }
+
+    @Nullable
+    public WeatherEvent getRandomEvent(ServerWorld world, Random random) {
+        ArrayList<String> list = new ArrayList<>(this.weatherEvents.keySet());
+        Collections.shuffle(list, random);
+        Season season = ((Climate) world).getSeason();
+        boolean hasSeasons = season != null;
+
+        for (String entry : list) {
+            if (entry.equals(DEFAULT)) {
+                continue;
+            }
+            WeatherEvent weatherEvent = this.weatherEvents.get(entry);
+            double chance = hasSeasons ? weatherEvent.getSeasonChances().getOrDefault(season.getKey(), new IdentityHashMap<>()).getOrDefault(season.getPhase(), weatherEvent.getDefaultChance()) : weatherEvent.getDefaultChance();
+
+            if (random.nextDouble() < chance) {
+                return weatherEvent;
+            }
+        }
+
+        return null;
+    }
+
+
     public void tick(World world) {
         //TODO: Remove this check and figure out what could possibly be causing this and prevent it.
         if (this.weatherEvents.get(DEFAULT) == this.currentEvent && world.isRaining()) {
@@ -141,6 +198,8 @@ public class BWWeatherEventContext implements WeatherEventContext {
         boolean wasForced = this.weatherForced;
         if (world instanceof ServerWorld) {
             shuffleAndPickWeatherEvent(world);
+            this.updateForecast((ServerWorld) world);
+
         }
 
         if (prevEvent != this.currentEvent || wasForced != this.weatherForced) {
@@ -421,6 +480,10 @@ public class BWWeatherEventContext implements WeatherEventContext {
 
     public Map<String, WeatherEvent> getWeatherEvents() {
         return weatherEvents;
+    }
+
+    public List<WeatherInstance> getForecast() {
+        return forecast;
     }
 
     public boolean isWeatherForced() {
