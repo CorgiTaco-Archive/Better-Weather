@@ -23,6 +23,7 @@ import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.data.network.NetworkHandler;
 import corgitaco.betterweather.data.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.data.network.packet.weather.WeatherDataPacket;
+import corgitaco.betterweather.data.network.packet.weather.WeatherForecastPacket;
 import corgitaco.betterweather.data.storage.WeatherEventSavedData;
 import corgitaco.betterweather.helpers.BiomeUpdate;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
@@ -134,17 +135,20 @@ public class BWWeatherEventContext implements WeatherEventContext {
     }
 
 
-    public void updateServerForecast(ServerWorld world) {
-        if (this.forecast.isEmpty()) {
-            Random random = new Random(world.getSeed() + world.getGameTime());
-            WeatherEvent randomEvent = getRandomEvent(world, random);
+    public void updateForecast(World world) {
+        long gameTime = world.getGameTime();
+        if (world instanceof ServerWorld) {
+            if (this.forecast.isEmpty()) {
+                Random random = new Random(((ServerWorld) world).getSeed() + gameTime);
+                WeatherEvent randomEvent = getRandomEvent(world, random);
 
-            while (randomEvent == null) {
-                randomEvent = getRandomEvent(world, random);
+                while (randomEvent == null) {
+                    randomEvent = getRandomEvent(world, random);
+                }
+                WeatherInstance weatherInstance = new WeatherInstance(randomEvent.getName(), (random.nextInt(168000) + 12000), random.nextInt(12000) + 12000);
+
+                this.forecast.add(weatherInstance);
             }
-            WeatherInstance weatherInstance = new WeatherInstance(randomEvent.getName(), (random.nextInt(168000) + 12000), random.nextInt(12000) + 12000);
-
-            this.forecast.add(weatherInstance);
         }
         WeatherInstance firstWeatherEvent = this.forecast.get(0);
 
@@ -158,31 +162,38 @@ public class BWWeatherEventContext implements WeatherEventContext {
             firstWeatherEvent.setTimeUntilEvent(firstWeatherEvent.getTimeUntilEvent() - 1L);
         }
 
-
-        for (int i = 1; i <= 100; i++) {
+        for (int i = 1; i < 100; i++) {
             WeatherInstance lastWeatherInstance = this.forecast.get(i - 1);
-
             long timeUntil = lastWeatherInstance.getTimeUntilEvent() + lastWeatherInstance.getTimeUntilEvent();
-            if (this.forecast.size() <= i) {
-                Random random = new Random(world.getSeed() + world.getGameTime() + timeUntil);
+            if (world instanceof ServerWorld) {
+                if (this.forecast.size() <= i) {
+                    Random random = new Random(((ServerWorld) world).getSeed() + gameTime + timeUntil);
 
-                WeatherEvent randomEvent = getRandomEvent(world, random);
+                    WeatherEvent randomEvent = getRandomEvent(world, random);
 
-                while (randomEvent == null) {
-                    randomEvent = getRandomEvent(world, random);
+                    while (randomEvent == null) {
+                        randomEvent = getRandomEvent(world, random);
+                    }
+
+                    WeatherInstance weatherInstance = new WeatherInstance(randomEvent.getName(), timeUntil + (random.nextInt(168000) + 12000), random.nextInt(12000) + 12000);
+                    this.forecast.add(weatherInstance);
+                    NetworkHandler.sendToAllPlayers(((ServerWorld) world).getPlayers(), new WeatherForecastPacket(this.forecast));
                 }
-
-                WeatherInstance weatherInstance = new WeatherInstance(randomEvent.getName(), timeUntil + (random.nextInt(168000) + 12000), random.nextInt(12000) + 12000);
-                this.forecast.add(weatherInstance);
-                continue;
             }
+
             WeatherInstance weatherInstance = this.forecast.get(i);
             weatherInstance.setTimeUntilEvent(timeUntil);
+        }
+        // Sync client.
+        if (world instanceof ServerWorld) {
+            if (gameTime % 600L == 0) {
+                NetworkHandler.sendToAllPlayers(((ServerWorld) world).getPlayers(), new WeatherForecastPacket(this.forecast));
+            }
         }
     }
 
     @Nullable
-    public WeatherEvent getRandomEvent(ServerWorld world, Random random) {
+    public WeatherEvent getRandomEvent(World world, Random random) {
         ArrayList<String> list = new ArrayList<>(this.weatherEvents.keySet());
         Collections.shuffle(list, random);
         Season season = ((Climate) world).getSeason();
@@ -214,8 +225,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
         boolean wasForced = this.weatherForced;
         if (world instanceof ServerWorld) {
             shuffleAndPickWeatherEvent(world);
-            this.updateServerForecast((ServerWorld) world);
-
+            this.updateForecast((ServerWorld) world);
         }
 
         if (prevEvent != this.currentEvent || wasForced != this.weatherForced) {

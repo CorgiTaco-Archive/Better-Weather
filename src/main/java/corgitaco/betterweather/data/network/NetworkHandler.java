@@ -6,6 +6,7 @@ import corgitaco.betterweather.data.network.packet.season.SeasonTimePacket;
 import corgitaco.betterweather.data.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.data.network.packet.weather.WeatherContextConstructingPacket;
 import corgitaco.betterweather.data.network.packet.weather.WeatherDataPacket;
+import corgitaco.betterweather.data.network.packet.weather.WeatherForecastPacket;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkDirection;
@@ -29,6 +30,7 @@ public class NetworkHandler {
         SIMPLE_CHANNEL.registerMessage(2, WeatherDataPacket.class, WeatherDataPacket::writeToPacket, WeatherDataPacket::readFromPacket, WeatherDataPacket::handle);
         SIMPLE_CHANNEL.registerMessage(3, RefreshRenderersPacket.class, RefreshRenderersPacket::writeToPacket, RefreshRenderersPacket::readFromPacket, RefreshRenderersPacket::handle);
         SIMPLE_CHANNEL.registerMessage(4, SeasonTimePacket.class, SeasonTimePacket::writeToPacket, SeasonTimePacket::readFromPacket, SeasonTimePacket::handle);
+        SIMPLE_CHANNEL.registerMessage(5, WeatherForecastPacket.class, WeatherForecastPacket::writeToPacket, WeatherForecastPacket::readFromPacket, WeatherForecastPacket::handle);
     }
 
     public static void sendToPlayer(ServerPlayerEntity playerEntity, Object objectToSend) {
