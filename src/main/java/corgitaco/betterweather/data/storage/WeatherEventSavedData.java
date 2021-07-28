@@ -107,7 +107,7 @@ public class WeatherEventSavedData extends WorldSavedData {
         markDirty();
     }
 
-    public void setForecast(ArrayList<WeatherInstance> forecast) {
+    public void setForecast(List<WeatherInstance> forecast) {
         this.forecast.clear();
         this.forecast.addAll(forecast);
     }

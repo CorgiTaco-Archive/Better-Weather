@@ -224,7 +224,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
         WeatherEvent prevEvent = this.currentEvent;
         boolean wasForced = this.weatherForced;
         if (world instanceof ServerWorld) {
-            shuffleAndPickWeatherEvent(world);
+//            shuffleAndPickWeatherEvent(world);
         }
 
         this.updateForecast(world);
@@ -293,6 +293,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
         WeatherEventSavedData weatherEventSavedData = WeatherEventSavedData.get(world);
         weatherEventSavedData.setEvent(this.currentEvent.getName());
         weatherEventSavedData.setWeatherForced(this.weatherForced);
+        weatherEventSavedData.setForecast(this.forecast);
     }
 
     public WeatherEvent weatherForcer(String weatherEventName, int weatherEventLength, ServerWorld world) {
