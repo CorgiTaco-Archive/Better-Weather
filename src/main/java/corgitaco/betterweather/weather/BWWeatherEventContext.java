@@ -225,8 +225,9 @@ public class BWWeatherEventContext implements WeatherEventContext {
         boolean wasForced = this.weatherForced;
         if (world instanceof ServerWorld) {
             shuffleAndPickWeatherEvent(world);
-            this.updateForecast(world);
         }
+
+        this.updateForecast(world);
 
         if (prevEvent != this.currentEvent || wasForced != this.weatherForced) {
             onWeatherChange(world);
