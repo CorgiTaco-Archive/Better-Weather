@@ -25,7 +25,9 @@ import corgitaco.betterweather.data.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.data.network.packet.weather.WeatherDataPacket;
 import corgitaco.betterweather.data.network.packet.weather.WeatherForecastPacket;
 import corgitaco.betterweather.data.storage.WeatherEventSavedData;
+import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.helpers.BiomeUpdate;
+import corgitaco.betterweather.season.SeasonContext;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
 import corgitaco.betterweather.weather.event.None;
 import net.minecraft.client.Minecraft;
@@ -145,7 +147,19 @@ public class BWWeatherEventContext implements WeatherEventContext {
                 while (randomEvent == null) {
                     randomEvent = getRandomEvent(world, random);
                 }
-                WeatherInstance weatherInstance = new WeatherInstance(randomEvent.getName(), (random.nextInt(168000) + 12000), random.nextInt(12000) + 12000);
+                int timeUntilEvent = random.nextInt(168000) + 12000;
+
+                SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
+                if (seasonContext != null) {
+                    int seasonTime = (int) ((gameTime + timeUntilEvent) % seasonContext.getYearLength());
+
+                    Season.Key seasonForTime = Season.getSeasonFromTime(seasonTime, seasonContext.getYearLength());
+                    Season.Phase phaseForTime = Season.getPhaseFromYearTime(seasonTime, seasonContext.getYearLength());
+
+                    timeUntilEvent = (int) (timeUntilEvent * (1 / seasonContext.getSeasons().get(seasonForTime).getPhaseSettings().get(phaseForTime).getWeatherEventChanceMultiplier()));
+                }
+
+                WeatherInstance weatherInstance = new WeatherInstance(randomEvent.getName(), timeUntilEvent, random.nextInt(12000) + 12000);
 
                 this.forecast.add(weatherInstance);
             }

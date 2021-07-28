@@ -23,6 +23,7 @@ public interface Season {
 
     /**
      * If null, seasons are not enabled for this world.
+     *
      * @param world Should be either or extenders of {@link net.minecraft.client.world.ClientWorld} or {@link net.minecraft.world.server.ServerWorld}
      * @return Season
      */
@@ -196,5 +197,18 @@ public interface Season {
             return Key.AUTUMN;
         } else
             return Key.WINTER;
+    }
+
+    static Phase getPhaseFromYearTime(int currentYearTime, int yearLength) {
+        int seasonLength = yearLength / Key.values().length;
+        int phaseLength = seasonLength / Phase.values().length;
+
+        if (currentYearTime < phaseLength) {
+            return Phase.START;
+        } else if (currentYearTime < phaseLength * 2) {
+            return Phase.MID;
+        } else {
+            return Phase.END;
+        }
     }
 }

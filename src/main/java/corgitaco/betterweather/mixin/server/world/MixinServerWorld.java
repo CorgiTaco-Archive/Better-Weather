@@ -115,6 +115,16 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
         updateBiomeData();
     }
 
+    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z", ordinal = 0))
+    private boolean disableVanillaWeatherCycle(GameRules gameRules, GameRules.RuleKey<GameRules.BooleanValue> key) {
+        if (gameRules.getBoolean(GameRules.DO_WEATHER_CYCLE) && weatherContext != null) {
+            return false;
+        } else {
+            return gameRules.getBoolean(GameRules.DO_WEATHER_CYCLE);
+        }
+    }
+
+
     @SuppressWarnings("ConstantConditions")
     @Override
     public void updateBiomeData() {
@@ -136,8 +146,6 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
                 ((BiomeModifier) (Object) biome).setWeatherTempModifier(weatherTemperatureModifier);
                 ((BiomeModifier) (Object) biome).setWeatherHumidityModifier(weatherHumidityModifier);
             }
-
-
         }
     }
 
