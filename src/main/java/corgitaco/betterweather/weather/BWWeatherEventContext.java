@@ -134,11 +134,37 @@ public class BWWeatherEventContext implements WeatherEventContext {
     }
 
 
-    public void updateForecast(ServerWorld world) {
-        long totalTimeUntil = -1L;
-        for (int i = 0; i <= 100; i++) {
+    public void updateServerForecast(ServerWorld world) {
+        if (this.forecast.isEmpty()) {
+            Random random = new Random(world.getSeed() + world.getGameTime());
+            WeatherEvent randomEvent = getRandomEvent(world, random);
+
+            while (randomEvent == null) {
+                randomEvent = getRandomEvent(world, random);
+            }
+            WeatherInstance weatherInstance = new WeatherInstance(randomEvent.getName(), (random.nextInt(168000) + 12000), random.nextInt(12000) + 12000);
+
+            this.forecast.add(weatherInstance);
+        }
+        WeatherInstance firstWeatherEvent = this.forecast.get(0);
+
+        if (firstWeatherEvent.getTimeUntilEvent() <= 0) {
+            if (firstWeatherEvent.getEventTime() <= 0) {
+                this.forecast.remove(0);
+            } else {
+                firstWeatherEvent.setEventTime(firstWeatherEvent.getEventTime() - 1);
+            }
+        } else {
+            firstWeatherEvent.setTimeUntilEvent(firstWeatherEvent.getTimeUntilEvent() - 1L);
+        }
+
+
+        for (int i = 1; i <= 100; i++) {
+            WeatherInstance lastWeatherInstance = this.forecast.get(i - 1);
+
+            long timeUntil = lastWeatherInstance.getTimeUntilEvent() + lastWeatherInstance.getTimeUntilEvent();
             if (this.forecast.size() <= i) {
-                Random random = new Random(world.getSeed() + ((i == 0) ? world.getGameTime() : totalTimeUntil));
+                Random random = new Random(world.getSeed() + world.getGameTime() + timeUntil);
 
                 WeatherEvent randomEvent = getRandomEvent(world, random);
 
@@ -146,22 +172,12 @@ public class BWWeatherEventContext implements WeatherEventContext {
                     randomEvent = getRandomEvent(world, random);
                 }
 
-                WeatherInstance weatherInstance = new WeatherInstance(randomEvent.getName(), totalTimeUntil += (random.nextInt(168000) + 12000), random.nextInt(12000) + 12000);
+                WeatherInstance weatherInstance = new WeatherInstance(randomEvent.getName(), timeUntil + (random.nextInt(168000) + 12000), random.nextInt(12000) + 12000);
                 this.forecast.add(weatherInstance);
-                totalTimeUntil += weatherInstance.getEventTime();
                 continue;
             }
-            @Nullable
-            WeatherInstance lastWeatherInstance = i == 0 ? null : this.forecast.get(i - 1);
-
             WeatherInstance weatherInstance = this.forecast.get(i);
-
-            if (lastWeatherInstance != null) {
-                totalTimeUntil = lastWeatherInstance.getEventTime() - 1L;
-
-            } else {
-            }
-
+            weatherInstance.setTimeUntilEvent(timeUntil);
         }
     }
 
@@ -198,7 +214,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
         boolean wasForced = this.weatherForced;
         if (world instanceof ServerWorld) {
             shuffleAndPickWeatherEvent(world);
-            this.updateForecast((ServerWorld) world);
+            this.updateServerForecast((ServerWorld) world);
 
         }
 
