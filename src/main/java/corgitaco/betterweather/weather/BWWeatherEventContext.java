@@ -41,6 +41,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.IServerWorldInfo;
+import net.minecraft.world.storage.ISpawnWorldInfo;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -148,7 +149,7 @@ public class BWWeatherEventContext implements WeatherEventContext {
                     randomEvent = getRandomEvent(world, random, 0L);
                 }
 
-                int timeUntilEvent = getTimeUntilEvent((BetterWeatherWorldData) world, gameTime, random.nextInt(168000) + 12000);
+                int timeUntilEvent = getTimeUntilEvent((BetterWeatherWorldData) world, gameTime, random.nextInt(1) + 500);
 
                 WeatherInstance weatherInstance = new WeatherInstance(randomEvent.getName(), timeUntilEvent, random.nextInt(12000) + 12000);
 
@@ -162,9 +163,14 @@ public class BWWeatherEventContext implements WeatherEventContext {
                 this.forecast.remove(0);
             } else {
                 this.currentEvent = this.weatherEvents.get(firstWeatherEvent.getWeatherEvent());
+                world.getWorldInfo().setRaining(true);
                 firstWeatherEvent.setEventTime(firstWeatherEvent.getEventTime() - 1);
+                if (world instanceof ServerWorld) {
+                    ((IServerWorldInfo) world.getWorldInfo()).setRainTime(firstWeatherEvent.getEventTime());
+                }
             }
         } else {
+            world.getWorldInfo().setRaining(false);
             firstWeatherEvent.setTimeUntilEvent(firstWeatherEvent.getTimeUntilEvent() - 1L);
         }
 
