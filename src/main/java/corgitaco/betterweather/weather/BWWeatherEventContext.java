@@ -159,19 +159,26 @@ public class BWWeatherEventContext implements WeatherEventContext {
         WeatherInstance firstWeatherEvent = this.forecast.get(0);
 
         if (firstWeatherEvent.getTimeUntilEvent() <= 0) {
-            if (firstWeatherEvent.getEventTime() <= 0) {
-                this.forecast.remove(0);
+            int eventTime = firstWeatherEvent.getEventTime();
+            if (eventTime <= 0) {
+                if (world instanceof ServerWorld) {
+                    this.forecast.remove(0);
+                    NetworkHandler.sendToAllPlayers(((ServerWorld) world).getPlayers(), new WeatherForecastPacket(this.forecast));
+                }
             } else {
                 this.currentEvent = this.weatherEvents.get(firstWeatherEvent.getWeatherEvent());
                 world.getWorldInfo().setRaining(true);
-                firstWeatherEvent.setEventTime(firstWeatherEvent.getEventTime() - 1);
+                firstWeatherEvent.setEventTime(eventTime - 1);
                 if (world instanceof ServerWorld) {
-                    ((IServerWorldInfo) world.getWorldInfo()).setRainTime(firstWeatherEvent.getEventTime());
+                    ((IServerWorldInfo) world.getWorldInfo()).setRainTime(eventTime);
                 }
             }
         } else {
             world.getWorldInfo().setRaining(false);
             firstWeatherEvent.setTimeUntilEvent(firstWeatherEvent.getTimeUntilEvent() - 1L);
+            if (world instanceof ServerWorld) {
+                ((IServerWorldInfo) world.getWorldInfo()).setRainTime((int) firstWeatherEvent.getTimeUntilEvent());
+            }
         }
 
         for (int i = 1; i < 100; i++) {
