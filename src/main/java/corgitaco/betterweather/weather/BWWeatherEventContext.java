@@ -142,10 +142,10 @@ public class BWWeatherEventContext implements WeatherEventContext {
         if (world instanceof ServerWorld) {
             if (this.forecast.isEmpty()) {
                 Random random = new Random(((ServerWorld) world).getSeed() + gameTime);
-                WeatherEvent randomEvent = getRandomEvent(world, random);
+                WeatherEvent randomEvent = getRandomEvent(world, random, 0L);
 
                 while (randomEvent == null) {
-                    randomEvent = getRandomEvent(world, random);
+                    randomEvent = getRandomEvent(world, random, 0L);
                 }
 
                 int timeUntilEvent = getTimeUntilEvent((BetterWeatherWorldData) world, gameTime, random.nextInt(168000) + 12000);
@@ -175,12 +175,13 @@ public class BWWeatherEventContext implements WeatherEventContext {
                     long timeUntil = lastWeatherInstance.getTimeUntilEvent() + lastWeatherInstance.getEventTime();
                     Random random = new Random(((ServerWorld) world).getSeed() + gameTime + timeUntil);
 
-                    WeatherEvent randomEvent = getRandomEvent(world, random);
+                    long timeUntilEvent = timeUntil + getTimeUntilEvent((BetterWeatherWorldData) world, gameTime, random.nextInt(168000) + 12000);
+
+                    WeatherEvent randomEvent = getRandomEvent(world, random, timeUntilEvent);
 
                     while (randomEvent == null) {
-                        randomEvent = getRandomEvent(world, random);
+                        randomEvent = getRandomEvent(world, random, timeUntilEvent);
                     }
-                    long timeUntilEvent = timeUntil + getTimeUntilEvent((BetterWeatherWorldData) world, gameTime, random.nextInt(168000) + 12000);
 
                     WeatherInstance weatherInstance = new WeatherInstance(randomEvent.getName(), timeUntilEvent, random.nextInt(12000) + 12000);
                     this.forecast.add(weatherInstance);
@@ -213,25 +214,30 @@ public class BWWeatherEventContext implements WeatherEventContext {
     }
 
     @Nullable
-    public WeatherEvent getRandomEvent(World world, Random random) {
+    public WeatherEvent getRandomEvent(World world, Random random, long timeUntil) {
         ArrayList<String> list = new ArrayList<>(this.weatherEvents.keySet());
         Collections.shuffle(list, random);
-        Season season = ((Climate) world).getSeason();
-        boolean hasSeasons = season != null;
+        SeasonContext seasonContext = ((BetterWeatherWorldData)world).getSeasonContext();
+        boolean hasSeasons = seasonContext != null;
+
+        int seasonTime = (int) ((world.getGameTime() + timeUntil) % seasonContext.getYearLength());
+
+        Season.Key seasonForTime = Season.getSeasonFromTime(seasonTime, seasonContext.getYearLength());
+        Season.Phase phaseForTime = Season.getPhaseFromYearTime(seasonTime, seasonContext.getYearLength());
 
         for (String entry : list) {
             if (entry.equals(DEFAULT)) {
                 continue;
             }
             WeatherEvent weatherEvent = this.weatherEvents.get(entry);
-            double chance = hasSeasons ? weatherEvent.getSeasonChances().getOrDefault(season.getKey(), new IdentityHashMap<>()).getOrDefault(season.getPhase(), weatherEvent.getDefaultChance()) : weatherEvent.getDefaultChance();
+            double chance = hasSeasons ? weatherEvent.getSeasonChances().getOrDefault(seasonForTime, new IdentityHashMap<>()).getOrDefault(phaseForTime, weatherEvent.getDefaultChance()) : weatherEvent.getDefaultChance();
 
             if (random.nextDouble() < chance) {
                 return weatherEvent;
             }
         }
 
-        return null;
+        return this.weatherEvents.get(list.get(random.nextInt(list.size())));
     }
 
 
