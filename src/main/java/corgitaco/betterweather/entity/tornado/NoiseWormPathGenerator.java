@@ -3,6 +3,9 @@ package corgitaco.betterweather.entity.tornado;
 import corgitaco.betterweather.util.noise.FastNoise;
 import it.unimi.dsi.fastutil.longs.Long2ObjectArrayMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.SectionPos;
@@ -18,17 +21,16 @@ import java.util.function.Predicate;
  */
 public class NoiseWormPathGenerator {
     private final List<Node> nodes;
-    private final Long2ObjectArrayMap<List<Node>> fastNodes;
+
+    public NoiseWormPathGenerator(List<Node> nodes) {
+        this.nodes = nodes;
+    }
 
     public NoiseWormPathGenerator(FastNoise noise, BlockPos startPos, Predicate<BlockPos> isInvalid, int maxDistance) {
         List<Node> nodes = new ArrayList<>();
-        Long2ObjectArrayMap<List<Node>> fastNodes = new Long2ObjectArrayMap<>();
-
 
         nodes.add(new Node(startPos.toMutable(), 0));
         int distanceInNodes = maxDistance / 5;
-
-        int startY = startPos.getY();
 
         for (int i = 1; i < distanceInNodes; i++) {
             Node prevNode = nodes.get(i - 1);
@@ -42,7 +44,6 @@ public class NoiseWormPathGenerator {
             int newY = 0;
             BlockPos.Mutable pos = new BlockPos.Mutable(addedPos.getX(), newY, addedPos.getZ());
 
-
             Node nextNode = new Node(pos, i);
 
             if (isInvalid.test(nextNode.getPos())) {
@@ -51,12 +52,9 @@ public class NoiseWormPathGenerator {
             long key = ChunkPos.asLong(SectionPos.toChunk(nextNode.getPos().getX()), SectionPos.toChunk(nextNode.getPos().getZ()));
 
             nodes.add(nextNode);
-            fastNodes.computeIfAbsent(key, key2 -> new ArrayList<>()).add(nextNode);
         }
 
         this.nodes = nodes;
-        this.fastNodes = fastNodes;
-
     }
 
     public boolean exists() {
@@ -65,14 +63,6 @@ public class NoiseWormPathGenerator {
 
     public List<Node> getNodes() {
         return nodes;
-    }
-
-    public List<Node> getNodesForChunk(long pos) {
-        return this.fastNodes.get(pos);
-    }
-
-    public LongSet getNodeChunkPositions() {
-        return this.fastNodes.keySet();
     }
 
     public BlockPos getFinalPosition() {
@@ -92,6 +82,39 @@ public class NoiseWormPathGenerator {
         float y = (float) (Math.cos(angle) * length);
 
         return new Vector2f(x, y);
+    }
+
+    public CompoundNBT write() {
+        CompoundNBT nbt = new CompoundNBT();
+        ListNBT positions = new ListNBT();
+        for (Node node : this.nodes) {
+            CompoundNBT posNBT = new CompoundNBT();
+            posNBT.putInt("idx", node.getIdx());
+            posNBT.putIntArray("pos", writeBlockPos(node.getPos().toImmutable()));
+            positions.add(posNBT);
+        }
+        nbt.put("nodes", positions);
+        return nbt;
+    }
+
+    public static NoiseWormPathGenerator read(CompoundNBT nbt) {
+        List<Node> nodes = new ArrayList<>();
+
+        ListNBT nodeNBTList = nbt.getList("nodes", 9);
+        for (INBT inbt : nodeNBTList) {
+           nodes.add(new Node(getBlockPos(((CompoundNBT) inbt).getIntArray("pos")).toMutable(), ((CompoundNBT) inbt).getInt("idx")));
+        }
+
+        return new NoiseWormPathGenerator(nodes);
+
+    }
+
+    public int[] writeBlockPos(BlockPos pos) {
+        return new int[]{pos.getX(), pos.getY(), pos.getZ()};
+    }
+
+    public static BlockPos getBlockPos(int[] posArray) {
+        return new BlockPos(posArray[0], posArray[1], posArray[2]);
     }
 
 

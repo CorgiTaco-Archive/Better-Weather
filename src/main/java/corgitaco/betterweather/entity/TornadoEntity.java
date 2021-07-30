@@ -2,13 +2,9 @@ package corgitaco.betterweather.entity;
 
 import corgitaco.betterweather.entity.tornado.NoiseWormPathGenerator;
 import corgitaco.betterweather.util.noise.FastNoise;
-import net.minecraft.block.*;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.item.FallingBlockEntity;
-import net.minecraft.entity.projectile.FireworkRocketEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.network.IPacket;
@@ -28,7 +24,6 @@ import java.util.Random;
 public class TornadoEntity extends Entity {
 
     private final List<StateRotatable> capturedStates = new ArrayList<>();
-    private int range;
     private int lifeSpan;
     private int nodeIDX;
 
@@ -44,7 +39,6 @@ public class TornadoEntity extends Entity {
     public TornadoEntity(EntityType<TornadoEntity> entityTypeIn, World worldIn) {
         super(entityTypeIn, worldIn);
 
-        range = worldIn.rand.nextInt(50) + 150;
         lifeSpan = worldIn.rand.nextInt(10000) + 1000;
         this.ignoreFrustumCheck = true;
     }
@@ -56,33 +50,28 @@ public class TornadoEntity extends Entity {
             this.pathGenerator = new NoiseWormPathGenerator(createNoise(new Random((long) (this.getPosX() + this.getPosY() + this.getPosZ())).nextInt()), this.getPosition(), (isInvalid) -> false, 5000);
         }
 
-        this.lifeSpan--;
+        rotationPitch += 6.0f;
 
-
-        rotation += 6.0f;
-
-        if (rotation > 360.0) {
-            rotation = 0;
+        if (rotationPitch > 360.0) {
+            rotationPitch = 0;
         }
 
         NoiseWormPathGenerator.Node node = this.pathGenerator.getNodes().get(nodeIDX);
 
         BlockPos.Mutable pos = node.getPos();
-        if (!world.isRemote) {
-            NoiseWormPathGenerator.Node targetNode = this.pathGenerator.getNodes().get(nodeIDX + 1);
+        NoiseWormPathGenerator.Node targetNode = this.pathGenerator.getNodes().get(nodeIDX + 1);
 
-            BlockPos.Mutable targetPos = targetNode.getPos();
+        BlockPos.Mutable targetPos = targetNode.getPos();
 
-            double x = MathHelper.lerp(this.lerp, pos.getX(), targetPos.getX());
-            double z = MathHelper.lerp(this.lerp, pos.getZ(), targetPos.getZ());
-            this.forceSetPosition(x, world.getHeight(Heightmap.Type.MOTION_BLOCKING, (int) Math.round(x), (int) Math.round(z)), z);
+        double x = MathHelper.lerp(MathHelper.clamp(this.lerp, 0.0, 1.0), pos.getX(), targetPos.getX());
+        double z = MathHelper.lerp(MathHelper.clamp(this.lerp, 0.0, 1.0), pos.getZ(), targetPos.getZ());
+        this.forceSetPosition(x, world.getHeight(Heightmap.Type.MOTION_BLOCKING, (int) Math.round(x), (int) Math.round(z)), z);
 
-            if ((int) this.lerp == 1) {
-                nodeIDX++;
-                this.lerp = 0.0;
-            } else {
-                this.lerp += 0.005;
-            }
+        if ((int) this.lerp == 1) {
+            nodeIDX++;
+            this.lerp = 0.0;
+        } else {
+            this.lerp += 0.1;
         }
 
 
@@ -96,20 +85,46 @@ public class TornadoEntity extends Entity {
     }
 
     @Override
+    public void read(CompoundNBT compound) {
+        super.read(compound);
+        this.nodeIDX = compound.getInt("nodeidx");
+        this.lerp = compound.getDouble("lerp");
+        this.pathGenerator = NoiseWormPathGenerator.read((CompoundNBT) compound.get("pathGenerator"));
+    }
+
+    @Override
     protected void readAdditional(CompoundNBT compound) {
-//        for (INBT states : compound.getList("states", 10)) {
-//            capturedStates.add(NBTUtil.readBlockState((CompoundNBT) states));
-//        }
+
     }
 
     @Override
     protected void writeAdditional(CompoundNBT compound) {
-        ListNBT states = new ListNBT();
-//        for (BlockState capturedState : capturedStates) {
-//           states.add(NBTUtil.writeBlockState(capturedState));
-//        }
-//        compound.put("states", states);
+
     }
+
+    @Override
+    public boolean writeUnlessPassenger(CompoundNBT compound) {
+        compound.putInt("nodeidx", this.nodeIDX);
+        compound.putDouble("lerp", this.lerp);
+        compound.put("pathGenerator", this.pathGenerator.write());
+        return super.writeUnlessPassenger(compound);
+    }
+
+    // Forge -----------------------------------
+    @Override
+    public void deserializeNBT(CompoundNBT nbt) {
+        readAdditional(nbt);
+        super.deserializeNBT(nbt);
+    }
+
+    @Override
+    public CompoundNBT serializeNBT() {
+        CompoundNBT compoundNBT = super.serializeNBT();
+        writeAdditional(compoundNBT);
+        return compoundNBT;
+    }
+    // -----------------------------------------
+
 
     public List<StateRotatable> getCapturedStates() {
         return capturedStates;
@@ -135,6 +150,8 @@ public class TornadoEntity extends Entity {
     public IPacket<?> createSpawnPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
+
+
 
     public float getRotation() {
         return rotation;
