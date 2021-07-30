@@ -93,6 +93,15 @@ public class TornadoEntity extends Entity {
     }
 
     @Override
+    public boolean writeUnlessPassenger(CompoundNBT compound) {
+        compound.putInt("nodeidx", this.nodeIDX);
+        compound.putDouble("lerp", this.lerp);
+        compound.put("pathGenerator", this.pathGenerator.write());
+        return super.writeUnlessPassenger(compound);
+    }
+
+
+    @Override
     protected void readAdditional(CompoundNBT compound) {
 
     }
@@ -100,14 +109,6 @@ public class TornadoEntity extends Entity {
     @Override
     protected void writeAdditional(CompoundNBT compound) {
 
-    }
-
-    @Override
-    public boolean writeUnlessPassenger(CompoundNBT compound) {
-        compound.putInt("nodeidx", this.nodeIDX);
-        compound.putDouble("lerp", this.lerp);
-        compound.put("pathGenerator", this.pathGenerator.write());
-        return super.writeUnlessPassenger(compound);
     }
 
     // Forge -----------------------------------
