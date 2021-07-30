@@ -113,14 +113,14 @@ public class TornadoEntity extends Entity {
     // Forge -----------------------------------
     @Override
     public void deserializeNBT(CompoundNBT nbt) {
-        readAdditional(nbt);
+        read(nbt);
         super.deserializeNBT(nbt);
     }
 
     @Override
     public CompoundNBT serializeNBT() {
         CompoundNBT compoundNBT = super.serializeNBT();
-        writeAdditional(compoundNBT);
+        writeUnlessPassenger(compoundNBT);
         return compoundNBT;
     }
     // -----------------------------------------
