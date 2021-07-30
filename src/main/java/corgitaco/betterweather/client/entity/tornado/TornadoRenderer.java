@@ -25,12 +25,13 @@ public class TornadoRenderer extends EntityRenderer<TornadoEntity> {
 
     @Override
     public void render(TornadoEntity entityIn, float entityYaw, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int packedLightIn) {
-//        matrixStackIn.push();
-//        matrixStackIn.scale(5, 5, 5);
-//        matrixStackIn.rotate(Vector3f.XP.rotationDegrees(180.0F));
-//        matrixStackIn.rotate(Vector3f.YN.rotationDegrees(entityIn.getRotation()));
-//        this.tornadoModel.render(matrixStackIn, bufferIn.getBuffer(this.tornadoModel.getRenderType(getEntityTexture(entityIn))), packedLightIn, packedLightIn, 1, 1, 1, 1);
-//        matrixStackIn.pop();
+        matrixStackIn.push();
+        matrixStackIn.scale(5, 5, 5);
+        matrixStackIn.rotate(Vector3f.XP.rotationDegrees(180.0F));
+        matrixStackIn.rotate(Vector3f.YN.rotationDegrees(entityIn.getRotation()));
+        matrixStackIn.translate(0, -1.5, 0);
+        this.tornadoModel.render(matrixStackIn, bufferIn.getBuffer(this.tornadoModel.getRenderType(getEntityTexture(entityIn))), packedLightIn, packedLightIn, 1, 1, 1, 1);
+        matrixStackIn.pop();
 
         int size = entityIn.getCapturedStates().size();
         List<TornadoEntity.StateRotatable> capturedStates = entityIn.getCapturedStates();

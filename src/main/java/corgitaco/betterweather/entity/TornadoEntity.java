@@ -1,5 +1,7 @@
 package corgitaco.betterweather.entity;
 
+import corgitaco.betterweather.entity.tornado.NoiseWormPathGenerator;
+import corgitaco.betterweather.util.noise.FastNoise;
 import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -21,18 +23,27 @@ import net.minecraftforge.fml.network.NetworkHooks;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class TornadoEntity extends Entity {
 
     private final List<StateRotatable> capturedStates = new ArrayList<>();
-    private final int range;
+    private int range;
     private int lifeSpan;
+    private int nodeIDX;
 
     private float rotation;
     private float rotationSpeed = 0.2F;
+    private double lerp;
+    private NoiseWormPathGenerator pathGenerator;
 
-    public TornadoEntity(EntityType<?> entityTypeIn, World worldIn) {
+    public TornadoEntity(World worldIn, double x, double y, double z) {
+        super(BetterWeatherEntityTypes.TORNADO_ENTITY_TYPE, worldIn);
+    }
+
+    public TornadoEntity(EntityType<TornadoEntity> entityTypeIn, World worldIn) {
         super(entityTypeIn, worldIn);
+
         range = worldIn.rand.nextInt(50) + 150;
         lifeSpan = worldIn.rand.nextInt(10000) + 1000;
         this.ignoreFrustumCheck = true;
@@ -41,6 +52,12 @@ public class TornadoEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
+        if (pathGenerator == null) {
+            this.pathGenerator = new NoiseWormPathGenerator(createNoise(new Random((long) (this.getPosX() + this.getPosY() + this.getPosZ())).nextInt()), this.getPosition(), (isInvalid) -> false, 5000);
+        }
+
+        this.lifeSpan--;
+
 
         rotation += 6.0f;
 
@@ -48,68 +65,29 @@ public class TornadoEntity extends Entity {
             rotation = 0;
         }
 
-        BlockPos.Mutable mutable = new BlockPos.Mutable().setPos(this.getPosition());
+        NoiseWormPathGenerator.Node node = this.pathGenerator.getNodes().get(nodeIDX);
 
-        for (int i = 0; i < capturedStates.size(); i++) {
-            StateRotatable capturedState = capturedStates.get(i);
-            double randXZDegrees = MathHelper.clampedLerp(0.4, 0.8, world.rand.nextDouble());
+        BlockPos.Mutable pos = node.getPos();
+        if (!world.isRemote) {
+            NoiseWormPathGenerator.Node targetNode = this.pathGenerator.getNodes().get(nodeIDX + 1);
 
-            if (capturedState.xOffset < 20) {
-                capturedState.setXDegrees(capturedState.xOffset += randXZDegrees);
+            BlockPos.Mutable targetPos = targetNode.getPos();
+
+            double x = MathHelper.lerp(this.lerp, pos.getX(), targetPos.getX());
+            double z = MathHelper.lerp(this.lerp, pos.getZ(), targetPos.getZ());
+            this.forceSetPosition(x, world.getHeight(Heightmap.Type.MOTION_BLOCKING, (int) Math.round(x), (int) Math.round(z)), z);
+
+            if ((int) this.lerp == 1) {
+                nodeIDX++;
+                this.lerp = 0.0;
+            } else {
+                this.lerp += 0.005;
             }
-
-            double randYDegrees = MathHelper.clampedLerp(0.05, 1.2, world.rand.nextDouble());
-
-            if (capturedState.yOffset > 10) {
-
-                double x = (double) this.getPosition().getX() + capturedState.xOffset;
-                double y = (double) this.getPosition().getY() + capturedState.yOffset;
-                double z = (double) this.getPosition().getZ() + capturedState.zOffset;
-                if (!world.isRemote) {
-                    FallingBlockEntity fallingblockentity = new FallingBlockEntity(world, x, y, z, Blocks.DIAMOND_BLOCK.getDefaultState());
-                    world.addEntity(fallingblockentity);
-
-                    world.addEntity(new FireworkRocketEntity(world, x, y, z, new ItemStack(Items.FIREWORK_ROCKET)));
-                }
-                capturedStates.remove(i);
-                continue;
-            }
-
-
-            capturedState.setYDegrees(capturedState.yOffset += randYDegrees);
-            if (capturedState.zOffset < 20) {
-
-                capturedState.setZDegrees(capturedState.zOffset += randXZDegrees);
-            }
-
-            capturedState.setRotationDegrees(capturedState.rotationDegrees > 360.0 ? 0 : (capturedState.rotationDegrees += 6.0F));
-
         }
 
 
-        int limit = 500;
-        if (capturedStates.size() > limit) {
-            return;
-        }
-
-        for (int x = -range; x < range; x++) {
-            for (int z = -range; z < range; z++) {
-                mutable.setAndOffset(this.getPosition(), x, 0, z);
-                int height = world.getHeight(Heightmap.Type.MOTION_BLOCKING, mutable.getX(), mutable.getZ()) - 1;
-                mutable.setY(height);
-
-                BlockState state = world.getBlockState(mutable);
-                Block block = state.getBlock();
-
-                if ((block instanceof LeavesBlock || block instanceof SnowyDirtBlock) && rand.nextInt(1000) == 0) {
-                    if (capturedStates.size() > limit) {
-                        return;
-                    }
-
-                    capturedStates.add(new StateRotatable(state, rand.nextFloat(), rand.nextFloat(), rand.nextFloat(), (float) MathHelper.clampedLerp(0.0, 360.0F, rand.nextFloat())));
-                    world.setBlockState(mutable, Blocks.AIR.getDefaultState());
-                }
-            }
+        if (nodeIDX == this.pathGenerator.getNodes().size() - 1) {
+            this.remove();
         }
     }
 
@@ -160,6 +138,14 @@ public class TornadoEntity extends Entity {
 
     public float getRotation() {
         return rotation;
+    }
+
+
+    private static FastNoise createNoise(int seed) {
+        FastNoise noise = new FastNoise(seed);
+        noise.SetDomainWarpType(FastNoise.DomainWarpType.BasicGrid);
+        noise.SetNoiseType(FastNoise.NoiseType.OpenSimplex2);
+        return noise;
     }
 
     public static class StateRotatable {
