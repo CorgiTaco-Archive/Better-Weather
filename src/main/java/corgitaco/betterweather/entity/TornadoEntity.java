@@ -17,10 +17,12 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.network.NetworkHooks;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+@SuppressWarnings("ConstantConditions")
 public class TornadoEntity extends Entity {
 
     private final List<StateRotatable> capturedStates = new ArrayList<>();
@@ -30,6 +32,8 @@ public class TornadoEntity extends Entity {
     private float rotation;
     private float rotationSpeed = 0.2F;
     private double lerp;
+
+    @Nullable
     private NoiseWormPathGenerator pathGenerator;
 
     public TornadoEntity(World worldIn, double x, double y, double z) {
@@ -85,30 +89,19 @@ public class TornadoEntity extends Entity {
     }
 
     @Override
-    public void read(CompoundNBT compound) {
-        super.read(compound);
+    protected void readAdditional(CompoundNBT compound) {
         this.nodeIDX = compound.getInt("nodeidx");
         this.lerp = compound.getDouble("lerp");
-        this.pathGenerator = NoiseWormPathGenerator.read((CompoundNBT) compound.get("pathGenerator"));
-    }
-
-    @Override
-    public boolean writeUnlessPassenger(CompoundNBT compound) {
-        compound.putInt("nodeidx", this.nodeIDX);
-        compound.putDouble("lerp", this.lerp);
-        compound.put("pathGenerator", this.pathGenerator.write());
-        return super.writeUnlessPassenger(compound);
-    }
-
-
-    @Override
-    protected void readAdditional(CompoundNBT compound) {
-
+        if (compound.contains("pathGenerator")) {
+            this.pathGenerator = NoiseWormPathGenerator.read((CompoundNBT) compound.get("pathGenerator"));
+        }
     }
 
     @Override
     protected void writeAdditional(CompoundNBT compound) {
-
+        compound.putInt("nodeidx", this.nodeIDX);
+        compound.putDouble("lerp", this.lerp);
+        compound.put("pathGenerator", this.pathGenerator.write());
     }
 
     // Forge -----------------------------------

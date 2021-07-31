@@ -100,7 +100,7 @@ public class NoiseWormPathGenerator {
     public static NoiseWormPathGenerator read(CompoundNBT nbt) {
         List<Node> nodes = new ArrayList<>();
 
-        ListNBT nodeNBTList = nbt.getList("nodes", 9);
+        ListNBT nodeNBTList = nbt.getList("nodes", 10);
         for (INBT inbt : nodeNBTList) {
            nodes.add(new Node(getBlockPos(((CompoundNBT) inbt).getIntArray("pos")).toMutable(), ((CompoundNBT) inbt).getInt("idx")));
         }
