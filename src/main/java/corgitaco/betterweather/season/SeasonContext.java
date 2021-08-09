@@ -222,12 +222,11 @@ public class SeasonContext implements Season {
      */
     public void enhanceCropRandomTick(ServerWorld world, BlockPos pos, Block block, BlockState self, CallbackInfo ci) {
         if (this.getCurrentSeason().getCurrentSettings().getEnhancedCrops().contains(block)) {
-            Block block1 = block;
             //Collect the crop multiplier for the given subseason.
             RegistryKey<Biome> currentBiomeKey = world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(world.getBiome(pos)).get();
-            double cropBonus = this.cropToFavoriteBiomes.containsKey(block1) ? this.cropToFavoriteBiomes.get(block1).getOrDefault(currentBiomeKey, 0.0) : 0.0;
+            double cropBonus = this.cropToFavoriteBiomes.containsKey(block) ? this.cropToFavoriteBiomes.get(block).getOrDefault(currentBiomeKey, 0.0) : 0.0;
 
-            double cropGrowthMultiplier = getCurrentSubSeasonSettings().getCropGrowthMultiplier(currentBiomeKey, block1) + cropBonus;
+            double cropGrowthMultiplier = getCurrentSubSeasonSettings().getCropGrowthMultiplier(currentBiomeKey, block) + cropBonus;
             if (cropGrowthMultiplier == 1) {
                 return;
             }
@@ -243,7 +242,7 @@ public class SeasonContext implements Season {
             //Pretty self explanatory, basically run a chance on whether or not the crop will tick for this tick
             if (cropGrowthMultiplier < 1) {
                 if (world.getRandom().nextDouble() < cropGrowthMultiplier) {
-                    block1.randomTick(self, world, pos, world.getRandom());
+                    block.randomTick(self, world, pos, world.getRandom());
                 } else {
                     ci.cancel();
                 }
@@ -256,10 +255,13 @@ public class SeasonContext implements Season {
                 for (int tick = 0; tick < numberOfTicks; tick++) {
                     if (tick > 0) {
                         self = world.getBlockState(pos);
-                        block1 = self.getBlock();
+                        // Only continue random tick enhancement if block hasn't changed.
+                        if (block != self.getBlock()) {
+                            break;
+                        }
                     }
 
-                    block1.randomTick(self, world, pos, world.getRandom());
+                    block.randomTick(self, world, pos, world.getRandom());
                 }
             }
         }
