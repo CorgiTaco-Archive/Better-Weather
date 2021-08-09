@@ -30,6 +30,7 @@ public abstract class MixinCommands {
         requires.then(SetWeatherCommand.register(dispatcher));
         LiteralCommandNode<CommandSource> source = dispatcher.register(requires);
         dispatcher.register(Commands.literal(BetterWeather.MOD_ID).redirect(source));
+        dispatcher.register(Commands.literal("bw").redirect(source)); // Create 'bw' alias.
         BetterWeather.LOGGER.debug("Registered Better Weather Commands!");
     }
 }
