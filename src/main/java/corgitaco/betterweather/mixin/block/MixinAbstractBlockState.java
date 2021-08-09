@@ -27,8 +27,14 @@ public abstract class MixinAbstractBlockState {
     @Inject(method = "randomTick", at = @At("RETURN"), cancellable = true)
     private void cropGrowthModifier(ServerWorld world, BlockPos posIn, Random randomIn, CallbackInfo ci) {
         SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
-        if (seasonContext != null) {
-            seasonContext.enhanceCropRandomTick(world, posIn, this.getBlock(), this.getSelf(), ci);
+        if (seasonContext == null) {
+            return;
+        }
+
+        BlockState state = world.getBlockState(posIn);
+        // Only enhance random ticks if the block hasn't changed.
+        if (state.getBlock() == this.getBlock()) {
+            seasonContext.enhanceCropRandomTick(world, posIn, this.getBlock(), state, ci);
         }
     }
 }
