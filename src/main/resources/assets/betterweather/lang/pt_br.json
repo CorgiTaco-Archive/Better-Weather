@@ -2,5 +2,5 @@
   "commands.bw.setweather.success.acidrain": "BW: Tempo definido para chuva ácida.",
   "commands.bw.setweather.success.blizzard": "BW: Tempo definido para nevasca.",
   "commands.bw.setweather.success.clear": "BW: Tempo definido para limpo.",
-  "commands.bw.setweather.failed": "BW: Não foi possível definir o tempo para %s"
+  "commands.bw.setweather.fail.no_weather_event": "BW: Não foi possível definir o tempo para %s"
 }

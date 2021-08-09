@@ -118,7 +118,8 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     }
 
     public final TranslationTextComponent successTranslationTextComponent(String key) {
-        return new TranslationTextComponent("commands.bw.setweather.success." + key);
+        return new TranslationTextComponent("commands.bw.setweather.success",
+                new TranslationTextComponent("bw.weather." + key));
     }
 
     public WeatherEvent setName(String name) {
