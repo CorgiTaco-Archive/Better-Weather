@@ -65,7 +65,7 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
 
     @Shadow
     @Final
-    private ServerChunkProvider serverChunkProvider;
+    private ServerChunkProvider chunkSource;
 
     private DynamicRegistries registry;
 
@@ -78,38 +78,38 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     @SuppressWarnings("ALL")
     @Inject(method = "<init>", at = @At("RETURN"))
     private void storeUpgradablePerWorldRegistry(MinecraftServer server, Executor executor, SaveFormat.LevelSave save, IServerWorldInfo worldInfo, RegistryKey<World> key, DimensionType dimensionType, IChunkStatusListener statusListener, ChunkGenerator generator, boolean b, long seed, List<ISpecialSpawner> specialSpawners, boolean b1, CallbackInfo ci) {
-        ResourceLocation worldKeyLocation = key.getLocation();
+        ResourceLocation worldKeyLocation = key.location();
         boolean hasPerWorldRegistry = Stream.concat(BetterWeatherConfig.WEATHER_EVENT_DIMENSIONS.stream(), BetterWeatherConfig.SEASON_DIMENSIONS.stream()).collect(Collectors.toSet()).size() > 1;
 
         boolean isValidWeatherEventDimension = BetterWeatherConfig.WEATHER_EVENT_DIMENSIONS.contains(worldKeyLocation.toString());
         boolean isValidSeasonDimension = BetterWeatherConfig.SEASON_DIMENSIONS.contains(worldKeyLocation.toString());
 
         if (hasPerWorldRegistry && (isValidWeatherEventDimension || isValidSeasonDimension)) {
-            this.registry = new WorldDynamicRegistry((DynamicRegistries.Impl) server.getDynamicRegistries());
-            BetterWeather.LOGGER.warn("Swapping server world gen datapack registry for \"" + key.getLocation().toString() + "\" to a per world registry... This may have unintended side effects like mod incompatibilities in this world...");
+            this.registry = new WorldDynamicRegistry((DynamicRegistries.Impl) server.registryAccess());
+            BetterWeather.LOGGER.warn("Swapping server world gen datapack registry for \"" + key.location().toString() + "\" to a per world registry... This may have unintended side effects like mod incompatibilities in this world...");
 
             // Reload the world settings import with OUR implementation of the registry.
             WorldSettingsImport<INBT> worldSettingsImport = WorldSettingsImport.create(NBTDynamicOps.INSTANCE, server.getDataPackRegistries().getResourceManager(), (DynamicRegistries.Impl) this.registry);
-            ChunkGenerator dimensionChunkGenerator = save.readServerConfiguration(worldSettingsImport, server.getServerConfiguration().getDatapackCodec()).getDimensionGeneratorSettings().func_236224_e_().getOptional(worldKeyLocation).get().getChunkGenerator();
+            ChunkGenerator dimensionChunkGenerator = save.getDataTag(worldSettingsImport, server.getWorldData().getDataPackConfig()).worldGenSettings().dimensions().getOptional(worldKeyLocation).get().generator();
 
             // Reset the chunk generator fields in both the chunk provider and chunk manager. This is required for chunk generators to return the current biome object type required by our registry.
             // TODO: Do this earlier so mods mixing here can capture our version of the chunk generator.
-            BetterWeather.LOGGER.warn("Swapping chunk generator for \"" + key.getLocation().toString() + "\" to use the per world registry... This may have unintended side effects like mod incompatibilities in this world...");
-            ((ServerChunkProviderAccess) this.serverChunkProvider).setGenerator(dimensionChunkGenerator);
-            ((ChunkManagerAccess) this.serverChunkProvider.chunkManager).setGenerator(dimensionChunkGenerator);
-            BetterWeather.LOGGER.info("Swapped the chunk generator for \"" + key.getLocation().toString() + "\" to use the per world registry!");
+            BetterWeather.LOGGER.warn("Swapping chunk generator for \"" + key.location().toString() + "\" to use the per world registry... This may have unintended side effects like mod incompatibilities in this world...");
+            ((ServerChunkProviderAccess) this.chunkSource).setGenerator(dimensionChunkGenerator);
+            ((ChunkManagerAccess) this.chunkSource.chunkMap).setGenerator(dimensionChunkGenerator);
+            BetterWeather.LOGGER.info("Swapped the chunk generator for \"" + key.location().toString() + "\" to use the per world registry!");
 
-            BetterWeather.LOGGER.info("Swapped world gen datapack registry for \"" + key.getLocation().toString() + "\" to the per world registry!");
+            BetterWeather.LOGGER.info("Swapped world gen datapack registry for \"" + key.location().toString() + "\" to the per world registry!");
         } else {
-            this.registry = server.getDynamicRegistries();
+            this.registry = server.registryAccess();
         }
 
         if (isValidWeatherEventDimension) {
-            this.weatherContext = new BWWeatherEventContext(WeatherEventSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));
+            this.weatherContext = new BWWeatherEventContext(WeatherEventSavedData.get((ServerWorld) (Object) this), key, this.registry.registryOrThrow(Registry.BIOME_REGISTRY));
         }
 
         if (isValidSeasonDimension) {
-            this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key, this.registry.getRegistry(Registry.BIOME_KEY));
+            this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key, this.registry.registryOrThrow(Registry.BIOME_REGISTRY));
         }
 
         updateBiomeData();
@@ -118,8 +118,8 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     @SuppressWarnings("ConstantConditions")
     @Override
     public void updateBiomeData() {
-        List<Biome> validBiomes = this.serverChunkProvider.getChunkGenerator().getBiomeProvider().getBiomes();
-        for (Map.Entry<RegistryKey<Biome>, Biome> entry : this.registry.getRegistry(Registry.BIOME_KEY).getEntries()) {
+        List<Biome> validBiomes = this.chunkSource.getGenerator().getBiomeSource().possibleBiomes();
+        for (Map.Entry<RegistryKey<Biome>, Biome> entry : this.registry.registryOrThrow(Registry.BIOME_REGISTRY).entrySet()) {
             Biome biome = entry.getValue();
             RegistryKey<Biome> biomeKey = entry.getKey();
 
@@ -151,7 +151,7 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
         }
     }
 
-    @Inject(method = "func_241828_r", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "registryAccess", at = @At("HEAD"), cancellable = true)
     private void dynamicRegistryWrapper(CallbackInfoReturnable<DynamicRegistries> cir) {
         cir.setReturnValue(this.registry);
     }
@@ -163,14 +163,14 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     }
 
 
-    @Inject(method = "setWeather", at = @At("HEAD"))
+    @Inject(method = "setWeatherParameters", at = @At("HEAD"))
     private void setWeatherForced(int clearWeatherTime, int weatherTime, boolean rain, boolean thunder, CallbackInfo ci) {
         if (this.weatherContext != null) {
             this.weatherContext.setWeatherForced(true);
         }
     }
 
-    @Inject(method = "tickEnvironment", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "tickChunk", at = @At("HEAD"))
     private void tickLiveChunks(Chunk chunkIn, int randomTickSpeed, CallbackInfo ci) {
         if (weatherContext != null) {
             weatherContext.getCurrentEvent().doChunkTick(chunkIn, (ServerWorld) (Object) this);
@@ -183,40 +183,40 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
             return;
         }
 
-        int xStart = chunkpos.getXStart();
-        int zStart = chunkpos.getZStart();
+        int xStart = chunkpos.getMinBlockX();
+        int zStart = chunkpos.getMinBlockZ();
         WeatherEvent currentEvent = weatherContext.getCurrentEvent();
-        if (currentEvent.isThundering() && world.rand.nextInt(currentEvent.getLightningChance()) == 0) {
-            BlockPos blockpos = ((ServerWorldAccess) world).invokeAdjustPosToNearbyEntity(world.getBlockRandomPos(xStart, 0, zStart, 15));
+        if (currentEvent.isThundering() && world.random.nextInt(currentEvent.getLightningChance()) == 0) {
+            BlockPos blockpos = ((ServerWorldAccess) world).invokeFindLightingTargetAround(world.getBlockRandomPos(xStart, 0, zStart, 15));
             Biome biome = world.getBiome(blockpos);
             if (currentEvent.isValidBiome(biome)) {
-                DifficultyInstance difficultyinstance = world.getDifficultyForLocation(blockpos);
-                boolean flag1 = world.getGameRules().getBoolean(GameRules.DO_MOB_SPAWNING) && world.rand.nextDouble() < (double) difficultyinstance.getAdditionalDifficulty() * 0.01D;
+                DifficultyInstance difficultyinstance = world.getCurrentDifficultyAt(blockpos);
+                boolean flag1 = world.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && world.random.nextDouble() < (double) difficultyinstance.getEffectiveDifficulty() * 0.01D;
                 if (flag1) {
                     SkeletonHorseEntity skeletonhorseentity = EntityType.SKELETON_HORSE.create(world);
                     skeletonhorseentity.setTrap(true);
-                    skeletonhorseentity.setGrowingAge(0);
-                    skeletonhorseentity.setPosition((double) blockpos.getX(), (double) blockpos.getY(), (double) blockpos.getZ());
-                    world.addEntity(skeletonhorseentity);
+                    skeletonhorseentity.setAge(0);
+                    skeletonhorseentity.setPos((double) blockpos.getX(), (double) blockpos.getY(), (double) blockpos.getZ());
+                    world.addFreshEntity(skeletonhorseentity);
                 }
 
                 LightningBoltEntity lightningboltentity = EntityType.LIGHTNING_BOLT.create(world);
-                lightningboltentity.moveForced(Vector3d.copyCenteredHorizontally(blockpos));
-                lightningboltentity.setEffectOnly(flag1);
-                world.addEntity(lightningboltentity);
+                lightningboltentity.moveTo(Vector3d.atBottomCenterOf(blockpos));
+                lightningboltentity.setVisualOnly(flag1);
+                world.addFreshEntity(lightningboltentity);
             }
         }
     }
 
 
-    @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 0))
+    @Redirect(method = "tickChunk", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 0))
     private int neverSpawnLightning(Random random, int bound) {
         return weatherContext != null ? -1 : random.nextInt(bound);
     }
 
-    @Redirect(method = "tickEnvironment", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 1))
+    @Redirect(method = "tickChunk", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", ordinal = 1))
     private int takeAdvantageOfExistingChunkIterator(Random random, int bound, Chunk chunk, int randomTickSpeed) {
-        return weatherContext != null ? -1 : ((ServerWorld) (Object) this).rand.nextInt(bound);
+        return weatherContext != null ? -1 : ((ServerWorld) (Object) this).random.nextInt(bound);
     }
 
     @Nullable

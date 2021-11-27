@@ -24,12 +24,12 @@ public class WeatherDataPacket {
     }
 
     public static void writeToPacket(WeatherDataPacket packet, PacketBuffer buf) {
-        buf.writeString(packet.weatherEvent);
+        buf.writeUtf(packet.weatherEvent);
         buf.writeBoolean(packet.weatherForced);
     }
 
     public static WeatherDataPacket readFromPacket(PacketBuffer buf) {
-        return new WeatherDataPacket(buf.readString(), buf.readBoolean());
+        return new WeatherDataPacket(buf.readUtf(), buf.readBoolean());
     }
 
     public static void handle(WeatherDataPacket message, Supplier<NetworkEvent.Context> ctx) {
@@ -37,7 +37,7 @@ public class WeatherDataPacket {
             ctx.get().enqueueWork(() -> {
                 Minecraft minecraft = Minecraft.getInstance();
 
-                ClientWorld world = minecraft.world;
+                ClientWorld world = minecraft.level;
                 if (world != null && minecraft.player != null) {
                     BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
                     if (weatherEventContext == null) {

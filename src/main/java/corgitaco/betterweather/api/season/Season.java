@@ -84,7 +84,7 @@ public interface Season {
         SUMMER,
         AUTUMN,
         WINTER;
-        public static final Codec<Key> CODEC = IStringSerializable.createEnumCodec(Key::values, Key::getTypeFromId);
+        public static final Codec<Key> CODEC = IStringSerializable.fromEnum(Key::values, Key::getTypeFromId);
 
         private static final Map<String, Key> BY_ID = Util.make(Maps.newHashMap(), (nameToTypeMap) -> {
             for (Key key : values()) {
@@ -104,7 +104,7 @@ public interface Season {
         }
 
         @Override
-        public String getString() {
+        public String getSerializedName() {
             return this.name();
         }
 
@@ -121,7 +121,7 @@ public interface Season {
         MID,
         END;
 
-        public static final Codec<Phase> CODEC = IStringSerializable.createEnumCodec(Phase::values, Phase::getTypeFromId);
+        public static final Codec<Phase> CODEC = IStringSerializable.fromEnum(Phase::values, Phase::getTypeFromId);
 
         private static final Map<String, Phase> BY_ID = Util.make(Maps.newHashMap(), (nameToTypeMap) -> {
             for (Phase phase : values()) {
@@ -141,7 +141,7 @@ public interface Season {
         }
 
         @Override
-        public String getString() {
+        public String getSerializedName() {
             return this.name();
         }
 

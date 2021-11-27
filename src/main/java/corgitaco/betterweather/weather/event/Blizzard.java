@@ -70,7 +70,7 @@ public class Blizzard extends WeatherEvent {
             return rain.isThundering();
         }), Codec.INT.fieldOf("lightningChance").forGetter(rain -> {
             return rain.getLightningChance();
-        }), Codec.simpleMap(Season.Key.CODEC, Codec.unboundedMap(Season.Phase.CODEC, Codec.DOUBLE), IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasonChances").forGetter(blizzard -> {
+        }), Codec.simpleMap(Season.Key.CODEC, Codec.unboundedMap(Season.Phase.CODEC, Codec.DOUBLE), IStringSerializable.keys(Season.Key.values())).fieldOf("seasonChances").forGetter(blizzard -> {
             return blizzard.getSeasonChances();
         })).apply(builder, (clientSettings, biomeCondition, temperatureOffsetRaw, humidityOffsetRaw, defaultChance, tickRate, blockLightThreshold, snowBlockID, snowLayers, waterFreezes, entityOrCategoryToEffectsMap, isThundering, lightningChance, map) -> {
             Optional<Block> blockOptional = Registry.BLOCK.getOptional(snowBlockID);
@@ -96,7 +96,7 @@ public class Blizzard extends WeatherEvent {
     public static final TomlCommentedConfigOps CONFIG_OPS = new TomlCommentedConfigOps(VALUE_COMMENTS, true);
 
 
-    public static final Blizzard DEFAULT = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), 0.0F, 0.2F, false, Rain.SNOW_LOCATION, SoundRegistry.BLIZZARD_LOOP2, 0.6F, 0.6F), Rain.DEFAULT_BIOME_CONDITION, 0.1D, !MODIFY_TEMPERATURE ? 0.0 : -0.5, 0.1, 2, 10, Blocks.SNOW, true, true, Util.make(new HashMap<>(), ((stringListHashMap) -> stringListHashMap.put(Registry.ENTITY_TYPE.getKey(EntityType.PLAYER).toString(), ImmutableList.of(Registry.EFFECTS.getKey(Effects.SLOWNESS).toString())))), false, 0,
+    public static final Blizzard DEFAULT = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), 0.0F, 0.2F, false, Rain.SNOW_LOCATION, SoundRegistry.BLIZZARD_LOOP2, 0.6F, 0.6F), Rain.DEFAULT_BIOME_CONDITION, 0.1D, !MODIFY_TEMPERATURE ? 0.0 : -0.5, 0.1, 2, 10, Blocks.SNOW, true, true, Util.make(new HashMap<>(), ((stringListHashMap) -> stringListHashMap.put(Registry.ENTITY_TYPE.getKey(EntityType.PLAYER).toString(), ImmutableList.of(Registry.MOB_EFFECT.getKey(Effects.MOVEMENT_SLOWDOWN).toString())))), false, 0,
             Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
                 seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
                     phases.put(Season.Phase.START, 0.1);
@@ -123,7 +123,7 @@ public class Blizzard extends WeatherEvent {
                 }));
             }));
 
-    public static final Blizzard DEFAULT_THUNDERING = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), 0.0F, 0.2F, false, Rain.SNOW_LOCATION, SoundRegistry.BLIZZARD_LOOP2, 0.6F, 0.6F), Rain.DEFAULT_BIOME_CONDITION, 0.05D, !MODIFY_TEMPERATURE ? 0.0 : -0.5, 0.1, 2, 10, Blocks.SNOW, true, true, Util.make(new HashMap<>(), ((stringListHashMap) -> stringListHashMap.put(Registry.ENTITY_TYPE.getKey(EntityType.PLAYER).toString(), ImmutableList.of(Registry.EFFECTS.getKey(Effects.SLOWNESS).toString())))), true, 100000,
+    public static final Blizzard DEFAULT_THUNDERING = new Blizzard(new BlizzardClientSettings(new ColorSettings(Integer.MAX_VALUE, 0.0, Integer.MAX_VALUE, 0.0), 0.0F, 0.2F, false, Rain.SNOW_LOCATION, SoundRegistry.BLIZZARD_LOOP2, 0.6F, 0.6F), Rain.DEFAULT_BIOME_CONDITION, 0.05D, !MODIFY_TEMPERATURE ? 0.0 : -0.5, 0.1, 2, 10, Blocks.SNOW, true, true, Util.make(new HashMap<>(), ((stringListHashMap) -> stringListHashMap.put(Registry.ENTITY_TYPE.getKey(EntityType.PLAYER).toString(), ImmutableList.of(Registry.MOB_EFFECT.getKey(Effects.MOVEMENT_SLOWDOWN).toString())))), true, 100000,
             Util.make(new EnumMap<>(Season.Key.class), (seasons) -> {
                 seasons.put(Season.Key.SPRING, Util.make(new EnumMap<>(Season.Phase.class), (phases) -> {
                     phases.put(Season.Phase.START, 0.05);
@@ -153,7 +153,7 @@ public class Blizzard extends WeatherEvent {
 
     public static final Map<EntityClassification, List<EntityType<?>>> CLASSIFICATION_ENTITY_TYPES = Util.make(new EnumMap<>(EntityClassification.class), (map) -> {
         for (EntityType<?> entityType : Registry.ENTITY_TYPE) {
-            map.computeIfAbsent(entityType.getClassification(), (mobCategory -> new ArrayList<>())).add(entityType);
+            map.computeIfAbsent(entityType.getCategory(), (mobCategory -> new ArrayList<>())).add(entityType);
         }
     });
 
@@ -225,12 +225,12 @@ public class Blizzard extends WeatherEvent {
         if (this.chunkTickChance < 1) {
             return;
         }
-        if (world.rand.nextInt(chunkTickChance) == 0) {
+        if (world.random.nextInt(chunkTickChance) == 0) {
             ChunkPos chunkpos = chunk.getPos();
-            int xStart = chunkpos.getXStart();
-            int zStart = chunkpos.getZStart();
-            BlockPos randomHeightMapPos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(xStart, 0, zStart, 15));
-            BlockPos randomPosDown = randomHeightMapPos.down();
+            int xStart = chunkpos.getMinBlockX();
+            int zStart = chunkpos.getMinBlockZ();
+            BlockPos randomHeightMapPos = world.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(xStart, 0, zStart, 15));
+            BlockPos randomPosDown = randomHeightMapPos.below();
             BlockState blockState = world.getBlockState(randomHeightMapPos);
 
             Biome biome = world.getBiome(randomHeightMapPos);
@@ -239,22 +239,22 @@ public class Blizzard extends WeatherEvent {
             }
 
             if (waterFreezes) {
-                if (biome.doesWaterFreeze(world, randomPosDown)) {
-                    world.setBlockState(randomPosDown, Blocks.ICE.getDefaultState());
+                if (biome.shouldFreeze(world, randomPosDown)) {
+                    world.setBlockAndUpdate(randomPosDown, Blocks.ICE.defaultBlockState());
                 }
             }
 
             if (meetsStateRequirements(world, randomHeightMapPos)) {
-                world.setBlockState(randomHeightMapPos, this.snowBlock.getDefaultState());
+                world.setBlockAndUpdate(randomHeightMapPos, this.snowBlock.defaultBlockState());
                 return;
             }
 
             if (this.snowLayers) {
                 if (meetsLayeringRequirement(world, randomHeightMapPos)) {
-                    int currentLayer = blockState.get(BlockStateProperties.LAYERS_1_8);
+                    int currentLayer = blockState.getValue(BlockStateProperties.LAYERS);
 
                     if (currentLayer < 7) {
-                        world.setBlockState(randomHeightMapPos, blockState.with(BlockStateProperties.LAYERS_1_8, currentLayer + 1), 2);
+                        world.setBlock(randomHeightMapPos, blockState.setValue(BlockStateProperties.LAYERS, currentLayer + 1), 2);
                     }
                 }
             }
@@ -262,10 +262,10 @@ public class Blizzard extends WeatherEvent {
     }
 
     private boolean meetsStateRequirements(IWorldReader worldIn, BlockPos pos) {
-        if (pos.getY() >= 0 && pos.getY() < worldIn.getHeight() && worldIn.getLightFor(LightType.BLOCK, pos) < this.blockLightThreshold) {
+        if (pos.getY() >= 0 && pos.getY() < worldIn.getMaxBuildHeight() && worldIn.getBrightness(LightType.BLOCK, pos) < this.blockLightThreshold) {
             BlockState blockstate = worldIn.getBlockState(pos);
-            BlockState defaultState = this.snowBlock.getDefaultState();
-            return (blockstate.isAir(worldIn, pos) && defaultState.isValidPosition(worldIn, pos));
+            BlockState defaultState = this.snowBlock.defaultBlockState();
+            return (blockstate.isAir(worldIn, pos) && defaultState.canSurvive(worldIn, pos));
         }
 
         return false;
@@ -273,8 +273,8 @@ public class Blizzard extends WeatherEvent {
 
     private boolean meetsLayeringRequirement(IWorldReader worldIn, BlockPos pos) {
         BlockState blockstate = worldIn.getBlockState(pos);
-        BlockState defaultState = this.snowBlock.getDefaultState();
-        return (defaultState.hasProperty(BlockStateProperties.LAYERS_1_8) && this.snowLayers && blockstate.getBlock() == this.snowBlock);
+        BlockState defaultState = this.snowBlock.defaultBlockState();
+        return (defaultState.hasProperty(BlockStateProperties.LAYERS) && this.snowLayers && blockstate.getBlock() == this.snowBlock);
     }
 
 
@@ -334,8 +334,8 @@ public class Blizzard extends WeatherEvent {
                 if (!(variable.startsWith("$") || variable.startsWith("#"))) {
                     ResourceLocation resourceLocation = tryParse(variable);
                     if (resourceLocation != null) {
-                        if (Registry.EFFECTS.keySet().contains(resourceLocation)) {
-                            effect = Registry.EFFECTS.getOptional(resourceLocation).get();
+                        if (Registry.MOB_EFFECT.keySet().contains(resourceLocation)) {
+                            effect = Registry.MOB_EFFECT.getOptional(resourceLocation).get();
                         } else {
                             return null;
                         }

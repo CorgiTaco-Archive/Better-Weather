@@ -32,8 +32,8 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
     }
 
     public void processKeys(ObjectOpenHashSet<Pair<Object, JsonElement>> processedJson) {
-        Map<Biome.Category, List<Biome>> categoryListMap = biomeRegistry.getEntries().stream().map(Map.Entry::getValue).collect(Collectors.groupingBy(Biome::getCategory));
-        Map<BiomeDictionary.Type, List<Biome>> biomeDictionaryMap = biomeRegistry.getEntries().stream()
+        Map<Biome.Category, List<Biome>> categoryListMap = biomeRegistry.entrySet().stream().map(Map.Entry::getValue).collect(Collectors.groupingBy(Biome::getBiomeCategory));
+        Map<BiomeDictionary.Type, List<Biome>> biomeDictionaryMap = biomeRegistry.entrySet().stream()
                 .flatMap(biomeKey -> BiomeDictionary.getTypes(biomeKey.getKey()).stream().map(biomeDictionaryType -> new AbstractMap.SimpleEntry<>(biomeDictionaryType, biomeKey.getValue())))
                 .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
 
@@ -44,7 +44,7 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
                 for (Biome biome : biomeDictionaryMap.get(object)) {
                     ResourceLocation biomeID = biomeRegistry.getKey(biome);
                     if (biomeID != null) {
-                        RegistryKey<Biome> biomeKey = RegistryKey.getOrCreateKey(Registry.BIOME_KEY, biomeID);
+                        RegistryKey<Biome> biomeKey = RegistryKey.create(Registry.BIOME_REGISTRY, biomeID);
                         OverrideStorage overrideStorage = this.biomeOverrideStorage.getOrDefault(biomeKey, new OverrideStorage());
                         updateOverrideStorageData(overrideStorage, pair.getSecond(), isClient);
                         this.biomeOverrideStorage.put(biomeKey, overrideStorage);
@@ -55,7 +55,7 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
                 for (Biome biome : categoryListMap.get(object)) {
                     ResourceLocation biomeID = biomeRegistry.getKey(biome);
                     if (biomeID != null) {
-                        RegistryKey<Biome> biomeKey = RegistryKey.getOrCreateKey(Registry.BIOME_KEY, biomeID);
+                        RegistryKey<Biome> biomeKey = RegistryKey.create(Registry.BIOME_REGISTRY, biomeID);
                         OverrideStorage overrideStorage = this.biomeOverrideStorage.getOrDefault(biomeKey, new OverrideStorage());
                         updateOverrideStorageData(overrideStorage, pair.getSecond(), isClient);
                         this.biomeOverrideStorage.put(biomeKey, overrideStorage);
@@ -65,7 +65,7 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
                 Biome biome = (Biome) object;
                 ResourceLocation biomeID = biomeRegistry.getKey(biome);
                 if (biomeID != null) {
-                    RegistryKey<Biome> biomeKey = RegistryKey.getOrCreateKey(Registry.BIOME_KEY, biomeID);
+                    RegistryKey<Biome> biomeKey = RegistryKey.create(Registry.BIOME_REGISTRY, biomeID);
                     OverrideStorage overrideStorage = this.biomeOverrideStorage.getOrDefault(biomeKey, new OverrideStorage());
                     updateOverrideStorageData(overrideStorage, pair.getSecond(), isClient);
                     this.biomeOverrideStorage.put(biomeKey, overrideStorage);

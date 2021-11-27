@@ -9,7 +9,7 @@ import java.util.Map;
 @Mixin(GameRules.class)
 public interface GameRulesAccess {
 
-    @Accessor("GAME_RULES")
+    @Accessor("GAME_RULE_TYPES")
     static Map<GameRules.RuleKey<?>, GameRules.RuleType<?>> getGameRules() {
         throw new Error("Mixin did not apply");
     }

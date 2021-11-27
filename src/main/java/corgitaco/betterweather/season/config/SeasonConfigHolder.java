@@ -25,7 +25,7 @@ public class SeasonConfigHolder {
             return seasonConfigHolder.tickSeasonTimeWhenNoPlayersOnline;
         }), Codec.INT.fieldOf("yearLength").orElse(2400000).forGetter((seasonConfigHolder) -> {
             return seasonConfigHolder.seasonCycleLength;
-        }), Codec.simpleMap(Season.Key.CODEC, BWSeason.CODEC, IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasons").forGetter((seasonConfigHolder) -> {
+        }), Codec.simpleMap(Season.Key.CODEC, BWSeason.CODEC, IStringSerializable.keys(Season.Key.values())).fieldOf("seasons").forGetter((seasonConfigHolder) -> {
             return seasonConfigHolder.seasonKeySeasonMap;
         })).apply(builder, ((tickSeasonTimeWhenNoPlayersOnline, cycleLength, seasons) -> new SeasonConfigHolder(tickSeasonTimeWhenNoPlayersOnline, cycleLength, new IdentityHashMap<>(seasons))));
     });

@@ -37,12 +37,12 @@ public class WeatherSoundHandler implements IAmbientSoundHandler {
         this.player = player;
         this.soundHandler = soundHandler;
         this.biomeManager = biomeManager;
-        this.world = player.worldClient;
+        this.world = player.clientLevel;
     }
 
     @Override
     public void tick() {
-        BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) player.worldClient).getWeatherEventContext();
+        BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) player.clientLevel).getWeatherEventContext();
         if (weatherEventContext == null) {
             return;
         }
@@ -50,14 +50,14 @@ public class WeatherSoundHandler implements IAmbientSoundHandler {
         WeatherEvent currentEvent = weatherEventContext.getCurrentEvent();
         WeatherEventClientSettings clientSettings = currentEvent.getClientSettings();
         if (clientSettings instanceof WeatherEventAudio) {
-            Biome currentBiome = biomeManager.getBiome(player.getPosition());
+            Biome currentBiome = biomeManager.getBiome(player.blockPosition());
             if (currentEvent.isValidBiome(currentBiome)) {
                 if (this.currentSound == null) {
                     this.currentSound = new WeatherSoundHandler.Sound(((WeatherEventAudio) clientSettings).getSound(), this.world, ((WeatherEventAudio) clientSettings).getVolume(), ((WeatherEventAudio) clientSettings).getPitch());
                     this.soundHandler.play(this.currentSound);
                 }
 
-                if (world.rainingStrength == 1.0) {
+                if (world.rainLevel == 1.0) {
                     this.currentSound.fadeInSound();
                 }
             } else {
@@ -71,7 +71,7 @@ public class WeatherSoundHandler implements IAmbientSoundHandler {
     private void endAudio() {
         if (this.currentSound != null) {
             this.currentSound.fadeOutSound();
-            if (this.currentSound.isDonePlaying()) {
+            if (this.currentSound.isStopped()) {
                 this.currentSound = null;
             }
         }
@@ -96,8 +96,8 @@ public class WeatherSoundHandler implements IAmbientSoundHandler {
         public Sound(SoundEvent sound, ClientWorld world, float volume, float pitch) {
             super(sound, SoundCategory.WEATHER);
             this.world = world;
-            this.repeat = true;
-            this.repeatDelay = 0;
+            this.looping = true;
+            this.delay = 0;
             this.volume = volume;
             this.pitch = pitch;
             this.maxVolume = volume;
@@ -170,35 +170,35 @@ public class WeatherSoundHandler implements IAmbientSoundHandler {
 
         public void tick() {
             if (volume == 0) {
-                this.finishPlaying();
+                this.stop();
             }
 
-            Vector3d startPos = Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getProjectedView();
+            Vector3d startPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
             ClientPlayerEntity player = Minecraft.getInstance().player;
-            byte brightness = (byte) (this.world.getLightFor(LightType.SKY, new BlockPos(startPos.x, startPos.y, startPos.z)));
+            byte brightness = (byte) (this.world.getBrightness(LightType.SKY, new BlockPos(startPos.x, startPos.y, startPos.z)));
             int vectorDistance = 35;
             double maxDistanceNormalised = 0; //average sample distance
 
             //Cast ray in every direction sampled
             for (int i = 0, vector3dsLength = vector3ds.length; i < vector3dsLength; i++) {
                 Vector3d endPos = startPos.add(vector3ds[i].scale(vectorDistance));
-                BlockRayTraceResult result = world.rayTraceBlocks(new RayTraceContext(startPos, endPos, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
+                BlockRayTraceResult result = world.clip(new RayTraceContext(startPos, endPos, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
 
                 if (result.getType() == RayTraceResult.Type.MISS) {
                     maxDistanceNormalised += maxVolume; //if miss, assume max volume
                 }
 
-                Vector3d hitVec = result.getHitVec();
+                Vector3d hitVec = result.getLocation();
                 Vector3d dif = startPos.subtract(hitVec);
                 float distance = (float) dif.length() / vectorDistance; //normalised distance
                 //distance is weighted such that longer distance count more, based on skylight brightness
                 maxDistanceNormalised += MathHelper.lerp(brightness / 15f, startPos.y < world.getSeaLevel() ? 0.0000000000001 : distance, Math.pow(distance, 1 / 4f /*Controls the weighting based on distance*/));
             }
-            this.decreasedVolume = (float) (maxDistanceNormalised / vector3ds.length) * (player.areEyesInFluid(FluidTags.WATER) || player.areEyesInFluid(FluidTags.LAVA) ? 0.2F : 1);
+            this.decreasedVolume = (float) (maxDistanceNormalised / vector3ds.length) * (player.isEyeInFluid(FluidTags.WATER) || player.isEyeInFluid(FluidTags.LAVA) ? 0.2F : 1);
 
 
             this.fadeInTicks += this.fadeSpeed;
-            this.volume = MathHelper.clamp(world.getRainStrength(Minecraft.getInstance().getRenderPartialTicks()), 0.0F, decreasedVolume);
+            this.volume = MathHelper.clamp(world.getRainLevel(Minecraft.getInstance().getFrameTime()), 0.0F, decreasedVolume);
         }
 
         public void fadeOutSound() {

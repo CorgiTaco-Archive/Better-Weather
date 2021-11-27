@@ -58,7 +58,7 @@ public final class ShaderProgram extends Program {
     public void uploadMatrix4f(String uniform, Matrix4f matrix4f) {
         try (MemoryStack memoryStack = MemoryStack.stackPush()) {
             FloatBuffer buffer = memoryStack.mallocFloat(16);
-            matrix4f.write(buffer);
+            matrix4f.store(buffer);
 
             glUniformMatrix4fv(getOrMapUniform(uniform), false, buffer);
         }

@@ -34,7 +34,7 @@ public class Cloudy extends WeatherEvent {
             return rain.isThundering();
         }), Codec.INT.fieldOf("lightningChance").forGetter(rain -> {
             return rain.getLightningChance();
-        }), Codec.simpleMap(Season.Key.CODEC, Codec.unboundedMap(Season.Phase.CODEC, Codec.DOUBLE), IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasonChances").forGetter(blizzard -> {
+        }), Codec.simpleMap(Season.Key.CODEC, Codec.unboundedMap(Season.Phase.CODEC, Codec.DOUBLE), IStringSerializable.keys(Season.Key.values())).fieldOf("seasonChances").forGetter(blizzard -> {
             return blizzard.getSeasonChances();
         })).apply(builder, Cloudy::new);
     });

@@ -14,9 +14,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ChunkHolder.class)
 public abstract class MixinChunkHolder {
 
-    @Inject(method = "sendChanges", at = @At("HEAD"))
+    @Inject(method = "broadcastChanges", at = @At("HEAD"))
     private void runChunkUpdates(Chunk chunk, CallbackInfo ci) {
-        ServerWorld world = (ServerWorld) chunk.getWorld();
+        ServerWorld world = (ServerWorld) chunk.getLevel();
 
         BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
 

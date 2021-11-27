@@ -71,7 +71,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
         }), Codec.unboundedMap(ResourceLocation.CODEC, OverrideStorage.PACKET_CODEC).fieldOf("biomeToOverrideStorage").forGetter((subSeasonSettings) -> {
             Map<ResourceLocation, OverrideStorage> newMap = new IdentityHashMap<>();
             subSeasonSettings.biomeToOverrideStorage.forEach((biomeKey, overrideStorage) -> {
-                newMap.put(biomeKey.getLocation(), overrideStorage);
+                newMap.put(biomeKey.location(), overrideStorage);
             });
             return newMap;
         }), ResourceLocation.CODEC.fieldOf("enhanced_crops").forGetter((settings) -> {
@@ -84,7 +84,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
             BWSubseasonSettings bwSubseasonSettings = new BWSubseasonSettings(tempModifier, humidityModifier, weatherEventMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, entityTypeBreedingBlacklist,
                     transformBlockResourceLocations(cropToMultiplierStorage), transformBiomeResourceLocationsToKeys(biomeToOverrideStorage));
 
-            for (ITag.INamedTag<Block> tag : BlockTagsAccess.getREGISTRY().getTags()) {
+            for (ITag.INamedTag<Block> tag : BlockTagsAccess.getHELPER().getWrappers()) {
                 if (bwSubseasonSettings.getEnhancedCropsTag() != null && bwSubseasonSettings.getUnenhancedCropsTag() != null) {
                     break;
                 }
@@ -218,12 +218,12 @@ public class BWSubseasonSettings implements SubseasonSettings {
 
     public void setEnhancedCropsTag(ITag.INamedTag<Block> enhancedCrops) {
         this.enhancedCropsTag = enhancedCrops;
-        this.enhancedCrops.addAll(enhancedCrops.getAllElements());
+        this.enhancedCrops.addAll(enhancedCrops.getValues());
     }
 
     public void setUnEnhancedCropsTag(ITag.INamedTag<Block> unenhancedCropsTag) {
         this.unenhancedCropsTag = unenhancedCropsTag;
-        this.enhancedCrops.removeAll(unenhancedCropsTag.getAllElements());
+        this.enhancedCrops.removeAll(unenhancedCropsTag.getValues());
     }
 
     public void setCropTags(ITag.INamedTag<Block> enhancedCrops, ITag.INamedTag<Block> unenhancedCrops) {

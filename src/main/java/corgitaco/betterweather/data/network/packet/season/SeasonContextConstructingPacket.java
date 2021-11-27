@@ -22,7 +22,7 @@ public class SeasonContextConstructingPacket {
 
     public static void writeToPacket(SeasonContextConstructingPacket packet, PacketBuffer buf) {
         try {
-            buf.func_240629_a_(SeasonContext.PACKET_CODEC, packet.seasonContext);
+            buf.writeWithCodec(SeasonContext.PACKET_CODEC, packet.seasonContext);
         } catch (IOException e) {
             throw new IllegalStateException("Season packet could not be written to. This is really really bad...\n\n" + e.getMessage());
 
@@ -31,7 +31,7 @@ public class SeasonContextConstructingPacket {
 
     public static SeasonContextConstructingPacket readFromPacket(PacketBuffer buf) {
         try {
-            return new SeasonContextConstructingPacket(buf.func_240628_a_(SeasonContext.PACKET_CODEC));
+            return new SeasonContextConstructingPacket(buf.readWithCodec(SeasonContext.PACKET_CODEC));
         } catch (IOException e) {
             throw new IllegalStateException("Season packet could not be read. This is really really bad...\n\n" + e.getMessage());
         }
@@ -42,12 +42,12 @@ public class SeasonContextConstructingPacket {
             ctx.get().enqueueWork(() -> {
                 Minecraft minecraft = Minecraft.getInstance();
 
-                ClientWorld world = minecraft.world;
+                ClientWorld world = minecraft.level;
                 if (world != null && minecraft.player != null) {
                     SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
                     if (seasonContext == null) {
                         seasonContext = ((BetterWeatherWorldData) world).setSeasonContext(new SeasonContext(message.seasonContext.getCurrentYearTime(), message.seasonContext.getYearLength(),
-                                world.getDimensionKey().getLocation(), message.seasonContext.getCropFavoriteBiomeBonuses(), world.func_241828_r().getRegistry(Registry.BIOME_KEY), message.seasonContext.getSeasons()));
+                                world.dimension().location(), message.seasonContext.getCropFavoriteBiomeBonuses(), world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY), message.seasonContext.getSeasons()));
                         ((BiomeUpdate) world).updateBiomeData();
                     }
 

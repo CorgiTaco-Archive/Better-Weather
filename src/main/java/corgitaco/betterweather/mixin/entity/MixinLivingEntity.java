@@ -16,7 +16,7 @@ public abstract class MixinLivingEntity {
 
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void weatherLivingTickUpdate(CallbackInfo ci) {
-        World world = ((Entity) (Object) this).world;
+        World world = ((Entity) (Object) this).level;
         BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
         if (weatherEventContext != null) {
             weatherEventContext.getCurrentEvent().livingEntityUpdate((LivingEntity) (Object) this);

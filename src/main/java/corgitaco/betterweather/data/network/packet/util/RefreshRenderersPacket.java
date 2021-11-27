@@ -20,8 +20,8 @@ public class RefreshRenderersPacket {
         if (ctx.get().getDirection().getReceptionSide().isClient()) {
             ctx.get().enqueueWork(() -> {
                 Minecraft minecraft = Minecraft.getInstance();
-                if (minecraft.world != null && minecraft.player != null) {
-                    minecraft.worldRenderer.loadRenderers();
+                if (minecraft.level != null && minecraft.player != null) {
+                    minecraft.levelRenderer.allChanged();
                 }
             });
         }

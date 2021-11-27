@@ -49,6 +49,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+import corgitaco.betterweather.api.season.Season.Key;
+import corgitaco.betterweather.api.season.Season.Phase;
+
 @SuppressWarnings("deprecation")
 public class SeasonContext implements Season {
     public static final String CONFIG_NAME = "season-settings.toml";
@@ -62,14 +65,14 @@ public class SeasonContext implements Season {
             return seasonContext.yearLength;
         }), ResourceLocation.CODEC.fieldOf("worldID").forGetter((seasonContext) -> {
             return seasonContext.worldID;
-        }), Codec.simpleMap(Key.CODEC, BWSeason.PACKET_CODEC, IStringSerializable.createKeyable(Key.values())).fieldOf("seasons").forGetter((seasonContext) -> {
+        }), Codec.simpleMap(Key.CODEC, BWSeason.PACKET_CODEC, IStringSerializable.keys(Key.values())).fieldOf("seasons").forGetter((seasonContext) -> {
             return seasonContext.seasons;
         }), Codec.unboundedMap(ResourceLocation.CODEC, Codec.unboundedMap(ResourceLocation.CODEC, Codec.DOUBLE)).fieldOf("cropFavoriteBiomes").forGetter((seasonContext) -> {
             Map<ResourceLocation, Map<ResourceLocation, Double>> serialized = new HashMap<>();
             for (Map.Entry<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> blockToFavoriteBiome : seasonContext.cropToFavoriteBiomes.entrySet()) {
                 Map<ResourceLocation, Double> favBiomeSerialized = new HashMap<>();
                 for (Object2DoubleMap.Entry<RegistryKey<Biome>> favBiomeToBonus : blockToFavoriteBiome.getValue().object2DoubleEntrySet()) {
-                    favBiomeSerialized.put(favBiomeToBonus.getKey().getLocation(), favBiomeToBonus.getDoubleValue());
+                    favBiomeSerialized.put(favBiomeToBonus.getKey().location(), favBiomeToBonus.getDoubleValue());
                 }
                 serialized.put(Registry.BLOCK.getKey(blockToFavoriteBiome.getKey()), favBiomeSerialized);
             }
@@ -79,7 +82,7 @@ public class SeasonContext implements Season {
             for (Map.Entry<ResourceLocation, Map<ResourceLocation, Double>> serializedCropEntry : cropFavoriteBiomesSerialized.entrySet()) {
                 Object2DoubleArrayMap<RegistryKey<Biome>> favBiomes = new Object2DoubleArrayMap<>();
                 for (Map.Entry<ResourceLocation, Double> value : serializedCropEntry.getValue().entrySet()) {
-                    favBiomes.put(RegistryKey.getOrCreateKey(Registry.BIOME_KEY, value.getKey()), value.getValue().doubleValue());
+                    favBiomes.put(RegistryKey.create(Registry.BIOME_REGISTRY, value.getKey()), value.getValue().doubleValue());
                 }
                 Optional<Block> optional = Registry.BLOCK.getOptional(serializedCropEntry.getKey());
                 if (!optional.isPresent()) {
@@ -146,7 +149,7 @@ public class SeasonContext implements Season {
 
     //Server world constructor
     public SeasonContext(SeasonSavedData seasonData, RegistryKey<World> worldID, Registry<Biome> biomeRegistry) {
-        this(seasonData.getCurrentYearTime(), seasonData.getYearLength(), worldID.getLocation(), new IdentityHashMap<>(), biomeRegistry, null);
+        this(seasonData.getCurrentYearTime(), seasonData.getYearLength(), worldID.location(), new IdentityHashMap<>(), biomeRegistry, null);
         this.cropToFavoriteBiomes.putAll(CropFavoriteBiomesConfigHandler.handle(seasonsPath.resolve("crop-favorite-biomes.json"), BLOCK_TO_FAVORITE_BIOMES_DEFAULT, biomeRegistry));
     }
 
@@ -201,15 +204,15 @@ public class SeasonContext implements Season {
 
     private void onSeasonChange(World world, BWSubseasonSettings prevSettings, BWSubseasonSettings currentSettings) {
         ((BiomeUpdate) world).updateBiomeData();
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             updateWeatherMultiplier(world, prevSettings.getWeatherEventChanceMultiplier(), currentSettings.getWeatherEventChanceMultiplier());
-            updatePacket(((ServerWorld) world).getPlayers());
+            updatePacket(((ServerWorld) world).players());
         }
     }
 
     public void updateWeatherMultiplier(World world, double prevMultiplier, double currentMultiplier) {
-        if (world.getWorldInfo() instanceof ServerWorldInfo) {
-            ServerWorldInfo worldInfo = (ServerWorldInfo) world.getWorldInfo();
+        if (world.getLevelData() instanceof ServerWorldInfo) {
+            ServerWorldInfo worldInfo = (ServerWorldInfo) world.getLevelData();
             if (!worldInfo.isRaining()) {
                 worldInfo.setRainTime(BetterWeatherUtil.transformRainOrThunderTimeToCurrentSeason(worldInfo.getRainTime(), prevMultiplier, currentMultiplier));
                 worldInfo.setThunderTime(BetterWeatherUtil.transformRainOrThunderTimeToCurrentSeason(worldInfo.getThunderTime(), prevMultiplier, currentMultiplier));
@@ -223,17 +226,17 @@ public class SeasonContext implements Season {
     public void enhanceCropRandomTick(ServerWorld world, BlockPos pos, Block block, BlockState self, CallbackInfo ci) {
         if (this.getCurrentSeason().getCurrentSettings().getEnhancedCrops().contains(block)) {
             //Collect the crop multiplier for the given subseason.
-            RegistryKey<Biome> currentBiomeKey = world.func_241828_r().getRegistry(Registry.BIOME_KEY).getOptionalKey(world.getBiome(pos)).get();
+            RegistryKey<Biome> currentBiomeKey = world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).getResourceKey(world.getBiome(pos)).get();
             double cropBonus = this.cropToFavoriteBiomes.containsKey(block) ? this.cropToFavoriteBiomes.get(block).getOrDefault(currentBiomeKey, 0.0) : 0.0;
 
             double cropGrowthMultiplier = getCurrentSubSeasonSettings().getCropGrowthMultiplier(currentBiomeKey, block) + cropBonus;
             if (cropGrowthMultiplier == 1) {
                 return;
             }
-            BlockPos.Mutable mutable = new BlockPos.Mutable().setPos(pos.up(1));
+            BlockPos.Mutable mutable = new BlockPos.Mutable().set(pos.above(1));
 
             for (int move = 0; move <= 16; move++) {
-                if (world.getBlockState(mutable.move(Direction.UP)).isIn(Tags.Blocks.GLASS)) {
+                if (world.getBlockState(mutable.move(Direction.UP)).is(Tags.Blocks.GLASS)) {
                     cropGrowthMultiplier = cropGrowthMultiplier * 1.5;
                     break;
                 }
@@ -274,7 +277,7 @@ public class SeasonContext implements Season {
 
     private void tickSeasonTime(World world) {
         if (world instanceof ServerWorld) {
-            if (!this.tickSeasonTimeWhenNoPlayersOnline && world.getPlayers().isEmpty()) {
+            if (!this.tickSeasonTimeWhenNoPlayersOnline && world.players().isEmpty()) {
                 return;
             }
         }
@@ -283,13 +286,13 @@ public class SeasonContext implements Season {
             this.currentYearTime = currentYearTime > this.yearLength ? 0 : (currentYearTime + 1);
             this.currentSeason = this.seasons.get(Season.getSeasonFromTime(this.currentYearTime, this.yearLength)).setPhaseForTime(this.currentYearTime, this.yearLength);
 
-            if (world.getWorldInfo().getGameTime() % 50 == 0) {
+            if (world.getLevelData().getGameTime() % 50 == 0) {
                 save(world);
             }
         }
         if (world instanceof ServerWorld) {
-            if (world.getWorldInfo().getGameTime() % 3 == 0) { // Update season time every 3 ticks
-                NetworkHandler.sendToAllPlayers(((ServerWorld) world).getPlayers(), new SeasonTimePacket(this.currentYearTime));
+            if (world.getLevelData().getGameTime() % 3 == 0) { // Update season time every 3 ticks
+                NetworkHandler.sendToAllPlayers(((ServerWorld) world).players(), new SeasonTimePacket(this.currentYearTime));
             }
         }
     }
@@ -369,8 +372,8 @@ public class SeasonContext implements Season {
                     String worldKey = worldID.toString().replace(":", ".");
                     ITag.INamedTag<Block> unenhancedCrops = BWSeason.UNAFFECTED_CROPS.get(mapKey);
                     phaseSubSeasonSettingsEntry.getValue().setCropTags(
-                            BWSeason.AFFECTED_CROPS.get(mapKey).getAllElements().isEmpty() ? BWSeason.AFFECTED_CROPS.get(worldKey).getAllElements().isEmpty() ? GLOBAL_AFFECTED_CROPS : BWSeason.AFFECTED_CROPS.get(worldKey) : GLOBAL_AFFECTED_CROPS,
-                            unenhancedCrops.getAllElements().isEmpty() ? BWSeason.UNAFFECTED_CROPS.get(worldKey).getAllElements().isEmpty() ? unenhancedCrops : unenhancedCrops : unenhancedCrops);
+                            BWSeason.AFFECTED_CROPS.get(mapKey).getValues().isEmpty() ? BWSeason.AFFECTED_CROPS.get(worldKey).getValues().isEmpty() ? GLOBAL_AFFECTED_CROPS : BWSeason.AFFECTED_CROPS.get(worldKey) : GLOBAL_AFFECTED_CROPS,
+                            unenhancedCrops.getValues().isEmpty() ? BWSeason.UNAFFECTED_CROPS.get(worldKey).getValues().isEmpty() ? unenhancedCrops : unenhancedCrops : unenhancedCrops);
                 }
                 BiomeOverrideJsonHandler.handleOverrideJsonConfigs(this.seasonOverridesPath.resolve(seasonKeySeasonEntry.getKey().toString() + "-" + phaseSubSeasonSettingsEntry.getKey() + ".json"), seasonKeySeasonEntry.getKey() == Season.Key.WINTER ? BWSubseasonSettings.WINTER_OVERRIDE : new IdentityHashMap<>(), phaseSubSeasonSettingsEntry.getValue(), this.biomeRegistry, isClient);
             }

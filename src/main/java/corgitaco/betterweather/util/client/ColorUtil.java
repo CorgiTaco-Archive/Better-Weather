@@ -10,11 +10,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 
 import java.util.Optional;
 
-import static net.minecraft.util.registry.Registry.BIOME_KEY;
 
 /*
 Notes:
@@ -40,7 +40,7 @@ public final class ColorUtil {
     public static int getBiomeColor(Biome biome, Type type, int previous) {
         Minecraft minecraft = Minecraft.getInstance();
 
-        ClientWorld world = minecraft.world;
+        ClientWorld world = minecraft.level;
         if (world == null) {
             return previous;
         }
@@ -52,7 +52,7 @@ public final class ColorUtil {
             return previous;
         }
 
-        Optional<RegistryKey<Biome>> optionalKey = world.func_241828_r().getRegistry(BIOME_KEY).getOptionalKey(biome);
+        Optional<RegistryKey<Biome>> optionalKey = world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).getResourceKey(biome);
         if (!optionalKey.isPresent()) {
             return previous;
         }
@@ -138,7 +138,7 @@ public final class ColorUtil {
     }
 
     public static int[] transformFloatColor(Vector3d floatColor) {
-        return new int[]{255, (int) (floatColor.getX() * 255), (int) (floatColor.getY() * 255), (int) (floatColor.getZ() * 255)};
+        return new int[]{255, (int) (floatColor.x() * 255), (int) (floatColor.y() * 255), (int) (floatColor.z() * 255)};
     }
 
     // Interpolate between color channels.

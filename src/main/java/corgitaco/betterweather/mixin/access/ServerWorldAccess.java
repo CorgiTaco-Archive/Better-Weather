@@ -9,5 +9,5 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface ServerWorldAccess {
 
     @Invoker
-    BlockPos invokeAdjustPosToNearbyEntity(BlockPos pos);
+    BlockPos invokeFindLightingTargetAround(BlockPos pos);
 }

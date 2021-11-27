@@ -40,12 +40,12 @@ public abstract class MixinItemStack {
     @Shadow
     public abstract Item getItem();
 
-    @Inject(method = "getTooltip", at = @At("RETURN"))
+    @Inject(method = "getTooltipLines", at = @At("RETURN"))
     private void addCropFertility(PlayerEntity playerIn, ITooltipFlag advanced, CallbackInfoReturnable<List<ITextComponent>> cir) {
         if (playerIn == null) {
             return;
         }
-        World world = playerIn.getEntityWorld();
+        World world = playerIn.getCommandSenderWorld();
         SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
 
         if (seasonContext == null) {
@@ -57,30 +57,30 @@ public abstract class MixinItemStack {
         if (item instanceof BlockItem) {
             Block block = ((BlockItem) item).getBlock();
             BWSubseasonSettings currentSubSeasonSettings = seasonContext.getCurrentSubSeasonSettings();
-            MutableRegistry<Biome> biomeRegistry = world.func_241828_r().getRegistry(Registry.BIOME_KEY);
-            RegistryKey<Biome> currentBiomeKey = biomeRegistry.getOptionalKey(world.getBiome(playerIn.getPosition())).get();
+            MutableRegistry<Biome> biomeRegistry = world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
+            RegistryKey<Biome> currentBiomeKey = biomeRegistry.getResourceKey(world.getBiome(playerIn.blockPosition())).get();
             double currentSeasonBiomeCropGrowthMultiplier = currentSubSeasonSettings.getCropGrowthMultiplier(currentBiomeKey, block);
 
             if (currentSubSeasonSettings.getEnhancedCrops().contains(block)) {
                 Minecraft mc = Minecraft.getInstance();
 
                 List<ITextComponent> toolTips = cir.getReturnValue();
-                if (InputMappings.isKeyDown(mc.getMainWindow().getHandle(), mc.gameSettings.keyBindSneak.getKey().getKeyCode())) {
+                if (InputMappings.isKeyDown(mc.getWindow().getWindow(), mc.options.keyShift.getKey().getValue())) {
                     if(seasonContext.getCropFavoriteBiomeBonuses().containsKey(block)) {
                         Object2DoubleArrayMap<RegistryKey<Biome>> favoriteBiomes = seasonContext.getCropFavoriteBiomeBonuses().get(block);
                         if (!favoriteBiomes.isEmpty()) {
 
-                            StringTextComponent favBiomes = new StringTextComponent(Arrays.toString(favoriteBiomes.keySet().stream().map(RegistryKey::getLocation).map(location -> new TranslationTextComponent(Util.makeTranslationKey("biome", location)).getString()).toArray()));
-                            toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.favoritebiomes", favBiomes.mergeStyle(TextFormatting.AQUA)));
+                            StringTextComponent favBiomes = new StringTextComponent(Arrays.toString(favoriteBiomes.keySet().stream().map(RegistryKey::location).map(location -> new TranslationTextComponent(Util.makeDescriptionId("biome", location)).getString()).toArray()));
+                            toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.favoritebiomes", favBiomes.withStyle(TextFormatting.AQUA)));
                         }
                     }
 
                     toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.season", getFertilityString(currentSeasonBiomeCropGrowthMultiplier)));
                 } else {
-                    toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.hint.favbiomes", new TranslationTextComponent(mc.gameSettings.keyBindSneak.getTranslationKey())).mergeStyle(TextFormatting.DARK_GRAY, TextFormatting.ITALIC));
+                    toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.hint.favbiomes", new TranslationTextComponent(mc.options.keyShift.saveString())).withStyle(TextFormatting.DARK_GRAY, TextFormatting.ITALIC));
                 }
 
-                if (InputMappings.isKeyDown(mc.getMainWindow().getHandle(), mc.gameSettings.keyBindSprint.getKey().getKeyCode())) {
+                if (InputMappings.isKeyDown(mc.getWindow().getWindow(), mc.options.keySprint.getKey().getValue())) {
                     IFormattableTextComponent favoriteSeason = null;
                     IFormattableTextComponent favoritePhase = null;
                     double bestMultiplier = Double.MIN_VALUE;
@@ -96,11 +96,11 @@ public abstract class MixinItemStack {
                             double cropGrowthMultiplier = bwSubseasonSettings.getCropGrowthMultiplier(null, block);
                             if (cropGrowthMultiplier > bestMultiplier) {
                                 bestMultiplier = cropGrowthMultiplier;
-                                favoriteSeason = new TranslationTextComponent(keyTranslationTextComponent.getKey()).mergeStyle(TextFormatting.GREEN);
-                                favoritePhase = new TranslationTextComponent(phaseTranslationTextComponent.getKey()).mergeStyle(TextFormatting.GREEN);
+                                favoriteSeason = new TranslationTextComponent(keyTranslationTextComponent.getKey()).withStyle(TextFormatting.GREEN);
+                                favoritePhase = new TranslationTextComponent(phaseTranslationTextComponent.getKey()).withStyle(TextFormatting.GREEN);
                             }
 
-                            seasonFertilityTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.seasons", keyTranslationTextComponent.mergeStyle(TextFormatting.AQUA), phaseTranslationTextComponent.mergeStyle(TextFormatting.AQUA), getFertilityString(cropGrowthMultiplier)));
+                            seasonFertilityTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.seasons", keyTranslationTextComponent.withStyle(TextFormatting.AQUA), phaseTranslationTextComponent.withStyle(TextFormatting.AQUA), getFertilityString(cropGrowthMultiplier)));
                         }
                     }
 
@@ -109,7 +109,7 @@ public abstract class MixinItemStack {
                     }
                     toolTips.addAll(seasonFertilityTips);
                 } else {
-                    toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.hint.seasonfertilities", new TranslationTextComponent(mc.gameSettings.keyBindSprint.getTranslationKey())).mergeStyle(TextFormatting.DARK_GRAY, TextFormatting.ITALIC));
+                    toolTips.add(new TranslationTextComponent("bwseason.cropfertility.tooltip.hint.seasonfertilities", new TranslationTextComponent(mc.options.keySprint.saveString())).withStyle(TextFormatting.DARK_GRAY, TextFormatting.ITALIC));
                 }
             }
         }
@@ -119,19 +119,19 @@ public abstract class MixinItemStack {
         if (cropMultiplier == 1.0) {
             return new TranslationTextComponent("bwseason.cropfertility.tooltip.fertility.normal");
         } else if (cropMultiplier < 0.0) {
-            return new TranslationTextComponent("bwseason.cropfertility.tooltip.fertility.impossible").mergeStyle(TextFormatting.RED);
+            return new TranslationTextComponent("bwseason.cropfertility.tooltip.fertility.impossible").withStyle(TextFormatting.RED);
         } else if (cropMultiplier > 2.0) {
-            return new TranslationTextComponent("bwseason.cropfertility.tooltip.fertility.excellent").mergeStyle(TextFormatting.GREEN);
+            return new TranslationTextComponent("bwseason.cropfertility.tooltip.fertility.excellent").withStyle(TextFormatting.GREEN);
         } else if (cropMultiplier > 1.5) {
-            return new TranslationTextComponent("bwseason.cropfertility.tooltip.fertility.verygood").mergeStyle(TextFormatting.GREEN);
+            return new TranslationTextComponent("bwseason.cropfertility.tooltip.fertility.verygood").withStyle(TextFormatting.GREEN);
         } else if (cropMultiplier > 1.0) {
-            return new TranslationTextComponent("bwseason.cropfertility.tooltip.fertility.good").mergeStyle(TextFormatting.GREEN);
+            return new TranslationTextComponent("bwseason.cropfertility.tooltip.fertility.good").withStyle(TextFormatting.GREEN);
         } else if (cropMultiplier > TWO_THIRDS) {
-            return new TranslationTextComponent("bwseason.cropfertility.tooltip.fertility.notgood").mergeStyle(TextFormatting.YELLOW);
+            return new TranslationTextComponent("bwseason.cropfertility.tooltip.fertility.notgood").withStyle(TextFormatting.YELLOW);
         } else if (cropMultiplier > ONE_THIRDS) {
-            return new TranslationTextComponent("bwseason.cropfertility.tooltip.fertility.bad").mergeStyle(TextFormatting.RED);
+            return new TranslationTextComponent("bwseason.cropfertility.tooltip.fertility.bad").withStyle(TextFormatting.RED);
         } else {
-            return new TranslationTextComponent("bwseason.cropfertility.tooltip.fertility.undetermined").mergeStyle(TextFormatting.RED);
+            return new TranslationTextComponent("bwseason.cropfertility.tooltip.fertility.undetermined").withStyle(TextFormatting.RED);
 
         }
     }

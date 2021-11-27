@@ -66,18 +66,18 @@ public class RainClient extends WeatherEventClient<RainClientSettings> {
 
     @Override
     public boolean weatherParticlesAndSound(ActiveRenderInfo renderInfo, Minecraft mc, float ticks, Predicate<Biome> validBiomes) {
-        float particleStrength = mc.world.getRainStrength(1.0F) / (Minecraft.isFancyGraphicsEnabled() ? 1.0F : 2.0F);
+        float particleStrength = mc.level.getRainLevel(1.0F) / (Minecraft.useFancyGraphics() ? 1.0F : 2.0F);
         if (!(particleStrength <= 0.0F)) {
             Random random = new Random((long) ticks * 312987231L);
-            IWorldReader worldReader = mc.world;
-            BlockPos blockpos = new BlockPos(renderInfo.getProjectedView());
+            IWorldReader worldReader = mc.level;
+            BlockPos blockpos = new BlockPos(renderInfo.getPosition());
             BlockPos blockpos1 = null;
-            int particleCount = (int)(100.0F * particleStrength * particleStrength) / (mc.gameSettings.particles == ParticleStatus.DECREASED ? 2 : 1);
+            int particleCount = (int)(100.0F * particleStrength * particleStrength) / (mc.options.particles == ParticleStatus.DECREASED ? 2 : 1);
 
             for(int particleCounter = 0; particleCounter < particleCount; ++particleCounter) {
                 int randomAddX = random.nextInt(21) - 10;
                 int randomAddZ = random.nextInt(21) - 10;
-                BlockPos motionBlockingHeightMinus1 = worldReader.getHeight(Heightmap.Type.MOTION_BLOCKING, blockpos.add(randomAddX, 0, randomAddZ)).down();
+                BlockPos motionBlockingHeightMinus1 = worldReader.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING, blockpos.offset(randomAddX, 0, randomAddZ)).below();
                 Biome biome = worldReader.getBiome(motionBlockingHeightMinus1);
                 if (!validBiomes.test(biome)) {
                     continue;
@@ -85,7 +85,7 @@ public class RainClient extends WeatherEventClient<RainClientSettings> {
 
                 if (motionBlockingHeightMinus1.getY() > 0 && motionBlockingHeightMinus1.getY() <= blockpos.getY() + 10 && motionBlockingHeightMinus1.getY() >= blockpos.getY() - 10 && biome.getPrecipitation() == Biome.RainType.RAIN && biome.getTemperature(motionBlockingHeightMinus1) >= 0.15F) {
                     blockpos1 = motionBlockingHeightMinus1;
-                    if (mc.gameSettings.particles == ParticleStatus.MINIMAL) {
+                    if (mc.options.particles == ParticleStatus.MINIMAL) {
                         break;
                     }
 
@@ -93,9 +93,9 @@ public class RainClient extends WeatherEventClient<RainClientSettings> {
                     double randDouble2 = random.nextDouble();
                     BlockState blockstate = worldReader.getBlockState(motionBlockingHeightMinus1);
                     FluidState fluidstate = worldReader.getFluidState(motionBlockingHeightMinus1);
-                    VoxelShape voxelshape = blockstate.getCollisionShapeUncached(worldReader, motionBlockingHeightMinus1);
+                    VoxelShape voxelshape = blockstate.getCollisionShape(worldReader, motionBlockingHeightMinus1);
                     double voxelShapeMax = voxelshape.max(Direction.Axis.Y, randDouble, randDouble2);
-                    double fluidstateActualHeight = fluidstate.getActualHeight(worldReader, motionBlockingHeightMinus1);
+                    double fluidstateActualHeight = fluidstate.getHeight(worldReader, motionBlockingHeightMinus1);
                     double particleMaxAddedY = Math.max(voxelShapeMax, fluidstateActualHeight);
                     addParticlesToWorld(mc, motionBlockingHeightMinus1, randDouble, randDouble2, blockstate, fluidstate, particleMaxAddedY);
                 }
@@ -103,10 +103,10 @@ public class RainClient extends WeatherEventClient<RainClientSettings> {
 
             if (blockpos1 != null && random.nextInt(3) < this.rainSoundTime++) {
                 this.rainSoundTime = 0;
-                if (blockpos1.getY() > blockpos.getY() + 1 && worldReader.getHeight(Heightmap.Type.MOTION_BLOCKING, blockpos).getY() > MathHelper.floor((float)blockpos.getY())) {
-                    mc.world.playSound(blockpos1, SoundEvents.WEATHER_RAIN_ABOVE, SoundCategory.WEATHER, 0.1F, 0.5F, false);
+                if (blockpos1.getY() > blockpos.getY() + 1 && worldReader.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING, blockpos).getY() > MathHelper.floor((float)blockpos.getY())) {
+                    mc.level.playLocalSound(blockpos1, SoundEvents.WEATHER_RAIN_ABOVE, SoundCategory.WEATHER, 0.1F, 0.5F, false);
                 } else {
-                    mc.world.playSound(blockpos1, SoundEvents.WEATHER_RAIN, SoundCategory.WEATHER, 0.2F, 1.0F, false);
+                    mc.level.playLocalSound(blockpos1, SoundEvents.WEATHER_RAIN, SoundCategory.WEATHER, 0.2F, 1.0F, false);
                 }
             }
         }
@@ -114,8 +114,8 @@ public class RainClient extends WeatherEventClient<RainClientSettings> {
     }
 
     protected void addParticlesToWorld(Minecraft mc, BlockPos motionBlockingHeightMinus1, double randDouble, double randDouble2, BlockState blockstate, FluidState fluidstate, double particleMaxAddedY) {
-        IParticleData iparticledata = !fluidstate.isTagged(FluidTags.LAVA) && !blockstate.matchesBlock(Blocks.MAGMA_BLOCK) && !CampfireBlock.isLit(blockstate) ? ParticleTypes.RAIN : ParticleTypes.SMOKE;
-        mc.world.addParticle(iparticledata, (double) motionBlockingHeightMinus1.getX() + randDouble, (double) motionBlockingHeightMinus1.getY() + particleMaxAddedY, (double) motionBlockingHeightMinus1.getZ() + randDouble2, 0.0D, 0.0D, 0.0D);
+        IParticleData iparticledata = !fluidstate.is(FluidTags.LAVA) && !blockstate.is(Blocks.MAGMA_BLOCK) && !CampfireBlock.isLitCampfire(blockstate) ? ParticleTypes.RAIN : ParticleTypes.SMOKE;
+        mc.level.addParticle(iparticledata, (double) motionBlockingHeightMinus1.getX() + randDouble, (double) motionBlockingHeightMinus1.getY() + particleMaxAddedY, (double) motionBlockingHeightMinus1.getZ() + randDouble2, 0.0D, 0.0D, 0.0D);
     }
 
     @Override

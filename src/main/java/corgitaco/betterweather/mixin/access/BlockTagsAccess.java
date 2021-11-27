@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface BlockTagsAccess {
 
     @Accessor
-    static TagRegistry<Block> getREGISTRY() {
+    static TagRegistry<Block> getHELPER() {
         throw new Error("Mixin did not apply!");
     }
 }

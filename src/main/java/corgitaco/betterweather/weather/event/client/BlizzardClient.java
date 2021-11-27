@@ -82,13 +82,13 @@ public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> i
 
     @Override
     public boolean renderWeatherLegacy(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y,  double z, Predicate<Biome> biomePredicate) {
-        float rainStrength = world.getRainStrength(partialTicks);
-        lightTexture.enableLightmap();
+        float rainStrength = world.getRainLevel(partialTicks);
+        lightTexture.turnOnLightLayer();
         int floorX = MathHelper.floor(x);
         int floorY = MathHelper.floor(y);
         int floorZ = MathHelper.floor(z);
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
+        BufferBuilder bufferbuilder = tessellator.getBuilder();
         RenderSystem.enableAlphaTest();
         RenderSystem.disableCull();
         RenderSystem.normal3f(0.0F, 1.0F, 0.0F);
@@ -97,11 +97,11 @@ public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> i
         RenderSystem.defaultAlphaFunc();
         RenderSystem.enableDepthTest();
         int graphicsQuality = 5;
-        if (Minecraft.isFancyGraphicsEnabled()) {
+        if (Minecraft.useFancyGraphics()) {
             graphicsQuality = 10;
         }
 
-        RenderSystem.depthMask(Minecraft.isFabulousGraphicsEnabled());
+        RenderSystem.depthMask(Minecraft.useShaderTransparency());
         int i1 = -1;
         float ticksAndPartialTicks = (float) ticks + partialTicks;
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -113,9 +113,9 @@ public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> i
                 //These 2 doubles control the size of rain particles.
                 double rainSizeX = (double) this.rainSizeX[rainSizeIdx] * 0.5D;
                 double rainSizeZ = (double) this.rainSizeZ[rainSizeIdx] * 0.5D;
-                blockPos.setPos(graphicQualityX, 0, graphicQualityZ);
+                blockPos.set(graphicQualityX, 0, graphicQualityZ);
                 Biome biome = world.getBiome(blockPos);
-                int topPosY = mc.world.getHeight(Heightmap.Type.MOTION_BLOCKING, blockPos.getX(), blockPos.getZ());
+                int topPosY = mc.level.getHeight(Heightmap.Type.MOTION_BLOCKING, blockPos.getX(), blockPos.getZ());
                 int floorYMinusGraphicsQuality = floorY - graphicsQuality;
                 int floorYPlusGraphicsQuality = floorY + graphicsQuality;
                 if (floorYMinusGraphicsQuality < topPosY) {
@@ -130,17 +130,17 @@ public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> i
 
                 if (floorYMinusGraphicsQuality != floorYPlusGraphicsQuality) {
                     Random random = new Random(graphicQualityX * graphicQualityX * 3121 + graphicQualityX * 45238971 ^ graphicQualityZ * graphicQualityZ * 418711 + graphicQualityZ * 13761);
-                    blockPos.setPos(graphicQualityX, floorYMinusGraphicsQuality, graphicQualityZ);
+                    blockPos.set(graphicQualityX, floorYMinusGraphicsQuality, graphicQualityZ);
 
                     //This is rain rendering.
                     if (i1 != 1) {
                         if (i1 >= 0) {
-                            tessellator.draw();
+                            tessellator.end();
                         }
 
                         i1 = 1;
-                        mc.getTextureManager().bindTexture(this.textureLocation);
-                        bufferbuilder.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+                        mc.getTextureManager().bind(this.textureLocation);
+                        bufferbuilder.begin(7, DefaultVertexFormats.PARTICLE);
                     }
 
                     float f7 = (float) (random.nextDouble() + (double) (ticksAndPartialTicks * (float) random.nextGaussian()) * 0.03D);
@@ -149,31 +149,31 @@ public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> i
                     double d5 = (double) ((float) graphicQualityZ + 0.5F) - z;
                     float f9 = MathHelper.sqrt(d3 * d3 + d5 * d5) / (float) graphicsQuality;
                     float ticksAndPartialTicks0 = ((1.0F - f9 * f9) * 0.3F + 0.5F) * rainStrength;
-                    blockPos.setPos(graphicQualityX, posY2, graphicQualityZ);
-                    int k3 = WorldRenderer.getCombinedLight(world, blockPos);
+                    blockPos.set(graphicQualityX, posY2, graphicQualityZ);
+                    int k3 = WorldRenderer.getLightColor(world, blockPos);
                     int l3 = k3 >> 16 & '\uffff';
                     int i4 = (k3 & '\uffff') * 3;
                     int j4 = (l3 * 3 + 240) / 4;
                     int k4 = (i4 * 3 + 240) / 4;
                     if (biomePredicate.test(biome)) {
-                        bufferbuilder.pos((double) graphicQualityX - x - rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYPlusGraphicsQuality - y, (double) graphicQualityZ - z - rainSizeZ + 0.5D + random.nextGaussian()).tex(0.0F + f7, (float) floorYMinusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).lightmap(k4, j4).endVertex();
-                        bufferbuilder.pos((double) graphicQualityX - x + rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYPlusGraphicsQuality - y, (double) graphicQualityZ - z + rainSizeZ + 0.5D + random.nextGaussian()).tex(1.0F + f7, (float) floorYMinusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).lightmap(k4, j4).endVertex();
-                        bufferbuilder.pos((double) graphicQualityX - x + rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYMinusGraphicsQuality - y, (double) graphicQualityZ - z + rainSizeZ + 0.5D + random.nextGaussian()).tex(1.0F + f7, (float) floorYPlusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).lightmap(k4, j4).endVertex();
-                        bufferbuilder.pos((double) graphicQualityX - x - rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYMinusGraphicsQuality - y, (double) graphicQualityZ - z - rainSizeZ + 0.5D + random.nextGaussian()).tex(0.0F + f7, (float) floorYPlusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).lightmap(k4, j4).endVertex();
+                        bufferbuilder.vertex((double) graphicQualityX - x - rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYPlusGraphicsQuality - y, (double) graphicQualityZ - z - rainSizeZ + 0.5D + random.nextGaussian()).uv(0.0F + f7, (float) floorYMinusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).uv2(k4, j4).endVertex();
+                        bufferbuilder.vertex((double) graphicQualityX - x + rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYPlusGraphicsQuality - y, (double) graphicQualityZ - z + rainSizeZ + 0.5D + random.nextGaussian()).uv(1.0F + f7, (float) floorYMinusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).uv2(k4, j4).endVertex();
+                        bufferbuilder.vertex((double) graphicQualityX - x + rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYMinusGraphicsQuality - y, (double) graphicQualityZ - z + rainSizeZ + 0.5D + random.nextGaussian()).uv(1.0F + f7, (float) floorYPlusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).uv2(k4, j4).endVertex();
+                        bufferbuilder.vertex((double) graphicQualityX - x - rainSizeX + 0.5D + random.nextGaussian() * 2, (double) floorYMinusGraphicsQuality - y, (double) graphicQualityZ - z - rainSizeZ + 0.5D + random.nextGaussian()).uv(0.0F + f7, (float) floorYPlusGraphicsQuality * 0.25F - Math.abs(fallSpeed)).color(1.0F, 1.0F, 1.0F, ticksAndPartialTicks0).uv2(k4, j4).endVertex();
                     }
                 }
             }
         }
 
         if (i1 >= 0) {
-            tessellator.draw();
+            tessellator.end();
         }
 
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
         RenderSystem.defaultAlphaFunc();
         RenderSystem.disableAlphaTest();
-        lightTexture.disableLightmap();
+        lightTexture.turnOffLightLayer();
         return true;
     }
 

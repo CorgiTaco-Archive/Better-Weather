@@ -27,7 +27,7 @@ import java.util.function.BooleanSupplier;
 public abstract class MixinClientWorld implements BetterWeatherWorldData, Climate, BiomeUpdate {
 
     @Shadow
-    public abstract DynamicRegistries func_241828_r();
+    public abstract DynamicRegistries registryAccess();
 
     @Nullable
     SeasonContext seasonContext;
@@ -78,7 +78,7 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
 
     @Override
     public void updateBiomeData() {
-        for (Map.Entry<RegistryKey<Biome>, Biome> entry : this.func_241828_r().getRegistry(Registry.BIOME_KEY).getEntries()) {
+        for (Map.Entry<RegistryKey<Biome>, Biome> entry : this.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).entrySet()) {
             Biome biome = entry.getValue();
             RegistryKey<Biome> biomeKey = entry.getKey();
             float seasonHumidityModifier = seasonContext == null ? 0.0F : (float) this.seasonContext.getCurrentSubSeasonSettings().getHumidityModifier(biomeKey);
@@ -94,19 +94,19 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
     }
 
 
-    @Redirect(method = "getSkyColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
+    @Redirect(method = "getSkyColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainLevel(F)F"))
     private float doNotDarkenSkyWithRainStrength(ClientWorld world, float delta) {
-        return this.weatherContext != null ? 0.0F : world.getRainStrength(delta);
+        return this.weatherContext != null ? 0.0F : world.getRainLevel(delta);
     }
 
-    @Redirect(method = "getCloudColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
+    @Redirect(method = "getCloudColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainLevel(F)F"))
     private float doNotDarkenCloudsWithRainStrength(ClientWorld world, float delta) {
-        return this.weatherContext != null ? 0.0F : world.getRainStrength(delta);
+        return this.weatherContext != null ? 0.0F : world.getRainLevel(delta);
     }
 
-    @Redirect(method = "getSunBrightness", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
+    @Redirect(method = "getSkyDarken", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainLevel(F)F"))
     private float sunBrightness(ClientWorld world, float delta) {
-        float rainStrength = ((ClientWorld) (Object) this).getRainStrength(delta);
+        float rainStrength = ((ClientWorld) (Object) this).getRainLevel(delta);
         BWWeatherEventContext weatherContext = this.weatherContext;
         return weatherContext != null ? rainStrength * weatherContext.getCurrentEvent().getClientSettings().dayLightDarkness() : rainStrength;
     }

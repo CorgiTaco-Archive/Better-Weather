@@ -47,13 +47,13 @@ public final class BWSeason {
     public static final BWSeason DEFAULT_WINTER = new BWSeason(DEFAULT_WINTER_PHASES);
 
     public static final Codec<BWSeason> CODEC = RecordCodecBuilder.create((builder) -> {
-        return builder.group(Codec.simpleMap(Season.Phase.CODEC, BWSubseasonSettings.CODEC, IStringSerializable.createKeyable(Season.Phase.values())).fieldOf("phases").forGetter((seasons) -> {
+        return builder.group(Codec.simpleMap(Season.Phase.CODEC, BWSubseasonSettings.CODEC, IStringSerializable.keys(Season.Phase.values())).fieldOf("phases").forGetter((seasons) -> {
             return seasons.phaseSettings;
         })).apply(builder, (p1) -> new BWSeason(new IdentityHashMap<>(p1)));
     });
 
     public static final Codec<BWSeason> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
-        return builder.group(Codec.simpleMap(Season.Phase.CODEC, BWSubseasonSettings.PACKET_CODEC, IStringSerializable.createKeyable(Season.Phase.values())).fieldOf("phases").forGetter((seasons) -> {
+        return builder.group(Codec.simpleMap(Season.Phase.CODEC, BWSubseasonSettings.PACKET_CODEC, IStringSerializable.keys(Season.Phase.values())).fieldOf("phases").forGetter((seasons) -> {
             return seasons.phaseSettings;
         })).apply(builder, (p1) -> new BWSeason(new IdentityHashMap<>(p1)));
     });

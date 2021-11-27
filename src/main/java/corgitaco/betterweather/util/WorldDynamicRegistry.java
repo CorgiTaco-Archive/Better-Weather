@@ -26,16 +26,16 @@ public class WorldDynamicRegistry extends DynamicRegistries.Impl {
 
     public WorldDynamicRegistry(Impl serverRegistry) {
         this.serverRegistry = serverRegistry;
-        this.commonKeyMutableRegistry = new CommonKeyMutableRegistry(serverRegistry.getRegistry(Registry.BIOME_KEY));
-        ((DynamicRegistriesImplAccess) this).setKeyToSimpleRegistryMap(fill());
+        this.commonKeyMutableRegistry = new CommonKeyMutableRegistry(serverRegistry.registryOrThrow(Registry.BIOME_REGISTRY));
+        ((DynamicRegistriesImplAccess) this).setRegistries(fill());
     }
 
     public Map<? extends RegistryKey<? extends Registry<?>>, ? extends SimpleRegistry<?>> fill() {
-        return DynamicRegistriesAccess.getRegistryCodecMap().keySet().stream().collect(Collectors.toMap(Function.identity(), this::createStableRegistry));
+        return DynamicRegistriesAccess.getREGISTRIES().keySet().stream().collect(Collectors.toMap(Function.identity(), this::createStableRegistry));
     }
 
     private <E> SimpleRegistry<?> createStableRegistry(RegistryKey<? extends Registry<?>> key) {
-        if (key.getLocation().toString().equals("minecraft:worldgen/biome"))
+        if (key.location().toString().equals("minecraft:worldgen/biome"))
             return this.commonKeyMutableRegistry;
         else
             return new SimpleRegistry(key, Lifecycle.stable());
@@ -43,27 +43,27 @@ public class WorldDynamicRegistry extends DynamicRegistries.Impl {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E> Optional<MutableRegistry<E>> func_230521_a_(RegistryKey<? extends Registry<E>> key) {
-        if (key.getLocation().toString().equals("minecraft:worldgen/biome")) {
+    public <E> Optional<MutableRegistry<E>> registry(RegistryKey<? extends Registry<E>> key) {
+        if (key.location().toString().equals("minecraft:worldgen/biome")) {
             return Optional.of((MutableRegistry<E>) commonKeyMutableRegistry);
         }
 
-        return serverRegistry.func_230521_a_(key);
+        return serverRegistry.registry(key);
     }
 
     @Override
-    public <E> MutableRegistry<E> getRegistry(RegistryKey<? extends Registry<E>> key) {
-        if (key.getLocation().toString().equals("minecraft:worldgen/biome")) {
-            return this.func_230521_a_(key).orElseThrow(() -> {
+    public <E> MutableRegistry<E> registryOrThrow(RegistryKey<? extends Registry<E>> key) {
+        if (key.location().toString().equals("minecraft:worldgen/biome")) {
+            return this.registry(key).orElseThrow(() -> {
                 return new IllegalStateException("Missing registry: " + key);
             });
         }
 
-        return serverRegistry.getRegistry(key);
+        return serverRegistry.registryOrThrow(key);
     }
 
     @Override
-    public Registry<DimensionType> func_230520_a_() {
-        return serverRegistry.func_230520_a_();
+    public Registry<DimensionType> dimensionTypes() {
+        return serverRegistry.dimensionTypes();
     }
 }

@@ -18,22 +18,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(FogRenderer.class)
 public abstract class MixinFogRenderer {
 
-    @Redirect(method = "updateFogColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainStrength(F)F"))
+    @Redirect(method = "setupColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainLevel(F)F"))
     private static float doNotDarkenFogWithRainStrength(ClientWorld world, float delta) {
-        return ((BetterWeatherWorldData) world).getWeatherEventContext() != null ? 0.0F : world.getRainStrength(delta);
+        return ((BetterWeatherWorldData) world).getWeatherEventContext() != null ? 0.0F : world.getRainLevel(delta);
     }
 
     @Inject(method = "setupFog(Lnet/minecraft/client/renderer/ActiveRenderInfo;Lnet/minecraft/client/renderer/FogRenderer$FogType;FZF)V", at = @At("HEAD"), cancellable = true, remap = false)
     private static void forceWeather(ActiveRenderInfo activeRenderInfoIn, FogRenderer.FogType fogTypeIn, float farPlaneDistance, boolean nearFog, float partialticks, CallbackInfo ci) {
-        ClientWorld world = Minecraft.getInstance().world;
+        ClientWorld world = Minecraft.getInstance().level;
         BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
         if (weatherEventContext != null) {
             WeatherEvent currentEvent = weatherEventContext.getCurrentEvent();
             float currentFogDensity = currentEvent.getClientSettings().fogDensity();
-            float blendedFogDensity = weatherEventContext.getCurrentClientEvent().fogDensity(world, activeRenderInfoIn.getBlockPos(), currentEvent::isValidBiome);
+            float blendedFogDensity = weatherEventContext.getCurrentClientEvent().fogDensity(world, activeRenderInfoIn.getBlockPosition(), currentEvent::isValidBiome);
 
             if (currentFogDensity != -1.0F && blendedFogDensity > 0.0F) {
-                RenderSystem.fogDensity(MathHelper.lerp(activeRenderInfoIn.getRenderViewEntity().world.getRainStrength(Minecraft.getInstance().getRenderPartialTicks()), 0.0F, blendedFogDensity));
+                RenderSystem.fogDensity(MathHelper.lerp(activeRenderInfoIn.getEntity().level.getRainLevel(Minecraft.getInstance().getFrameTime()), 0.0F, blendedFogDensity));
                 ci.cancel();
             }
         }

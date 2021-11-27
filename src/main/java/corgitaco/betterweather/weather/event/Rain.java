@@ -42,7 +42,7 @@ public class Rain extends WeatherEvent {
             return rain.isThundering();
         }), Codec.INT.fieldOf("lightningChance").forGetter(rain -> {
             return rain.getLightningChance();
-        }), Codec.simpleMap(Season.Key.CODEC, Codec.unboundedMap(Season.Phase.CODEC, Codec.DOUBLE), IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasonChances").forGetter(rain -> {
+        }), Codec.simpleMap(Season.Key.CODEC, Codec.unboundedMap(Season.Phase.CODEC, Codec.DOUBLE), IStringSerializable.keys(Season.Key.values())).fieldOf("seasonChances").forGetter(rain -> {
             return rain.getSeasonChances();
         })).apply(builder, Rain::new);
     });
@@ -128,25 +128,25 @@ public class Rain extends WeatherEvent {
 
     @Override
     public void chunkTick(Chunk chunk, ServerWorld world) {
-        if (world.rand.nextInt(16) == 0) {
+        if (world.random.nextInt(16) == 0) {
             ChunkPos chunkpos = chunk.getPos();
-            int xStart = chunkpos.getXStart();
-            int zStart = chunkpos.getZStart();
-            BlockPos randomPos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(xStart, 0, zStart, 15));
-            BlockPos randomPosDown = randomPos.down();
+            int xStart = chunkpos.getMinBlockX();
+            int zStart = chunkpos.getMinBlockZ();
+            BlockPos randomPos = world.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(xStart, 0, zStart, 15));
+            BlockPos randomPosDown = randomPos.below();
 
             Biome biome = world.getBiome(randomPos);
             if (isValidBiome(biome)) {
-                if (spawnSnowInFreezingClimates() && biome.doesWaterFreeze(world, randomPosDown)) {
-                    world.setBlockState(randomPosDown, Blocks.ICE.getDefaultState());
+                if (spawnSnowInFreezingClimates() && biome.shouldFreeze(world, randomPosDown)) {
+                    world.setBlockAndUpdate(randomPosDown, Blocks.ICE.defaultBlockState());
                 }
 
-                if (spawnSnowInFreezingClimates() && biome.doesSnowGenerate(world, randomPos)) {
-                    world.setBlockState(randomPos, Blocks.SNOW.getDefaultState());
+                if (spawnSnowInFreezingClimates() && biome.shouldSnow(world, randomPos)) {
+                    world.setBlockAndUpdate(randomPos, Blocks.SNOW.defaultBlockState());
                 }
 
-                if (world.isRainingAt(randomPos.up(25)) && fillBlocksWithWater()) {
-                    world.getBlockState(randomPosDown).getBlock().fillWithRain(world, randomPosDown);
+                if (world.isRainingAt(randomPos.above(25)) && fillBlocksWithWater()) {
+                    world.getBlockState(randomPosDown).getBlock().handleRain(world, randomPosDown);
                 }
             }
         }

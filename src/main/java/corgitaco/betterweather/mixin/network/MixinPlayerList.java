@@ -33,15 +33,15 @@ public abstract class MixinPlayerList {
     @Mutable
     @Shadow
     @Final
-    private DynamicRegistries.Impl field_232639_s_;
+    private DynamicRegistries.Impl registryHolder;
 
-    @Inject(method = "initializeConnectionToPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z", ordinal = 0, shift = At.Shift.BEFORE), locals = LocalCapture.CAPTURE_FAILEXCEPTION)
+    @Inject(method = "placeNewPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z", ordinal = 0, shift = At.Shift.BEFORE), locals = LocalCapture.CAPTURE_FAILEXCEPTION)
     private void useWorldRegistry(NetworkManager netManager, ServerPlayerEntity playerIn, CallbackInfo ci, GameProfile gameprofile, PlayerProfileCache playerprofilecache, GameProfile gameprofile1, String s, CompoundNBT compoundnbt, RegistryKey registrykey, ServerWorld serverworld, ServerWorld serverworld1, String s1, IWorldInfo iworldinfo, ServerPlayNetHandler serverplaynethandler, GameRules gamerules) {
-        this.field_232639_s_ = (DynamicRegistries.Impl) serverworld1.func_241828_r();
+        this.registryHolder = (DynamicRegistries.Impl) serverworld1.registryAccess();
     }
 
 
-    @Inject(method = "sendWorldInfo", at = @At(value = "HEAD"))
+    @Inject(method = "sendLevelInfo", at = @At(value = "HEAD"))
     private void sendContext(ServerPlayerEntity playerIn, ServerWorld worldIn, CallbackInfo ci) {
         SeasonContext seasonContext = ((BetterWeatherWorldData) worldIn).getSeasonContext();
         if (seasonContext != null) {

@@ -57,7 +57,7 @@ public class AcidRain extends Rain {
             return rain.isThundering();
         }), Codec.INT.fieldOf("lightningChance").forGetter(rain -> {
             return rain.getLightningChance();
-        }), Codec.simpleMap(Season.Key.CODEC, Codec.unboundedMap(Season.Phase.CODEC, Codec.DOUBLE), IStringSerializable.createKeyable(Season.Key.values())).fieldOf("seasonChances").forGetter(rain -> {
+        }), Codec.simpleMap(Season.Key.CODEC, Codec.unboundedMap(Season.Phase.CODEC, Codec.DOUBLE), IStringSerializable.keys(Season.Key.values())).fieldOf("seasonChances").forGetter(rain -> {
             return rain.getSeasonChances();
         })).apply(builder, AcidRain::new);
     });
@@ -76,8 +76,8 @@ public class AcidRain extends Rain {
 
     public static final IdentityHashMap<ResourceLocation, ResourceLocation> DEFAULT_DECAYER = Util.make(new IdentityHashMap<>(), (map) -> {
         for (Block block : Registry.BLOCK) {
-            Material material = block.getDefaultState().getMaterial();
-            if (material == Material.LEAVES || material == Material.PLANTS) {
+            Material material = block.defaultBlockState().getMaterial();
+            if (material == Material.LEAVES || material == Material.PLANT) {
                 map.put(Registry.BLOCK.getKey(block), (Registry.BLOCK.getKey(Blocks.AIR)));
             }
         }
@@ -192,23 +192,23 @@ public class AcidRain extends Rain {
         if (this.chunkTickChance < 1) {
             return;
         }
-        if (world.rand.nextInt(chunkTickChance) == 0) {
+        if (world.random.nextInt(chunkTickChance) == 0) {
             ChunkPos chunkpos = chunk.getPos();
-            int xStart = chunkpos.getXStart();
-            int zStart = chunkpos.getZStart();
-            BlockPos randomPos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(xStart, 0, zStart, 15));
-            BlockPos randomPosDown = randomPos.down();
+            int xStart = chunkpos.getMinBlockX();
+            int zStart = chunkpos.getMinBlockZ();
+            BlockPos randomPos = world.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(xStart, 0, zStart, 15));
+            BlockPos randomPosDown = randomPos.below();
             Biome biome = world.getBiome(randomPos);
 
-            if (isValidBiome(biome) && !biome.doesSnowGenerate(world, randomPos)) {
+            if (isValidBiome(biome) && !biome.shouldSnow(world, randomPos)) {
                 Block currentBlock = world.getBlockState(randomPos).getBlock();
                 Block currentBlockDown = world.getBlockState(randomPosDown).getBlock();
 
                 if (this.blockToBlock.containsKey(currentBlock)) {
-                    world.setBlockState(randomPos, this.blockToBlock.get(currentBlock).getDefaultState());
+                    world.setBlockAndUpdate(randomPos, this.blockToBlock.get(currentBlock).defaultBlockState());
                 }
                 if (this.blockToBlock.containsKey(currentBlockDown)) {
-                    world.setBlockState(randomPosDown, this.blockToBlock.get(currentBlockDown).getDefaultState());
+                    world.setBlockAndUpdate(randomPosDown, this.blockToBlock.get(currentBlockDown).defaultBlockState());
                 }
             }
         }
@@ -220,16 +220,16 @@ public class AcidRain extends Rain {
         if (this.chunkTickChance < 1) {
             return;
         }
-        World world = entity.world;
-        if (world.rand.nextInt(entityDamageChance) == 0) {
-            BlockPos entityPosition = entity.getPosition();
+        World world = entity.level;
+        if (world.random.nextInt(entityDamageChance) == 0) {
+            BlockPos entityPosition = entity.blockPosition();
             Biome biome = world.getBiome(entityPosition);
-            if (world.getHeight(Heightmap.Type.MOTION_BLOCKING, entityPosition.getX(), entityPosition.getZ()) > entityPosition.getY() || !isValidBiome(biome) || biome.doesSnowGenerate(world, entityPosition)) {
+            if (world.getHeight(Heightmap.Type.MOTION_BLOCKING, entityPosition.getX(), entityPosition.getZ()) > entityPosition.getY() || !isValidBiome(biome) || biome.shouldSnow(world, entityPosition)) {
                 return;
             }
 
             if (this.entityDamage.containsKey(entity.getType())) {
-                entity.attackEntityFrom(DamageSource.GENERIC, this.entityDamage.getFloat(entity.getType()));
+                entity.hurt(DamageSource.GENERIC, this.entityDamage.getFloat(entity.getType()));
             }
         }
     }

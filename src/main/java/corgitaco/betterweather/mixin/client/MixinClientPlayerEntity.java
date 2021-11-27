@@ -26,6 +26,6 @@ public abstract class MixinClientPlayerEntity {
 
     @Inject(method = "<init>", at = @At("RETURN"), cancellable = true)
     private void weatherAmbience(Minecraft mc, ClientWorld world, ClientPlayNetHandler connection, StatisticsManager stats, ClientRecipeBook recipeBook, boolean clientSneakState, boolean clientSprintState, CallbackInfo ci) {
-        this.ambientSoundHandlers.add(new WeatherSoundHandler((ClientPlayerEntity) (Object) this, mc.getSoundHandler(), world.getBiomeManager()));
+        this.ambientSoundHandlers.add(new WeatherSoundHandler((ClientPlayerEntity) (Object) this, mc.getSoundManager(), world.getBiomeManager()));
     }
 }

@@ -34,8 +34,8 @@ public class WeatherEventSavedData extends WorldSavedData {
             }
             return clientCache;
         }
-        DimensionSavedDataManager data = ((ServerWorld) world).getSavedData();
-        WeatherEventSavedData weatherData = data.getOrCreate(WeatherEventSavedData::new, DATA_NAME);
+        DimensionSavedDataManager data = ((ServerWorld) world).getDataStorage();
+        WeatherEventSavedData weatherData = data.computeIfAbsent(WeatherEventSavedData::new, DATA_NAME);
 
         if (weatherData == null) {
             weatherData = new WeatherEventSavedData();
@@ -46,14 +46,14 @@ public class WeatherEventSavedData extends WorldSavedData {
     }
 
     @Override
-    public void read(CompoundNBT nbt) {
+    public void load(CompoundNBT nbt) {
         setEvent(nbt.getString("Event"));
         setWeatherForced(nbt.getBoolean("Forced"));
         setModified(nbt.getBoolean("Modified"));
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT compound) {
+    public CompoundNBT save(CompoundNBT compound) {
         compound.putString("Event", event);
         compound.putBoolean("Forced", isWeatherForced);
         compound.putBoolean("Modified", modified);
@@ -66,7 +66,7 @@ public class WeatherEventSavedData extends WorldSavedData {
 
     public void setEvent(String event) {
         this.event = event;
-        markDirty();
+        setDirty();
     }
 
     public boolean isWeatherForced() {
@@ -75,7 +75,7 @@ public class WeatherEventSavedData extends WorldSavedData {
 
     public void setWeatherForced(boolean weatherForced) {
         isWeatherForced = weatherForced;
-        markDirty();
+        setDirty();
     }
 
     public boolean isModified() {
@@ -84,6 +84,6 @@ public class WeatherEventSavedData extends WorldSavedData {
 
     public void setModified(boolean modified) {
         this.modified = modified;
-        markDirty();
+        setDirty();
     }
 }

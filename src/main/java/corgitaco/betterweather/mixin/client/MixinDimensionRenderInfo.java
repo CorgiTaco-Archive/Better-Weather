@@ -13,9 +13,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinDimensionRenderInfo {
     Minecraft minecraft = Minecraft.getInstance();
 
-    @Inject(method = "func_230492_a_", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getSunriseColor", at = @At("HEAD"), cancellable = true)
     private void constantSkyColor(float skyAngle, float tickDelta, CallbackInfoReturnable<float[]> cir) {
-        BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) minecraft.world).getWeatherEventContext();
+        BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) minecraft.level).getWeatherEventContext();
         if (weatherEventContext != null) {
             if (!weatherEventContext.getCurrentEvent().getClientSettings().sunsetSunriseColor()) {
                 cir.setReturnValue(null);

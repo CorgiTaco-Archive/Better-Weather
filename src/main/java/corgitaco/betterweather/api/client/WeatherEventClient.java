@@ -121,15 +121,15 @@ public abstract class WeatherEventClient<T extends WeatherEventClientSettings> {
     }
 
     public void renderVanillaWeather(Minecraft mc, float partialTicks, double cameraX, double cameraY, double cameraZ, LightTexture lightmapIn, float[] rainSizeX, float[] rainSizeZ, ResourceLocation rainTexture, ResourceLocation snowTexture, int ticks, Predicate<Biome> isValidBiome) {
-        float rainStrength = mc.world.getRainStrength(partialTicks);
+        float rainStrength = mc.level.getRainLevel(partialTicks);
         if (!(rainStrength <= 0.0F)) {
-            lightmapIn.enableLightmap();
-            World world = mc.world;
+            lightmapIn.turnOnLightLayer();
+            World world = mc.level;
             int x = MathHelper.floor(cameraX);
             int y = MathHelper.floor(cameraY);
             int z = MathHelper.floor(cameraZ);
             Tessellator tessellator = Tessellator.getInstance();
-            BufferBuilder bufferbuilder = tessellator.getBuffer();
+            BufferBuilder bufferbuilder = tessellator.getBuilder();
             RenderSystem.enableAlphaTest();
             RenderSystem.disableCull();
             RenderSystem.normal3f(0.0F, 1.0F, 0.0F);
@@ -138,11 +138,11 @@ public abstract class WeatherEventClient<T extends WeatherEventClientSettings> {
             RenderSystem.defaultAlphaFunc();
             RenderSystem.enableDepthTest();
             int weatherRenderDistanceInBlocks = 5;
-            if (Minecraft.isFancyGraphicsEnabled()) {
+            if (Minecraft.useFancyGraphics()) {
                 weatherRenderDistanceInBlocks = 10;
             }
 
-            RenderSystem.depthMask(Minecraft.isFabulousGraphicsEnabled());
+            RenderSystem.depthMask(Minecraft.useShaderTransparency());
             int i1 = -1;
             float ticksAndPartialTicks = (float) ticks + partialTicks;
             RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -153,14 +153,14 @@ public abstract class WeatherEventClient<T extends WeatherEventClientSettings> {
                     int index = (dz - z + 16) * 32 + dx - x + 16;
                     double rainX = (double) rainSizeX[index] * 0.5D;
                     double rainZ = (double) rainSizeZ[index] * 0.5D;
-                    mutable.setPos(dx, y, dz);
+                    mutable.set(dx, y, dz);
                     Biome biome = world.getBiome(mutable);
                     if (!isValidBiome.test(biome)) {
                         continue;
                     }
 
                     if (biome.getPrecipitation() != Biome.RainType.NONE) {
-                        int motionBlockingHeight = world.getHeight(Heightmap.Type.MOTION_BLOCKING, mutable).getY();
+                        int motionBlockingHeight = world.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING, mutable).getY();
                         int belowCameraYWeatherRenderDistance = y - weatherRenderDistanceInBlocks;
                         int aboveCameraYWeatherRenderDistance = y + weatherRenderDistanceInBlocks;
                         if (belowCameraYWeatherRenderDistance < motionBlockingHeight) {
@@ -175,7 +175,7 @@ public abstract class WeatherEventClient<T extends WeatherEventClientSettings> {
 
                         if (belowCameraYWeatherRenderDistance != aboveCameraYWeatherRenderDistance) {
                             Random random = new Random((long) (dx * dx * 3121 + dx * 45238971 ^ dz * dz * 418711 + dz * 13761));
-                            mutable.setPos(dx, belowCameraYWeatherRenderDistance, dz);
+                            mutable.set(dx, belowCameraYWeatherRenderDistance, dz);
                             float biomeTemperature = biome.getTemperature(mutable);
                             if (biomeTemperature >= 0.15F) {
                                 i1 = renderRain(mc, partialTicks, cameraX, cameraY, cameraZ, rainTexture, ticks, rainStrength, world, tessellator, bufferbuilder, (float) weatherRenderDistanceInBlocks, i1, mutable, dz, dx, rainX, rainZ, belowCameraYWeatherRenderDistance, aboveCameraYWeatherRenderDistance, atAboveHeightY, random);
@@ -188,26 +188,26 @@ public abstract class WeatherEventClient<T extends WeatherEventClientSettings> {
             }
 
             if (i1 >= 0) {
-                tessellator.draw();
+                tessellator.end();
             }
 
             RenderSystem.enableCull();
             RenderSystem.disableBlend();
             RenderSystem.defaultAlphaFunc();
             RenderSystem.disableAlphaTest();
-            lightmapIn.disableLightmap();
+            lightmapIn.turnOffLightLayer();
         }
     }
 
     private int renderSnow(Minecraft mc, float partialTicks, double x, double y, double z, ResourceLocation snowTexture, int ticks, float rainStrength, World world, Tessellator tessellator, BufferBuilder bufferbuilder, float graphicsQuality, int i1, float f1, BlockPos.Mutable mutable, int dz, int dx, double d0, double d1, int j2, int k2, int atOrAboveY, Random random) {
         if (i1 != 1) {
             if (i1 >= 0) {
-                tessellator.draw();
+                tessellator.end();
             }
 
             i1 = 1;
-            mc.getTextureManager().bindTexture(snowTexture);
-            bufferbuilder.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+            mc.getTextureManager().bind(snowTexture);
+            bufferbuilder.begin(7, DefaultVertexFormats.PARTICLE);
         }
 
         float f6 = -((float) (ticks & 511) + partialTicks) / 512.0F;
@@ -217,28 +217,28 @@ public abstract class WeatherEventClient<T extends WeatherEventClientSettings> {
         double d5 = (double) ((float) dz + 0.5F) - z;
         float f9 = MathHelper.sqrt(d3 * d3 + d5 * d5) / graphicsQuality;
         float alpha = ((1.0F - f9 * f9) * 0.3F + 0.5F) * rainStrength;
-        mutable.setPos(dx, atOrAboveY, dz);
-        int combinedLight = WorldRenderer.getCombinedLight(world, mutable);
+        mutable.set(dx, atOrAboveY, dz);
+        int combinedLight = WorldRenderer.getLightColor(world, mutable);
         int l3 = combinedLight >> 16 & '\uffff';
         int i4 = (combinedLight & '\uffff') * 3;
         int j4 = (l3 * 3 + 240) / 4;
         int k4 = (i4 * 3 + 240) / 4;
-        bufferbuilder.pos((double) dx - x - d0 + 0.5D, (double) k2 - y, (double) dz - z - d1 + 0.5D).tex(0.0F + f7, (float) j2 * 0.25F + f6 + f8).color(1.0F, 1.0F, 1.0F, alpha).lightmap(k4, j4).endVertex();
-        bufferbuilder.pos((double) dx - x + d0 + 0.5D, (double) k2 - y, (double) dz - z + d1 + 0.5D).tex(1.0F + f7, (float) j2 * 0.25F + f6 + f8).color(1.0F, 1.0F, 1.0F, alpha).lightmap(k4, j4).endVertex();
-        bufferbuilder.pos((double) dx - x + d0 + 0.5D, (double) j2 - y, (double) dz - z + d1 + 0.5D).tex(1.0F + f7, (float) k2 * 0.25F + f6 + f8).color(1.0F, 1.0F, 1.0F, alpha).lightmap(k4, j4).endVertex();
-        bufferbuilder.pos((double) dx - x - d0 + 0.5D, (double) j2 - y, (double) dz - z - d1 + 0.5D).tex(0.0F + f7, (float) k2 * 0.25F + f6 + f8).color(1.0F, 1.0F, 1.0F, alpha).lightmap(k4, j4).endVertex();
+        bufferbuilder.vertex((double) dx - x - d0 + 0.5D, (double) k2 - y, (double) dz - z - d1 + 0.5D).uv(0.0F + f7, (float) j2 * 0.25F + f6 + f8).color(1.0F, 1.0F, 1.0F, alpha).uv2(k4, j4).endVertex();
+        bufferbuilder.vertex((double) dx - x + d0 + 0.5D, (double) k2 - y, (double) dz - z + d1 + 0.5D).uv(1.0F + f7, (float) j2 * 0.25F + f6 + f8).color(1.0F, 1.0F, 1.0F, alpha).uv2(k4, j4).endVertex();
+        bufferbuilder.vertex((double) dx - x + d0 + 0.5D, (double) j2 - y, (double) dz - z + d1 + 0.5D).uv(1.0F + f7, (float) k2 * 0.25F + f6 + f8).color(1.0F, 1.0F, 1.0F, alpha).uv2(k4, j4).endVertex();
+        bufferbuilder.vertex((double) dx - x - d0 + 0.5D, (double) j2 - y, (double) dz - z - d1 + 0.5D).uv(0.0F + f7, (float) k2 * 0.25F + f6 + f8).color(1.0F, 1.0F, 1.0F, alpha).uv2(k4, j4).endVertex();
         return i1;
     }
 
     private int renderRain(Minecraft mc, float partialTicks, double x, double y, double z, ResourceLocation rainTexture, int ticks, float rainStrength, World world, Tessellator tessellator, BufferBuilder bufferbuilder, float l, int i1, BlockPos.Mutable mutable, int dz, int dx, double d0, double d1, int j2, int k2, int atOrAboveY, Random random) {
         if (i1 != 0) {
             if (i1 >= 0) {
-                tessellator.draw();
+                tessellator.end();
             }
 
             i1 = 0;
-            mc.getTextureManager().bindTexture(rainTexture);
-            bufferbuilder.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+            mc.getTextureManager().bind(rainTexture);
+            bufferbuilder.begin(7, DefaultVertexFormats.PARTICLE);
         }
 
         int i3 = ticks + dx * dx * 3121 + dx * 45238971 + dz * dz * 418711 + dz * 13761 & 31;
@@ -247,12 +247,12 @@ public abstract class WeatherEventClient<T extends WeatherEventClientSettings> {
         double d4 = (double) ((float) dz + 0.5F) - z;
         float f4 = MathHelper.sqrt(d2 * d2 + d4 * d4) / l;
         float alpha = ((1.0F - f4 * f4) * 0.5F + 0.5F) * rainStrength;
-        mutable.setPos(dx, atOrAboveY, dz);
-        int combinedLight = WorldRenderer.getCombinedLight(world, mutable);
-        bufferbuilder.pos((double) dx - x - d0 + 0.5D, (double) k2 - y, (double) dz - z - d1 + 0.5D).tex(0.0F, (float) j2 * 0.25F + f3).color(1.0F, 1.0F, 1.0F, alpha).lightmap(combinedLight).endVertex();
-        bufferbuilder.pos((double) dx - x + d0 + 0.5D, (double) k2 - y, (double) dz - z + d1 + 0.5D).tex(1.0F, (float) j2 * 0.25F + f3).color(1.0F, 1.0F, 1.0F, alpha).lightmap(combinedLight).endVertex();
-        bufferbuilder.pos((double) dx - x + d0 + 0.5D, (double) j2 - y, (double) dz - z + d1 + 0.5D).tex(1.0F, (float) k2 * 0.25F + f3).color(1.0F, 1.0F, 1.0F, alpha).lightmap(combinedLight).endVertex();
-        bufferbuilder.pos((double) dx - x - d0 + 0.5D, (double) j2 - y, (double) dz - z - d1 + 0.5D).tex(0.0F, (float) k2 * 0.25F + f3).color(1.0F, 1.0F, 1.0F, alpha).lightmap(combinedLight).endVertex();
+        mutable.set(dx, atOrAboveY, dz);
+        int combinedLight = WorldRenderer.getLightColor(world, mutable);
+        bufferbuilder.vertex((double) dx - x - d0 + 0.5D, (double) k2 - y, (double) dz - z - d1 + 0.5D).uv(0.0F, (float) j2 * 0.25F + f3).color(1.0F, 1.0F, 1.0F, alpha).uv2(combinedLight).endVertex();
+        bufferbuilder.vertex((double) dx - x + d0 + 0.5D, (double) k2 - y, (double) dz - z + d1 + 0.5D).uv(1.0F, (float) j2 * 0.25F + f3).color(1.0F, 1.0F, 1.0F, alpha).uv2(combinedLight).endVertex();
+        bufferbuilder.vertex((double) dx - x + d0 + 0.5D, (double) j2 - y, (double) dz - z + d1 + 0.5D).uv(1.0F, (float) k2 * 0.25F + f3).color(1.0F, 1.0F, 1.0F, alpha).uv2(combinedLight).endVertex();
+        bufferbuilder.vertex((double) dx - x - d0 + 0.5D, (double) j2 - y, (double) dz - z - d1 + 0.5D).uv(0.0F, (float) k2 * 0.25F + f3).color(1.0F, 1.0F, 1.0F, alpha).uv2(combinedLight).endVertex();
         return i1;
     }
 

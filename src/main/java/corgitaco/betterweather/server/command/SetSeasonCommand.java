@@ -35,9 +35,9 @@ public class SetSeasonCommand {
     }
 
     public static int betterWeatherSetSeason(CommandSource source, String seasonKey, String phaseString) {
-        SeasonContext seasonContext = ((BetterWeatherWorldData) source.getWorld()).getSeasonContext();
+        SeasonContext seasonContext = ((BetterWeatherWorldData) source.getLevel()).getSeasonContext();
         if (seasonContext == null) {
-            source.sendErrorMessage(new TranslationTextComponent("commands.bw.setseason.fail.no_seasons"));
+            source.sendFailure(new TranslationTextComponent("commands.bw.setseason.fail.no_seasons"));
             return 0;
         }
 
@@ -50,8 +50,8 @@ public class SetSeasonCommand {
 
         final Season.Key season = Season.Key.valueOf(seasonKey);
         final Season.Phase phase = Season.Phase.valueOf(phaseString);
-        seasonContext.setSeason(source.getWorld(), source.getWorld().getPlayers(), season, phase);
-        source.sendFeedback(new TranslationTextComponent("commands.bw.setseason.success",
+        seasonContext.setSeason(source.getLevel(), source.getLevel().players(), season, phase);
+        source.sendSuccess(new TranslationTextComponent("commands.bw.setseason.success",
                 season.translationTextComponent(), phase.translationTextComponent()), true);
         return 1;
     }

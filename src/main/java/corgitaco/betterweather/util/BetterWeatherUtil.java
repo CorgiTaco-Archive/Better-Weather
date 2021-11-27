@@ -54,14 +54,14 @@ public class BetterWeatherUtil {
     }
 
     public static int transformFloatColor(Vector3d floatColor) {
-        return ColorUtil.pack((int) (floatColor.getX() * 255), (int) (floatColor.getY() * 255), (int) (floatColor.getZ() * 255));
+        return ColorUtil.pack((int) (floatColor.x() * 255), (int) (floatColor.y() * 255), (int) (floatColor.z() * 255));
     }
 
     public static IdentityHashMap<Block, Double> transformBlockResourceLocations(Map<ResourceLocation, Double> blockResourceLocationToCropGrowthMultiplierMap) {
         IdentityHashMap<Block, Double> newMap = new IdentityHashMap<>();
         blockResourceLocationToCropGrowthMultiplierMap.forEach((resourceLocation, multiplier) -> {
             if (Registry.BLOCK.keySet().contains(resourceLocation)) {
-                newMap.put(Registry.BLOCK.getOrDefault(resourceLocation), multiplier);
+                newMap.put(Registry.BLOCK.get(resourceLocation), multiplier);
             } else {
                 BetterWeather.LOGGER.error("The value: \"" + resourceLocation.toString() + "\" is not a valid block ID...");
             }
@@ -73,7 +73,7 @@ public class BetterWeatherUtil {
         IdentityHashMap<Block, Block> newMap = new IdentityHashMap<>();
         blockBlockMap.forEach((resourceLocation, resourceLocation2) -> {
             if (Registry.BLOCK.keySet().contains(resourceLocation) && Registry.BLOCK.keySet().contains(resourceLocation2)) {
-                newMap.put(Registry.BLOCK.getOrDefault(resourceLocation), Registry.BLOCK.getOrDefault(resourceLocation2));
+                newMap.put(Registry.BLOCK.get(resourceLocation), Registry.BLOCK.get(resourceLocation2));
             } else {
                 BetterWeather.LOGGER.error("The value: \"" + resourceLocation.toString() + "\" is not a valid block ID...");
             }
@@ -92,7 +92,7 @@ public class BetterWeatherUtil {
     public static IdentityHashMap<RegistryKey<Biome>, OverrideStorage> transformBiomeResourceLocationsToKeys(Map<ResourceLocation, OverrideStorage> blockResourceLocationToCropGrowthMultiplierMap) {
         IdentityHashMap<RegistryKey<Biome>, OverrideStorage> newMap = new IdentityHashMap<>();
         blockResourceLocationToCropGrowthMultiplierMap.forEach((resourceLocation, multiplier) -> {
-            newMap.put(RegistryKey.getOrCreateKey(Registry.BIOME_KEY, resourceLocation), multiplier);
+            newMap.put(RegistryKey.create(Registry.BIOME_REGISTRY, resourceLocation), multiplier);
         });
         return newMap;
     }
@@ -100,7 +100,7 @@ public class BetterWeatherUtil {
     public static ReferenceArraySet<RegistryKey<Codec<? extends WeatherEvent>>> transformWeatherLocationsToKeys(Collection<ResourceLocation> blockResourceLocationToCropGrowthMultiplierMap) {
         ReferenceArraySet<RegistryKey<Codec<? extends WeatherEvent>>> newMap = new ReferenceArraySet<>();
         blockResourceLocationToCropGrowthMultiplierMap.forEach((resourceLocation) -> {
-            newMap.add(RegistryKey.getOrCreateKey(BetterWeatherRegistry.WEATHER_EVENT_KEY, resourceLocation));
+            newMap.add(RegistryKey.create(BetterWeatherRegistry.WEATHER_EVENT_KEY, resourceLocation));
         });
         return newMap;
     }

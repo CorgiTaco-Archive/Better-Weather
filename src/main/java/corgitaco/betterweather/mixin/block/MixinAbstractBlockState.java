@@ -21,9 +21,6 @@ public abstract class MixinAbstractBlockState {
     @Shadow
     public abstract Block getBlock();
 
-    @Shadow
-    protected abstract BlockState getSelf();
-
     @Inject(method = "randomTick", at = @At("RETURN"), cancellable = true)
     private void cropGrowthModifier(ServerWorld world, BlockPos posIn, Random randomIn, CallbackInfo ci) {
         SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();

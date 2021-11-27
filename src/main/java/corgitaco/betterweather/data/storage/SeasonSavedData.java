@@ -38,8 +38,8 @@ public class SeasonSavedData extends WorldSavedData {
             }
             return clientCache;
         }
-        DimensionSavedDataManager data = ((ServerWorld) world).getSavedData();
-        SeasonSavedData weatherData = data.getOrCreate(SeasonSavedData::new, DATA_NAME);
+        DimensionSavedDataManager data = ((ServerWorld) world).getDataStorage();
+        SeasonSavedData weatherData = data.computeIfAbsent(SeasonSavedData::new, DATA_NAME);
 
         if (weatherData == null) {
             weatherData = new SeasonSavedData();
@@ -50,13 +50,13 @@ public class SeasonSavedData extends WorldSavedData {
     }
 
     @Override
-    public void read(CompoundNBT nbt) {
+    public void load(CompoundNBT nbt) {
         setCurrentYearTime(nbt.getInt(CURRENT_YEAR_TIME_KEY));
         setYearLength(nbt.getInt(YEAR_LENGTH_KEY));
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT compound) {
+    public CompoundNBT save(CompoundNBT compound) {
         compound.putInt(CURRENT_YEAR_TIME_KEY, currentYearTime);
         compound.putInt(YEAR_LENGTH_KEY, yearLength);
         return compound;
@@ -68,7 +68,7 @@ public class SeasonSavedData extends WorldSavedData {
 
     public void setCurrentYearTime(int currentYearTime) {
         this.currentYearTime = currentYearTime;
-        markDirty();
+        setDirty();
     }
 
     public int getYearLength() {

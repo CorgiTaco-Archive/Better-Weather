@@ -25,15 +25,15 @@ public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
 
     // Registry is the Server registry.
     public CommonKeyMutableRegistry(MutableRegistry<Biome> registry) {
-        super(registry.getRegistryKey(), registry.getLifecycle());
+        super(registry.key(), registry.elementsLifecycle());
 
-        registry.getEntries().forEach(entry -> {
+        registry.entrySet().forEach(entry -> {
             Biome biome1 = entry.getValue();
-            Biome biome2 = register(
+            Biome biome2 = registerMapping(
                     registry.getId(biome1),
                     entry.getKey(),
                     shallow(biome1),
-                    ((SimpleRegistry<Biome>) registry).getLifecycleByRegistry(biome1)
+                    ((SimpleRegistry<Biome>) registry).lifecycle(biome1)
             );
 
             ResourceLocation name = requireNonNull(biome1.getRegistryName(), "Invalid Biome registry name.");
@@ -45,16 +45,16 @@ public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
     // Creates a shallow copy of a biome.
     private static Biome shallow(Biome biome) {
         @SuppressWarnings("ConstantConditions") // Mixins are used.
-        Biome.Climate climate = ((BiomeAccess) (Object) biome).getClimate();
+        Biome.Climate climate = ((BiomeAccess) (Object) biome).getClimateSettings();
 
         return BiomeAccess.create(
                 climate,
-                biome.getCategory(),
+                biome.getBiomeCategory(),
                 biome.getDepth(),
                 biome.getScale(),
-                biome.getAmbience(),
+                biome.getSpecialEffects(),
                 biome.getGenerationSettings(),
-                biome.getMobSpawnInfo()
+                biome.getMobSettings()
         );
     }
 
@@ -65,8 +65,8 @@ public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
     }
 
     @Override
-    public @NotNull Optional<RegistryKey<Biome>> getOptionalKey(@NotNull Biome biome) {
-        return super.getOptionalKey(get(biome));
+    public @NotNull Optional<RegistryKey<Biome>> getResourceKey(@NotNull Biome biome) {
+        return super.getResourceKey(get(biome));
     }
 
     @Override
@@ -75,8 +75,8 @@ public class CommonKeyMutableRegistry extends SimpleRegistry<Biome> {
     }
 
     @Override
-    public @NotNull Lifecycle getLifecycleByRegistry(@NotNull Biome biome) {
-        return super.getLifecycleByRegistry(get(biome));
+    public @NotNull Lifecycle lifecycle(@NotNull Biome biome) {
+        return super.lifecycle(get(biome));
     }
 
     // Get the mapped biome, otherwise the biome itself.

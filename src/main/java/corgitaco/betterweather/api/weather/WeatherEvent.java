@@ -132,7 +132,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     }
 
     public void fillBiomes(Registry<Biome> biomeRegistry) {
-        Set<Map.Entry<RegistryKey<Biome>, Biome>> entries = biomeRegistry.getEntries();
+        Set<Map.Entry<RegistryKey<Biome>, Biome>> entries = biomeRegistry.entrySet();
 
         for (Map.Entry<RegistryKey<Biome>, Biome> entry : entries) {
             Biome biome = entry.getValue();
@@ -172,8 +172,8 @@ public abstract class WeatherEvent implements WeatherEventSettings {
         }
 
         String[] conditions = conditionString.trim().split("\\s*,\\s*");
-        String biomeNamespace = biomeKey.getLocation().getNamespace();
-        String biomeLocation = biomeKey.getLocation().toString();
+        String biomeNamespace = biomeKey.location().getNamespace();
+        String biomeLocation = biomeKey.location().toString();
         for (String condition : conditions) {
             String[] split = condition.split("(?=[\\$#])");
             boolean categoryExists = true;
@@ -207,7 +207,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
                     }
                 } else if (result.startsWith("#")) {
                     String categoryString = result.substring(1);
-                    if (biome.getCategory().getName().equalsIgnoreCase(categoryString)) {
+                    if (biome.getBiomeCategory().getName().equalsIgnoreCase(categoryString)) {
                         passes++;
                     }
                 } else if (biomeLocation.equalsIgnoreCase(result) && result.equalsIgnoreCase(biomeNamespace)) {

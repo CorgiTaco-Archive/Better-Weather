@@ -12,7 +12,7 @@ import java.util.Map;
 public interface DynamicRegistriesAccess {
 
     @Accessor
-    static Map<RegistryKey<? extends Registry<?>>, DynamicRegistries.CodecHolder<?>> getRegistryCodecMap() {
+    static Map<RegistryKey<? extends Registry<?>>, DynamicRegistries.CodecHolder<?>> getREGISTRIES() {
         throw new Error("Mixin did not apply");
     }
 }

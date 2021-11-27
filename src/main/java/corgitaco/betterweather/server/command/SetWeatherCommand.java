@@ -29,7 +29,7 @@ public class SetWeatherCommand {
         return Commands.literal("setweather").then(
                 Commands.argument("weather", StringArgumentType.string())
                         .suggests((ctx, sb) -> {
-                            BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) ctx.getSource().getWorld()).getWeatherEventContext();
+                            BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) ctx.getSource().getLevel()).getWeatherEventContext();
                             return ISuggestionProvider.suggest(weatherEventContext != null ? weatherEventContext.getWeatherEvents().keySet().stream() : Arrays.stream(new String[]{WEATHER_NOT_ENABLED}), sb);
                         }).executes(cs -> betterWeatherSetSeason(cs.getSource(), cs.getArgument("weather", String.class),
                                 12000)) // Default length to 10 minutes.
@@ -44,18 +44,18 @@ public class SetWeatherCommand {
 
     public static int betterWeatherSetSeason(CommandSource source, String weatherKey, int length) {
         if (weatherKey.equals(WEATHER_NOT_ENABLED)) {
-            source.sendErrorMessage(new TranslationTextComponent("commands.bw.setweather.no.weather.for.world"));
+            source.sendFailure(new TranslationTextComponent("commands.bw.setweather.no.weather.for.world"));
             return 0;
         }
 
-        ServerWorld world = source.getWorld();
+        ServerWorld world = source.getLevel();
         BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
 
         if (weatherEventContext != null) {
             if (weatherEventContext.getWeatherEvents().containsKey(weatherKey)) {
-                source.sendFeedback(weatherEventContext.weatherForcer(weatherKey, length, world).successTranslationTextComponent(weatherKey), true);
+                source.sendSuccess(weatherEventContext.weatherForcer(weatherKey, length, world).successTranslationTextComponent(weatherKey), true);
             } else {
-                source.sendErrorMessage(new TranslationTextComponent("commands.bw.setweather.fail.no_weather_event", weatherKey));
+                source.sendFailure(new TranslationTextComponent("commands.bw.setweather.fail.no_weather_event", weatherKey));
                 return 0;
             }
         }

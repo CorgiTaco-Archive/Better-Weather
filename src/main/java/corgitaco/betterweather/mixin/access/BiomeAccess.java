@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface BiomeAccess {
 
     @Accessor
-    Biome.Climate getClimate();
+    Biome.Climate getClimateSettings();
 
     @Invoker("<init>")
     static Biome create(Biome.Climate climate, Biome.Category category, float depth, float scale, BiomeAmbience effects, BiomeGenerationSettings biomeGenerationSettings, MobSpawnInfo mobSpawnInfo) {

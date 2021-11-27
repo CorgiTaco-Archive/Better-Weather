@@ -126,7 +126,7 @@ public class AbstractCommentedConfigHelper {
             StringBuilder builder = new StringBuilder().append("Values: ").append(defaultValue instanceof IStringSerializable ? "\n" : "");
             for (T value : defaultValue.getDeclaringClass().getEnumConstants()) {
                 if (defaultValue instanceof IStringSerializable) {
-                    builder.append(((IStringSerializable) value).getString()).append("\n");
+                    builder.append(((IStringSerializable) value).getSerializedName()).append("\n");
                 } else {
                     builder.append(value.name()).append(", ");
                 }

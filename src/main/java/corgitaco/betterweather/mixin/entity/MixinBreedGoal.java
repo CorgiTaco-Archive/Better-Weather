@@ -21,11 +21,11 @@ public abstract class MixinBreedGoal {
 
     @Shadow
     @Final
-    protected World world;
+    protected World level;
 
-    @Inject(method = "shouldExecute", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "canUse", at = @At("HEAD"), cancellable = true)
     private void seasonalBreeding(CallbackInfoReturnable<Boolean> cir) {
-        SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
+        SeasonContext seasonContext = ((BetterWeatherWorldData) level).getSeasonContext();
         if (seasonContext != null) {
             if (seasonContext.getCurrentSubSeasonSettings().getEntityTypeBreedingBlacklist().contains(this.animal.getType()))
                 cir.setReturnValue(false);

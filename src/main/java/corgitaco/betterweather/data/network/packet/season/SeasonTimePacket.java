@@ -31,7 +31,7 @@ public class SeasonTimePacket {
             ctx.get().enqueueWork(() -> {
                 Minecraft minecraft = Minecraft.getInstance();
 
-                ClientWorld world = minecraft.world;
+                ClientWorld world = minecraft.level;
                 if (world != null && minecraft.player != null) {
                     SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
                     seasonContext.setCurrentYearTime(message.currentSeasonYearTime);

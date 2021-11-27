@@ -36,7 +36,7 @@ public class BetterWeather {
         } catch (final Exception e) {
             return false;
         }
-    }).getValue();
+    }).get();
 
     public BetterWeather() {
         if (!CONFIG_PATH.toFile().exists())

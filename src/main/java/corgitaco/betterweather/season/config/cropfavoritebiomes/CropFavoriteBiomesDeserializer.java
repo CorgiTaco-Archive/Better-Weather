@@ -25,8 +25,8 @@ public class CropFavoriteBiomesDeserializer implements JsonSerializer<IdentityHa
 
     public CropFavoriteBiomesDeserializer(Registry<Biome> biomeRegistry) {
         this.biomeRegistry = biomeRegistry;
-        this.categoryBiomes = biomeRegistry.getEntries().stream().map(Map.Entry::getValue).collect(Collectors.groupingBy(Biome::getCategory));
-        this.biomeDictionaryBiomes = biomeRegistry.getEntries().stream().flatMap(biomeKey -> BiomeDictionary.getTypes(biomeKey.getKey()).stream().map(biomeDictionaryType -> new AbstractMap.SimpleEntry<>(biomeDictionaryType, biomeKey.getValue()))).collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
+        this.categoryBiomes = biomeRegistry.entrySet().stream().map(Map.Entry::getValue).collect(Collectors.groupingBy(Biome::getBiomeCategory));
+        this.biomeDictionaryBiomes = biomeRegistry.entrySet().stream().flatMap(biomeKey -> BiomeDictionary.getTypes(biomeKey.getKey()).stream().map(biomeDictionaryType -> new AbstractMap.SimpleEntry<>(biomeDictionaryType, biomeKey.getValue()))).collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
     }
 
     @Override
@@ -37,7 +37,7 @@ public class CropFavoriteBiomesDeserializer implements JsonSerializer<IdentityHa
 
         for (Map.Entry<String, JsonElement> entry : blockFavBiomesEntries) {
             String key = entry.getKey();
-            ResourceLocation resourceLocation = ResourceLocation.tryCreate(key);
+            ResourceLocation resourceLocation = ResourceLocation.tryParse(key);
             Optional<Block> blockOptional = Registry.BLOCK.getOptional(resourceLocation);
             if (!blockOptional.isPresent()) {
                 BetterWeather.LOGGER.error("\"" + key + "\" is not a valid block resource location, skipping...");
@@ -62,14 +62,14 @@ public class CropFavoriteBiomesDeserializer implements JsonSerializer<IdentityHa
                 }
 
                 if (type instanceof Biome) {
-                    cropToFavoriteBiome.computeIfAbsent(block, (block1 -> new Object2DoubleArrayMap<>())).put(this.biomeRegistry.getOptionalKey((Biome) type).orElse(null), asDouble);
+                    cropToFavoriteBiome.computeIfAbsent(block, (block1 -> new Object2DoubleArrayMap<>())).put(this.biomeRegistry.getResourceKey((Biome) type).orElse(null), asDouble);
                 } else if (type instanceof Biome.Category) {
                     for (Biome biome : this.categoryBiomes.get((Biome.Category) type)) {
-                        cropToFavoriteBiome.computeIfAbsent(block, (block1 -> new Object2DoubleArrayMap<>())).put(this.biomeRegistry.getOptionalKey(biome).orElse(null), asDouble);
+                        cropToFavoriteBiome.computeIfAbsent(block, (block1 -> new Object2DoubleArrayMap<>())).put(this.biomeRegistry.getResourceKey(biome).orElse(null), asDouble);
                     }
                 } else if (type instanceof BiomeDictionary.Type) {
                     for (Biome biome : this.biomeDictionaryBiomes.getOrDefault((BiomeDictionary.Type) type, new ArrayList<>())) {
-                        cropToFavoriteBiome.computeIfAbsent(block, (block1 -> new Object2DoubleArrayMap<>())).put(this.biomeRegistry.getOptionalKey(biome).orElse(null), asDouble);
+                        cropToFavoriteBiome.computeIfAbsent(block, (block1 -> new Object2DoubleArrayMap<>())).put(this.biomeRegistry.getResourceKey(biome).orElse(null), asDouble);
                     }
                 }
             }
