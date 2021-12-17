@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.mojang.datafixers.util.Pair;
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.common.season.storage.OverrideStorage;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.util.RegistryKey;
@@ -21,10 +22,10 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
 
     private final Registry<Biome> biomeRegistry;
     private final IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeOverrideStorage;
-    private final IdentityHashMap<Block, Double> cropToMultiplierMap;
+    private final Object2DoubleOpenHashMap<Block> cropToMultiplierMap;
     private final boolean isClient;
 
-    public OverrideDeserializer(Registry<Biome> biomeRegistry, IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeOverrideStorage, IdentityHashMap<Block, Double> cropToMultiplierMap, boolean isClient) {
+    public OverrideDeserializer(Registry<Biome> biomeRegistry, IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeOverrideStorage, Object2DoubleOpenHashMap<Block> cropToMultiplierMap, boolean isClient) {
         this.biomeRegistry = biomeRegistry;
         this.biomeOverrideStorage = biomeOverrideStorage;
         this.cropToMultiplierMap = cropToMultiplierMap;
@@ -99,7 +100,7 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
     private static void processCropOverrides(OverrideStorage storage, JsonObject jsonObject) {
         if (jsonObject.has("cropOverrides")) {
             JsonObject cropOverrides = jsonObject.get("cropOverrides").getAsJsonObject();
-            IdentityHashMap<Block, Double> cropMulitplierMap = new IdentityHashMap<>();
+            Object2DoubleOpenHashMap<Block> cropMulitplierMap = new Object2DoubleOpenHashMap<>();
             for (Map.Entry<String, JsonElement> jsonElementEntry : cropOverrides.entrySet()) {
                 Optional<Block> blockOptional = Registry.BLOCK.getOptional(new ResourceLocation(jsonElementEntry.getKey()));
 
@@ -187,10 +188,10 @@ public class OverrideDeserializer implements JsonDeserializer<BiomeToOverrideSto
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private IdentityHashMap<Block, Double> processCropToMultiplierMap(Map uncastedCropOverrides) {
-        IdentityHashMap<Block, Double> cropToMultiplierMap = new IdentityHashMap<>();
+    private Object2DoubleOpenHashMap<Block> processCropToMultiplierMap(Map uncastedCropOverrides) {
+        Object2DoubleOpenHashMap<Block> cropToMultiplierMap = new Object2DoubleOpenHashMap<>();
         if (!uncastedCropOverrides.isEmpty()) {
-            IdentityHashMap<String, Double> blockIDToMultiplierMap = new IdentityHashMap<>(uncastedCropOverrides);
+            Object2DoubleOpenHashMap<String> blockIDToMultiplierMap = new Object2DoubleOpenHashMap<>(uncastedCropOverrides);
             blockIDToMultiplierMap.forEach((blockId, multiplier) -> {
                 Optional<Block> blockOptional = Registry.BLOCK.getOptional(new ResourceLocation(blockId));
 

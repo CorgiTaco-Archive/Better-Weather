@@ -3,6 +3,7 @@ package corgitaco.betterweather.common.season.storage;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.util.BetterWeatherUtil;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
@@ -16,7 +17,7 @@ public class OverrideStorage {
     private double tempModifier;
     private double humidityModifier;
     @Deprecated
-    private final IdentityHashMap<Block, Double> blockToCropGrowthMultiplierMap;
+    private final Object2DoubleOpenHashMap<Block> blockToCropGrowthMultiplierMap;
     private double fallBack;
     private OverrideClientStorage clientStorage = new OverrideClientStorage();
 
@@ -41,19 +42,19 @@ public class OverrideStorage {
     }
 
     public OverrideStorage(Map<Block, Double> blockToCropGrowthMultiplierMap, double tempModifier, double humidityModifier, double fallBack) {
-        this.blockToCropGrowthMultiplierMap = new IdentityHashMap<>();
+        this.blockToCropGrowthMultiplierMap = new Object2DoubleOpenHashMap<>(blockToCropGrowthMultiplierMap);
         this.tempModifier = tempModifier;
         this.humidityModifier = humidityModifier;
         this.fallBack = fallBack;
     }
 
     @Deprecated
-    public IdentityHashMap<Block, Double> getBlockToCropGrowthMultiplierMap() {
+    public Object2DoubleOpenHashMap<Block> getBlockToCropGrowthMultiplierMap() {
         return blockToCropGrowthMultiplierMap;
     }
 
     @Deprecated
-    public OverrideStorage setBlockToCropGrowthMultiplierMap(IdentityHashMap<Block, Double> blockToCropGrowthMultiplierMap) {
+    public OverrideStorage setBlockToCropGrowthMultiplierMap(Object2DoubleOpenHashMap<Block> blockToCropGrowthMultiplierMap) {
         return this;
     }
 

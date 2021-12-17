@@ -11,6 +11,8 @@ import corgitaco.betterweather.util.BetterWeatherUtil;
 import corgitaco.betterweather.util.TomlCommentedConfigOps;
 import corgitaco.betterweather.common.weather.event.client.settings.RainClientSettings;
 import it.unimi.dsi.fastutil.objects.Object2FloatArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2FloatMap;
+import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
@@ -86,7 +88,7 @@ public class AcidRain extends Rain {
         map.put(Registry.BLOCK.getKey(Blocks.MYCELIUM), Registry.BLOCK.getKey(Blocks.DIRT));
     });
 
-    public static final HashMap<String, Float> DEFAULT_ENTITY_DAMAGE = Util.make(new HashMap<>(), (map) -> {
+    public static final Object2FloatOpenHashMap<String> DEFAULT_ENTITY_DAMAGE = Util.make(new Object2FloatOpenHashMap<>(), (map) -> {
         map.put("category/monster", 0.5F);
         map.put("minecraft:player", 0.5F);
     });
@@ -148,7 +150,7 @@ public class AcidRain extends Rain {
     private final int chunkTickChance;
     private final int entityDamageChance;
     private final IdentityHashMap<Block, Block> blockToBlock;
-    private final Map<String, Float> entityDamageSerializable;
+    private final Object2FloatOpenHashMap<String> entityDamageSerializable = new Object2FloatOpenHashMap<>();
     private final Object2FloatArrayMap<EntityType<?>> entityDamage = new Object2FloatArrayMap<>();
 
 
@@ -157,11 +159,11 @@ public class AcidRain extends Rain {
         this.chunkTickChance = chunkTickChance;
         this.entityDamageChance = entityDamageChance;
         this.blockToBlock = BetterWeatherUtil.transformBlockBlockResourceLocations(blockToBlock);
-        this.entityDamageSerializable = entityDamage;
+        this.entityDamageSerializable.putAll(entityDamage);
 
-        for (Map.Entry<String, Float> entry : entityDamage.entrySet()) {
+        for (Object2FloatMap.Entry<String> entry : this.entityDamageSerializable.object2FloatEntrySet()) {
             String key = entry.getKey();
-            float value = entry.getValue();
+            float value = entry.getFloatValue();
             if (key.startsWith("category/")) {
                 String mobCategory = key.substring("category/".length()).toUpperCase();
 

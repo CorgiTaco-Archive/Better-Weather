@@ -7,6 +7,7 @@ import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.common.season.BWSubseasonSettings;
 import corgitaco.betterweather.common.season.storage.OverrideStorage;
 import corgitaco.betterweather.util.client.ColorUtil;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import net.minecraft.block.Block;
 import net.minecraft.util.RegistryKey;
@@ -57,8 +58,8 @@ public class BetterWeatherUtil {
         return ColorUtil.pack((int) (floatColor.x() * 255), (int) (floatColor.y() * 255), (int) (floatColor.z() * 255));
     }
 
-    public static IdentityHashMap<Block, Double> transformBlockResourceLocations(Map<ResourceLocation, Double> blockResourceLocationToCropGrowthMultiplierMap) {
-        IdentityHashMap<Block, Double> newMap = new IdentityHashMap<>();
+    public static Object2DoubleOpenHashMap<Block> transformBlockResourceLocations(Map<ResourceLocation, Double> blockResourceLocationToCropGrowthMultiplierMap) {
+        Object2DoubleOpenHashMap<Block> newMap = new Object2DoubleOpenHashMap<>();
         blockResourceLocationToCropGrowthMultiplierMap.forEach((resourceLocation, multiplier) -> {
             if (Registry.BLOCK.keySet().contains(resourceLocation)) {
                 newMap.put(Registry.BLOCK.get(resourceLocation), multiplier);

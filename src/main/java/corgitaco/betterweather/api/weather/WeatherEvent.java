@@ -5,6 +5,7 @@ import com.mojang.serialization.DynamicOps;
 import corgitaco.betterweather.api.BetterWeatherRegistry;
 import corgitaco.betterweather.api.client.WeatherEventClient;
 import corgitaco.betterweather.api.season.Season;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.RegistryKey;
@@ -33,7 +34,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
 
     public static final Map<Season.Key, Map<Season.Phase, Double>> NO_SEASON_CHANCES = Util.make(new IdentityHashMap<>(), (map) -> {
         for (Season.Key value : Season.Key.values()) {
-            IdentityHashMap<Season.Phase, Double> phaseDoubleMap = new IdentityHashMap<>();
+            Object2DoubleOpenHashMap<Season.Phase> phaseDoubleMap = new Object2DoubleOpenHashMap<>();
             for (Season.Phase phase : Season.Phase.values()) {
                 phaseDoubleMap.put(phase, 0.0D);
             }
@@ -85,7 +86,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     }
 
     public final double getChance(@Nullable Season season) {
-        return season != null ? this.seasonChances.get(season.getKey()).get(season.getPhase()) : Double.valueOf(this.defaultChance);
+        return season != null ? this.seasonChances.get(season.getKey()).get(season.getPhase()) : this.defaultChance;
     }
 
     public final double getDefaultChance() {

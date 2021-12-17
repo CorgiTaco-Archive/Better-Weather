@@ -4,9 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.api.client.ColorSettings;
 import corgitaco.betterweather.api.season.SubseasonSettings;
-import corgitaco.betterweather.mixin.access.BlockTagsAccess;
 import corgitaco.betterweather.common.season.storage.OverrideStorage;
+import corgitaco.betterweather.mixin.access.BlockTagsAccess;
 import corgitaco.betterweather.util.BetterWeatherUtil;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
@@ -63,7 +64,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
         }), Codec.list(Codec.STRING).optionalFieldOf("entityBreedingBlacklist", new ArrayList<>()).forGetter(subSeasonSettings -> {
             return subSeasonSettings.entityTypeBreedingBlacklist.stream().map(Registry.ENTITY_TYPE::getKey).map(ResourceLocation::toString).collect(Collectors.toList());
         }), Codec.unboundedMap(ResourceLocation.CODEC, Codec.DOUBLE).fieldOf("cropToMultiplierStorage").forGetter((subSeasonSettings) -> {
-            Map<ResourceLocation, Double> newMap = new IdentityHashMap<>();
+            Object2DoubleOpenHashMap<ResourceLocation> newMap = new Object2DoubleOpenHashMap<>();
             subSeasonSettings.cropToMultiplierStorage.forEach((block, multiplier) -> {
                 newMap.put(Registry.BLOCK.getKey(block), multiplier);
             });
@@ -104,54 +105,54 @@ public class BWSubseasonSettings implements SubseasonSettings {
     public static final String RAIN = "RAIN";
     public static final String THUNDER = "THUNDER";
 
-    public static final HashMap<String, Double> SPRING_START_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+    public static final Object2DoubleOpenHashMap<String> SPRING_START_WEATHER_EVENT_CONTROLLER = Util.make(new Object2DoubleOpenHashMap<>(), (map) -> {
         map.put(RAIN, 1.0);
         map.put(THUNDER, 0.75);
     });
-    public static final HashMap<String, Double> SPRING_MID_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+    public static final Object2DoubleOpenHashMap<String> SPRING_MID_WEATHER_EVENT_CONTROLLER = Util.make(new Object2DoubleOpenHashMap<>(), (map) -> {
         map.put(RAIN, 1.0);
         map.put(THUNDER, 0.75);
     });
-    public static final HashMap<String, Double> SPRING_END_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
-        map.put(RAIN, 1.0);
-        map.put(THUNDER, 0.75);
-    });
-
-    public static final HashMap<String, Double> SUMMER_START_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
-        map.put(RAIN, 1.0);
-        map.put(THUNDER, 0.75);
-    });
-    public static final HashMap<String, Double> SUMMER_MID_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
-        map.put(RAIN, 1.0);
-        map.put(THUNDER, 0.75);
-    });
-    public static final HashMap<String, Double> SUMMER_END_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+    public static final Object2DoubleOpenHashMap<String> SPRING_END_WEATHER_EVENT_CONTROLLER = Util.make(new Object2DoubleOpenHashMap<>(), (map) -> {
         map.put(RAIN, 1.0);
         map.put(THUNDER, 0.75);
     });
 
-    public static final HashMap<String, Double> AUTUMN_START_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+    public static final Object2DoubleOpenHashMap<String> SUMMER_START_WEATHER_EVENT_CONTROLLER = Util.make(new Object2DoubleOpenHashMap<>(), (map) -> {
         map.put(RAIN, 1.0);
         map.put(THUNDER, 0.75);
     });
-    public static final HashMap<String, Double> AUTUMN_MID_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+    public static final Object2DoubleOpenHashMap<String> SUMMER_MID_WEATHER_EVENT_CONTROLLER = Util.make(new Object2DoubleOpenHashMap<>(), (map) -> {
         map.put(RAIN, 1.0);
         map.put(THUNDER, 0.75);
     });
-    public static final HashMap<String, Double> AUTUMN_END_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+    public static final Object2DoubleOpenHashMap<String> SUMMER_END_WEATHER_EVENT_CONTROLLER = Util.make(new Object2DoubleOpenHashMap<>(), (map) -> {
         map.put(RAIN, 1.0);
         map.put(THUNDER, 0.75);
     });
 
-    public static final HashMap<String, Double> WINTER_START_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+    public static final Object2DoubleOpenHashMap<String> AUTUMN_START_WEATHER_EVENT_CONTROLLER = Util.make(new Object2DoubleOpenHashMap<>(), (map) -> {
         map.put(RAIN, 1.0);
         map.put(THUNDER, 0.75);
     });
-    public static final HashMap<String, Double> WINTER_MID_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+    public static final Object2DoubleOpenHashMap<String> AUTUMN_MID_WEATHER_EVENT_CONTROLLER = Util.make(new Object2DoubleOpenHashMap<>(), (map) -> {
         map.put(RAIN, 1.0);
         map.put(THUNDER, 0.75);
     });
-    public static final HashMap<String, Double> WINTER_END_WEATHER_EVENT_CONTROLLER = Util.make(new HashMap<>(), (map) -> {
+    public static final Object2DoubleOpenHashMap<String> AUTUMN_END_WEATHER_EVENT_CONTROLLER = Util.make(new Object2DoubleOpenHashMap<>(), (map) -> {
+        map.put(RAIN, 1.0);
+        map.put(THUNDER, 0.75);
+    });
+
+    public static final Object2DoubleOpenHashMap<String> WINTER_START_WEATHER_EVENT_CONTROLLER = Util.make(new Object2DoubleOpenHashMap<>(), (map) -> {
+        map.put(RAIN, 1.0);
+        map.put(THUNDER, 0.75);
+    });
+    public static final Object2DoubleOpenHashMap<String> WINTER_MID_WEATHER_EVENT_CONTROLLER = Util.make(new Object2DoubleOpenHashMap<>(), (map) -> {
+        map.put(RAIN, 1.0);
+        map.put(THUNDER, 0.75);
+    });
+    public static final Object2DoubleOpenHashMap<String> WINTER_END_WEATHER_EVENT_CONTROLLER = Util.make(new Object2DoubleOpenHashMap<>(), (map) -> {
         map.put(RAIN, 1.0);
         map.put(THUNDER, 0.75);
     });
@@ -177,8 +178,8 @@ public class BWSubseasonSettings implements SubseasonSettings {
     private final double humidityModifier;
     private final double weatherEventChanceMultiplier;
     private final double cropGrowthChanceMultiplier; //Final Fallback
-    private final HashMap<String, Double> weatherEventController;
-    private final IdentityHashMap<Block, Double> cropToMultiplierStorage;
+    private final Object2DoubleOpenHashMap<String> weatherEventController;
+    private final Object2DoubleOpenHashMap<Block> cropToMultiplierStorage;
     private final IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage;
     private final ObjectOpenHashSet<EntityType<?>> entityTypeBreedingBlacklist;
     private final ObjectOpenHashSet<Block> enhancedCrops = new ObjectOpenHashSet<>();
@@ -200,15 +201,16 @@ public class BWSubseasonSettings implements SubseasonSettings {
         this(tempModifier, humidityModifier, weatherEventChanceMultiplier, cropGrowthChanceMultiplier, weatherEventController, clientSettings, new HashSet<>(entityBreedingBlacklist), new IdentityHashMap<>(cropToMultiplierStorage), new IdentityHashMap<>(biomeToOverrideStorage));
     }
 
-    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, ColorSettings clientSettings, Set<String> entityBreedingBlacklist, IdentityHashMap<Block, Double> cropToMultiplierStorage, IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage) {
+    public BWSubseasonSettings(double tempModifier, double humidityModifier, double weatherEventChanceMultiplier, double cropGrowthChanceMultiplier, Map<String, Double> weatherEventController, ColorSettings clientSettings, Set<String> entityBreedingBlacklist, Map<Block, Double> cropToMultiplierStorage, IdentityHashMap<RegistryKey<Biome>, OverrideStorage> biomeToOverrideStorage) {
         this.tempModifier = tempModifier;
         this.humidityModifier = humidityModifier;
         this.weatherEventChanceMultiplier = weatherEventChanceMultiplier;
         this.cropGrowthChanceMultiplier = cropGrowthChanceMultiplier;
-        this.weatherEventController = new HashMap<>(weatherEventController);
+        this.weatherEventController = new Object2DoubleOpenHashMap<>(weatherEventController);
         this.clientSettings = clientSettings;
         this.entityTypeBreedingBlacklist = new ObjectOpenHashSet<>(entityBreedingBlacklist.stream().map(ResourceLocation::new).filter((resourceLocation) -> (BetterWeatherUtil.filterRegistryID(resourceLocation, Registry.ENTITY_TYPE, "Entity"))).map(Registry.ENTITY_TYPE::getOptional).map(Optional::get).collect(Collectors.toSet()));
-        this.cropToMultiplierStorage = cropToMultiplierStorage;
+        this.cropToMultiplierStorage = new Object2DoubleOpenHashMap<>();
+        this.cropToMultiplierStorage.putAll(cropToMultiplierStorage);
         this.biomeToOverrideStorage = biomeToOverrideStorage;
     }
 
@@ -231,11 +233,11 @@ public class BWSubseasonSettings implements SubseasonSettings {
         setUnEnhancedCropsTag(unenhancedCrops);
     }
 
-    public IdentityHashMap<Block, Double> getCropToMultiplierStorage() {
+    public Object2DoubleOpenHashMap<Block> getCropToMultiplierStorage() {
         return cropToMultiplierStorage;
     }
 
-    public void setCropToMultiplierStorage(IdentityHashMap<Block, Double> cropToMultiplierStorage) {
+    public void setCropToMultiplierStorage(Object2DoubleOpenHashMap<Block> cropToMultiplierStorage) {
         this.cropToMultiplierStorage.putAll(cropToMultiplierStorage);
     }
 
@@ -284,7 +286,7 @@ public class BWSubseasonSettings implements SubseasonSettings {
         return overrideStorage.getBlockToCropGrowthMultiplierMap().getOrDefault(block, fallBack == Double.MAX_VALUE ? cropGrowthChanceMultiplier : fallBack);
     }
 
-    public HashMap<String, Double> getWeatherEventController() {
+    public Object2DoubleOpenHashMap<String> getWeatherEventController() {
         return weatherEventController;
     }
 
