@@ -2,8 +2,8 @@ package corgitaco.betterweather.mixin.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.api.weather.WeatherEvent;
-import corgitaco.betterweather.helpers.BetterWeatherWorldData;
-import corgitaco.betterweather.weather.BWWeatherEventContext;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
+import corgitaco.betterweather.common.weather.WeatherContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.FogRenderer;
@@ -26,11 +26,11 @@ public abstract class MixinFogRenderer {
     @Inject(method = "setupFog(Lnet/minecraft/client/renderer/ActiveRenderInfo;Lnet/minecraft/client/renderer/FogRenderer$FogType;FZF)V", at = @At("HEAD"), cancellable = true, remap = false)
     private static void forceWeather(ActiveRenderInfo activeRenderInfoIn, FogRenderer.FogType fogTypeIn, float farPlaneDistance, boolean nearFog, float partialticks, CallbackInfo ci) {
         ClientWorld world = Minecraft.getInstance().level;
-        BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
         if (weatherEventContext != null) {
             WeatherEvent currentEvent = weatherEventContext.getCurrentEvent();
             float currentFogDensity = currentEvent.getClientSettings().fogDensity();
-            float blendedFogDensity = weatherEventContext.getCurrentClientEvent().fogDensity(world, activeRenderInfoIn.getBlockPosition(), currentEvent::isValidBiome);
+            float blendedFogDensity = weatherEventContext.getCurrentEvent().getClient().fogDensity(world, activeRenderInfoIn.getBlockPosition(), currentEvent::isValidBiome);
 
             if (currentFogDensity != -1.0F && blendedFogDensity > 0.0F) {
                 RenderSystem.fogDensity(MathHelper.lerp(activeRenderInfoIn.getEntity().level.getRainLevel(Minecraft.getInstance().getFrameTime()), 0.0F, blendedFogDensity));

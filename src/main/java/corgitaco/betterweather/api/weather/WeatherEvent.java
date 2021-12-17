@@ -20,6 +20,7 @@ import net.minecraftforge.common.BiomeDictionary;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
@@ -61,7 +62,7 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     private final ReferenceArraySet<Biome> validBiomes = new ReferenceArraySet<>();
     private WeatherEventClientSettings clientSettings;
     private WeatherEventClient<?> client;
-    private String name;
+    private String key;
 
     public WeatherEvent(WeatherEventClientSettings clientSettings, String biomeCondition, double defaultChance, double temperatureOffsetRaw, double humidityOffsetRaw, boolean isThundering, int lightningFrequency, Map<Season.Key, Map<Season.Phase, Double>> seasonChance) {
         this.clientSettings = clientSettings;
@@ -72,6 +73,19 @@ public abstract class WeatherEvent implements WeatherEventSettings {
         this.isThundering = isThundering;
         this.lightningFrequency = lightningFrequency;
         this.seasonChances = seasonChance;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public WeatherEvent setKey(String key) {
+        this.key = key;
+        return this;
+    }
+
+    public final double getChance(@Nullable Season season) {
+        return season != null ? this.seasonChances.get(season.getKey()).get(season.getPhase()) : Double.valueOf(this.defaultChance);
     }
 
     public final double getDefaultChance() {
@@ -120,15 +134,6 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     public final TranslationTextComponent successTranslationTextComponent(String key) {
         return new TranslationTextComponent("commands.bw.setweather.success",
                 new TranslationTextComponent("bw.weather." + key));
-    }
-
-    public WeatherEvent setName(String name) {
-        this.name = name;
-        return this;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public void fillBiomes(Registry<Biome> biomeRegistry) {
@@ -250,7 +255,10 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void setClient(WeatherEventClient<?> client) {
+    public void setClient(WeatherEventClient<?> client, String path) {
+        if (client == null) {
+            throw new NullPointerException("Client settings for file \"" + path + "\" are incomplete/broken. The fastest solution is to copy this file to a separate directory and update the settings in the new file for all relevant fields.");
+        }
         this.client = client;
     }
 }

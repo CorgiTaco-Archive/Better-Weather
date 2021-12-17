@@ -1,8 +1,8 @@
 package corgitaco.betterweather.mixin.client.block;
 
 
-import corgitaco.betterweather.helpers.BetterWeatherWorldData;
-import corgitaco.betterweather.weather.BWWeatherEventContext;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
+import corgitaco.betterweather.common.weather.WeatherContext;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.LeavesBlock;
 import net.minecraft.util.math.BlockPos;
@@ -20,7 +20,7 @@ public abstract class MixinLeavesBlock {
 
     @Inject(at = @At("HEAD"), method = "animateTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Ljava/util/Random;)V", cancellable = true)
     private void noRainDripping(BlockState stateIn, World world, BlockPos pos, Random rand, CallbackInfo ci) {
-        BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
         if (weatherEventContext != null) {
             if (!weatherEventContext.getCurrentEvent().getClientSettings().drippingLeaves()) {
                 ci.cancel();

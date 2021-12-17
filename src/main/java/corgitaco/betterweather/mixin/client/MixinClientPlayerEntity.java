@@ -1,6 +1,6 @@
 package corgitaco.betterweather.mixin.client;
 
-import corgitaco.betterweather.client.audio.WeatherSoundHandler;
+import corgitaco.betterweather.client.sound.WeatherSoundHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.IAmbientSoundHandler;
 import net.minecraft.client.entity.player.ClientPlayerEntity;

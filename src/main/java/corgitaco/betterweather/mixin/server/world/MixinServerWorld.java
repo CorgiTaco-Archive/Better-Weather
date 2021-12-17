@@ -5,17 +5,15 @@ import corgitaco.betterweather.api.Climate;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.config.BetterWeatherConfig;
-import corgitaco.betterweather.data.storage.SeasonSavedData;
-import corgitaco.betterweather.data.storage.WeatherEventSavedData;
-import corgitaco.betterweather.helpers.BetterWeatherWorldData;
-import corgitaco.betterweather.helpers.BiomeModifier;
-import corgitaco.betterweather.helpers.BiomeUpdate;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
+import corgitaco.betterweather.util.BiomeModifier;
+import corgitaco.betterweather.util.BiomeUpdate;
 import corgitaco.betterweather.mixin.access.ChunkManagerAccess;
 import corgitaco.betterweather.mixin.access.ServerChunkProviderAccess;
 import corgitaco.betterweather.mixin.access.ServerWorldAccess;
-import corgitaco.betterweather.season.SeasonContext;
+import corgitaco.betterweather.common.season.SeasonContext;
 import corgitaco.betterweather.util.WorldDynamicRegistry;
-import corgitaco.betterweather.weather.BWWeatherEventContext;
+import corgitaco.betterweather.common.weather.WeatherContext;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.effect.LightningBoltEntity;
 import net.minecraft.entity.passive.horse.SkeletonHorseEntity;
@@ -73,7 +71,7 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     private SeasonContext seasonContext;
 
     @Nullable
-    private BWWeatherEventContext weatherContext;
+    private WeatherContext weatherContext;
 
     @SuppressWarnings("ALL")
     @Inject(method = "<init>", at = @At("RETURN"))
@@ -105,11 +103,11 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
         }
 
         if (isValidWeatherEventDimension) {
-            this.weatherContext = new BWWeatherEventContext(WeatherEventSavedData.get((ServerWorld) (Object) this), key, this.registry.registryOrThrow(Registry.BIOME_REGISTRY));
+            this.weatherContext = new WeatherContext((ServerWorld) (Object) this);
         }
 
         if (isValidSeasonDimension) {
-            this.seasonContext = new SeasonContext(SeasonSavedData.get((ServerWorld) (Object) this), key, this.registry.registryOrThrow(Registry.BIOME_REGISTRY));
+            this.seasonContext = new SeasonContext((ServerWorld) (Object) this);
         }
 
         updateBiomeData();
@@ -132,7 +130,7 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
 
             if (weatherContext != null && validBiomes.contains(biome) && weatherContext.getCurrentEvent().isValidBiome(biome)) {
                 float weatherHumidityModifier = (float) this.weatherContext.getCurrentEvent().getHumidityModifierAtPosition(null);
-                float weatherTemperatureModifier = (float) this.weatherContext.getCurrentWeatherEventSettings().getTemperatureModifierAtPosition(null);
+                float weatherTemperatureModifier = (float) this.weatherContext.getCurrentEvent().getTemperatureModifierAtPosition(null);
                 ((BiomeModifier) (Object) biome).setWeatherTempModifier(weatherTemperatureModifier);
                 ((BiomeModifier) (Object) biome).setWeatherHumidityModifier(weatherHumidityModifier);
             }
@@ -163,11 +161,9 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     }
 
 
-    @Inject(method = "setWeatherParameters", at = @At("HEAD"))
+    @Inject(method = "setWeatherParameters", at = @At("HEAD"), cancellable = true)
     private void setWeatherForced(int clearWeatherTime, int weatherTime, boolean rain, boolean thunder, CallbackInfo ci) {
-        if (this.weatherContext != null) {
-            this.weatherContext.setWeatherForced(true);
-        }
+        ci.cancel();
     }
 
     @Inject(method = "tickChunk", at = @At("HEAD"))
@@ -196,7 +192,7 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
                     SkeletonHorseEntity skeletonhorseentity = EntityType.SKELETON_HORSE.create(world);
                     skeletonhorseentity.setTrap(true);
                     skeletonhorseentity.setAge(0);
-                    skeletonhorseentity.setPos((double) blockpos.getX(), (double) blockpos.getY(), (double) blockpos.getZ());
+                    skeletonhorseentity.setPos(blockpos.getX(), blockpos.getY(), blockpos.getZ());
                     world.addFreshEntity(skeletonhorseentity);
                 }
 
@@ -234,13 +230,13 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
 
     @Nullable
     @Override
-    public BWWeatherEventContext getWeatherEventContext() {
+    public WeatherContext getWeatherEventContext() {
         return this.weatherContext;
     }
 
     @Nullable
     @Override
-    public BWWeatherEventContext setWeatherEventContext(BWWeatherEventContext weatherEventContext) {
+    public WeatherContext setWeatherEventContext(WeatherContext weatherEventContext) {
         this.weatherContext = weatherEventContext;
         return this.weatherContext;
     }
@@ -248,6 +244,6 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     @Nullable
     @Override
     public Season getSeason() {
-        return this.seasonContext;
+        return this.seasonContext.getSeason();
     }
 }

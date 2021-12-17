@@ -32,16 +32,6 @@ public interface Season {
     }
 
     /**
-     * @return total year length.
-     */
-    int getYearLength();
-
-    /**
-     * @return current year time.
-     */
-    int getCurrentYearTime();
-
-    /**
      * @return current season's key.
      */
     Key getKey();
@@ -61,20 +51,6 @@ public interface Season {
      * @return Returns a crop's favorite biome(s) and the explicit bonus for this biome.
      */
     IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> getCropFavoriteBiomeBonuses();
-
-    /**
-     * @return start time for this season in the given year.
-     */
-    default int getSeasonStartTime() {
-        return getSeasonStartTime(getKey(), getYearLength());
-    }
-
-    /**
-     * @return start time for this season's phase in the given year.
-     */
-    default int getSeasonAndPhaseStartTime() {
-        return getSeasonAndPhaseStartTime(getKey(), getPhase(), getYearLength());
-    }
 
     /**
      * Represents the given season key or "name".
@@ -185,14 +161,14 @@ public interface Season {
     /**
      * @return current season key determined by the year's current time and length.
      */
-    static Key getSeasonFromTime(int currentYearTime, int yearLength) {
+    static Key getSeasonFromTime(long dayTime, int yearLength) {
         int seasonLength = yearLength / Key.values().length;
 
-        if (currentYearTime < seasonLength) {
+        if (dayTime < seasonLength) {
             return Key.SPRING;
-        } else if (currentYearTime < seasonLength * 2) {
+        } else if (dayTime < seasonLength * 2) {
             return Key.SUMMER;
-        } else if (currentYearTime < seasonLength * 3) {
+        } else if (dayTime < seasonLength * 3) {
             return Key.AUTUMN;
         } else
             return Key.WINTER;

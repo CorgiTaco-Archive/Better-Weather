@@ -1,6 +1,6 @@
 package corgitaco.betterweather.mixin;
 
-import corgitaco.betterweather.helpers.BetterWeatherWorldData;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

@@ -1,7 +1,7 @@
 package corgitaco.betterweather.mixin.biome;
 
 import corgitaco.betterweather.api.BiomeClimate;
-import corgitaco.betterweather.helpers.BiomeModifier;
+import corgitaco.betterweather.util.BiomeModifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import org.spongepowered.asm.mixin.Mixin;

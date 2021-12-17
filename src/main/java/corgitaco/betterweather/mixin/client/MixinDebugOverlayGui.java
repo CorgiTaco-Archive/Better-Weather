@@ -1,7 +1,7 @@
 package corgitaco.betterweather.mixin.client;
 
-import corgitaco.betterweather.helpers.BetterWeatherWorldData;
-import corgitaco.betterweather.season.SeasonContext;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
+import corgitaco.betterweather.common.season.SeasonContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.overlay.DebugOverlayGui;
 import org.apache.commons.lang3.text.WordUtils;

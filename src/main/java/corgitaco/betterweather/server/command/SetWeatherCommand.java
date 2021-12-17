@@ -4,8 +4,9 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
-import corgitaco.betterweather.helpers.BetterWeatherWorldData;
-import corgitaco.betterweather.weather.BWWeatherEventContext;
+import corgitaco.betterweather.api.weather.WeatherEvent;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
+import corgitaco.betterweather.common.weather.WeatherContext;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.ISuggestionProvider;
@@ -29,7 +30,7 @@ public class SetWeatherCommand {
         return Commands.literal("setweather").then(
                 Commands.argument("weather", StringArgumentType.string())
                         .suggests((ctx, sb) -> {
-                            BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) ctx.getSource().getLevel()).getWeatherEventContext();
+                            WeatherContext weatherEventContext = ((BetterWeatherWorldData) ctx.getSource().getLevel()).getWeatherEventContext();
                             return ISuggestionProvider.suggest(weatherEventContext != null ? weatherEventContext.getWeatherEvents().keySet().stream() : Arrays.stream(new String[]{WEATHER_NOT_ENABLED}), sb);
                         }).executes(cs -> betterWeatherSetSeason(cs.getSource(), cs.getArgument("weather", String.class),
                                 12000)) // Default length to 10 minutes.
@@ -49,11 +50,13 @@ public class SetWeatherCommand {
         }
 
         ServerWorld world = source.getLevel();
-        BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
 
         if (weatherEventContext != null) {
             if (weatherEventContext.getWeatherEvents().containsKey(weatherKey)) {
-                source.sendSuccess(weatherEventContext.weatherForcer(weatherKey, length, world).successTranslationTextComponent(weatherKey), true);
+                weatherEventContext.setCurrentEvent(weatherKey);
+                WeatherEvent currentEvent = weatherEventContext.getCurrentEvent();
+                source.sendSuccess(currentEvent.successTranslationTextComponent(weatherKey), true);
             } else {
                 source.sendFailure(new TranslationTextComponent("commands.bw.setweather.fail.no_weather_event", weatherKey));
                 return 0;

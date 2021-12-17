@@ -1,12 +1,12 @@
 package corgitaco.betterweather.mixin.network;
 
 import com.mojang.authlib.GameProfile;
-import corgitaco.betterweather.data.network.NetworkHandler;
-import corgitaco.betterweather.data.network.packet.season.SeasonContextConstructingPacket;
-import corgitaco.betterweather.data.network.packet.weather.WeatherContextConstructingPacket;
-import corgitaco.betterweather.helpers.BetterWeatherWorldData;
-import corgitaco.betterweather.season.SeasonContext;
-import corgitaco.betterweather.weather.BWWeatherEventContext;
+import corgitaco.betterweather.common.network.NetworkHandler;
+import corgitaco.betterweather.common.network.packet.season.SeasonContextConstructingPacket;
+import corgitaco.betterweather.common.network.packet.weather.WeatherContextConstructingPacket;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
+import corgitaco.betterweather.common.season.SeasonContext;
+import corgitaco.betterweather.common.weather.WeatherContext;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
@@ -48,7 +48,7 @@ public abstract class MixinPlayerList {
             NetworkHandler.sendToPlayer(playerIn, new SeasonContextConstructingPacket(seasonContext));
         }
 
-        BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) worldIn).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) worldIn).getWeatherEventContext();
         if (weatherEventContext != null) {
             NetworkHandler.sendToPlayer(playerIn, new WeatherContextConstructingPacket(weatherEventContext));
         }

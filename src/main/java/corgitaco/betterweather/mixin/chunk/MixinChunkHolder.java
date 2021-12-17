@@ -1,8 +1,8 @@
 package corgitaco.betterweather.mixin.chunk;
 
-import corgitaco.betterweather.chunk.TickHelper;
-import corgitaco.betterweather.helpers.BetterWeatherWorldData;
-import corgitaco.betterweather.weather.BWWeatherEventContext;
+import corgitaco.betterweather.util.DirtyTickTracker;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
+import corgitaco.betterweather.common.weather.WeatherContext;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ChunkHolder;
 import net.minecraft.world.server.ServerWorld;
@@ -18,12 +18,12 @@ public abstract class MixinChunkHolder {
     private void runChunkUpdates(Chunk chunk, CallbackInfo ci) {
         ServerWorld world = (ServerWorld) chunk.getLevel();
 
-        BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
 
         if (weatherEventContext != null) {
-            if (!((TickHelper) chunk).isTickDirty()) {
+            if (!((DirtyTickTracker) chunk).isTickDirty()) {
                 weatherEventContext.getCurrentEvent().doChunkLoad(chunk, world);
-                ((TickHelper) chunk).setTickDirty();
+                ((DirtyTickTracker) chunk).setTickDirty();
             }
         }
     }

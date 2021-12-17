@@ -2,10 +2,10 @@ package corgitaco.betterweather.util.client;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.client.ColorSettings;
-import corgitaco.betterweather.helpers.BetterWeatherWorldData;
-import corgitaco.betterweather.season.BWSubseasonSettings;
-import corgitaco.betterweather.season.SeasonContext;
-import corgitaco.betterweather.weather.BWWeatherEventContext;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
+import corgitaco.betterweather.common.season.BWSubseasonSettings;
+import corgitaco.betterweather.common.season.SeasonContext;
+import corgitaco.betterweather.common.weather.WeatherContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.RegistryKey;
@@ -46,7 +46,7 @@ public final class ColorUtil {
         }
 
         SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
-        BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
 
         if (seasonContext == null && weatherEventContext == null) {
             return previous;

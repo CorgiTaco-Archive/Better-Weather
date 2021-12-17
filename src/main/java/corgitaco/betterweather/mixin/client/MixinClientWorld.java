@@ -2,11 +2,11 @@ package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.api.Climate;
 import corgitaco.betterweather.api.season.Season;
-import corgitaco.betterweather.helpers.BetterWeatherWorldData;
-import corgitaco.betterweather.helpers.BiomeModifier;
-import corgitaco.betterweather.helpers.BiomeUpdate;
-import corgitaco.betterweather.season.SeasonContext;
-import corgitaco.betterweather.weather.BWWeatherEventContext;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
+import corgitaco.betterweather.util.BiomeModifier;
+import corgitaco.betterweather.util.BiomeUpdate;
+import corgitaco.betterweather.common.season.SeasonContext;
+import corgitaco.betterweather.common.weather.WeatherContext;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.registry.DynamicRegistries;
@@ -33,7 +33,7 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
     SeasonContext seasonContext;
 
     @Nullable
-    private BWWeatherEventContext weatherContext;
+    private WeatherContext weatherContext;
 
     @Nullable
     @Override
@@ -50,13 +50,13 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
 
     @Nullable
     @Override
-    public BWWeatherEventContext getWeatherEventContext() {
+    public WeatherContext getWeatherEventContext() {
         return this.weatherContext;
     }
 
     @Nullable
     @Override
-    public BWWeatherEventContext setWeatherEventContext(BWWeatherEventContext weatherEventContext) {
+    public WeatherContext setWeatherEventContext(WeatherContext weatherEventContext) {
         this.weatherContext = weatherEventContext;
         return this.weatherContext;
     }
@@ -73,7 +73,7 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
 
     @Override
     public Season getSeason() {
-        return this.seasonContext;
+        return this.seasonContext.getSeason();
     }
 
     @Override
@@ -83,8 +83,8 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
             RegistryKey<Biome> biomeKey = entry.getKey();
             float seasonHumidityModifier = seasonContext == null ? 0.0F : (float) this.seasonContext.getCurrentSubSeasonSettings().getHumidityModifier(biomeKey);
             float seasonTemperatureModifier = seasonContext == null ? 0.0F : (float) this.seasonContext.getCurrentSubSeasonSettings().getTemperatureModifier(biomeKey);
-            float weatherHumidityModifier = weatherContext == null ? 0.0F : (float) this.weatherContext.getCurrentWeatherEventSettings().getHumidityModifierAtPosition(null);
-            float weatherTemperatureModifier = weatherContext == null ? 0.0F : (float) this.weatherContext.getCurrentWeatherEventSettings().getTemperatureModifierAtPosition(null);
+            float weatherHumidityModifier = weatherContext == null ? 0.0F : (float) this.weatherContext.getCurrentEvent().getHumidityModifierAtPosition(null);
+            float weatherTemperatureModifier = weatherContext == null ? 0.0F : (float) this.weatherContext.getCurrentEvent().getTemperatureModifierAtPosition(null);
 
             ((BiomeModifier) (Object) biome).setSeasonTempModifier(seasonTemperatureModifier);
             ((BiomeModifier) (Object) biome).setSeasonHumidityModifier(seasonHumidityModifier);
@@ -107,7 +107,7 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
     @Redirect(method = "getSkyDarken", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainLevel(F)F"))
     private float sunBrightness(ClientWorld world, float delta) {
         float rainStrength = ((ClientWorld) (Object) this).getRainLevel(delta);
-        BWWeatherEventContext weatherContext = this.weatherContext;
+        WeatherContext weatherContext = this.weatherContext;
         return weatherContext != null ? rainStrength * weatherContext.getCurrentEvent().getClientSettings().dayLightDarkness() : rainStrength;
     }
 }

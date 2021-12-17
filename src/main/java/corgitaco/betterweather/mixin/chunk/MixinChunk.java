@@ -1,11 +1,11 @@
 package corgitaco.betterweather.mixin.chunk;
 
-import corgitaco.betterweather.chunk.TickHelper;
+import corgitaco.betterweather.util.DirtyTickTracker;
 import net.minecraft.world.chunk.Chunk;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(Chunk.class)
-public abstract class MixinChunk implements TickHelper {
+public abstract class MixinChunk implements DirtyTickTracker {
 
     private boolean isTickDirty;
     

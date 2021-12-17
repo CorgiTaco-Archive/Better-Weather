@@ -1,7 +1,7 @@
 package corgitaco.betterweather.mixin.client;
 
-import corgitaco.betterweather.helpers.BetterWeatherWorldData;
-import corgitaco.betterweather.weather.BWWeatherEventContext;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
+import corgitaco.betterweather.common.weather.WeatherContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.DimensionRenderInfo;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,7 +15,7 @@ public abstract class MixinDimensionRenderInfo {
 
     @Inject(method = "getSunriseColor", at = @At("HEAD"), cancellable = true)
     private void constantSkyColor(float skyAngle, float tickDelta, CallbackInfoReturnable<float[]> cir) {
-        BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) minecraft.level).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) minecraft.level).getWeatherEventContext();
         if (weatherEventContext != null) {
             if (!weatherEventContext.getCurrentEvent().getClientSettings().sunsetSunriseColor()) {
                 cir.setReturnValue(null);

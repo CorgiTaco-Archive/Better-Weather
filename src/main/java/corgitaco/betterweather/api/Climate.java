@@ -18,6 +18,11 @@ public interface Climate {
     @Nullable
     Season getSeason();
 
+    /**
+     * @return total year length.
+     */
+    int getYearLength();
+
     @Nullable
     static Season getSeason(World world) {
         return ((Climate)(Object) world).getSeason();

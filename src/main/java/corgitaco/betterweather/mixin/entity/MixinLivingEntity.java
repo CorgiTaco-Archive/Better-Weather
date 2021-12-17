@@ -1,7 +1,7 @@
 package corgitaco.betterweather.mixin.entity;
 
-import corgitaco.betterweather.helpers.BetterWeatherWorldData;
-import corgitaco.betterweather.weather.BWWeatherEventContext;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
+import corgitaco.betterweather.common.weather.WeatherContext;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.world.World;
@@ -17,7 +17,7 @@ public abstract class MixinLivingEntity {
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void weatherLivingTickUpdate(CallbackInfo ci) {
         World world = ((Entity) (Object) this).level;
-        BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
         if (weatherEventContext != null) {
             weatherEventContext.getCurrentEvent().livingEntityUpdate((LivingEntity) (Object) this);
         }

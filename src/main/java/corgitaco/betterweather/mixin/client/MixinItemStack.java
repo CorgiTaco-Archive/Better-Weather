@@ -1,10 +1,10 @@
 package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.api.season.Season;
-import corgitaco.betterweather.helpers.BetterWeatherWorldData;
-import corgitaco.betterweather.season.BWSeason;
-import corgitaco.betterweather.season.BWSubseasonSettings;
-import corgitaco.betterweather.season.SeasonContext;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
+import corgitaco.betterweather.common.season.BWSeason;
+import corgitaco.betterweather.common.season.BWSubseasonSettings;
+import corgitaco.betterweather.common.season.SeasonContext;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;

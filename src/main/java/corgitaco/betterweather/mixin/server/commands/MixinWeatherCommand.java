@@ -1,6 +1,6 @@
 package corgitaco.betterweather.mixin.server.commands;
 
-import corgitaco.betterweather.helpers.BetterWeatherWorldData;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.impl.WeatherCommand;
 import net.minecraft.util.text.TranslationTextComponent;
