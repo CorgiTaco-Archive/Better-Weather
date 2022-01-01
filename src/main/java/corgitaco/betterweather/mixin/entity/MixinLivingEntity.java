@@ -1,7 +1,7 @@
 package corgitaco.betterweather.mixin.entity;
 
-import corgitaco.betterweather.util.BetterWeatherWorldData;
 import corgitaco.betterweather.common.weather.WeatherContext;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.world.World;

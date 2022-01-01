@@ -72,9 +72,9 @@ public class RainClient extends WeatherEventClient<RainClientSettings> {
             IWorldReader worldReader = mc.level;
             BlockPos blockpos = new BlockPos(renderInfo.getPosition());
             BlockPos blockpos1 = null;
-            int particleCount = (int)(100.0F * particleStrength * particleStrength) / (mc.options.particles == ParticleStatus.DECREASED ? 2 : 1);
+            int particleCount = (int) (100.0F * particleStrength * particleStrength) / (mc.options.particles == ParticleStatus.DECREASED ? 2 : 1);
 
-            for(int particleCounter = 0; particleCounter < particleCount; ++particleCounter) {
+            for (int particleCounter = 0; particleCounter < particleCount; ++particleCounter) {
                 int randomAddX = random.nextInt(21) - 10;
                 int randomAddZ = random.nextInt(21) - 10;
                 BlockPos motionBlockingHeightMinus1 = worldReader.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING, blockpos.offset(randomAddX, 0, randomAddZ)).below();
@@ -103,7 +103,7 @@ public class RainClient extends WeatherEventClient<RainClientSettings> {
 
             if (blockpos1 != null && random.nextInt(3) < this.rainSoundTime++) {
                 this.rainSoundTime = 0;
-                if (blockpos1.getY() > blockpos.getY() + 1 && worldReader.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING, blockpos).getY() > MathHelper.floor((float)blockpos.getY())) {
+                if (blockpos1.getY() > blockpos.getY() + 1 && worldReader.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING, blockpos).getY() > MathHelper.floor((float) blockpos.getY())) {
                     mc.level.playLocalSound(blockpos1, SoundEvents.WEATHER_RAIN_ABOVE, SoundCategory.WEATHER, 0.1F, 0.5F, false);
                 } else {
                     mc.level.playLocalSound(blockpos1, SoundEvents.WEATHER_RAIN, SoundCategory.WEATHER, 0.2F, 1.0F, false);

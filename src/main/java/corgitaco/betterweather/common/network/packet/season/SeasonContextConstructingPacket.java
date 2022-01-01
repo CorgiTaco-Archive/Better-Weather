@@ -1,8 +1,8 @@
 package corgitaco.betterweather.common.network.packet.season;
 
+import corgitaco.betterweather.common.season.SeasonContext;
 import corgitaco.betterweather.util.BetterWeatherWorldData;
 import corgitaco.betterweather.util.BiomeUpdate;
-import corgitaco.betterweather.common.season.SeasonContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketBuffer;

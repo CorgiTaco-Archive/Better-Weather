@@ -25,10 +25,10 @@ public interface Climate {
 
     @Nullable
     static Season getSeason(World world) {
-        return ((Climate)(Object) world).getSeason();
+        return ((Climate) (Object) world).getSeason();
     }
 
     static Climate getClimate(World world) {
-        return ((Climate)(Object) world);
+        return ((Climate) (Object) world);
     }
 }

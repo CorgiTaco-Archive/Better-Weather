@@ -6,8 +6,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.api.weather.WeatherEventClientSettings;
-import corgitaco.betterweather.util.TomlCommentedConfigOps;
 import corgitaco.betterweather.common.weather.event.client.settings.CloudyClientSettings;
+import corgitaco.betterweather.util.TomlCommentedConfigOps;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
@@ -50,7 +50,7 @@ public class Cloudy extends WeatherEvent {
                 }
             }));
 
-    public static final Cloudy DEFAULT_THUNDERING = new Cloudy(new CloudyClientSettings(Rain.THUNDER_COLORS, 0.0F, -0.09F, true), "ALL", 0.1D, !MODIFY_TEMPERATURE ? 0.0 :-0.05, 0.07, true, 100000,
+    public static final Cloudy DEFAULT_THUNDERING = new Cloudy(new CloudyClientSettings(Rain.THUNDER_COLORS, 0.0F, -0.09F, true), "ALL", 0.1D, !MODIFY_TEMPERATURE ? 0.0 : -0.05, 0.07, true, 100000,
             Util.make(new EnumMap<>(Season.Key.class), (map) -> {
                 for (Season.Key value : Season.Key.values()) {
                     Map<Season.Phase, Double> phaseDoubleMap = new EnumMap<>(Season.Phase.class);

@@ -1,11 +1,11 @@
 package corgitaco.betterweather;
 
 import corgitaco.betterweather.api.BetterWeatherRegistry;
-import corgitaco.betterweather.config.BetterWeatherClientConfig;
 import corgitaco.betterweather.common.network.NetworkHandler;
-import corgitaco.betterweather.server.BetterWeatherGameRules;
 import corgitaco.betterweather.common.weather.event.*;
 import corgitaco.betterweather.common.weather.event.client.settings.*;
+import corgitaco.betterweather.config.BetterWeatherClientConfig;
+import corgitaco.betterweather.server.BetterWeatherGameRules;
 import net.minecraft.util.LazyValue;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;

@@ -49,7 +49,7 @@ public abstract class WeatherEventClient<T extends WeatherEventClientSettings> {
 
     public abstract boolean renderWeatherShaders(Graphics graphics, ClientWorld world, double x, double y, double z);
 
-    public abstract boolean renderWeatherLegacy(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y,  double z, Predicate<Biome> biomePredicate);
+    public abstract boolean renderWeatherLegacy(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z, Predicate<Biome> biomePredicate);
 
     public abstract void clientTick(ClientWorld world, int tickSpeed, long worldTime, Minecraft mc, Predicate<Biome> biomePredicate);
 

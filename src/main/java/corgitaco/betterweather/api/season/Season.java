@@ -23,6 +23,7 @@ public interface Season {
 
     /**
      * If null, seasons are not enabled for this world.
+     *
      * @param world Should be either or extenders of {@link net.minecraft.client.world.ClientWorld} or {@link net.minecraft.world.server.ServerWorld}
      * @return Season
      */

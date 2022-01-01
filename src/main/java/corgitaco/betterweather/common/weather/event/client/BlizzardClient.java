@@ -81,7 +81,7 @@ public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> i
     }
 
     @Override
-    public boolean renderWeatherLegacy(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y,  double z, Predicate<Biome> biomePredicate) {
+    public boolean renderWeatherLegacy(Minecraft mc, ClientWorld world, LightTexture lightTexture, int ticks, float partialTicks, double x, double y, double z, Predicate<Biome> biomePredicate) {
         float rainStrength = world.getRainLevel(partialTicks);
         lightTexture.turnOnLightLayer();
         int floorX = MathHelper.floor(x);

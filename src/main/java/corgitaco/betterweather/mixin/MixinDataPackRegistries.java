@@ -2,8 +2,8 @@ package corgitaco.betterweather.mixin;
 
 import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.season.Season;
-import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.common.season.BWSeason;
+import corgitaco.betterweather.config.BetterWeatherConfig;
 import net.minecraft.command.Commands;
 import net.minecraft.resources.DataPackRegistries;
 import net.minecraft.resources.IResourcePack;
@@ -33,7 +33,7 @@ public abstract class MixinDataPackRegistries {
                     String season = seasonKey + "-" + phase;
 
                     BWSeason.AFFECTED_CROPS.computeIfAbsent(season, (key) -> BlockTags.createOptional(new ResourceLocation(BetterWeather.MOD_ID, worldKey + "_" + season.toLowerCase() + "_affected_crops")));
-                    BWSeason.UNAFFECTED_CROPS.computeIfAbsent(season, (key) ->  BlockTags.createOptional(new ResourceLocation(BetterWeather.MOD_ID, worldKey + "_" + season.toLowerCase() + "_unaffected_crops")));
+                    BWSeason.UNAFFECTED_CROPS.computeIfAbsent(season, (key) -> BlockTags.createOptional(new ResourceLocation(BetterWeather.MOD_ID, worldKey + "_" + season.toLowerCase() + "_unaffected_crops")));
                 }
             }
             BWSeason.AFFECTED_CROPS.computeIfAbsent(worldKey, (key) -> BlockTags.createOptional(new ResourceLocation(BetterWeather.MOD_ID, worldKey + "_affected_crops")));

@@ -1,7 +1,7 @@
 package corgitaco.betterweather.mixin.entity;
 
-import corgitaco.betterweather.util.BetterWeatherWorldData;
 import corgitaco.betterweather.common.season.SeasonContext;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
 import net.minecraft.entity.ai.goal.BreedGoal;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.world.World;

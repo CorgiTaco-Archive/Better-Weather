@@ -34,7 +34,7 @@ public final class ShaderProgramBuilder {
                 StringBuilder builder = new StringBuilder();
 
                 String line;
-                while((line = reader.readLine()) != null) {
+                while ((line = reader.readLine()) != null) {
                     builder.append(line).append("\n");
                 }
 

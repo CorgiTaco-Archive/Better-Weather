@@ -1,10 +1,10 @@
 package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.api.season.Season;
-import corgitaco.betterweather.util.BetterWeatherWorldData;
 import corgitaco.betterweather.common.season.BWSeason;
 import corgitaco.betterweather.common.season.BWSubseasonSettings;
 import corgitaco.betterweather.common.season.SeasonContext;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -66,7 +66,7 @@ public abstract class MixinItemStack {
 
                 List<ITextComponent> toolTips = cir.getReturnValue();
                 if (InputMappings.isKeyDown(mc.getWindow().getWindow(), mc.options.keyShift.getKey().getValue())) {
-                    if(seasonContext.getCropFavoriteBiomeBonuses().containsKey(block)) {
+                    if (seasonContext.getCropFavoriteBiomeBonuses().containsKey(block)) {
                         Object2DoubleArrayMap<RegistryKey<Biome>> favoriteBiomes = seasonContext.getCropFavoriteBiomeBonuses().get(block);
                         if (!favoriteBiomes.isEmpty()) {
 

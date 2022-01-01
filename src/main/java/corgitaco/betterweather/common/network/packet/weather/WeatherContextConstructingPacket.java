@@ -1,8 +1,8 @@
 package corgitaco.betterweather.common.network.packet.weather;
 
+import corgitaco.betterweather.common.weather.WeatherContext;
 import corgitaco.betterweather.util.BetterWeatherWorldData;
 import corgitaco.betterweather.util.BiomeUpdate;
-import corgitaco.betterweather.common.weather.WeatherContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketBuffer;

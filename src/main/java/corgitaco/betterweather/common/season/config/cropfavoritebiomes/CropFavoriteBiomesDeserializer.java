@@ -51,7 +51,7 @@ public class CropFavoriteBiomesDeserializer implements JsonSerializer<IdentityHa
             for (Map.Entry<String, JsonElement> favBiomeEntry : favBiomeEntries) {
                 String favBiomeEntryKey = favBiomeEntry.getKey();
                 Object type = OverrideDeserializer.extractKey(errors, favBiomeEntryKey, biomeRegistry);
-                if(type == null) {
+                if (type == null) {
                     continue;
                 }
 

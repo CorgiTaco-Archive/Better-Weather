@@ -2,11 +2,11 @@ package corgitaco.betterweather.mixin.client;
 
 import corgitaco.betterweather.api.Climate;
 import corgitaco.betterweather.api.season.Season;
+import corgitaco.betterweather.common.season.SeasonContext;
+import corgitaco.betterweather.common.weather.WeatherContext;
 import corgitaco.betterweather.util.BetterWeatherWorldData;
 import corgitaco.betterweather.util.BiomeModifier;
 import corgitaco.betterweather.util.BiomeUpdate;
-import corgitaco.betterweather.common.season.SeasonContext;
-import corgitaco.betterweather.common.weather.WeatherContext;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.registry.DynamicRegistries;

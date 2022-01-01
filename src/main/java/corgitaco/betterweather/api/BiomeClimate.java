@@ -29,6 +29,6 @@ public interface BiomeClimate {
     double getWeatherHumidityModifier(BlockPos pos);
 
     static BiomeClimate getClimate(Biome biome) {
-        return ((BiomeClimate)(Object) biome);
+        return ((BiomeClimate) (Object) biome);
     }
 }

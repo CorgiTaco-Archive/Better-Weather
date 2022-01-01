@@ -1,7 +1,7 @@
 package corgitaco.betterweather.mixin.client;
 
-import corgitaco.betterweather.util.BetterWeatherWorldData;
 import corgitaco.betterweather.common.weather.WeatherContext;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.DimensionRenderInfo;
 import org.spongepowered.asm.mixin.Mixin;

@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 public abstract class MixinChunk implements DirtyTickTracker {
 
     private boolean isTickDirty;
-    
+
     @Override
     public boolean isTickDirty() {
         return isTickDirty;

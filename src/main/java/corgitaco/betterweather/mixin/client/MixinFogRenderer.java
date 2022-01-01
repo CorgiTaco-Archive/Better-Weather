@@ -2,8 +2,8 @@ package corgitaco.betterweather.mixin.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.api.weather.WeatherEvent;
-import corgitaco.betterweather.util.BetterWeatherWorldData;
 import corgitaco.betterweather.common.weather.WeatherContext;
+import corgitaco.betterweather.util.BetterWeatherWorldData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.FogRenderer;
