@@ -141,7 +141,7 @@ public class SeasonContext implements Climate {
         Path seasonsPath = BetterWeather.CONFIG_PATH.resolve(worldID.getNamespace()).resolve(worldID.getPath()).resolve("seasons");
         File seasonConfigFile = seasonsPath.resolve(CONFIG_NAME).toFile();
         Path seasonOverridesPath = seasonsPath.resolve("overrides");
-        this.tickSeasonTimeWhenNoPlayersOnline = this.handleConfig(world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY), worldID, seasonConfigFile, seasonOverridesPath, true).isTickSeasonTimeWhenNoPlayersOnline();
+        this.tickSeasonTimeWhenNoPlayersOnline = this.handleConfig(world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY), worldID, seasonConfigFile, seasonOverridesPath, false).isTickSeasonTimeWhenNoPlayersOnline();
         this.cropToFavoriteBiomes.putAll(CropFavoriteBiomesConfigHandler.handle(seasonsPath.resolve("crop-favorite-biomes.json"), BLOCK_TO_FAVORITE_BIOMES_DEFAULT, world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY)));
         this.currentSeason = this.seasons.get(Season.getSeasonFromTime(world.getDayTime(), this.yearLength));
         this.currentSeason.setPhaseForTime(world.getDayTime(), this.yearLength);

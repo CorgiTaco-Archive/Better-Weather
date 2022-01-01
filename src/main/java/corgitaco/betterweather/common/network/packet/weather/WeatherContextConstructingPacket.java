@@ -45,7 +45,7 @@ public class WeatherContextConstructingPacket {
                 if (world != null && minecraft.player != null) {
                     WeatherContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
                     if (weatherEventContext == null) {
-                        weatherEventContext = ((BetterWeatherWorldData) world).setWeatherEventContext(new WeatherContext(message.weatherContext.getWeatherForecast(), message.weatherContext.getWeatherTimeSettings(), world.dimension().location(), message.weatherContext.getWeatherEvents()));
+                        weatherEventContext = ((BetterWeatherWorldData) world).setWeatherEventContext(new WeatherContext(message.weatherContext.getWeatherForecast(), message.weatherContext.getWeatherTimeSettings(), world.dimension().location(), message.weatherContext.getWeatherEvents(), true));
                         weatherEventContext.setCurrentEvent(message.weatherContext.getCurrentEvent().getKey());
                         ((BiomeUpdate) world).updateBiomeData();
                     } else {

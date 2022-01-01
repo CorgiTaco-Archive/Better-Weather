@@ -229,6 +229,9 @@ public class BWSubseasonSettings implements SubseasonSettings {
     }
 
     public void setCropTags(ITag.INamedTag<Block> enhancedCrops, ITag.INamedTag<Block> unenhancedCrops) {
+        if (enhancedCrops == null || unenhancedCrops == null) {
+            throw new NullPointerException("Crop tags should NEVER be  null");
+        }
         setEnhancedCropsTag(enhancedCrops);
         setUnEnhancedCropsTag(unenhancedCrops);
     }
