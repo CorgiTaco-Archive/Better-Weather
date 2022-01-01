@@ -311,23 +311,20 @@ public class SeasonContext implements Climate {
     private SeasonConfigHolder read(File seasonConfigFile, boolean isClient) {
         try (Reader reader = new FileReader(seasonConfigFile)) {
             Optional<SeasonConfigHolder> configHolder = SeasonConfigHolder.CODEC.parse(CONFIG_OPS, new TomlParser().parse(reader)).resultOrPartial(BetterWeather.LOGGER::error);
+            if (configHolder.isPresent()) {
 
-            final IdentityHashMap<Season.Key, BWSeason> seasonSettings = configHolder.get().getSeasonKeySeasonMap();
-            if (!isClient) {
-                if (configHolder.isPresent()) {
+                final IdentityHashMap<Season.Key, BWSeason> seasonSettings = configHolder.get().getSeasonKeySeasonMap();
+                if (!isClient) {
                     this.seasons.putAll(seasonSettings);
                 } else {
                     this.seasons.putAll(SeasonConfigHolder.DEFAULT_CONFIG_HOLDER.getSeasonKeySeasonMap());
                 }
-            } else {
-                if (configHolder.isPresent()) {
-                    this.seasons.putAll(seasonSettings);
-                    for (Map.Entry<Season.Key, BWSeason> entry : seasonSettings.entrySet()) {
-                        Season.Key key = entry.getKey();
-                        BWSeason season = entry.getValue();
-                        for (Season.Phase phase : Season.Phase.values()) {
-                            this.seasons.get(key).getSettingsForPhase(phase).setClient(season.getSettingsForPhase(phase).getClientSettings()); //Only update client settings on the client.
-                        }
+                this.seasons.putAll(seasonSettings);
+                for (Map.Entry<Season.Key, BWSeason> entry : seasonSettings.entrySet()) {
+                    Season.Key key = entry.getKey();
+                    BWSeason season = entry.getValue();
+                    for (Season.Phase phase : Season.Phase.values()) {
+                        this.seasons.get(key).getSettingsForPhase(phase).setClient(season.getSettingsForPhase(phase).getClientSettings()); //Only update client settings on the client.
                     }
                 }
             }
