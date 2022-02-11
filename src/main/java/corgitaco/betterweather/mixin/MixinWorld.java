@@ -12,14 +12,14 @@ public abstract class MixinWorld implements BetterWeatherWorldData {
 
     @Inject(method = "getThunderLevel", at = @At("HEAD"), cancellable = true)
     private void removeThunderStrength(float delta, CallbackInfoReturnable<Float> cir) {
-        if (getWeatherEventContext() != null) {
+        if (getWeatherContext() != null) {
             cir.setReturnValue(0.0F);
         }
     }
 
     @Inject(method = "isThundering", at = @At("HEAD"), cancellable = true)
     private void markIsThunderingIfThunderingEvent(CallbackInfoReturnable<Boolean> cir) {
-        if (getWeatherEventContext() != null) {
+        if (getWeatherContext() != null) {
 //            cir.setReturnValue(BetterWeatherEventData.get((World) (Object) this).getEventID().equals(WeatherEventSystem.DEFAULT_THUNDER));
         }
     }

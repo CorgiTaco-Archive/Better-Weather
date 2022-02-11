@@ -42,7 +42,7 @@ public class WeatherSoundHandler implements IAmbientSoundHandler {
 
     @Override
     public void tick() {
-        WeatherContext weatherEventContext = ((BetterWeatherWorldData) player.clientLevel).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) player.clientLevel).getWeatherContext();
         if (weatherEventContext == null) {
             return;
         }

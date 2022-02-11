@@ -231,7 +231,7 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
 
     @Nullable
     @Override
-    public WeatherContext getWeatherEventContext() {
+    public WeatherContext getWeatherContext() {
         return this.weatherContext;
     }
 

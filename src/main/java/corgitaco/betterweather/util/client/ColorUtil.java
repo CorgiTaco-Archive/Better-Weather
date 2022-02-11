@@ -46,7 +46,7 @@ public final class ColorUtil {
         }
 
         SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
-        WeatherContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherContext();
 
         if (seasonContext == null && weatherEventContext == null) {
             return previous;

@@ -14,7 +14,7 @@ public interface BetterWeatherWorldData {
     SeasonContext setSeasonContext(SeasonContext seasonContext);
 
     @Nullable
-    WeatherContext getWeatherEventContext();
+    WeatherContext getWeatherContext();
 
     @Nullable
     WeatherContext setWeatherEventContext(WeatherContext weatherEventContext);

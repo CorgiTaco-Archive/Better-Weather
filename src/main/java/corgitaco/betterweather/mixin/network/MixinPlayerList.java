@@ -48,7 +48,7 @@ public abstract class MixinPlayerList {
             NetworkHandler.sendToPlayer(playerIn, new SeasonContextConstructingPacket(seasonContext));
         }
 
-        WeatherContext weatherEventContext = ((BetterWeatherWorldData) worldIn).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) worldIn).getWeatherContext();
         if (weatherEventContext != null) {
             NetworkHandler.sendToPlayer(playerIn, new WeatherContextConstructingPacket(weatherEventContext));
         }

@@ -50,7 +50,7 @@ public abstract class MixinClientWorld implements BetterWeatherWorldData, Climat
 
     @Nullable
     @Override
-    public WeatherContext getWeatherEventContext() {
+    public WeatherContext getWeatherContext() {
         return this.weatherContext;
     }
 

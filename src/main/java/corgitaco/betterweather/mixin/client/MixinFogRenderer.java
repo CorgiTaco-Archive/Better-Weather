@@ -20,13 +20,13 @@ public abstract class MixinFogRenderer {
 
     @Redirect(method = "setupColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainLevel(F)F"))
     private static float doNotDarkenFogWithRainStrength(ClientWorld world, float delta) {
-        return ((BetterWeatherWorldData) world).getWeatherEventContext() != null ? 0.0F : world.getRainLevel(delta);
+        return ((BetterWeatherWorldData) world).getWeatherContext() != null ? 0.0F : world.getRainLevel(delta);
     }
 
     @Inject(method = "setupFog(Lnet/minecraft/client/renderer/ActiveRenderInfo;Lnet/minecraft/client/renderer/FogRenderer$FogType;FZF)V", at = @At("HEAD"), cancellable = true, remap = false)
     private static void forceWeather(ActiveRenderInfo activeRenderInfoIn, FogRenderer.FogType fogTypeIn, float farPlaneDistance, boolean nearFog, float partialticks, CallbackInfo ci) {
         ClientWorld world = Minecraft.getInstance().level;
-        WeatherContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherContext();
         if (weatherEventContext != null) {
             WeatherEvent currentEvent = weatherEventContext.getCurrentEvent();
             float currentFogDensity = currentEvent.getClientSettings().fogDensity();

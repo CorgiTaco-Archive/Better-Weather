@@ -43,7 +43,7 @@ public class WeatherForecastChangedPacket {
 
                 ClientWorld world = minecraft.level;
                 if (world != null && minecraft.player != null) {
-                    WeatherContext weatherContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
+                    WeatherContext weatherContext = ((BetterWeatherWorldData) world).getWeatherContext();
                     if (weatherContext != null) {
                         weatherContext.getWeatherForecast().getForecast().clear();
                         weatherContext.getWeatherForecast().getForecast().addAll(message.weatherForecast.getForecast());

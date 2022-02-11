@@ -15,7 +15,7 @@ public abstract class MixinDimensionRenderInfo {
 
     @Inject(method = "getSunriseColor", at = @At("HEAD"), cancellable = true)
     private void constantSkyColor(float skyAngle, float tickDelta, CallbackInfoReturnable<float[]> cir) {
-        WeatherContext weatherEventContext = ((BetterWeatherWorldData) minecraft.level).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) minecraft.level).getWeatherContext();
         if (weatherEventContext != null) {
             if (!weatherEventContext.getCurrentEvent().getClientSettings().sunsetSunriseColor()) {
                 cir.setReturnValue(null);

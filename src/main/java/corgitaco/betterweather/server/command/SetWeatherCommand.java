@@ -1,11 +1,11 @@
 package corgitaco.betterweather.server.command;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
-import corgitaco.betterweather.api.weather.WeatherEvent;
+import corgitaco.betterweather.common.savedata.WeatherEventSavedData;
 import corgitaco.betterweather.common.weather.WeatherContext;
+import corgitaco.betterweather.common.weather.WeatherEventInstance;
 import corgitaco.betterweather.util.BetterWeatherWorldData;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
@@ -19,48 +19,45 @@ import java.util.List;
 public class SetWeatherCommand {
 
     public static final String WEATHER_NOT_ENABLED = "null";
-    public static final List<String> LENGTH_SUGGESTIONS = Arrays.asList(
-            "1200", // a minute
-            "6000", // 5 minutes
-            "12000", // 10 minutes
-            "36000" // 30 minutes
-    );
 
     public static ArgumentBuilder<CommandSource, ?> register(CommandDispatcher<CommandSource> dispatcher) {
-        return Commands.literal("setweather").then(
-                Commands.argument("weather", StringArgumentType.string())
+        return Commands.literal("setWeatherEvent").then(
+                Commands.argument("weatherEvent", StringArgumentType.string())
                         .suggests((ctx, sb) -> {
-                            WeatherContext weatherEventContext = ((BetterWeatherWorldData) ctx.getSource().getLevel()).getWeatherEventContext();
+                            WeatherContext weatherEventContext = ((BetterWeatherWorldData) ctx.getSource().getLevel()).getWeatherContext();
                             return ISuggestionProvider.suggest(weatherEventContext != null ? weatherEventContext.getWeatherEvents().keySet().stream() : Arrays.stream(new String[]{WEATHER_NOT_ENABLED}), sb);
-                        }).executes(cs -> betterWeatherSetSeason(cs.getSource(), cs.getArgument("weather", String.class),
-                                12000)) // Default length to 10 minutes.
-                        .then(
-                                Commands.argument("length", IntegerArgumentType.integer())
-                                        .suggests((ctx, sb) -> ISuggestionProvider.suggest(LENGTH_SUGGESTIONS.stream(), sb))
-                                        .executes((cs) -> betterWeatherSetSeason(cs.getSource(), cs.getArgument("weather", String.class),
-                                                cs.getArgument("length", int.class)))
-                        )
+                        }).executes(cs -> setLunarEvent(cs.getSource(), cs.getArgument("weatherEvent", String.class)))
         );
     }
 
-    public static int betterWeatherSetSeason(CommandSource source, String weatherKey, int length) {
-        if (weatherKey.equals(WEATHER_NOT_ENABLED)) {
-            source.sendFailure(new TranslationTextComponent("commands.bw.setweather.no.weather.for.world"));
+    public static int setLunarEvent(CommandSource source, String weatherEventKey) {
+        ServerWorld world = source.getLevel();
+        WeatherContext weatherContext = ((BetterWeatherWorldData) world).getWeatherContext();
+
+        if (weatherEventKey.equals(WEATHER_NOT_ENABLED) || weatherContext == null) {
+            source.sendFailure(new TranslationTextComponent("betterweather.commands.disabled"));
             return 0;
         }
 
-        ServerWorld world = source.getLevel();
-        WeatherContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
+        long dayLength = weatherContext.getWeatherTimeSettings().getDayLength();
+        long currentDay = (world.getDayTime() / dayLength);
 
-        if (weatherEventContext != null) {
-            if (weatherEventContext.getWeatherEvents().containsKey(weatherKey)) {
-                weatherEventContext.setCurrentEvent(weatherKey);
-                WeatherEvent currentEvent = weatherEventContext.getCurrentEvent();
-                source.sendSuccess(currentEvent.successTranslationTextComponent(weatherKey), true);
-            } else {
-                source.sendFailure(new TranslationTextComponent("commands.bw.setweather.fail.no_weather_event", weatherKey));
-                return 0;
+        if (weatherContext.getWeatherEvents().containsKey(weatherEventKey)) {
+            WeatherEventInstance commandInstance = new WeatherEventInstance(weatherEventKey, currentDay);
+            List<WeatherEventInstance> forecast = weatherContext.getWeatherForecast().getForecast();
+            if (!forecast.isEmpty()) {
+                WeatherEventInstance weatherEventInstance = forecast.get(0);
+                if (weatherEventInstance.active(currentDay)) {
+                    forecast.remove(0);
+                    weatherContext.getWeatherForecast().getPastEvents().add(weatherEventInstance);
+                }
             }
+            forecast.add(0, commandInstance);
+
+            WeatherEventSavedData.get(world).setForecast(weatherContext.getWeatherForecast());
+        } else {
+            source.sendFailure(new TranslationTextComponent("betterweather.commands.weatherevent_missing", weatherEventKey));
+            return 0;
         }
         return 1;
     }

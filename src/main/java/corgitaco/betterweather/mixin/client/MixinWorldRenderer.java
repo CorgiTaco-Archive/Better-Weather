@@ -34,7 +34,7 @@ public abstract class MixinWorldRenderer implements Graphics {
 
     @Inject(at = @At("HEAD"), method = "renderSnowAndRain", cancellable = true)
     private void renderWeather(LightTexture lightmapIn, float partialTicks, double x, double y, double z, CallbackInfo ci) {
-        WeatherContext weatherEventContext = ((BetterWeatherWorldData) this.level).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) this.level).getWeatherContext();
         if (weatherEventContext != null) {
             if (weatherEventContext.getCurrentEvent().getClient().renderWeather(this, minecraft, this.level, lightmapIn, ticks, partialTicks, x, y, z, weatherEventContext.getCurrentEvent()::isValidBiome)) {
                 ci.cancel();
@@ -44,7 +44,7 @@ public abstract class MixinWorldRenderer implements Graphics {
 
     @Inject(at = @At("HEAD"), method = "tickRain", cancellable = true)
     private void stopRainParticles(ActiveRenderInfo activeRenderInfoIn, CallbackInfo ci) {
-        WeatherContext weatherEventContext = ((BetterWeatherWorldData) this.level).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) this.level).getWeatherContext();
         if (minecraft.level != null && weatherEventContext != null) {
             if (weatherEventContext.getCurrentEvent().getClient().weatherParticlesAndSound(activeRenderInfoIn, this.minecraft, this.ticks, weatherEventContext.getCurrentEvent()::isValidBiome)) {
                 ci.cancel();
@@ -55,13 +55,13 @@ public abstract class MixinWorldRenderer implements Graphics {
     @Redirect(method = "renderSky(Lcom/mojang/blaze3d/matrix/MatrixStack;F)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getRainLevel(F)F"))
     public float sunRemoval(ClientWorld clientWorld, float delta) {
         float rainStrength = this.level.getRainLevel(delta);
-        WeatherContext weatherEventContext = ((BetterWeatherWorldData) this.level).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) this.level).getWeatherContext();
         return weatherEventContext != null ? rainStrength * weatherEventContext.getCurrentEvent().getClient().skyOpacity(clientWorld, this.minecraft.player.blockPosition(), weatherEventContext.getCurrentEvent()::isValidBiome) : rainStrength;
     }
 
     @Inject(method = "buildClouds", at = @At(value = "HEAD"))
     private void modifyCloudColor(BufferBuilder bufferIn, double cloudsX, double cloudsY, double cloudsZ, Vector3d cloudsColor, CallbackInfo ci) {
-        WeatherContext weatherEventContext = ((BetterWeatherWorldData) this.level).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) this.level).getWeatherContext();
         if (weatherEventContext != null) {
             ColorSettings colorSettings = weatherEventContext.getCurrentEvent().getClientSettings().getColorSettings();
             double cloudColorBlendStrength = colorSettings.getCloudColorBlendStrength();

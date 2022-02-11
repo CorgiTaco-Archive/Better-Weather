@@ -18,7 +18,7 @@ public abstract class MixinChunkHolder {
     private void runChunkUpdates(Chunk chunk, CallbackInfo ci) {
         ServerWorld world = (ServerWorld) chunk.getLevel();
 
-        WeatherContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherContext();
 
         if (weatherEventContext != null) {
             if (!((DirtyTickTracker) chunk).isTickDirty()) {

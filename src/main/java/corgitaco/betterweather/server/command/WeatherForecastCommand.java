@@ -22,7 +22,7 @@ public class WeatherForecastCommand {
     public static int recompute(CommandSource source) {
         ServerWorld world = source.getLevel();
 
-        WeatherContext weatherContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
+        WeatherContext weatherContext = ((BetterWeatherWorldData) world).getWeatherContext();
 
         if (weatherContext == null) {
             source.sendFailure(new TranslationTextComponent("betterweather.commands.disabled"));
@@ -40,7 +40,7 @@ public class WeatherForecastCommand {
 
     public static int setWeatherEvent(CommandSource source) {
         ServerWorld world = source.getLevel();
-        WeatherContext weatherContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
+        WeatherContext weatherContext = ((BetterWeatherWorldData) world).getWeatherContext();
 
         if (weatherContext == null) {
             source.sendFailure(new TranslationTextComponent("betterweather.commands.disabled"));

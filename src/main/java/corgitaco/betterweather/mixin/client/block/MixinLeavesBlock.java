@@ -20,7 +20,7 @@ public abstract class MixinLeavesBlock {
 
     @Inject(at = @At("HEAD"), method = "animateTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Ljava/util/Random;)V", cancellable = true)
     private void noRainDripping(BlockState stateIn, World world, BlockPos pos, Random rand, CallbackInfo ci) {
-        WeatherContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherEventContext();
+        WeatherContext weatherEventContext = ((BetterWeatherWorldData) world).getWeatherContext();
         if (weatherEventContext != null) {
             if (!weatherEventContext.getCurrentEvent().getClientSettings().drippingLeaves()) {
                 ci.cancel();
