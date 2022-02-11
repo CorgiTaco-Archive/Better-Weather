@@ -5,7 +5,6 @@ import corgitaco.betterweather.common.network.NetworkHandler;
 import corgitaco.betterweather.common.season.config.SerializerHelpers;
 import corgitaco.betterweather.common.weather.event.*;
 import corgitaco.betterweather.common.weather.event.client.settings.*;
-import corgitaco.betterweather.config.BetterWeatherClientConfig;
 import corgitaco.betterweather.server.BetterWeatherGameRules;
 import net.minecraft.util.LazyValue;
 import net.minecraft.util.ResourceLocation;
@@ -27,8 +26,6 @@ public class BetterWeather {
     public static final String MOD_ID = "betterweather";
     public static final Path CONFIG_PATH = FMLPaths.CONFIGDIR.get().resolve(MOD_ID);
     public static final Logger LOGGER = LogManager.getLogger();
-
-    public static final BetterWeatherClientConfig CLIENT_CONFIG = new BetterWeatherClientConfig();
 
     public static final boolean USING_OPTIFINE = new LazyValue<>(() -> {
         try {

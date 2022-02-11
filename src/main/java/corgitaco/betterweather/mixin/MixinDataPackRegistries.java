@@ -23,9 +23,7 @@ public abstract class MixinDataPackRegistries {
 
     @Inject(method = "loadResources", at = @At("HEAD"))
     private static void readConfigAndAddTags(List<IResourcePack> resourcePacks, Commands.EnvironmentType environmentType, int i, Executor executor, Executor executor1, CallbackInfoReturnable<CompletableFuture<DataPackRegistries>> cir) {
-        BetterWeatherConfig.serialize();
-
-        for (String seasonDimension : BetterWeatherConfig.SEASON_DIMENSIONS) {
+        for (String seasonDimension : BetterWeatherConfig.getConfig().seasonDimensions) {
             String worldKey = seasonDimension.replace(":", ".");
 
             for (Season.Key seasonKey : Season.Key.values()) {
