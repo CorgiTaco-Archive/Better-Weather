@@ -1,6 +1,7 @@
-package corgitaco.betterweather.config;
+package corgitaco.betterweather.client.config;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.common.config.CommentedConfigBuilder;
 
 public class BetterWeatherClientConfig {
     public static BetterWeatherClientConfig INSTANCE = null;

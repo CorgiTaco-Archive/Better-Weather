@@ -1,4 +1,4 @@
-package corgitaco.betterweather.config;
+package corgitaco.betterweather.common.config;
 
 import corgitaco.betterweather.BetterWeather;
 import net.minecraft.world.World;

@@ -4,9 +4,10 @@ import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.Climate;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.weather.WeatherEvent;
+import corgitaco.betterweather.common.config.BetterWeatherConfig;
 import corgitaco.betterweather.common.season.SeasonContext;
+import corgitaco.betterweather.common.snow.SnowController;
 import corgitaco.betterweather.common.weather.WeatherContext;
-import corgitaco.betterweather.config.BetterWeatherConfig;
 import corgitaco.betterweather.mixin.access.ChunkManagerAccess;
 import corgitaco.betterweather.mixin.access.ServerChunkProviderAccess;
 import corgitaco.betterweather.mixin.access.ServerWorldAccess;
@@ -59,7 +60,7 @@ import java.util.stream.Stream;
 
 
 @Mixin(ServerWorld.class)
-public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorldData, Climate {
+public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorldData, Climate, SnowController.Access {
 
     @Shadow
     @Final
@@ -72,6 +73,8 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
 
     @Nullable
     private WeatherContext weatherContext;
+
+    private SnowController snowController;
 
     @SuppressWarnings("ALL")
     @Inject(method = "<init>", at = @At("RETURN"))
@@ -112,6 +115,7 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
         }
 
         updateBiomeData();
+        this.snowController = new SnowController((ServerWorld) (Object) this, this.weatherContext, this.seasonContext);
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -251,5 +255,10 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
     @Override
     public Season getSeason() {
         return this.seasonContext.getSeason();
+    }
+
+    @Override
+    public SnowController get() {
+        return this.snowController;
     }
 }

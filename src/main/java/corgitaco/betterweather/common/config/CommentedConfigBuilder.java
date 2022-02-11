@@ -1,4 +1,4 @@
-package corgitaco.betterweather.config;
+package corgitaco.betterweather.common.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.Config;
