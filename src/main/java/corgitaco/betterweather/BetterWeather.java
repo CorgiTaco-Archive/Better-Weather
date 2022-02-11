@@ -2,6 +2,7 @@ package corgitaco.betterweather;
 
 import corgitaco.betterweather.api.BetterWeatherRegistry;
 import corgitaco.betterweather.common.network.NetworkHandler;
+import corgitaco.betterweather.common.season.config.SerializerHelpers;
 import corgitaco.betterweather.common.weather.event.*;
 import corgitaco.betterweather.common.weather.event.client.settings.*;
 import corgitaco.betterweather.config.BetterWeatherClientConfig;
@@ -45,6 +46,7 @@ public class BetterWeather {
         bus.addListener(this::commonSetup);
         bus.addListener(this::clientSetup);
         bus.addListener(this::lateSetup);
+        SerializerHelpers.clinit();
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

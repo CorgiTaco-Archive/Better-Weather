@@ -7,7 +7,9 @@ import corgitaco.betterweather.common.season.BWSeason;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.Util;
 
+import java.util.EnumMap;
 import java.util.IdentityHashMap;
+import java.util.Map;
 
 public class SeasonConfigHolder {
 
@@ -32,12 +34,12 @@ public class SeasonConfigHolder {
 
     private final boolean tickSeasonTimeWhenNoPlayersOnline;
     private final int seasonCycleLength;
-    private final IdentityHashMap<Season.Key, BWSeason> seasonKeySeasonMap;
+    private final EnumMap<Season.Key, BWSeason> seasonKeySeasonMap;
 
-    public SeasonConfigHolder(boolean tickSeasonTimeWhenNoPlayersOnline, int seasonCycleLength, IdentityHashMap<Season.Key, BWSeason> seasonKeySeasonMap) {
+    public SeasonConfigHolder(boolean tickSeasonTimeWhenNoPlayersOnline, int seasonCycleLength, Map<Season.Key, BWSeason> seasonKeySeasonMap) {
         this.tickSeasonTimeWhenNoPlayersOnline = tickSeasonTimeWhenNoPlayersOnline;
         this.seasonCycleLength = seasonCycleLength;
-        this.seasonKeySeasonMap = seasonKeySeasonMap;
+        this.seasonKeySeasonMap = new EnumMap<>(seasonKeySeasonMap);
 
         for (Season.Key key : seasonKeySeasonMap.keySet()) {
             seasonKeySeasonMap.get(key).setSeasonKey(key);
@@ -48,11 +50,11 @@ public class SeasonConfigHolder {
         return tickSeasonTimeWhenNoPlayersOnline;
     }
 
-    public int getSeasonCycleLength() {
+    public int getYearLength() {
         return seasonCycleLength;
     }
 
-    public IdentityHashMap<Season.Key, BWSeason> getSeasonKeySeasonMap() {
+    public Map<Season.Key, BWSeason> getSeasonKeySeasonMap() {
         return seasonKeySeasonMap;
     }
 }

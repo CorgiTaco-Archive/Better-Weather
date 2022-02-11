@@ -5,7 +5,6 @@ import corgitaco.betterweather.common.season.BWSeason;
 import corgitaco.betterweather.common.season.BWSubseasonSettings;
 import corgitaco.betterweather.common.season.SeasonContext;
 import corgitaco.betterweather.util.BetterWeatherWorldData;
-import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
@@ -30,6 +29,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Mixin(ItemStack.class)
 public abstract class MixinItemStack {
@@ -67,7 +67,7 @@ public abstract class MixinItemStack {
                 List<ITextComponent> toolTips = cir.getReturnValue();
                 if (InputMappings.isKeyDown(mc.getWindow().getWindow(), mc.options.keyShift.getKey().getValue())) {
                     if (seasonContext.getCropFavoriteBiomeBonuses().containsKey(block)) {
-                        Object2DoubleArrayMap<RegistryKey<Biome>> favoriteBiomes = seasonContext.getCropFavoriteBiomeBonuses().get(block);
+                        Map<RegistryKey<Biome>, Double> favoriteBiomes = seasonContext.getCropFavoriteBiomeBonuses().get(block);
                         if (!favoriteBiomes.isEmpty()) {
 
                             StringTextComponent favBiomes = new StringTextComponent(Arrays.toString(favoriteBiomes.keySet().stream().map(RegistryKey::location).map(location -> new TranslationTextComponent(Util.makeDescriptionId("biome", location)).getString()).toArray()));
