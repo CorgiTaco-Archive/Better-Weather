@@ -19,13 +19,12 @@ import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.nio.file.Path;
 
 @Mod("betterweather")
 public class BetterWeather {
     public static final String MOD_ID = "betterweather";
-    public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
+    public static final Path CONFIG_PATH = FMLPaths.CONFIGDIR.get().resolve(MOD_ID);
     public static final Logger LOGGER = LogManager.getLogger();
 
     public static final BetterWeatherClientConfig CLIENT_CONFIG = new BetterWeatherClientConfig();

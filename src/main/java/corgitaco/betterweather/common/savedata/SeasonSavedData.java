@@ -1,6 +1,7 @@
 package corgitaco.betterweather.common.savedata;
 
 import corgitaco.betterweather.BetterWeather;
+import corgitaco.betterweather.common.season.SeasonContext;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
@@ -13,8 +14,10 @@ public class SeasonSavedData extends WorldSavedData {
     private static final String DATA_NAME = new ResourceLocation(BetterWeather.MOD_ID, "season_data").toString();
 
     private static final String YEAR_LENGTH_KEY = "yearLength";
+    private static final String YEAR_TIME_KEY = "yearTime";
 
     private int yearLength;
+    private int yearTime;
 
     private static SeasonSavedData clientCache = new SeasonSavedData();
     private static ClientWorld worldCache = null;
@@ -49,11 +52,13 @@ public class SeasonSavedData extends WorldSavedData {
     @Override
     public void load(CompoundNBT nbt) {
         setYearLength(nbt.getInt(YEAR_LENGTH_KEY));
+        setYearTime(nbt.getInt(YEAR_TIME_KEY));
     }
 
     @Override
     public CompoundNBT save(CompoundNBT compound) {
         compound.putInt(YEAR_LENGTH_KEY, yearLength);
+        compound.putInt(YEAR_TIME_KEY, yearTime);
         return compound;
     }
 
@@ -63,5 +68,20 @@ public class SeasonSavedData extends WorldSavedData {
 
     public void setYearLength(int yearLength) {
         this.yearLength = yearLength;
+        setDirty();
+    }
+
+    public int getYearTime() {
+        return yearTime;
+    }
+
+    public void setYearTime(int yearTime) {
+        this.yearTime = yearTime;
+        setDirty();
+    }
+
+    public void setFromSeasonContext(SeasonContext seasonContext) {
+        this.setYearLength(seasonContext.getYearLength());
+        this.setYearTime(seasonContext.getYearTime());
     }
 }

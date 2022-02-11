@@ -45,7 +45,7 @@ public class SeasonContextConstructingPacket {
                 if (world != null && minecraft.player != null) {
                     SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
                     if (seasonContext == null) {
-                        ((BetterWeatherWorldData) world).setSeasonContext(new SeasonContext(world, message.seasonContext.getYearLength(), message.seasonContext.getCropFavoriteBiomeBonuses(), message.seasonContext.getSeasons()));
+                        ((BetterWeatherWorldData) world).setSeasonContext(new SeasonContext(world, message.seasonContext.getYearLength(), message.seasonContext.getYearTime(), message.seasonContext.getCropFavoriteBiomeBonuses(), message.seasonContext.getSeasons()));
                         ((BiomeUpdate) world).updateBiomeData();
                     }
                 }

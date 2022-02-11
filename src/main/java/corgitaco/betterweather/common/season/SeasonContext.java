@@ -11,6 +11,7 @@ import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.Climate;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.common.network.NetworkHandler;
+import corgitaco.betterweather.common.network.packet.season.YearTimePacket;
 import corgitaco.betterweather.common.network.packet.util.RefreshRenderersPacket;
 import corgitaco.betterweather.common.savedata.SeasonSavedData;
 import corgitaco.betterweather.common.season.config.SeasonConfigHolder;
@@ -32,6 +33,7 @@ import net.minecraft.tags.ITag;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.server.ServerWorld;
@@ -57,6 +59,8 @@ public class SeasonContext implements Climate {
     public static final Codec<SeasonContext> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(Codec.INT.fieldOf("yearLength").forGetter((seasonContext) -> {
             return seasonContext.yearLength;
+        }), Codec.INT.fieldOf("yearTime").forGetter((seasonContext) -> {
+            return seasonContext.yearTime;
         }), Codec.simpleMap(Season.Key.CODEC, BWSeason.PACKET_CODEC, IStringSerializable.keys(Season.Key.values())).fieldOf("seasons").forGetter((seasonContext) -> {
             return seasonContext.seasons;
         }), Codec.unboundedMap(ResourceLocation.CODEC, Codec.unboundedMap(ResourceLocation.CODEC, Codec.DOUBLE)).fieldOf("cropFavoriteBiomes").forGetter((seasonContext) -> {
@@ -69,7 +73,7 @@ public class SeasonContext implements Climate {
                 serialized.put(Registry.BLOCK.getKey(blockToFavoriteBiome.getKey()), favBiomeSerialized);
             }
             return serialized;
-        })).apply(builder, (yearLength, seasonMap, cropFavoriteBiomesSerialized) -> {
+        })).apply(builder, (yearLength, yearTime, seasonMap, cropFavoriteBiomesSerialized) -> {
             IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> cropFavoriteBiomes = new IdentityHashMap<>();
             for (Map.Entry<ResourceLocation, Map<ResourceLocation, Double>> serializedCropEntry : cropFavoriteBiomesSerialized.entrySet()) {
                 Object2DoubleArrayMap<RegistryKey<Biome>> favBiomes = new Object2DoubleArrayMap<>();
@@ -82,7 +86,7 @@ public class SeasonContext implements Climate {
                 }
                 cropFavoriteBiomes.put(optional.get(), favBiomes);
             }
-            return new SeasonContext(null, yearLength, cropFavoriteBiomes, new IdentityHashMap<>(seasonMap));
+            return new SeasonContext(null, yearLength, yearTime, cropFavoriteBiomes, new IdentityHashMap<>(seasonMap));
         });
     });
 
@@ -126,17 +130,19 @@ public class SeasonContext implements Climate {
     private boolean tickSeasonTimeWhenNoPlayersOnline = true;
 
     private BWSeason currentSeason;
-    private final int yearLength;
+    private int yearLength;
+    private int yearTime;
 
     //Packet Constructor
-    public SeasonContext(int yearLength, IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> cropToFavoriteBiomes, ResourceLocation worldID, IdentityHashMap<Season.Key, BWSeason> seasons) {
-        this(null, yearLength, cropToFavoriteBiomes, seasons);
+    public SeasonContext(int yearLength, int yearTime, IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> cropToFavoriteBiomes, ResourceLocation worldID, IdentityHashMap<Season.Key, BWSeason> seasons) {
+        this(null, yearLength, yearTime, cropToFavoriteBiomes, seasons);
     }
 
     //Server world constructor
     public SeasonContext(ServerWorld world) {
         SeasonSavedData seasonSavedData = SeasonSavedData.get(world);
         this.yearLength = seasonSavedData.getYearLength();
+        this.yearTime = seasonSavedData.getYearTime();
         ResourceLocation worldID = world.dimension().location();
         Path seasonsPath = BetterWeather.CONFIG_PATH.resolve(worldID.getNamespace()).resolve(worldID.getPath()).resolve("seasons");
         File seasonConfigFile = seasonsPath.resolve(CONFIG_NAME).toFile();
@@ -144,12 +150,13 @@ public class SeasonContext implements Climate {
         this.tickSeasonTimeWhenNoPlayersOnline = this.handleConfig(world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY), worldID, seasonConfigFile, seasonOverridesPath, false).isTickSeasonTimeWhenNoPlayersOnline();
         this.cropToFavoriteBiomes.putAll(CropFavoriteBiomesConfigHandler.handle(seasonsPath.resolve("crop-favorite-biomes.json"), BLOCK_TO_FAVORITE_BIOMES_DEFAULT, world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY)));
         this.currentSeason = this.seasons.get(Season.getSeasonFromTime(world.getDayTime(), this.yearLength));
-        this.currentSeason.setPhaseForTime(world.getDayTime(), this.yearLength);
+        this.currentSeason.setPhaseForTime(this.yearTime, this.yearLength);
     }
 
     //Client Constructor
-    public SeasonContext(@Nullable ClientWorld world, int yearLength, IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> cropToFavoriteBiomes, @Nullable IdentityHashMap<Season.Key, BWSeason> seasons) {
+    public SeasonContext(@Nullable ClientWorld world, int yearLength, int yearTime, IdentityHashMap<Block, Object2DoubleArrayMap<RegistryKey<Biome>>> cropToFavoriteBiomes, @Nullable IdentityHashMap<Season.Key, BWSeason> seasons) {
         this.yearLength = yearLength;
+        this.yearTime = yearTime;
         if (world != null) {
             ResourceLocation worldID = world.dimension().location();
             Path seasonsPath = BetterWeather.CONFIG_PATH.resolve(worldID.getNamespace()).resolve(worldID.getPath()).resolve("seasons");
@@ -158,41 +165,34 @@ public class SeasonContext implements Climate {
             this.seasons.putAll(seasons);
             this.cropToFavoriteBiomes.putAll(cropToFavoriteBiomes);
             this.tickSeasonTimeWhenNoPlayersOnline = this.handleConfig(world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY), worldID, seasonConfigFile, seasonOverridesPath, true).isTickSeasonTimeWhenNoPlayersOnline();
-            this.currentSeason = this.seasons.get(Season.getSeasonFromTime(world.getDayTime(), this.yearLength));
-            this.currentSeason.setPhaseForTime(world.dayTime(), this.yearLength);
+            this.currentSeason = this.seasons.get(Season.getSeasonFromTime(this.yearTime, this.yearLength));
+            this.currentSeason.setPhaseForTime(this.yearTime, this.yearLength);
         }
     }
 
-    public void setSeason(ServerWorld world, List<ServerPlayerEntity> players, Season.Key newSeason, Season.Phase phase) {
-        BWSubseasonSettings prevSettings = this.getCurrentSubSeasonSettings();
-        this.currentSeason = seasons.get(newSeason);
-        this.currentSeason.setPhaseForTime(world.dayTime(), yearLength);
-        BWSubseasonSettings currentSubSeasonSettings = this.getCurrentSubSeasonSettings();
-        if (prevSettings != currentSubSeasonSettings) {
-            onSeasonChange(world, prevSettings, currentSubSeasonSettings);
-        }
+    public void setSeason(World world, Season.Key newSeason, Season.Phase phase) {
+        BWSubseasonSettings oldSettings = this.currentSeason.getCurrentSettings();
+        this.yearTime = updateYearTime(world, Season.getSeasonAndPhaseStartTime(newSeason, phase, this.yearLength));
     }
 
     public void tick(World world) {
-        BWSeason prevSeason = this.currentSeason;
-        Season.Phase prevPhase = this.currentSeason.getCurrentPhase();
-        BWSubseasonSettings prevSettings = prevSeason.getSettingsForPhase(prevPhase);
-        this.tickSeasonTime(world);
-
-        boolean changedSeasonFlag = prevSeason != this.currentSeason;
-        boolean changedPhaseFlag = prevPhase != this.currentSeason.getCurrentPhase();
-
-        if (changedSeasonFlag || changedPhaseFlag) {
-            onSeasonChange(world, prevSettings, this.currentSeason.getCurrentSettings());
-        }
+        this.updateYearTime(world);
     }
 
-    private void onSeasonChange(World world, BWSubseasonSettings prevSettings, BWSubseasonSettings currentSettings) {
-        ((BiomeUpdate) world).updateBiomeData();
-        if (!world.isClientSide) {
-            updateWeatherMultiplier(world, prevSettings.getWeatherEventChanceMultiplier(), currentSettings.getWeatherEventChanceMultiplier());
-            updatePacket(((ServerWorld) world).players());
+    private boolean seasonChange(World world, BWSubseasonSettings prevSettings) {
+        return seasonChange(world, this.currentSeason.getCurrentSettings(), prevSettings);
+    }
+
+    private boolean seasonChange(World world, BWSubseasonSettings prevSettings, BWSubseasonSettings currentSettings) {
+        if (prevSettings != currentSettings) {
+            ((BiomeUpdate) world).updateBiomeData();
+            if (!world.isClientSide) {
+                updateWeatherMultiplier(world, prevSettings.getWeatherEventChanceMultiplier(), currentSettings.getWeatherEventChanceMultiplier());
+                broadcast(((ServerWorld) world).players(), true);
+            }
+            return true;
         }
+        return false;
     }
 
     public void updateWeatherMultiplier(World world, double prevMultiplier, double currentMultiplier) {
@@ -255,28 +255,47 @@ public class SeasonContext implements Climate {
         }
     }
 
-    public void updatePacket(List<ServerPlayerEntity> players) {
-        NetworkHandler.sendToAllPlayers(players, new RefreshRenderersPacket());
+    public void broadcast(List<ServerPlayerEntity> players) {
+        broadcast(players, false);
     }
 
-    private void tickSeasonTime(World world) {
-        if (world instanceof ServerWorld) {
-            if (!this.tickSeasonTimeWhenNoPlayersOnline && world.players().isEmpty()) {
-                return;
-            }
+    public void broadcast(List<ServerPlayerEntity> players, boolean refreshRenderers) {
+        NetworkHandler.sendToAllPlayers(players, new YearTimePacket(this.getYearTime()));
+        if (refreshRenderers) {
+            NetworkHandler.sendToAllPlayers(players, new RefreshRenderersPacket());
         }
+    }
 
+    public int updateYearTime(World world) {
+        return updateYearTime(world, Integer.MIN_VALUE);
+    }
+
+    public int updateYearTime(World world, int newYearTime) {
         if (world.getGameRules().getBoolean(BetterWeatherGameRules.DO_SEASON_CYCLE)) {
-            this.currentSeason = this.seasons.get(Season.getSeasonFromTime(world.getDayTime(), this.yearLength)).setPhaseForTime(world.getDayTime(), this.yearLength);
+            BWSubseasonSettings preUpdateSettings = this.getCurrentSeason().getCurrentSettings();
+            if (newYearTime > 0) {
+                this.yearTime = newYearTime - 1;
+            }
+            if (!world.isClientSide) {
+                if (!this.tickSeasonTimeWhenNoPlayersOnline && world.players().isEmpty()) {
+                    return this.yearTime;
+                }
+            }
 
-            if (world.getLevelData().getGameTime() % 50 == 0) {
+            this.currentSeason = this.seasons.get(Season.getSeasonFromTime(this.yearTime > this.yearLength ? this.yearTime = 0 : this.yearTime++, this.yearLength)).setPhaseForTime(this.yearTime, this.yearLength);
+
+            if (world.getLevelData().getGameTime() % 50 == 0 || seasonChange(world, preUpdateSettings)) {
                 save(world);
+                if (!world.isClientSide) {
+                    broadcast(((IServerWorld) world).getLevel().players());
+                }
             }
         }
+        return this.yearTime;
     }
 
     private void save(World world) {
-        SeasonSavedData.get(world).setYearLength(this.yearLength);
+        SeasonSavedData.get(world).setFromSeasonContext(this);
     }
 
     /**********Configs**********/
@@ -312,7 +331,7 @@ public class SeasonContext implements Climate {
         try (Reader reader = new FileReader(seasonConfigFile)) {
             Optional<SeasonConfigHolder> configHolder = SeasonConfigHolder.CODEC.parse(CONFIG_OPS, new TomlParser().parse(reader)).resultOrPartial(BetterWeather.LOGGER::error);
             if (configHolder.isPresent()) {
-
+                this.yearLength = configHolder.get().getSeasonCycleLength();
                 final IdentityHashMap<Season.Key, BWSeason> seasonSettings = configHolder.get().getSeasonKeySeasonMap();
                 if (!isClient) {
                     this.seasons.putAll(seasonSettings);
@@ -358,12 +377,16 @@ public class SeasonContext implements Climate {
         return currentSeason;
     }
 
-    public BWSeason getSeasonForTime(long dayTime) {
-        return this.seasons.get(Season.getSeasonFromTime(dayTime, this.yearLength));
+    public BWSeason getSeasonForYearTime(long yearTime) {
+        return this.seasons.get(Season.getSeasonFromTime(yearTime, this.yearLength));
     }
 
     public BWSubseasonSettings getCurrentSubSeasonSettings() {
         return this.currentSeason.getCurrentSettings();
+    }
+
+    public int getYearTime() {
+        return this.yearTime;
     }
 
     @Nullable

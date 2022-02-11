@@ -162,14 +162,14 @@ public interface Season {
     /**
      * @return current season key determined by the year's current time and length.
      */
-    static Key getSeasonFromTime(long dayTime, int yearLength) {
+    static Key getSeasonFromTime(long yearTime, int yearLength) {
         int seasonLength = yearLength / Key.values().length;
 
-        if (dayTime < seasonLength) {
+        if (yearTime < seasonLength) {
             return Key.SPRING;
-        } else if (dayTime < seasonLength * 2) {
+        } else if (yearTime < seasonLength * 2) {
             return Key.SUMMER;
-        } else if (dayTime < seasonLength * 3) {
+        } else if (yearTime < seasonLength * 3) {
             return Key.AUTUMN;
         } else
             return Key.WINTER;

@@ -14,7 +14,7 @@ import corgitaco.betterweather.common.network.NetworkHandler;
 import corgitaco.betterweather.common.network.packet.weather.WeatherForecastChangedPacket;
 import corgitaco.betterweather.common.savedata.WeatherEventSavedData;
 import corgitaco.betterweather.common.season.SeasonContext;
-import corgitaco.betterweather.common.weather.event.Rain;
+import corgitaco.betterweather.common.weather.event.None;
 import corgitaco.betterweather.util.BetterWeatherWorldData;
 import it.unimi.dsi.fastutil.objects.Object2LongArrayMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -38,7 +38,7 @@ import java.util.*;
 public class WeatherContext {
 
     public static final String CONFIG_NAME = "weather-settings.json";
-    private static final WeatherEvent DEFAULT = Rain.DEFAULT;
+    private static final WeatherEvent DEFAULT = None.DEFAULT.setKey("none");
 
     public static final Codec<WeatherContext> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
         return builder.group(WeatherForecast.CODEC.fieldOf("weatherForecast").forGetter((weatherContext) -> {
@@ -82,6 +82,7 @@ public class WeatherContext {
         @Nullable
         WeatherEventInstance nextWeatherEvent = this.weatherForecast.getForecast().isEmpty() ? null : this.weatherForecast.getForecast().get(0);
         this.currentEvent = nextWeatherEvent == null ? DEFAULT : nextWeatherEvent.getDaysUntil((int) (world.getDayTime() / this.dayLength)) <= 0 && world.isNight() ? nextWeatherEvent.getEvent(this.weatherEvents) : DEFAULT;
+        this.weatherEvents.forEach((key, event) -> event.setKey(key));
     }
 
     // Packet Codec Constructor
@@ -160,7 +161,7 @@ public class WeatherContext {
             dayTime += this.dayLength;
             Random random = new Random(world.getSeed() + world.dimension().location().hashCode() + day + seedModifier);
             Collections.shuffle(scrambledKeys, random);
-            Season season = seasonContext == null ? null : seasonContext.getSeasonForTime(world.getDayTime());
+            Season season = seasonContext == null ? null : seasonContext.getSeasonForYearTime(seasonContext.getYearTime());
             for (String key : scrambledKeys) {
                 WeatherEvent value = this.weatherEvents.get(key);
                 if ((/*day - eventByLastTime.getOrDefault(value, currentDay)) > value.getMinNumberOfNightsBetween() && (day - lastDay) > this.minDaysBetweenEvents &&*/ value.getChance(season) > random.nextDouble())) {
@@ -177,7 +178,6 @@ public class WeatherContext {
 
 
     public void tick(World world) {
-        WeatherEvent lastEvent = this.currentEvent;
         long currentDay = (world.getDayTime() / this.dayLength);
         if (!world.isClientSide) {
             List<ServerPlayerEntity> players = ((ServerWorld) world).players();
@@ -187,27 +187,8 @@ public class WeatherContext {
                 this.currentEvent = DEFAULT;
             } else {
                 WeatherEventInstance nextEvent = forecast.get(0);
-                this.currentEvent = nextEvent.getDaysUntil(currentDay) <= 0 && world.isNight() ? nextEvent.getEvent(this.weatherEvents) : DEFAULT;
+                this.currentEvent = nextEvent.getDaysUntil(currentDay) <= 0 ? nextEvent.getEvent(this.weatherEvents) : DEFAULT;
             }
-
-//            if (this.currentEvent != lastEvent) {
-//                this.lastEvent = lastEvent;
-//                this.strength = 0;
-//                WeatherTextComponents.Notification endNotification = lastEvent.endNotification();
-//                if (endNotification != null) {
-//                    for (ServerPlayerEntity player : players) {
-//                        player.displayClientMessage(endNotification.getCustomTranslationTextComponent(), endNotification.getNotificationType() == WeatherTextComponents.NotificationType.HOT_BAR);
-//                    }
-//                }
-//
-//                WeatherTextComponents.Notification startNotification = this.currentEvent.startNotification();
-//                if (startNotification != null) {
-//                    for (ServerPlayerEntity player : players) {
-//                        player.displayClientMessage(startNotification.getCustomTranslationTextComponent(), startNotification.getNotificationType() == WeatherTextComponents.NotificationType.HOT_BAR);
-//                    }
-//                }
-//                NetworkHandler.sendToAllPlayers(players, new WeatherEventChangedPacket(this.currentEvent.getKey()));
-//            }
         }
         this.strength = MathHelper.clamp(this.strength + 0.01F, 0, 1.0F);
     }

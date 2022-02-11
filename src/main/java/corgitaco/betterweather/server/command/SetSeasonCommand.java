@@ -50,7 +50,7 @@ public class SetSeasonCommand {
 
         final Season.Key season = Season.Key.valueOf(seasonKey);
         final Season.Phase phase = Season.Phase.valueOf(phaseString);
-        seasonContext.setSeason(source.getLevel(), source.getLevel().players(), season, phase);
+        seasonContext.setSeason(source.getLevel(), season, phase);
         source.sendSuccess(new TranslationTextComponent("commands.bw.setseason.success",
                 season.translationTextComponent(), phase.translationTextComponent()), true);
         return 1;
