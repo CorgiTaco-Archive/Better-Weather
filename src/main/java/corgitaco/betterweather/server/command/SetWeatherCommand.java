@@ -40,14 +40,15 @@ public class SetWeatherCommand {
         }
 
         long dayLength = weatherContext.getWeatherTimeSettings().getDayLength();
-        long currentDay = (world.getDayTime() / dayLength);
+        long dayTime = world.getDayTime();
+        long currentDay = (dayTime / dayLength);
 
         if (weatherContext.getWeatherEvents().containsKey(weatherEventKey)) {
-            WeatherEventInstance commandInstance = new WeatherEventInstance(weatherEventKey, currentDay);
+            WeatherEventInstance commandInstance = new WeatherEventInstance(weatherEventKey, currentDay, true, (int) (dayTime % weatherContext.getDayLength()), world.random.nextInt( weatherContext.getEventMaxLength() - weatherContext.getEventMinLength()) + weatherContext.getEventMinLength());
             List<WeatherEventInstance> forecast = weatherContext.getWeatherForecast().getForecast();
             if (!forecast.isEmpty()) {
                 WeatherEventInstance weatherEventInstance = forecast.get(0);
-                if (weatherEventInstance.active(currentDay)) {
+                if (weatherEventInstance.active(currentDay, weatherContext.getDayLength())) {
                     forecast.remove(0);
                     weatherContext.getWeatherForecast().getPastEvents().add(weatherEventInstance);
                 }

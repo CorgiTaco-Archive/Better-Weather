@@ -48,7 +48,7 @@ public class WeatherForecastCommand {
         }
 
         long dayLength = weatherContext.getWeatherTimeSettings().getDayLength();
-        long currentDay = (world.getDayTime() / dayLength);
+        long dayTime = world.getDayTime();
 
         TranslationTextComponent textComponent = null;
 
@@ -64,7 +64,7 @@ public class WeatherForecastCommand {
             } else {
                 textComponent.append(", ").append(new TranslationTextComponent(name));
             }
-            textComponent.append(new TranslationTextComponent("betterweather.weatherforecast.days_left", weatherEventInstance.getDaysUntil(currentDay)));
+            textComponent.append(new TranslationTextComponent("betterweather.weatherforecast.days_left", weatherEventInstance.getTimeUntil(dayTime, dayLength)));
         }
 
         if (textComponent != null) {

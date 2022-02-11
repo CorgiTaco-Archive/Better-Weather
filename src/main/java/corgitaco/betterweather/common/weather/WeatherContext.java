@@ -7,6 +7,7 @@ import corgitaco.betterweather.api.client.ColorSettings;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.common.network.NetworkHandler;
+import corgitaco.betterweather.common.network.packet.weather.WeatherEventChangedPacket;
 import corgitaco.betterweather.common.network.packet.weather.WeatherForecastChangedPacket;
 import corgitaco.betterweather.common.savedata.WeatherEventSavedData;
 import corgitaco.betterweather.common.season.SeasonContext;
@@ -15,6 +16,7 @@ import corgitaco.betterweather.common.weather.event.client.NoneClient;
 import corgitaco.betterweather.common.weather.event.client.settings.NoneClientSettings;
 import corgitaco.betterweather.util.BetterWeatherWorldData;
 import it.unimi.dsi.fastutil.objects.Object2LongArrayMap;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
@@ -76,7 +78,7 @@ public class WeatherContext {
         assert weatherForecast != null;
         @Nullable
         WeatherEventInstance nextWeatherEvent = this.weatherForecast.getForecast().isEmpty() ? null : this.weatherForecast.getForecast().get(0);
-        this.currentEvent = nextWeatherEvent == null ? DEFAULT : nextWeatherEvent.getDaysUntil((int) (world.getDayTime() / this.dayLength)) <= 0 && world.isNight() ? nextWeatherEvent.getEvent(this.weatherEvents) : DEFAULT;
+        this.currentEvent = nextWeatherEvent == null ? DEFAULT : nextWeatherEvent.active(world.getDayTime(), this.dayLength) ? nextWeatherEvent.getEvent(this.weatherEvents) : DEFAULT;
         this.weatherEvents.forEach((key, event) -> event.setKey(key));
     }
 
@@ -91,12 +93,12 @@ public class WeatherContext {
         this.weatherConfigPath = BetterWeather.CONFIG_PATH.resolve(worldID.getNamespace()).resolve(worldID.getPath()).resolve("weather");
         this.weatherEventsConfigPath = this.weatherConfigPath.resolve("events");
         this.weatherEvents.putAll(weatherEvents);
+        this.dayLength = weatherTimeSettings.dayLength;
         @Nullable
         WeatherEventInstance nextWeatherEvent = weatherForecast.getForecast().isEmpty() ? null : weatherForecast.getForecast().get(0);
-        this.currentEvent = nextWeatherEvent == null ? DEFAULT : nextWeatherEvent.scheduledDay() == 0 ? nextWeatherEvent.getEvent(this.weatherEvents) : DEFAULT;
+        this.currentEvent = nextWeatherEvent == null ? DEFAULT : nextWeatherEvent.active(Minecraft.getInstance().level.getDayTime(), this.getDayLength()) ? nextWeatherEvent.getEvent(this.weatherEvents) : DEFAULT;
         this.weatherForecast = weatherForecast;
         this.weatherTimeSettings = weatherTimeSettings;
-        this.dayLength = weatherTimeSettings.dayLength;
         this.yearLengthInDays = weatherTimeSettings.yearLength;
         this.minDaysBetweenEvents = weatherTimeSettings.minDaysBetweenWeatherEvents;
         if (serializeClientOnlyConfigs) {
@@ -139,7 +141,7 @@ public class WeatherContext {
             lastCheckedDay = lastCheckedTime / dayLength;
         }
 
-        if (currentDay + this.yearLengthInDays == lastCheckedDay) {
+        if (currentDay + this.yearLengthInDays <= lastCheckedDay) {
             return weatherForecast;
         }
 
@@ -147,12 +149,12 @@ public class WeatherContext {
 
         Object2LongArrayMap<WeatherEvent> eventByLastTime = new Object2LongArrayMap<>();
         List<WeatherEventInstance> forecast = weatherForecast.getForecast();
-        long lastDay = !forecast.isEmpty() ? forecast.get(forecast.size() - 1).scheduledDay() : currentDay;
+        long lastDay = !forecast.isEmpty() ? forecast.get(forecast.size() - 1).scheduledStartTime(dayTime) : currentDay;
 
         long day = lastCheckedDay;
 
         for (WeatherEventInstance weatherEventInstance : forecast) {
-            eventByLastTime.put(weatherEventInstance.getEvent(this.weatherEvents), weatherEventInstance.scheduledDay());
+            eventByLastTime.put(weatherEventInstance.getEvent(this.weatherEvents), weatherEventInstance.scheduledStartTime(dayTime));
         }
 
         for (; day <= currentDay + this.yearLengthInDays; day++) {
@@ -164,19 +166,21 @@ public class WeatherContext {
                 WeatherEvent value = this.weatherEvents.get(key);
                 if ((/*day - eventByLastTime.getOrDefault(value, currentDay)) > value.getMinNumberOfNightsBetween() &&*/ (day - lastDay) > this.minDaysBetweenEvents && value.getChance(season) > random.nextDouble())) {
                     lastDay = day;
-                    newWeatherEvents.add(new WeatherEventInstance(key, day));
+                    newWeatherEvents.add(new WeatherEventInstance(key, day, world.random.nextInt((int) this.getDayLength()), world.random.nextInt( this.getEventMaxLength() - this.getEventMinLength()) + this.getEventMinLength()));
                     eventByLastTime.put(value, day);
                 }
             }
         }
         forecast.addAll(newWeatherEvents);
-        weatherForecast.setLastCheckedGameTime(day * dayLength);
+        weatherForecast.setLastCheckedGameTime(Math.max(day * dayLength, forecast.get(forecast.size() - 1).getEndTime(this.dayLength)));
         return weatherForecast;
     }
 
 
     public void tick(World world) {
-        long currentDay = (world.getDayTime() / this.dayLength);
+        WeatherEvent lastEvent = this.currentEvent;
+        long dayTime = world.getDayTime();
+        long currentDay = (dayTime / this.dayLength);
         if (!world.isClientSide) {
             List<ServerPlayerEntity> players = ((ServerWorld) world).players();
             updateForecast(world, currentDay, players);
@@ -185,14 +189,18 @@ public class WeatherContext {
                 this.currentEvent = DEFAULT;
             } else {
                 WeatherEventInstance nextEvent = forecast.get(0);
-                this.currentEvent = nextEvent.getDaysUntil(currentDay) <= 0 ? nextEvent.getEvent(this.weatherEvents) : DEFAULT;
+                this.currentEvent = nextEvent.active(dayTime, this.dayLength) ? nextEvent.getEvent(this.weatherEvents) : DEFAULT;
+            }
+
+            if (lastEvent != this.currentEvent) {
+                NetworkHandler.sendToAllPlayers(players, new WeatherEventChangedPacket(this.currentEvent.getKey()));
             }
         }
         this.strength = MathHelper.clamp(this.strength + 0.01F, 0, 1.0F);
     }
 
-    private void updateForecast(World world, long currentDay, List<ServerPlayerEntity> players) {
-        updateForecast(world, currentDay);
+    private void updateForecast(World world, long dayTime, List<ServerPlayerEntity> players) {
+        updateForecast(world, dayTime);
         long lastCheckedGameTime = this.weatherForecast.getLastCheckedGameTime();
         WeatherForecast newWeatherForecast = computeWeatherForecast((ServerWorld) world, this.weatherForecast);
 
@@ -201,18 +209,19 @@ public class WeatherContext {
         long lastCheckedDay = lastCheckedGameTime / this.dayLength;
         if (newLastCheckedDay != lastCheckedDay) {
             NetworkHandler.sendToAllPlayers(players, new WeatherForecastChangedPacket(this.weatherForecast));
+            NetworkHandler.sendToAllPlayers(((ServerWorld) world).players(), new WeatherEventChangedPacket(this.currentEvent.getKey()));
             WeatherEventSavedData.get(world).setForecast(weatherForecast);
         }
     }
 
-    public void updateForecast(World world, long currentDay) {
+    public void updateForecast(World world, long dayTime) {
         List<WeatherEventInstance> forecast = this.weatherForecast.getForecast();
         if (forecast.isEmpty()) {
             return;
         }
 
         WeatherEventInstance nextEvent = forecast.get(0);
-        if (nextEvent.passed(currentDay)) {
+        if (nextEvent.eventPassed(dayTime, this.dayLength)) {
             this.weatherForecast.getPastEvents().add(nextEvent);
             forecast.remove(0);
             NetworkHandler.sendToAllPlayers(((ServerWorld) world).players(), new WeatherForecastChangedPacket(this.weatherForecast));
@@ -252,6 +261,21 @@ public class WeatherContext {
     public boolean isRefreshRenderers() {
         return false;
     }
+
+    public long getDayLength() {
+        return dayLength;
+    }
+
+    // TODO: Config
+    public int getEventMaxLength() {
+        return 50000;
+    }
+
+    // TODO: Config
+    public int getEventMinLength() {
+        return 5000;
+    }
+
 
     @OnlyIn(Dist.CLIENT)
     public void setLastEvent(WeatherEvent lastEvent) {

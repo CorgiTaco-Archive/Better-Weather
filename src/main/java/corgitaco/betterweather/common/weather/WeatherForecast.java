@@ -12,7 +12,7 @@ public class WeatherForecast {
         return builder.group(Codec.list(WeatherEventInstance.CODEC).fieldOf("forecast").forGetter((weatherForecast) -> {
             return weatherForecast.forecast;
         }), Codec.list(WeatherEventInstance.CODEC).fieldOf("pastEvents").forGetter((weatherForecast) -> {
-            return weatherForecast.forecast;
+            return weatherForecast.pastEvents;
         }), Codec.LONG.fieldOf("lastCheckedGameTime").forGetter((weatherForecast -> {
             return weatherForecast.lastCheckedGameTime;
         }))).apply(builder, WeatherForecast::new);

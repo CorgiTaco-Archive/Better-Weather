@@ -150,6 +150,11 @@ public abstract class MixinServerWorld implements BiomeUpdate, BetterWeatherWorl
         }
     }
 
+    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z", ordinal = 0))
+    private boolean nukeVanillaWeatherLogic(GameRules instance, GameRules.RuleKey<GameRules.BooleanValue> ruleKey) {
+        return this.weatherContext == null && instance.getBoolean(ruleKey);
+    }
+
     @Inject(method = "registryAccess", at = @At("HEAD"), cancellable = true)
     private void dynamicRegistryWrapper(CallbackInfoReturnable<DynamicRegistries> cir) {
         cir.setReturnValue(this.registry);
