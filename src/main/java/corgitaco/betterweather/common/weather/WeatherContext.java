@@ -1,13 +1,9 @@
 package corgitaco.betterweather.common.weather;
 
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.betterweather.BetterWeather;
-import corgitaco.betterweather.api.BetterWeatherRegistry;
+import corgitaco.betterweather.api.client.ColorSettings;
 import corgitaco.betterweather.api.season.Season;
 import corgitaco.betterweather.api.weather.WeatherEvent;
 import corgitaco.betterweather.common.network.NetworkHandler;
@@ -15,10 +11,11 @@ import corgitaco.betterweather.common.network.packet.weather.WeatherForecastChan
 import corgitaco.betterweather.common.savedata.WeatherEventSavedData;
 import corgitaco.betterweather.common.season.SeasonContext;
 import corgitaco.betterweather.common.weather.event.None;
+import corgitaco.betterweather.common.weather.event.client.NoneClient;
+import corgitaco.betterweather.common.weather.event.client.settings.NoneClientSettings;
 import corgitaco.betterweather.util.BetterWeatherWorldData;
 import it.unimi.dsi.fastutil.objects.Object2LongArrayMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -27,13 +24,11 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+
+import static corgitaco.betterweather.common.weather.config.WeatherConfigSerializers.handleEventConfigs;
+import static corgitaco.betterweather.common.weather.config.WeatherConfigSerializers.readOrCreateConfigJson;
 
 public class WeatherContext {
 
@@ -75,7 +70,7 @@ public class WeatherContext {
         this.dayLength = weatherTimeSettings.dayLength;
         this.yearLengthInDays = weatherTimeSettings.yearLength;
         this.minDaysBetweenEvents = weatherTimeSettings.minDaysBetweenWeatherEvents;
-        handleEventConfigs(false);
+        handleEventConfigs(false, weatherEvents, weatherEventsConfigPath);
         this.scrambledKeys.addAll(this.weatherEvents.keySet());
         this.weatherForecast = getAndComputeWeatherForecast(world).getForecast();
         assert weatherForecast != null;
@@ -105,7 +100,10 @@ public class WeatherContext {
         this.yearLengthInDays = weatherTimeSettings.yearLength;
         this.minDaysBetweenEvents = weatherTimeSettings.minDaysBetweenWeatherEvents;
         if (serializeClientOnlyConfigs) {
-            this.handleEventConfigs(true);
+            handleEventConfigs(true, weatherEvents, weatherEventsConfigPath);
+        }
+        if (DEFAULT.getClient() == null) {
+            DEFAULT.setClient(new NoneClient(new NoneClientSettings(new ColorSettings())), "internal");
         }
         this.weatherEvents.forEach((key, event) -> event.setKey(key));
     }
@@ -113,7 +111,7 @@ public class WeatherContext {
     public WeatherEventSavedData getAndComputeWeatherForecast(ServerWorld world) {
         WeatherEventSavedData weatherEventSavedData = WeatherEventSavedData.get(world);
         if (weatherEventSavedData.getForecast() == null) {
-            weatherEventSavedData.setForecast(computeWeatherForecast(world, new WeatherForecast(new ArrayList<>(), world.getDayTime())));
+            weatherEventSavedData.setForecast(computeWeatherForecast(world, new WeatherForecast(new ArrayList<>(), new ArrayList<>(), world.getDayTime())));
         }
         weatherEventSavedData.getForecast().getForecast().removeIf(weatherEventInstance -> !this.weatherEvents.containsKey(weatherEventInstance.getWeatherEventKey()));
         weatherEventSavedData.setForecast(weatherEventSavedData.getForecast());
@@ -164,7 +162,7 @@ public class WeatherContext {
             Season season = seasonContext == null ? null : seasonContext.getSeasonForYearTime(seasonContext.getYearTime());
             for (String key : scrambledKeys) {
                 WeatherEvent value = this.weatherEvents.get(key);
-                if ((/*day - eventByLastTime.getOrDefault(value, currentDay)) > value.getMinNumberOfNightsBetween() && (day - lastDay) > this.minDaysBetweenEvents &&*/ value.getChance(season) > random.nextDouble())) {
+                if ((/*day - eventByLastTime.getOrDefault(value, currentDay)) > value.getMinNumberOfNightsBetween() &&*/ (day - lastDay) > this.minDaysBetweenEvents && value.getChance(season) > random.nextDouble())) {
                     lastDay = day;
                     newWeatherEvents.add(new WeatherEventInstance(key, day));
                     eventByLastTime.put(value, day);
@@ -215,6 +213,7 @@ public class WeatherContext {
 
         WeatherEventInstance nextEvent = forecast.get(0);
         if (nextEvent.passed(currentDay)) {
+            this.weatherForecast.getPastEvents().add(nextEvent);
             forecast.remove(0);
             NetworkHandler.sendToAllPlayers(((ServerWorld) world).players(), new WeatherForecastChangedPacket(this.weatherForecast));
             WeatherEventSavedData.get(world).setForecast(weatherForecast);
@@ -228,130 +227,6 @@ public class WeatherContext {
     @Nullable
     public WeatherEvent getLastEvent() {
         return lastEvent;
-    }
-
-    public void handleEventConfigs(boolean isClient) {
-        if (isClient) {
-            DEFAULT.setClient(DEFAULT.getClientSettings().createClientSettings(), "");
-        }
-        File eventsDirectory = this.weatherEventsConfigPath.toFile();
-        if (!eventsDirectory.exists()) {
-            createDefaultEventConfigs();
-        }
-
-        File[] files = eventsDirectory.listFiles();
-
-        if (files.length == 0) {
-            createDefaultEventConfigs();
-        }
-
-        if (isClient) {
-            addSettingsIfMissing();
-        }
-
-        iterateAndReadConfiguredEvents(files, isClient);
-    }
-
-    private void iterateAndReadConfiguredEvents(File[] files, boolean isClient) {
-        for (File configFile : files) {
-            String absolutePath = configFile.getAbsolutePath();
-//            if (absolutePath.endsWith(".toml")) {
-//                readToml(isClient, configFile);
-
-//            } else if (absolutePath.endsWith(".json")) {
-            readJson(isClient, configFile);
-//            }
-        }
-    }
-
-
-    public void createDefaultEventConfigs() {
-        for (Map.Entry<ResourceLocation, WeatherEvent> entry : BetterWeatherRegistry.DEFAULT_EVENTS.entrySet()) {
-            ResourceLocation location = entry.getKey();
-            WeatherEvent event = entry.getValue();
-            Optional<RegistryKey<Codec<? extends WeatherEvent>>> optionalKey = BetterWeatherRegistry.WEATHER_EVENT.getResourceKey(event.codec());
-
-            if (optionalKey.isPresent()) {
-                createJsonEventConfig(event, location.toString());
-            } else {
-                throw new IllegalStateException("Weather Event Key for codec not there when requested: " + event.getClass().getSimpleName());
-            }
-        }
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public void addSettingsIfMissing() {
-        for (Map.Entry<String, WeatherEvent> entry : this.weatherEvents.entrySet()) {
-            WeatherEvent event = entry.getValue();
-            String key = entry.getKey();
-            File tomlFile = this.weatherEventsConfigPath.resolve(key + ".toml").toFile();
-            File jsonFile = this.weatherEventsConfigPath.resolve(key + ".json").toFile();
-            Optional<RegistryKey<Codec<? extends WeatherEvent>>> optionalKey = BetterWeatherRegistry.WEATHER_EVENT.getResourceKey(event.codec());
-
-            if (optionalKey.isPresent()) {
-                if (!tomlFile.exists() && !jsonFile.exists()) {
-                    createJsonEventConfig(event, key);
-                }
-            } else {
-                throw new IllegalStateException("Weather Event Key for codec not there when requested: " + event.getClass().getSimpleName());
-            }
-        }
-    }
-
-
-    private void createJsonEventConfig(WeatherEvent weatherEvent, String weatherEventID) {
-        Path configFile = this.weatherEventsConfigPath.resolve(weatherEventID.replace(":", "-") + ".json");
-        JsonElement jsonElement = WeatherEvent.CODEC.encodeStart(JsonOps.INSTANCE, weatherEvent).result().get();
-
-        try {
-            Files.createDirectories(configFile.getParent());
-            Files.write(configFile, new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(jsonElement).getBytes());
-        } catch (IOException e) {
-            BetterWeather.LOGGER.error(e.toString());
-        }
-    }
-
-
-    private void readJson(boolean isClient, File configFile) {
-        try {
-            String noTypeFileName = configFile.getName().replace(".json", "");
-            String name = noTypeFileName.toLowerCase();
-            WeatherEvent decodedValue = WeatherEvent.CODEC.decode(JsonOps.INSTANCE, new JsonParser().parse(new FileReader(configFile))).resultOrPartial(BetterWeather.LOGGER::error).get().getFirst().setKey(name);
-
-            // We need to recreate the json each time to ensure we're taking into account any config fixing.
-            createJsonEventConfig(decodedValue, noTypeFileName);
-
-            if (isClient) {
-                if (this.weatherEvents.containsKey(name)) {
-                    WeatherEvent weatherEvent = this.weatherEvents.get(name);
-                    weatherEvent.setClientSettings(decodedValue.getClientSettings());
-                    weatherEvent.setClient(weatherEvent.getClientSettings().createClientSettings(), configFile.getAbsolutePath());
-                }
-            } else {
-                this.weatherEvents.put(name, decodedValue);
-            }
-        } catch (FileNotFoundException e) {
-            BetterWeather.LOGGER.error(e.toString());
-        }
-    }
-
-    private static WeatherTimeSettings readOrCreateConfigJson(File configFile) {
-        if (!configFile.exists()) {
-            try {
-                Path path = configFile.toPath();
-                Files.createDirectories(path.getParent());
-                JsonElement jsonElement = WeatherTimeSettings.CODEC.encodeStart(JsonOps.INSTANCE, WeatherTimeSettings.DEFAULT).result().get();
-                Files.write(path, new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(jsonElement).getBytes());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        try {
-            return WeatherTimeSettings.CODEC.decode(JsonOps.INSTANCE, new JsonParser().parse(new FileReader(configFile))).result().orElseThrow(RuntimeException::new).getFirst();
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public WeatherForecast getWeatherForecast() {

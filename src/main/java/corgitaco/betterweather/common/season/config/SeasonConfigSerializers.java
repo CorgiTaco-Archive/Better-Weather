@@ -30,7 +30,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class SerializerHelpers {
+public class SeasonConfigSerializers {
     public static final ITag.INamedTag<Block> GLOBAL_AFFECTED_CROPS = BlockTags.createOptional(new ResourceLocation(BetterWeather.MOD_ID, "global.affected_crops"));
 
 

@@ -256,10 +256,11 @@ public abstract class WeatherEvent implements WeatherEventSettings {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void setClient(WeatherEventClient<?> client, String path) {
+    public WeatherEvent setClient(WeatherEventClient<?> client, String path) {
         if (client == null) {
             throw new NullPointerException("Client settings for file \"" + path + "\" are incomplete/broken. The fastest solution is to copy this file to a separate directory and update the settings in the new file for all relevant fields.");
         }
         this.client = client;
+        return this;
     }
 }

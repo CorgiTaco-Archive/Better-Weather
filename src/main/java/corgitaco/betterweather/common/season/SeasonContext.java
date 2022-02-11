@@ -41,7 +41,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static corgitaco.betterweather.common.season.config.SerializerHelpers.handleConfig;
+import static corgitaco.betterweather.common.season.config.SeasonConfigSerializers.handleConfig;
 
 @SuppressWarnings("deprecation")
 public class SeasonContext implements Climate {
