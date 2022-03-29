@@ -28,7 +28,7 @@ import static corgitaco.betterweather.util.client.ColorUtil.pack;
 
 public class BWSubseasonSettings implements SubseasonSettings {
 
-    public static final boolean MODIFY_TEMPERATURE = false;
+    public static final boolean MODIFY_TEMPERATURE = true;
 
     public static final Codec<BWSubseasonSettings> CODEC = RecordCodecBuilder.create((subSeasonSettingsInstance -> {
         return subSeasonSettingsInstance.group(Codec.DOUBLE.fieldOf("tempModifier").orElse(0.0).forGetter((subSeasonSettings) -> {

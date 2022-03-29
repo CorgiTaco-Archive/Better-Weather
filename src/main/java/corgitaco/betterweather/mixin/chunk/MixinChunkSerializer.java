@@ -25,7 +25,7 @@ public class MixinChunkSerializer {
             ChunkPrimerWrapper returnValue = (ChunkPrimerWrapper) cir.getReturnValue();
             CompoundNBT betterWeatherChunkData = nbt.getCompound("betterWeatherChunkData");
             Chunk wrapped = returnValue.getWrapped();
-            ((BetterWeatherChunkData.Access) wrapped).set(new BetterWeatherChunkData(betterWeatherChunkData.getLong("lastLoadTime")));
+            ((BetterWeatherChunkData.Access) wrapped).set(new BetterWeatherChunkData(betterWeatherChunkData.getLong("lastLoadTime"), betterWeatherChunkData.getBoolean("snowPlaced")));
         }
     }
 

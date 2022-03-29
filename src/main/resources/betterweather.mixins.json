@@ -17,6 +17,7 @@
     "access.ServerChunkProviderAccess",
     "access.ServerWorldAccess",
     "access.Vector3dAccess",
+    "access.WorldAccess",
     "biome.MixinBiome",
     "biome.MixinBiomeClimate",
     "block.MixinAbstractBlockState",

@@ -1,7 +1,7 @@
 package corgitaco.betterweather.mixin.chunk;
 
 import corgitaco.betterweather.common.savedata.BetterWeatherChunkData;
-import corgitaco.betterweather.common.snow.SnowController;
+import corgitaco.betterweather.common.snow.SnowIceController;
 import corgitaco.betterweather.common.weather.WeatherContext;
 import corgitaco.betterweather.util.BetterWeatherWorldData;
 import corgitaco.betterweather.util.DirtyTickTracker;
@@ -25,7 +25,7 @@ public abstract class MixinChunkHolder {
         if (weatherEventContext != null) {
             if (!((DirtyTickTracker) chunk).isTickDirty()) {
                 weatherEventContext.getCurrentEvent().doChunkLoad(chunk, world);
-                ((SnowController.Access) world).get().onChunkLoad(chunk);
+                ((SnowIceController.Access) world).get().onChunkLoad(chunk);
                 ((DirtyTickTracker) chunk).setTickDirty();
 
             }

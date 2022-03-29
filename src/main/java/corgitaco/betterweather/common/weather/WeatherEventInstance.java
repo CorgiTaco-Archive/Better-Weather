@@ -83,4 +83,12 @@ public class WeatherEventInstance {
 
         return scheduledStartTime + eventLengthInTicks;
     }
+
+    public int getEventLengthInTicks() {
+        return eventLengthInTicks;
+    }
+
+    public long getTimeSinceEvent(long dayTime, long dayLength) {
+        return dayTime - getEndTime(dayLength);
+    }
 }

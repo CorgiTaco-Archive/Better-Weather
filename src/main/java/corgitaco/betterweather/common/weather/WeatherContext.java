@@ -17,9 +17,11 @@ import corgitaco.betterweather.common.weather.event.client.settings.NoneClientSe
 import corgitaco.betterweather.util.BetterWeatherWorldData;
 import it.unimi.dsi.fastutil.objects.Object2LongArrayMap;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
@@ -79,7 +81,10 @@ public class WeatherContext {
         @Nullable
         WeatherEventInstance nextWeatherEvent = this.weatherForecast.getForecast().isEmpty() ? null : this.weatherForecast.getForecast().get(0);
         this.currentEvent = nextWeatherEvent == null ? DEFAULT : nextWeatherEvent.active(world.getDayTime(), this.dayLength) ? nextWeatherEvent.getEvent(this.weatherEvents) : DEFAULT;
-        this.weatherEvents.forEach((key, event) -> event.setKey(key));
+        for (Map.Entry<String, WeatherEvent> entry : this.weatherEvents.entrySet()) {
+            entry.getValue().setKey(entry.getKey());
+            entry.getValue().fillBiomes(world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY));
+        }
     }
 
     // Packet Codec Constructor
@@ -89,6 +94,7 @@ public class WeatherContext {
 
     // Client Constructor
     public WeatherContext(WeatherForecast weatherForecast, WeatherTimeSettings weatherTimeSettings, ResourceLocation worldID, Map<String, WeatherEvent> weatherEvents, boolean serializeClientOnlyConfigs) {
+        ClientWorld level = Minecraft.getInstance().level;
         this.worldID = worldID;
         this.weatherConfigPath = BetterWeather.CONFIG_PATH.resolve(worldID.getNamespace()).resolve(worldID.getPath()).resolve("weather");
         this.weatherEventsConfigPath = this.weatherConfigPath.resolve("events");
@@ -96,7 +102,7 @@ public class WeatherContext {
         this.dayLength = weatherTimeSettings.dayLength;
         @Nullable
         WeatherEventInstance nextWeatherEvent = weatherForecast.getForecast().isEmpty() ? null : weatherForecast.getForecast().get(0);
-        this.currentEvent = nextWeatherEvent == null ? DEFAULT : nextWeatherEvent.active(Minecraft.getInstance().level.getDayTime(), this.getDayLength()) ? nextWeatherEvent.getEvent(this.weatherEvents) : DEFAULT;
+        this.currentEvent = nextWeatherEvent == null ? DEFAULT : nextWeatherEvent.active(level.getDayTime(), this.getDayLength()) ? nextWeatherEvent.getEvent(this.weatherEvents) : DEFAULT;
         this.weatherForecast = weatherForecast;
         this.weatherTimeSettings = weatherTimeSettings;
         this.yearLengthInDays = weatherTimeSettings.yearLength;
@@ -107,7 +113,11 @@ public class WeatherContext {
         if (DEFAULT.getClient() == null) {
             DEFAULT.setClient(new NoneClient(new NoneClientSettings(new ColorSettings())), "internal");
         }
-        this.weatherEvents.forEach((key, event) -> event.setKey(key));
+
+        for (Map.Entry<String, WeatherEvent> entry : this.weatherEvents.entrySet()) {
+            entry.getValue().setKey(entry.getKey());
+            entry.getValue().fillBiomes(level.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY));
+        }
     }
 
     public WeatherEventSavedData getAndComputeWeatherForecast(ServerWorld world) {
@@ -194,6 +204,15 @@ public class WeatherContext {
 
             if (lastEvent != this.currentEvent) {
                 NetworkHandler.sendToAllPlayers(players, new WeatherEventChangedPacket(this.currentEvent.getKey()));
+            }
+            if (!world.getLevelData().isRaining()) {
+                if (this.currentEvent != DEFAULT) {
+                    world.getLevelData().setRaining(true);
+                }
+            } else {
+                if (this.currentEvent == DEFAULT) {
+                    world.getLevelData().setRaining(false);
+                }
             }
         }
         this.strength = MathHelper.clamp(this.strength + 0.01F, 0, 1.0F);

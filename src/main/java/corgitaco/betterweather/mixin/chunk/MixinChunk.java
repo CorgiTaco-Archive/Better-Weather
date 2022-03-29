@@ -30,7 +30,7 @@ public abstract class MixinChunk implements DirtyTickTracker, BetterWeatherChunk
     @Inject(method = "<init>(Lnet/minecraft/world/World;Lnet/minecraft/util/math/ChunkPos;Lnet/minecraft/world/biome/BiomeContainer;Lnet/minecraft/util/palette/UpgradeData;Lnet/minecraft/world/ITickList;Lnet/minecraft/world/ITickList;J[Lnet/minecraft/world/chunk/ChunkSection;Ljava/util/function/Consumer;)V", at = @At("RETURN"))
     private void attachChunkData(World world, ChunkPos p_i225781_2_, BiomeContainer p_i225781_3_, UpgradeData p_i225781_4_, ITickList<Block> p_i225781_5_, ITickList<Fluid> p_i225781_6_, long p_i225781_7_, @Nullable ChunkSection[] p_i225781_9_, @Nullable Consumer<Chunk> p_i225781_10_, CallbackInfo ci) {
         if (!world.isClientSide) {
-            betterWeatherChunkData = new BetterWeatherChunkData(world.getGameTime());
+            betterWeatherChunkData = new BetterWeatherChunkData(world.getGameTime(), false);
         }
     }
 
